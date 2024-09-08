@@ -2226,7 +2226,7 @@ sub_new-realm () {
         wait_for_pid "${pidfile}"
         create_lock "${pidfile}"
 
-        enter_realm ${args['name']}
+        enter_realm "${args['name']}"
 
         local config_changed="false"
 
@@ -2244,14 +2244,14 @@ sub_new-realm () {
             fi
         done
 
-        create_public_directories ${config['public_dir_group']} config external internal public
+        create_public_directories "${config['public_dir_group']}" config external internal public
 
         if [ "${config['pki_internal']}" = "false" ] ; then
-            create_public_directories ${config['public_dir_group']} selfsigned
+            create_public_directories "${config['public_dir_group']}" selfsigned
         fi
 
-        create_private_directories ${config['private_dir_group']} private
-        create_private_noacl_directories ${config['acme_dir_group']} acme
+        create_private_directories "${config['private_dir_group']}" private
+        create_private_noacl_directories "${config['acme_dir_group']}" acme
 
         if [ "${config_changed}" = "true" ] ; then
             save_realm_config config/realm.conf
@@ -2261,9 +2261,9 @@ sub_new-realm () {
         local library="${config['pki_library']}"
         local acme_library="${config['pki_acme_library']}"
 
-        generate_${library}_rsa_realm_key private/realm_key.pem
+        "generate_${library}_rsa_realm_key" private/realm_key.pem
         if [ ! -r private/key.pem ] ; then
-            install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
+            install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key.pem.tmp
             if type setfacl > /dev/null 2>&1 ; then
                 local private_file_acl_groups_r
                 read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
@@ -2283,40 +2283,40 @@ sub_new-realm () {
         if [[ ${name} != *.* && ${name} != *@* ]] ; then
 
             if [ "${config['pki_internal']}" = "false" ] ; then
-                create_${library}_config selfsigned/${library}.conf selfsigned "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+                "create_${library}_config" "selfsigned/${library}.conf" selfsigned "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
             fi
 
-            create_${library}_config internal/${library}.conf internal "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+            "create_${library}_config" "internal/${library}.conf" internal "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
 
             if [ "${config['pki_acme']}" = "true" ] ; then
-                create_${acme_library}_config acme/${acme_library}.conf acme "${config['acme_subject']:-${config['acme_default_subject']}}" "${config['acme_domains']:-${config['acme_default_domain']}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}" "${config['acme_alt_names']:-}"
+                "create_${acme_library}_config" "acme/${acme_library}.conf" acme "${config['acme_subject']:-${config['acme_default_subject']}}" "${config['acme_domains']:-${config['acme_default_domain']}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}" "${config['acme_alt_names']:-}"
             fi
 
         elif [[ ${name} == *.* && ${name} != *@* ]] ; then
 
             if [ "${config['pki_internal']}" = "false" ] ; then
-                create_${library}_config selfsigned/${library}.conf selfsigned "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+                "create_${library}_config" "selfsigned/${library}.conf" selfsigned "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
             fi
 
-            create_${library}_config internal/${library}.conf internal "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+            "create_${library}_config" "internal/${library}.conf" internal "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
 
             if [ "${config['pki_acme']}" = "true" ] ; then
-                create_${acme_library}_config acme/${acme_library}.conf acme "${config['acme_subject']:-cn=${name}}" "${config['acme_domains']:-${name:-${config['acme_default_domain']}}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}" "${config['acme_alt_names']:-}"
+                "create_${acme_library}_config" "acme/${acme_library}.conf" acme "${config['acme_subject']:-cn=${name}}" "${config['acme_domains']:-${name:-${config['acme_default_domain']}}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}" "${config['acme_alt_names']:-}"
             fi
 
         fi
 
         if [ "${config['pki_internal']}" = "false" ] ; then
-            generate_${library}_request selfsigned/${library}.conf selfsigned/request.pem
-            selfsign_${library}_request
+            "generate_${library}_request" "selfsigned/${library}.conf" selfsigned/request.pem
+            "selfsign_${library}_request"
             state+=("new-selfsigned-certificate")
         fi
 
-        generate_${library}_request internal/${library}.conf internal/request.pem
+        "generate_${library}_request" "internal/${library}.conf" internal/request.pem
         state+=("new-internal-request")
         if [ "${config['pki_acme']}" = "true" ] ; then
-            generate_${library}_rsa_private_key acme/account_key.pem 4096 "${config['acme_file_group']}" false
-            generate_${acme_library}_request acme/${acme_library}.conf acme/request.pem
+            "generate_${library}_rsa_private_key" acme/account_key.pem 4096 "${config['acme_file_group']}" false
+            "generate_${acme_library}_request" "acme/${acme_library}.conf" acme/request.pem
             chgrp "${config['acme_file_group']}" acme/request.pem
             chmod "${config['acme_file_mode']}" acme/request.pem
             chmod "${config['acme_dir_mode']}" acme
@@ -2548,7 +2548,7 @@ sub_init () {
         wait_for_pid "${pidfile}"
         create_lock "${pidfile}"
 
-        enter_realm ${args['name']}
+        enter_realm "${args['name']}"
 
         local config_changed="false"
 
@@ -2566,12 +2566,12 @@ sub_init () {
             fi
         done
 
-        create_public_directories ${config['public_dir_group']} config external internal public
-        create_private_directories ${config['private_dir_group']} private
-        create_private_noacl_directories ${config['acme_dir_group']} acme
+        create_public_directories "${config['public_dir_group']}" config external internal public
+        create_private_directories "${config['private_dir_group']}" private
+        create_private_noacl_directories "${config['acme_dir_group']}" acme
 
         if [ "${config['pki_internal']}" = "false" ] ; then
-            create_public_directories ${config['public_dir_group']} selfsigned
+            create_public_directories "${config['public_dir_group']}" selfsigned
         fi
 
         if [ "${config_changed}" = "true" ] ; then
@@ -2627,7 +2627,7 @@ sub_run () {
         wait_for_pid "${pidfile}"
         create_lock "${pidfile}"
 
-        enter_realm ${args['name']}
+        enter_realm "${args['name']}"
 
         check_files
         request_acme_certificate

@@ -1,6 +1,6 @@
-.. Copyright (C) 2017-2022 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017-2023 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2018-2022 Robin Schneider <ypid@riseup.net>
-.. Copyright (C) 2017-2022 DebOps <https://debops.org/>
+.. Copyright (C) 2017-2023 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. _changelog:
@@ -21,7 +21,164 @@ You can read information about required changes between releases in the
 `debops master`_ - unreleased
 -----------------------------
 
-.. _debops master: https://github.com/debops/debops/compare/v3.0.0...master
+.. _debops master: https://github.com/debops/debops/compare/v3.1.0...master
+
+Added
+~~~~~
+
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.debconf` Ansible role can be used to pre-configure APT
+  packages which use the `debconf`__ configuration database and install them
+  afterwards. The role is included near the end of the :file:`site.yml`
+  playbook to allow of configuration of other needed services before the actual
+  package installation.
+
+  .. __: https://en.wikipedia.org/wiki/Debian_configuration_system
+
+General
+'''''''
+
+- The :command:`debops` script can now log its operation to standard error and
+  to the :command:`syslog` service. Use the ``--verbose`` or ``-v`` flag to
+  enable log output on the console.
+
+- Users can define "playbook sets" on the view level of the "modern" project
+  directories. Playbook sets can be used as aliases to call multiple playbooks
+  using a custom name. See :ref:`playbook_sets` documentation for more details.
+
+:ref:`debops.dnsmasq` role
+''''''''''''''''''''''''''
+
+- The role can optionally ignore IP addresses on a network interface and use
+  only specified ones for :command:`dnsmasq` configuration. This can help with
+  Routing Advertisements issues on internal networks. See role documentation
+  for more details.
+
+:ref:`debops.rabbitmq_server` role
+''''''''''''''''''''''''''''''''''
+
+- The role can manage much more RabbitMQ internal structures - exchanges,
+  queues, bindings between them, as well as vhost and user limits.
+
+Changed
+~~~~~~~
+
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, support for the Debian Bullseye netboot
+  installer has been updated to v11.10; the Debian Bookworm installer has been
+  updated to v12.5.
+
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- The role now supports new Elasticsearch v8.x password management mechanism.
+
+- The role can now manage passwords in separate Elasticsearch clusters defined
+  in one Ansible inventory.
+
+  .. warning:: Due to this change, Elasticsearch passwords stored in the
+               :file:`ansible/secret/` subdirectory will be read from a different
+               location. If passwords are not moved to the new location, role
+               will reset the Elasticsearch built-in users passwords
+               automatically. This might result in data loss.
+
+:ref:`debops.kibana` role
+'''''''''''''''''''''''''
+
+- The path to the password file stored in :file:`ansible/secret/` subdirectory
+  is now configurable using a variable.
+
+- The role uses new per-cluster Elasticsearch passwords by default. This is
+  done using a separate :envvar:`kibana__elasticsearch_cluster_name` variable,
+  which needs to be synchronized with the Elasticsearch configuration via
+  Ansible inventory (Kibana can be installed separately from Elasticsearch).
+
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- The role supports integration with the :command:`systemd-resolved` DNS
+  resolver. This permits use of the :command:`systemd-networkd` service to
+  manage networking on the LXC host.
+
+- LXC containers will be configured with AppArmor "unconfined" profile by
+  default. This change allows startup of various services inside of the
+  container without errors on Debian Bookwrom hosts.
+
+:ref:`debops.lxd` role
+''''''''''''''''''''''
+
+- The role supports integration with the :command:`systemd-resolved` DNS
+  resolver. This permits use of the :command:`systemd-networkd` service to
+  manage networking on the LXD host.
+
+:ref:`debops.proc_hidepid` role
+'''''''''''''''''''''''''''''''
+
+- The role will check if the host is in the ``debops_service_libvirtd`` Ansible
+  inventory group, or if the :ref:`debops.libvirtd` role was applied on the
+  host and will change the ``hidepid=`` value to ``0`` to avoid issues with
+  Polkit subsystem.
+
+Fixed
+~~~~~
+
+:ref:`debops.gitlab` role
+'''''''''''''''''''''''''
+
+- Fixed an issue with the :file:`/etc/gitlab/ssl/` directory changing its mode
+  from 0775 set by the role to 0755 set by the :command:`gitlab-ctl
+  reconfigure` command, making the role not idempotent.
+
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- The role will by default disable NFtables integration within the
+  :command:`lxc-net` script, configurable via a default variable. This fixes
+  usage of LXC containers on Debian Bookworm with the :command:`ferm` service
+  used by DebOps.
+
+:ref:`debops.lxd` role
+''''''''''''''''''''''
+
+- Fixed an issue with the default LXD daemon preseed configuration by removing
+  the unsupported ``managed`` parameter. This should allow the LXD daemon to be
+  initialized correctly.
+
+- Fixed an issue with the role trying to copy the source-built libraries when
+  an APT-based installation is used. The role will check if the libraries exist
+  before trying to copy them.
+
+- Fixed an issue on Debian Bookworm where the :command:`lxd-apparmor-load`
+  binary is not present where the APT-based LXD daemon expects it. The role
+  will create a symlink for this binary when needed.
+
+:ref:`debops.swapfile` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue in the :command:`swapon` task conditional logic where the task
+  could not be executed correctly when the swap file was missing.
+
+- Ensure that the swap file is correctly disabled by the :command:`swapoff`
+  command before being removed with the ``absent`` state.
+
+Removed
+~~~~~~~
+
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- Debian 9 (Stretch) has been removed from Debian mirrors, therefore the role
+  will no longer offer support for installing Debian Stretch via PXE boot.
+
+
+`debops v3.1.0`_ - 2023-11-29
+-----------------------------
+
+.. _debops v3.1.0: https://github.com/debops/debops/compare/v3.0.0...v3.1.0
 
 Added
 ~~~~~
@@ -118,6 +275,11 @@ General
 
   The modern project layout supports multiple Ansible inventories encapsulated
   into :ref:`infrastructure views <project_infrastructure_views>`.
+
+- DebOps scripts now support management of the project directories using
+  :command:`git` as VCS repositories. New project directories will use
+  :command:`git` by default. This also enables support for secrets encrypted
+  using :command:`git-crypt`.
 
 :ref:`debops.apt` role
 ''''''''''''''''''''''
@@ -339,6 +501,11 @@ General
   updated and switched the "stable" release to Bookworm, with Bullseye becoming
   the "oldstable" release. The new Debian Testing release, "Trixie" has also
   been added in relevant places.
+
+- DebOps now supports using :command:`git` in project directories - new
+  projects will be initialized as :command:`git` repositories by default. The
+  :command:`git-crypt` command is also supported, and can encrypt project
+  secrets.
 
 :ref:`debops.apt` role
 ''''''''''''''''''''''
@@ -812,6 +979,12 @@ debops.boxbackup role
 
 - Locked ``johndoh/contextmenu`` plugin to version 3.2.1 for Roundcube < 1.5
   due to compatibility issues.
+
+:ref:`debops.secret` role
+'''''''''''''''''''''''''
+
+- Fixed an issue with the :envvar:`secret` variable not being defined in other
+  roles in newer Ansible versions.
 
 :ref:`debops.sshd` role
 '''''''''''''''''''''''

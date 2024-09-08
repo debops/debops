@@ -1,5 +1,5 @@
-.. Copyright (C) 2017-2021 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2017-2021 DebOps <https://debops.org/>
+.. Copyright (C) 2017-2023 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017-2023 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. _upgrade_notes:
@@ -14,6 +14,10 @@ perform the upgrades between different stable releases.
 
 Unreleased
 ----------
+
+
+v3.1.0 (2023-11-29)
+-------------------
 
 Changes in inventory variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
