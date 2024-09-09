@@ -159,6 +159,12 @@ Updates of upstream application versions
   cases when these logs are growing rapidly, but the rotation period is too
   large to avoid filling up disk space.
 
+:ref:`debops.zabbix_agent` role
+'''''''''''''''''''''''''''''''
+
+- The fact script now supports both the old Zabbix Agent, and the new Zabbix
+  Agent 2 configuration files.
+
 Fixed
 ~~~~~
 
