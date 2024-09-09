@@ -1,6 +1,6 @@
-.. Copyright (C) 2013-2018 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2013-2024 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-.. Copyright (C) 2014-2018 DebOps <https://debops.org/>
+.. Copyright (C) 2014-2024 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 .. _pki_realms_structure:
@@ -162,6 +162,7 @@ is provided by the internal ``debops.pki`` Certificate Authority:
    └── domain/
        ├── acme/
        ├── config/
+       │   ├── environment
        │   └── realm.conf
        ├── external/
        ├── internal/
@@ -276,6 +277,7 @@ Next, PKI realm directories are created on the remote host:
     └── domain/
         ├── acme/
         ├── config/
+        │   ├── environment
         │   └── realm.conf
         ├── external/
         ├── internal/
@@ -286,6 +288,11 @@ The :file:`config/realm.conf` file contains a set of Bash variables that define
 different parameters of the PKI realm, for example the default DNS domain used
 to generate the certificates, owner and group of various directories and files,
 permissions applied to various directory and file types, and so on.
+
+The :file:`config/environment` file contains per-realm environment variable
+definitions which will be imported by the :command:`pki-realm` script during
+execution. These variables can be used to affect operation of external
+commands, for example by specifying HTTP proxy to use on internal networks.
 
 The :file:`acme/`, :file:`external/` and :file:`internal/` subdirectories hold
 data files for different Certificate Authorities. Each CA is described in more
@@ -349,6 +356,7 @@ on the remote host. The directory structure changes a bit:
     └── domain/
         ├── acme/
         ├── config/
+        │   ├── environment
         │   └── realm.conf
         ├── external/
         ├── internal/
@@ -454,6 +462,7 @@ the directory structure might look similar to:
     └── domain/
         ├── acme/
         ├── config/
+        │   ├── environment
         │   └── realm.conf
         ├── external/
         ├── internal/
@@ -502,6 +511,7 @@ available for other applications and services:
     └── domain/
         ├── acme/
         ├── config/
+        │   ├── environment
         │   └── realm.conf
         ├── external/
         ├── internal/

@@ -48,6 +48,13 @@ General
   directories. Playbook sets can be used as aliases to call multiple playbooks
   using a custom name. See :ref:`playbook_sets` documentation for more details.
 
+:ref:`debops.apt_install` role
+''''''''''''''''''''''''''''''
+
+- The role will import the :ref:`debops.secret` role during execution to get
+  access to the :file:`secret/` directory. This permits use of stored passwords
+  in Debconf answers configured via the :ref:`debops.apt_install` role.
+
 :ref:`debops.dnsmasq` role
 ''''''''''''''''''''''''''
 
@@ -55,6 +62,14 @@ General
   only specified ones for :command:`dnsmasq` configuration. This can help with
   Routing Advertisements issues on internal networks. See role documentation
   for more details.
+
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Add support for defining per-realm UNIX environment variables set during
+  :command:`pki-realm` script execution. These variables can be used to augment
+  runtime environment, for example to define HTTP proxy to use inside internal
+  networks with restricted access to the outside world.
 
 :ref:`debops.rabbitmq_server` role
 ''''''''''''''''''''''''''''''''''
@@ -115,6 +130,19 @@ Updates of upstream application versions
   resolver. This permits use of the :command:`systemd-networkd` service to
   manage networking on the LXD host.
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- The :command:`autopostgresqlbackup` script was modified to have separate set
+  of options for the :command:`psql` command and the :command:`pg_dump`
+  command. This permits the use of the ``--format=custom`` option in
+  :command:`pg_dump` command, enabling more efficient database dumps.
+
+- The extension of the backup files created by the
+  :command:`autopostgresqlbackup` script can be configured via a default
+  variable. This change might cause existing installations to change the file
+  extension used during backups.
+
 :ref:`debops.proc_hidepid` role
 '''''''''''''''''''''''''''''''
 
@@ -123,8 +151,29 @@ Updates of upstream application versions
   host and will change the ``hidepid=`` value to ``0`` to avoid issues with
   Polkit subsystem.
 
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- The log rotation configuration for logs managed by :command:`rsyslog` now has
+  an upper size limit of 1 GB to trigger the rotation. This should help in
+  cases when these logs are growing rapidly, but the rotation period is too
+  large to avoid filling up disk space.
+
+:ref:`debops.zabbix_agent` role
+'''''''''''''''''''''''''''''''
+
+- The fact script now supports both the old Zabbix Agent, and the new Zabbix
+  Agent 2 configuration files.
+
 Fixed
 ~~~~~
+
+:ref:`debops.dpkg_cleanup` role
+'''''''''''''''''''''''''''''''
+
+- Various YAML lists used in the package removal script will be sorted at Jinja
+  level to avoid constand reordering of list elements during Ansible execution
+  which makes the role not idempotent.
 
 :ref:`debops.gitlab` role
 '''''''''''''''''''''''''
@@ -155,6 +204,21 @@ Fixed
 - Fixed an issue on Debian Bookworm where the :command:`lxd-apparmor-load`
   binary is not present where the APT-based LXD daemon expects it. The role
   will create a symlink for this binary when needed.
+
+:ref:`debops.networkd` role
+'''''''''''''''''''''''''''
+
+- Do not restart the :command:`systemd-networkd` service if the role detects
+  that the network stack is not managed by it. This should avoid the issue
+  where the role playbook hanged on first run of the role on a host not managed
+  by :command:`systemd-networkd` service.
+
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- List of log files which should be managed by the :command:`logrotate` service
+  will be sorted to avoid constant reordering during role execution, which
+  fixes role idempotency.
 
 :ref:`debops.swapfile` role
 '''''''''''''''''''''''''''
