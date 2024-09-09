@@ -135,6 +135,12 @@ Updates of upstream application versions
   DebOps override system via the ``template_src`` lookup plugin. This allows
   users to provide their own template for the generated file.
 
+:ref:`debops.zabbix_agent` role
+'''''''''''''''''''''''''''''''
+
+- The fact script now supports both the old Zabbix Agent, and the new Zabbix
+  Agent 2 configuration files.
+
 Fixed
 ~~~~~
 
