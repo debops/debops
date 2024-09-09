@@ -104,6 +104,14 @@ Updates of upstream application versions
   host and will change the ``hidepid=`` value to ``0`` to avoid issues with
   Polkit subsystem.
 
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- The log rotation configuration for logs managed by :command:`rsyslog` now has
+  an upper size limit of 1 GB to trigger the rotation. This should help in
+  cases when these logs are growing rapidly, but the rotation period is too
+  large to avoid filling up disk space.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
