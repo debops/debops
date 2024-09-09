@@ -138,6 +138,11 @@ Updates of upstream application versions
   command. This permits the use of the ``--format=custom`` option in
   :command:`pg_dump` command, enabling more efficient database dumps.
 
+- The extension of the backup files created by the
+  :command:`autopostgresqlbackup` script can be configured via a default
+  variable. This change might cause existing installations to change the file
+  extension used during backups.
+
 :ref:`debops.proc_hidepid` role
 '''''''''''''''''''''''''''''''
 
