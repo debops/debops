@@ -74,7 +74,7 @@ setup separate project directories and run Ansible in a convenient way. To
 install the Python package with Ansible and other required dependencies, run
 the command:
 
-    pip install --user debops[ansible]
+    pipx install --user debops[ansible]
 
 [debops-pypi]: https://pypi.org/project/debops/
 
