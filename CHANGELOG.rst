@@ -87,6 +87,14 @@ Updates of upstream application versions
   installer has been updated to v11.10; the Debian Bookworm installer has been
   updated to v12.5.
 
+General
+'''''''
+
+- DebOps now uses `pipx`__ as the preferred installation method. This allows
+  for easier maintenance of the DebOps virtual environment.
+
+  .. __: https://pipx.pypa.io/
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
