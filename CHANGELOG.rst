@@ -113,6 +113,15 @@ General
   resolver. This permits use of the :command:`systemd-networkd` service to
   manage networking on the LXD host.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The ``/index.html`` and ``/index.htm`` entries in the default ``try_files``
+  configuration option have been replaced with the ``$uri/index.html`` entry.
+  This change should ensure that any location not present on the server will
+  return error 404 correctly, instead of falling back to the ``/index.html``
+  file if it's present in the root of the website.
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
