@@ -174,6 +174,13 @@ Fixed
   level to avoid constand reordering of list elements during Ansible execution
   which makes the role not idempotent.
 
+:ref:`debops.ifupdown` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue with the :file:`ifup-allow-boot.service` :command:`systemd`
+  unit not starting correctly on boot due to issues with the ``$`` character
+  escaping.
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
