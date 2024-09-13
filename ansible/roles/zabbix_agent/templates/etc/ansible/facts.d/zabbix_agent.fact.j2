@@ -1,26 +1,42 @@
 #!{{ ansible_python['executable'] }}
 #
 # Copyright (C) 2021 Julien Lecomte <julien@lecomte.at>
-# Copyright (C) 2021 DebOps <https://debops.org/>
+# Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021-2024 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 #
 # {{ ansible_managed }}
 
 from __future__ import print_function
 from json import loads, dumps
+import os
 
 output = {
     'ListenPort': 10050
 }
 
+if os.path.isfile("/etc/zabbix/zabbix_agentd.conf"):
+    zabbix_agent_conf = "/etc/zabbix/zabbix_agentd.conf"
+elif os.path.isfile("/etc/zabbix/zabbix_agent2.conf"):
+    zabbix_agent_conf = "/etc/zabbix/zabbix_agent2.conf"
+
 try:
-    with open("/etc/zabbix/zabbix_agentd.conf", 'r') as fp:
+    with open(zabbix_agent_conf, 'r') as fp:
         output["configured"] = True
         for line in fp:
             if line.startswith("ListenPort="):
                 output["ListenPort"] = line[11:].strip()
+            elif line.startswith("TLSPSKIdentity="):
+                output["TLSPSKIdentity"] = line[15:].strip()
+except (FileNotFoundError, PermissionError):
     pass
-except Exception:
-    pass
+
+if os.path.isfile("/etc/zabbix/secret.key"):
+    try:
+        with open("/etc/zabbix/secret.key", "r") as fp:
+            for line in fp:
+                output["TLSPSKSecret"] = line.strip()
+    except (FileNotFoundError, PermissionError):
+        pass
 
 print(dumps(output, sort_keys=True, indent=4))
