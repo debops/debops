@@ -193,6 +193,13 @@ General
 
 - Fixed a variable name typo in one of the role's handlers.
 
+:ref:`debops.ifupdown` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue with the :file:`ifup-allow-boot.service` :command:`systemd`
+  unit not starting correctly on boot due to issues with the ``$`` character
+  escaping.
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
