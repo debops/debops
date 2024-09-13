@@ -199,6 +199,13 @@ Fixed
   from 0775 set by the role to 0755 set by the :command:`gitlab-ctl
   reconfigure` command, making the role not idempotent.
 
+:ref:`debops.ifupdown` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue with the :file:`ifup-allow-boot.service` :command:`systemd`
+  unit not starting correctly on boot due to issues with the ``$`` character
+  escaping.
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
