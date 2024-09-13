@@ -152,6 +152,13 @@ Fixed
 - Fixed issue with ``role::nginx:servers` Ansible tag not working correctly by
   adding tags to tasks included dynamically.
 
+:ref:`debops.ifupdown` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue with the :file:`ifup-allow-boot.service` :command:`systemd`
+  unit not starting correctly on boot due to issues with the ``$`` character
+  escaping.
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
