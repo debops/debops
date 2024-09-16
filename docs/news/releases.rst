@@ -1,5 +1,5 @@
-.. Copyright (C) 2019-2022 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2019-2022 DebOps <https://debops.org/>
+.. Copyright (C) 2019-2024 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2019-2024 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 DebOps releases
@@ -117,7 +117,7 @@ user account, or in a Python virtualenv. An example installation on the UNIX acc
 .. code-block:: shell
 
    git clone https://github.com/debops/debops ~/src/github.com/debops/debops
-   pip3 install --editable ~/src/github.com/debops/debops
+   pipx install --editable ~/src/github.com/debops/debops
 
 The :command:`debops` command will be installed as :file:`~/.local/bin/debops`,
 the :file:`~/.local/bin/` directory should be included in ``$PATH`` environment
@@ -145,27 +145,29 @@ you can install DebOps in various ways.
 Current release schedule
 ------------------------
 
-- Latest "stable" release: ``stable-3.1`` (`GitHub branch`__, `differences from
+- Latest "stable" release: ``stable-3.2`` (`GitHub branch`__, `differences from
   master`__, `Changelog`__)
 
-.. __: https://github.com/debops/debops/tree/stable-3.1
-.. __: https://github.com/debops/debops/compare/stable-3.1
-.. __: https://docs.debops.org/en/stable-3.1/news/changelog.html
+.. __: https://github.com/debops/debops/tree/stable-3.2
+.. __: https://github.com/debops/debops/compare/stable-3.2
+.. __: https://docs.debops.org/en/stable-3.2/news/changelog.html
 
 =============== ============ =============== ================
  Branch/Tag      Status       First release   End of support
 --------------- ------------ --------------- ----------------
-``stable-4.0``  Planned LTS  2024-06-xx      2028-06-xx
+``stable-4.0``  Planned LTS  2025-06-xx      2029-06-xx
 --------------- ------------ --------------- ----------------
 ...             ...          ...             ...
 --------------- ------------ --------------- ----------------
-``stable-3.2``  Planned      2024-01-xx      2026-01-xx
+``stable-3.3``  Planned      2025-01-xx      2028-01-xx
+--------------- ------------ --------------- ----------------
+``stable-3.2``  Supported    2024-09-16      2027-01-xx
 --------------- ------------ --------------- ----------------
 ``stable-3.1``  Supported    2023-11-29      2025-11-xx
 --------------- ------------ --------------- ----------------
 ``stable-3.0``  Supported    2022-02-17      2025-02-17
 --------------- ------------ --------------- ----------------
-``stable-2.3``  Supported    2021-06-04      2024-06-04
+``stable-2.3``  Retired      2021-06-04      2024-09-16
 --------------- ------------ --------------- ----------------
 ``stable-2.2``  Retired      2021-01-31      2023-11-29
 --------------- ------------ --------------- ----------------
