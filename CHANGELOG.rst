@@ -62,8 +62,8 @@ Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
 
 - In the :ref:`debops.ipxe` role, support for the Debian Bullseye netboot
-  installer has been updated to v11.10; the Debian Bookworm installer has been
-  updated to v12.5.
+  installer has been updated to v11.12; the Debian Bookworm installer has been
+  updated to v12.7.
 
 General
 '''''''
