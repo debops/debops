@@ -2,9 +2,9 @@
 # vim: foldmarker={{{,}}}:foldmethod=marker
 
 # pki-realm: client-side PKI management
-# Copyright (C) 2016 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2016-2024 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
-# Copyright (C) 2016-2020 DebOps <https://debops.org/>
+# Copyright (C) 2016-2024 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 set -o nounset -o pipefail -o errexit
@@ -1080,6 +1080,10 @@ convert_der_to_pem () {
 
 request_acme_tiny_certificate () {
 
+    # Import per-realm environment variables
+    # shellcheck disable=SC1091
+    source config/environment
+
     # Rotate acme/error.log if it was modified more than two days ago. This
     # allows another renewal attempt, but still prevents hitting rate limits.
     # Let's Encrypt limits duplicate certificate requests to five per week
@@ -1103,7 +1107,7 @@ request_acme_tiny_certificate () {
             if [ "$EUID" -eq 0 ] ; then
 
                 set +e
-                su --shell /bin/sh -c "umask 0022 ; ${config['acme_client_script']} ${acme_tiny_request_params[*]} > acme/cert.pem.tmp 2>acme/error.log" "${config['acme_user']}"
+                su --shell /bin/bash -c "umask 0022 ; source config/environment ; ${config['acme_client_script']} ${acme_tiny_request_params[*]} > acme/cert.pem.tmp 2>acme/error.log" "${config['acme_user']}"
                 set -e
 
             else

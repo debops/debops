@@ -2,6 +2,7 @@
 .. Copyright (C) 2019      Imre Jonk <mail@imrejonk.nl>
 .. Copyright (C) 2019      Alin Alexandru <alin.alexandru@innobyte.com>
 .. Copyright (C) 2017-2020 DebOps <https://debops.org/>
+.. Copyright (C) 2024      seven beep <seven-beep@entreparentheses.xyz>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. _install:
@@ -145,7 +146,7 @@ packages by running the command:
 .. code-block:: console
 
    sudo apt install build-essential python3-dev libffi-dev libssl-dev \
-                    libsasl2-dev libldap2-dev python3-pip
+                    libsasl2-dev libldap2-dev pipx
 
 Installation of DebOps with Ansible included
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -154,13 +155,14 @@ To install DebOps and Ansible on your user account, execute the command:
 
 .. code-block:: console
 
-   pip3 install --user debops[ansible]
+   pipx install --include-deps debops[ansible]
 
 The above command will install the ``debops`` Python package, as well as
-``ansible`` Python package with optional dependencies used by DebOps roles.
-They will be installed in the :file:`~/.local/lib/python3.x/site-packages/`
-directory, the scripts and other binaries will be installed in
-:file:`~/.local/bin` directory which should be included in your ``$PATH``.
+``ansible`` Python package with optional dependencies used by DebOps roles in a
+``venv``.  They will be installed in the
+:file:`~/.local/pipx/venvs/debops/lib/python3.x/site-packages/` directory, the
+scripts and other binaries will be installed in :file:`~/.local/bin` directory
+which should be included in your ``$PATH``.
 
 .. note:: The ``debops`` Python package contains its own set of DebOps roles
           and playbooks, which can be accessed by the :command:`debops` script,
@@ -174,7 +176,7 @@ you can use the command:
 
 .. code-block:: console
 
-   pip3 install --user debops
+   pipx install debops
 
 In this case you will have to install Ansible and other optional dependencies
 required by DebOps separately.
@@ -258,7 +260,7 @@ command:
 
 .. code-block:: console
 
-   pip3 install --user --upgrade debops
+   pipx upgrade debops
 
 
 Installation in a :command:`virtualenv` Python environment

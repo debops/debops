@@ -165,6 +165,11 @@ List of parameters related to the entire PKI realm:
   valid certificates. The first found valid certificate is enabled. If not
   specified, the order configured in :envvar:`pki_authority_preference` will be used.
 
+``environment``
+  Optional. YAML dictionary which defines environment variables for a given PKI
+  realm. Dictionary keys are used as variable names and dictionary values
+  define the variable values.
+
 ``library``
   Optional. Specify name of the crypto library used to generate private key and
   internal certificate requests in a given PKI realm. Either :command:`gnutls`

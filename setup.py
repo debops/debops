@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # Installation in development mode:
-#   pip3 install --user --editable .
+#   pipx install --editable .
 
 from setuptools import setup, find_packages
 import subprocess

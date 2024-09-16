@@ -48,6 +48,13 @@ General
   directories. Playbook sets can be used as aliases to call multiple playbooks
   using a custom name. See :ref:`playbook_sets` documentation for more details.
 
+:ref:`debops.apt_install` role
+''''''''''''''''''''''''''''''
+
+- The role will import the :ref:`debops.secret` role during execution to get
+  access to the :file:`secret/` directory. This permits use of stored passwords
+  in Debconf answers configured via the :ref:`debops.apt_install` role.
+
 :ref:`debops.dnsmasq` role
 ''''''''''''''''''''''''''
 
@@ -55,6 +62,14 @@ General
   only specified ones for :command:`dnsmasq` configuration. This can help with
   Routing Advertisements issues on internal networks. See role documentation
   for more details.
+
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Add support for defining per-realm UNIX environment variables set during
+  :command:`pki-realm` script execution. These variables can be used to augment
+  runtime environment, for example to define HTTP proxy to use inside internal
+  networks with restricted access to the outside world.
 
 :ref:`debops.rabbitmq_server` role
 ''''''''''''''''''''''''''''''''''
@@ -71,6 +86,14 @@ Updates of upstream application versions
 - In the :ref:`debops.ipxe` role, support for the Debian Bullseye netboot
   installer has been updated to v11.10; the Debian Bookworm installer has been
   updated to v12.5.
+
+General
+'''''''
+
+- DebOps now uses `pipx`__ as the preferred installation method. This allows
+  for easier maintenance of the DebOps virtual environment.
+
+  .. __: https://pipx.pypa.io/
 
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
@@ -115,6 +138,28 @@ Updates of upstream application versions
   resolver. This permits use of the :command:`systemd-networkd` service to
   manage networking on the LXD host.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The ``/index.html`` and ``/index.htm`` entries in the default ``try_files``
+  configuration option have been replaced with the ``$uri/index.html`` entry.
+  This change should ensure that any location not present on the server will
+  return error 404 correctly, instead of falling back to the ``/index.html``
+  file if it's present in the root of the website.
+
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- The :command:`autopostgresqlbackup` script was modified to have separate set
+  of options for the :command:`psql` command and the :command:`pg_dump`
+  command. This permits the use of the ``--format=custom`` option in
+  :command:`pg_dump` command, enabling more efficient database dumps.
+
+- The extension of the backup files created by the
+  :command:`autopostgresqlbackup` script can be configured via a default
+  variable. This change might cause existing installations to change the file
+  extension used during backups.
+
 :ref:`debops.proc_hidepid` role
 '''''''''''''''''''''''''''''''
 
@@ -123,8 +168,29 @@ Updates of upstream application versions
   host and will change the ``hidepid=`` value to ``0`` to avoid issues with
   Polkit subsystem.
 
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- The log rotation configuration for logs managed by :command:`rsyslog` now has
+  an upper size limit of 1 GB to trigger the rotation. This should help in
+  cases when these logs are growing rapidly, but the rotation period is too
+  large to avoid filling up disk space.
+
+:ref:`debops.zabbix_agent` role
+'''''''''''''''''''''''''''''''
+
+- The fact script now supports both the old Zabbix Agent, and the new Zabbix
+  Agent 2 configuration files.
+
 Fixed
 ~~~~~
+
+:ref:`debops.dpkg_cleanup` role
+'''''''''''''''''''''''''''''''
+
+- Various YAML lists used in the package removal script will be sorted at Jinja
+  level to avoid constand reordering of list elements during Ansible execution
+  which makes the role not idempotent.
 
 :ref:`debops.gitlab` role
 '''''''''''''''''''''''''
@@ -132,6 +198,13 @@ Fixed
 - Fixed an issue with the :file:`/etc/gitlab/ssl/` directory changing its mode
   from 0775 set by the role to 0755 set by the :command:`gitlab-ctl
   reconfigure` command, making the role not idempotent.
+
+:ref:`debops.ifupdown` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue with the :file:`ifup-allow-boot.service` :command:`systemd`
+  unit not starting correctly on boot due to issues with the ``$`` character
+  escaping.
 
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
@@ -155,6 +228,28 @@ Fixed
 - Fixed an issue on Debian Bookworm where the :command:`lxd-apparmor-load`
   binary is not present where the APT-based LXD daemon expects it. The role
   will create a symlink for this binary when needed.
+
+:ref:`debops.networkd` role
+'''''''''''''''''''''''''''
+
+- Do not restart the :command:`systemd-networkd` service if the role detects
+  that the network stack is not managed by it. This should avoid the issue
+  where the role playbook hanged on first run of the role on a host not managed
+  by :command:`systemd-networkd` service.
+
+:ref:`debops.ntp` role
+''''''''''''''''''''''
+
+- Fixed an issue with conditional check for Linux capabilities not being
+  checked reliably to decide if NTP support should be enabled. The role should
+  now correctly detect when Linux capabilities are enforced.
+
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- List of log files which should be managed by the :command:`logrotate` service
+  will be sorted to avoid constant reordering during role execution, which
+  fixes role idempotency.
 
 :ref:`debops.swapfile` role
 '''''''''''''''''''''''''''

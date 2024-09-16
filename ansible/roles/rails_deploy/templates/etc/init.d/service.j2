@@ -64,7 +64,7 @@ fi
 # private commands to control {{ rails_deploy_service if item == 'service' else rails_deploy_worker }}
 # ---------------------------------------------------------------------------
 service_start(){
-$bundle exec "$bin" "$config_flag" -$daemon 2>&1 | logger -t "${backend}" &
+$bundle exec "$bin" "$config_flag" "-$daemon" 2>&1 | logger -t "${backend}" &
 }
 
 service_stop(){
@@ -126,7 +126,7 @@ check_status(){
 
   # if the service is running kill -0 $pid returns true, or rather 0
   # checks of *_status should only check for == 0 or != 0, never anything else
-  if [ $wpid -ne "0" ]; then
+  if [ "$wpid" -ne "0" ]; then
     kill -0 "$wpid" 2>/dev/null
     service_status="$?"
   else

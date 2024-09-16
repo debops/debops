@@ -11,6 +11,13 @@
   ansible.builtin.import_role:
     name: 'secret'
 
+- name: Refresh APT cache when needed
+  ansible.builtin.apt:
+    update_cache: True
+    cache_valid_time: '{{ debconf__cache_valid_time }}'
+  register: debconf__register_apt_update
+  until: debconf__register_apt_update is succeeded
+
 - name: Install debconf module dependencies
   ansible.builtin.apt:
     name: [ 'debconf', 'debconf-utils' ]

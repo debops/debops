@@ -64,6 +64,14 @@ debconf__filtered_entries: '{{ lookup("template",
 # APT package installation [[[
 # ----------------------------
 
+# .. envvar:: debconf__cache_valid_time [[[
+#
+# The role will ensure that the APT cache is updated to account for new package
+# releases that might be more frequent than the OS package updates. By default
+# APT cache will be updated if it's older than an hour.
+debconf__cache_valid_time: '{{ (60 * 60) }}'
+
+                                                                   # ]]]
 # .. envvar:: debconf__apt_state [[[
 #
 # Specify the state of the APT packages installed by the :ref:`debops.debconf`
