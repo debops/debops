@@ -48,6 +48,11 @@ General
   directories. Playbook sets can be used as aliases to call multiple playbooks
   using a custom name. See :ref:`playbook_sets` documentation for more details.
 
+- Users can now enable "read-only Fridays" functionality on a per project
+  basis, to ensure that on Fridays, Ansible playbooks are run only in check
+  mode, with ``--check`` and ``--diff`` arguments automatically added to the
+  :command:`ansible-playbook` command options.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 
