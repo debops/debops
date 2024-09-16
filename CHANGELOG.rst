@@ -210,7 +210,7 @@ Fixed
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
-- Fixed issue with ``role::nginx:servers` Ansible tag not working correctly by
+- Fixed issue with ``role::nginx:servers`` Ansible tag not working correctly by
   adding tags to tasks included dynamically.
 
 :ref:`debops.rsyslog` role
