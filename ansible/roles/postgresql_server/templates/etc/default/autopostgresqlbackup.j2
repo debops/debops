@@ -83,7 +83,7 @@ COMMCOMP={{ item.auto_backup_compression_level
 LATEST=no
 
 # Backup files extension
-EXT="sql{{ (auto_backup_compression == "pg_dump") | ternary(".gz", "") }}"
+EXT="{{ item.auto_backup_extension | d(postgresql_server__auto_backup_extension) }}"
 
 # Encyrption settings
 # (inspired by http://blog.altudov.com/2010/09/27/using-openssl-for-asymmetric-encryption-of-backups/)

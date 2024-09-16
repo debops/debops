@@ -29,6 +29,17 @@ networkd__enabled: '{{ True
                        else False }}'
 
                                                                    # ]]]
+# .. envvar:: networkd__unattended_restart [[[
+#
+# On the first installation, :command:`systemd-networkd` cannot be restarted
+# unattended because changes in network configuration might make a host
+# unreachable and stop the playbook execution. When the service is configured,
+# it should be fine to restart on any changes.
+networkd__unattended_restart: '{{ True
+                                  if ((ansible_local.networkd.state | d()) == "enabled")
+                                  else False }}'
+
+                                                                   # ]]]
 # .. envvar:: networkd__deploy_state [[[
 #
 # This variable controls if the :command:`systemd-networkd` main configuration
@@ -168,8 +179,8 @@ networkd__dhcp_combined_configuration: '{{ networkd__dhcp_default_configuration
                                           + networkd__dhcp_host_configuration }}'
                                                                    # ]]]
                                                                    # ]]]
-# The command:`systemd-networkd` configuration units [[[
-# ------------------------------------------------------
+# The :command:`systemd-networkd` configuration units [[[
+# -------------------------------------------------------
 
 # These variables can be used to manage :command:`systemd-networkd`
 # :file:`*.network`, :file:`*.netdev` and :file:`*.link` files located in the
