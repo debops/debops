@@ -237,6 +237,13 @@ Fixed
   where the role playbook hanged on first run of the role on a host not managed
   by :command:`systemd-networkd` service.
 
+:ref:`debops.ntp` role
+''''''''''''''''''''''
+
+- Fixed an issue with conditional check for Linux capabilities not being
+  checked reliably to decide if NTP support should be enabled. The role should
+  now correctly detect when Linux capabilities are enforced.
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
