@@ -23,6 +23,15 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v3.2.0...master
 
+Removed
+~~~~~~~
+
+- The ``volkszaehler`` (``debops-contrib``) role was removed because the role
+  maintainer considers the application to be superseded by Grafana.
+  See `Future of the project; The elephant in the room – Grafana`_.
+
+  .. __: https://github.com/volkszaehler/volkszaehler.org/issues/819
+
 
 `debops v3.2.0`_ - 2024-09-16
 -----------------------------

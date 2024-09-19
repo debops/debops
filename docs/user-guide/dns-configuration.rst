@@ -67,7 +67,6 @@ Role                              Variable                            Default   
 :ref:`debops.secret`              :envvar:`secret__ldap_fqdn`         ``ldap.`` + :envvar:`secret__ldap_domain`                            ``ldap.example.com``
 ``debops.foodsoft``               ``foodsoft__fqdn``                  ``foodsoft.`` + ``foodsoft__domain``                                 ``foodsoft.example.com``
 ``debops.homeassistant``          ``homeassistant__fqdn``             ``ha.`` + ``homeassistant__domain``                                  ``ha.example.com``
-``debops.volkszaehler``           ``volkszaehler__fqdn``              ``vz.`` + ``volkszaehler__domain``                                   ``vz.example.com``
 ================================= =================================== ==================================================================== ==============================
 
 

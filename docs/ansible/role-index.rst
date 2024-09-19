@@ -54,7 +54,6 @@ etc.
 - ``debops-contrib.foodsoft``
 - ``debops-contrib.homeassistant``
 - ``debops-contrib.kodi``
-- ``debops-contrib.volkszaehler``
 
 
 Application environments
