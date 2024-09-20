@@ -23,6 +23,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.1: https://github.com/debops/debops/compare/v3.1.0...stable-3.1
 
+Fixed
+~~~~~
+
+:ref:`debops.apache` role
+'''''''''''''''''''''''''
+
+- Fixed an issue with the vhost ``state: "absent"`` parameter not working
+  correctly when the ``enabled: False`` parameter was not set as well.
+
 
 `debops v3.1.1`_ - 2024-09-16
 -----------------------------
