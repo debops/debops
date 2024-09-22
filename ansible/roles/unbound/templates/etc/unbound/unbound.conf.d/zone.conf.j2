@@ -20,8 +20,8 @@
 {%     else %}
 {%       set subnet_prefix = '24' %}
 {%     endif %}
-{%     for i in range(0, (entry | ipsubnet(subnet_prefix) | int)) %}
-{%       set _ = unbound__tpl_ipv4_revdns_zones.append((entry | ipsubnet(subnet_prefix, i) | ansible.utils.ipaddr('revdns')).split('.')[1:-1] | join('.')) %}
+{%     for i in range(0, (entry | ansible.utils.ipsubnet(subnet_prefix) | int)) %}
+{%       set _ = unbound__tpl_ipv4_revdns_zones.append((entry | ansible.utils.ipsubnet(subnet_prefix, i) | ansible.utils.ipaddr('revdns')).split('.')[1:-1] | join('.')) %}
 {%     endfor %}
 {%   endfor %}
 {%   set unbound__tpl_local_zones = item.revdns | ansible.utils.ipaddr("private") %}

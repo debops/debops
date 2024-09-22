@@ -6,6 +6,7 @@ from .utils import unexpanduser
 from .ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
 import subprocess
+import datetime
 import configparser
 import textwrap
 import logging
@@ -119,6 +120,16 @@ class AnsiblePlaybookRunner(object):
                     self._found_playbooks.append(self._quote_spaces(
                         self._expand_playbook(project, element)))
                     self._parsed_args.append(index)
+
+        # Implement configurable read-only Fridays on a project level
+        if project.config.raw['project'].get('read_only_friday', False):
+            if datetime.date.today().isoweekday() == 5:
+                if ('--check' not in self._ansible_command and
+                        '-C' not in self._ansible_command):
+                    logger.notice("It's Read-Only Friday, switching to check mode",
+                                  extra={'block': 'stderr'})
+                    print("It's Read-Only Friday, switching to check mode")
+                    self._ansible_command.extend(['--diff', '--check'])
 
     def _quote_spaces(self, string):
         if ' ' in string:
