@@ -23,6 +23,17 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.2: https://github.com/debops/debops/compare/v3.2.0...stable-3.2
 
+Added
+~~~~~
+
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- The role now supports `iterate_filter` for its LDAP configuration, allowing
+  :command:`doveadm` commands to iterate over all users. Note that you might
+  have to adjust the defaults for the :envvar:`dovecot__ldap_user_list_filter`
+  variable if you use the :envvar:`dovecot__ldap_user_filter` variable.
+
 Changed
 ~~~~~~~
 
@@ -446,14 +457,6 @@ General
 - The role will ensure that the :command:`systemd-resolved` service Multicast
   DNS support is disabled to avoid conflict with the :command:`avahi-daemon`
   service.
-
-:ref:`debops.dovecot` role
-''''''''''''''''''''''''''
-
-- The role now supports `iterate_filter` for its LDAP configuration, allowing
-  :command:`doveadm` commands to iterate over all users. Note that you might
-  have to adjust the defaults for `dovecot__ldap_user_list_filter` if you use 
-  `dovecot__ldap_user_filter`.
 
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
