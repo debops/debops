@@ -50,6 +50,12 @@ General
 - Fixed an issue with the vhost ``state: "absent"`` parameter not working
   correctly when the ``enabled: False`` parameter was not set as well.
 
+:ref:`debops.dropbear_initramfs` role
+'''''''''''''''''''''''''''''''''''''
+
+- The role now supports both the old and the new location if the initramfs
+  configuration files.
+
 
 `debops v3.0.7`_ - 2024-09-16
 -----------------------------
