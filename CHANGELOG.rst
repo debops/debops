@@ -23,6 +23,17 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v3.2.0...master
 
+Added
+~~~~~
+
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- The role now supports `iterate_filter` for its LDAP configuration, allowing
+  :command:`doveadm` commands to iterate over all users. Note that you might
+  have to adjust the defaults for the :envvar:`dovecot__ldap_user_list_filter`
+  variable if you use the :envvar:`dovecot__ldap_user_filter` variable.
+
 Changed
 ~~~~~~~
 
