@@ -32,6 +32,15 @@ Fixed
 - Fixed an issue with the vhost ``state: "absent"`` parameter not working
   correctly when the ``enabled: False`` parameter was not set as well.
 
+Removed
+~~~~~~~
+
+- The ``volkszaehler`` (``debops-contrib``) role was removed because the role
+  maintainer considers the application to be superseded by Grafana.
+  See `Future of the project; The elephant in the room – Grafana`__.
+
+  .. __: https://github.com/volkszaehler/volkszaehler.org/issues/819
+
 
 `debops v3.2.0`_ - 2024-09-16
 -----------------------------
