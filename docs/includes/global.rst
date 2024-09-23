@@ -4881,7 +4881,6 @@
 .. _debops-contrib.firejail: https://github.com/debops-contrib/ansible-firejail
 .. _debops-contrib.homeassistant: https://github.com/debops-contrib/ansible-homeassistant
 .. _debops-contrib.neurodebian: https://github.com/debops-contrib/ansible-neurodebian
-.. _debops-contrib.bitcoind: https://github.com/debops-contrib/ansible-bitcoind
 .. ]]]
 
 .. ypid repositories [[[

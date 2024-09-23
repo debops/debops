@@ -35,11 +35,17 @@ Fixed
 Removed
 ~~~~~~~
 
+General
+'''''''
+
 - The ``volkszaehler`` (``debops-contrib``) role was removed because the role
   maintainer considers the application to be superseded by Grafana.
   See `Future of the project; The elephant in the room – Grafana`__.
 
   .. __: https://github.com/volkszaehler/volkszaehler.org/issues/819
+
+- The ``bitcoind`` role was removed due to lack of interest by the role
+  maintainer.
 
 
 `debops v3.2.0`_ - 2024-09-16
