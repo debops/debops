@@ -56,6 +56,13 @@ General
 - The role now supports both the old and the new location if the initramfs
   configuration files.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- The role will use a password for the PostgreSQL database, which fixes an
+  issue with the :command:`occ` command not being able to install
+  ownCloud/Nextcloud applications correctly.
+
 
 `debops v3.0.7`_ - 2024-09-16
 -----------------------------
