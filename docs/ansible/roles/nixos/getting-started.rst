@@ -217,6 +217,8 @@ Other resources
 
 List of other useful resources related to the :ref:`debops.nixos` Ansible role:
 
+- :ref:`other_projects_NixOS_module` in :ref:`other_projects`
+
 - Official `NixOS Manual`__
 
   .. __: https://nixos.org/manual/nixos/stable/
