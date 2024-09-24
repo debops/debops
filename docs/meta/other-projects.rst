@@ -3,6 +3,8 @@
 .. Copyright (C) 2017-2019 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
+.. _other_projects:
+
 Other projects
 ==============
 
@@ -165,3 +167,27 @@ to repeat the work of automating the basic components of their operating system
 infrastructure.
 
 .. __: https://github.com/NationalSecurityAgency/SIMP
+
+.. _other_projects_NixOS_module:
+
+`NixOS modules`__
+~~~~~~~~~~~~~~~~~
+
+.. __: https://nixos.org/manual/nixos/stable/#ch-configuration
+
+Think of NixOS modules as Ansible roles. There are high-level modules like
+Nextcloud that configure lower-level modules like Nginx, database servers and
+PHP all the way down to configuration files that end up in :file:`/etc` or
+packages that get installed.
+The whole NixOS is solely defined and built by those modules. There is no
+example Debian config file that you have to hook into using Ansible. You can
+change (parts of) it directly. Modules can hook into each other. Admins can
+hook into any layer of the modules. This is different to how DebOps works in
+that with DebOps, a role has to expose parameters as variables. With NixOS,
+everything is exposed to the admin.
+NixOS is declarative. When you remove a service from the system configuration
+and apply, it is like that service was never installed.
+
+See also: `Case for NixOS discussion by ypid <https://github.com/debops/debops/discussions/2528>`_
+
+DebOps can configure NixOS hosts using :ref:`debops.nixos` by the way.
