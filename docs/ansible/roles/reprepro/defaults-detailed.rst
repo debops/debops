@@ -325,6 +325,13 @@ defines an "instance" using specific parameters:
   the FQDN and domain of the server; this parameter can be used to override
   that detection if needed.
 
+``basedir``
+  Optional. Override the base directory of the :command:`reprepro` repository,
+  which contains the internal state database and repository configuration
+  files. If not specified, the repository database will be locaed in the
+  :envvar:`reprepro__data_root` variable location (by default
+  :file:`/var/local/reprepro/repositories/` directory).
+
 ``outdir``
   Optional. Override the public directory where :command:`reprepro` manages the
   APT repository contents. This can be used to combine multiple APT repository

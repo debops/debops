@@ -1,0 +1,93 @@
+---
+# Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2024 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  ansible.builtin.import_role:
+    name: 'secret'
+
+- name: Refresh APT cache when needed
+  ansible.builtin.apt:
+    update_cache: True
+    cache_valid_time: '{{ debconf__cache_valid_time }}'
+  register: debconf__register_apt_update
+  until: debconf__register_apt_update is succeeded
+
+- name: Install debconf module dependencies
+  ansible.builtin.apt:
+    name: [ 'debconf', 'debconf-utils' ]
+    state: 'present'
+  register: debconf__register_debconf_packages
+  until: debconf__register_debconf_packages is succeeded
+
+- name: Apply requested package configuration in debconf
+  ansible.builtin.debconf:
+    name:      '{{ item.name }}'
+    question:  '{{ item.question | d(omit) }}'
+    unseen:    '{{ item.unseen | d(omit) }}'
+    value:     '{{ item.value | d(omit) }}'
+    vtype:     '{{ item.vtype | d(omit) }}'
+  loop: '{{ debconf__filtered_entries }}'
+  register: debconf__register_entries
+  when: item.state | d('present') not in [ 'init', 'ignore' ]
+  no_log: '{{ debops__no_log | d(True
+                                 if (item.vtype == "password")
+                                 else False) }}'
+
+- name: Detect packages which need to be reconfigured
+  ansible.builtin.set_fact:
+    debconf__fact_reconfigure_packages: '{{ lookup("template", "lookup/debconf__fact_reconfigure_packages.j2",
+                                                   convert_data=False) | from_yaml | flatten }}'
+
+- name: Install requested APT packages
+  ansible.builtin.apt:
+    name: '{{ q("flattened", debconf__packages
+                             + debconf__group_packages
+                             + debconf__host_packages) }}'
+    state: '{{ debconf__apt_state }}'
+  register: debconf__register_packages
+  until: debconf__register_packages is succeeded
+
+- name: Reconfigure packages using debconf
+  ansible.builtin.command: 'dpkg-reconfigure --frontend noninteractive {{ item }}'
+  loop: '{{ debconf__fact_reconfigure_packages }}'
+  register: debconf__register_reconfigure
+  when: item is defined
+  changed_when: debconf__register_reconfigure.rc == 0
+
+- name: Configure alternative symlinks
+  community.general.alternatives:
+    name:     '{{ item.name }}'
+    path:     '{{ item.path }}'
+    link:     '{{ item.link | d(omit) }}'
+    priority: '{{ item.priority | d(omit) }}'
+  loop: '{{ q("flattened", debconf__default_alternatives
+                           + debconf__alternatives
+                           + debconf__group_alternatives
+                           + debconf__host_alternatives) }}'
+  when: item.name | d() and item.path | d()
+
+- name: Configure automatic alternatives
+  ansible.builtin.command: update-alternatives --auto {{ item.name }}
+  register: debconf__register_alternatives
+  loop: '{{ q("flattened", debconf__alternatives
+                           + debconf__group_alternatives
+                           + debconf__host_alternatives) }}'
+  when: item.name | d() and not item.path | d()
+  changed_when: debconf__register_alternatives.stdout | d()
+
+# Execute custom shell commands [[[1
+# This is not an alternative to a fully-fledged Ansible role.
+- name: Execute shell commands
+  ansible.builtin.include_tasks: 'shell_commands.yml'
+  loop: '{{ q("flattened", debconf__combined_commands) | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name} }}'
+  when: item.name | d() and item.state | d('present') not in [ 'absent', 'ignore' ]
+  no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
+  tags: [ 'role::debconf:commands' ]

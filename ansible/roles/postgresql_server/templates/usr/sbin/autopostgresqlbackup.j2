@@ -33,8 +33,8 @@
 DBCLUSTER="{{ item.version | d(postgresql_server__version) }}/{{ item.name }}"
 
 # Add the port so it supports pg clusters.
-OPT="-p {{ item.port }} {{ postgresql_server__auto_backup_pg_opts | d() }}"
-PSQLOPT="$OPT"
+OPT="-p {{ item.port }} {{ postgresql_server__auto_backup_pg_dump_opts | d() }}"
+PSQLOPT="-p {{ item.port }} {{ postgresql_server__auto_backup_pg_opts | d() }}"
 
 # ===============================
 # === Debian specific options ===
@@ -69,7 +69,7 @@ fi
 # You can change the backup storage location from /backups to anything
 # you like by using the BACKUPDIR setting..
 #
-# The MAILCONTENT and MAILADDR options and pretty self explanitory, use
+# The MAILCONTENT and MAILADDR options and pretty self explanatory, use
 # these to have the backup log mailed to you at any email address or multiple
 # email addresses in a space separated list.
 # (If you set mail content to "log" you will require access to the "mail" program

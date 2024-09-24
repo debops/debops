@@ -16,6 +16,9 @@ import pathlib
 import git
 import subprocess
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ProjectDir(object):
@@ -198,6 +201,7 @@ class ProjectDir(object):
                       }
                     }
                 self.config.merge(inventory_data)
+        logger.debug('Project {} loaded'.format(self.name))
 
     def _find_up_dir(self, path, filenames):
         path = os.path.abspath(path)
@@ -228,6 +232,7 @@ class ProjectDir(object):
                 fh.writelines(content)
 
     def _create_modern_project(self, path):
+        logger.debug('Initializing new "modern" project directory')
         self.project_type = 'modern'
         default_view = self.kwargs.get('default_view', 'system')
         filename_view = default_view.replace('/', '-')
@@ -387,6 +392,7 @@ class ProjectDir(object):
         print('Created new DebOps project in', path)
 
     def _create_legacy_project(self, path):
+        logger.debug('Initializing new "legacy" project directory')
         self.project_type = 'legacy'
 
         inventory = AnsibleInventory(self, self.name, **self.kwargs)
@@ -519,6 +525,7 @@ class ProjectDir(object):
                 os.makedirs(skel_dir)
 
     def create(self):
+        logger.debug('Creating new project directory')
         # First let's make sure that we are not inside another project
         self._modern_config_path = self._find_up_dir(self.path,
                                                      ['.debops', 'conf.d'])
@@ -536,13 +543,16 @@ class ProjectDir(object):
 
         create_git_repo = self.kwargs.get('git', None)
         if create_git_repo:
+            logger.debug('Initializing git repository in project directory')
             repo = git.Repo.init(self.path)
             repo.git.add(all=True)
+            logger.debug('Committing changes in project directory')
             repo.index.commit(self.config.raw['git']['init_message'])
 
             # Set up encryption using git-crypt
             encrypt_git_repo = self.kwargs.get('encrypt', None)
             if encrypt_git_repo == 'git-crypt':
+                logger.debug('Preparing encryption using git-crypt')
                 try:
                     gpg_keys = list(self.kwargs.get('keys', None).split(','))
                 except AttributeError:
@@ -563,6 +573,8 @@ class ProjectDir(object):
                     gitcrypt_cmd.communicate()
 
                 # Lock the repository after setting up git-crypt
+                logger.debug('Locking files using git-crypt after project '
+                             'creation')
                 gitcrypt_cmd = subprocess.Popen([self._commands['git-crypt'],
                                                  'lock'],
                                                 stdin=subprocess.PIPE)
@@ -571,6 +583,9 @@ class ProjectDir(object):
             # Install Ansible Collections after the project is initialized
             install_requirements = self.kwargs.get('requirements', None)
             if install_requirements:
+                logger.debug('Installing Ansible Collections specified in '
+                             + os.path.join('ansible', 'collections',
+                                            'requirements.yml') + ' file')
                 os.chdir(self.path)
                 galaxy_cmd = subprocess.Popen([self._commands['ansible-galaxy'],
                                                'collection', 'install', '-r',
@@ -579,6 +594,8 @@ class ProjectDir(object):
                                                             'requirements.yml')],
                                               stdin=subprocess.PIPE)
                 galaxy_cmd.communicate()
+                logger.debug('Ansible Collections installed in project '
+                             'directory')
 
     def mkview(self, view):
 
@@ -705,6 +722,7 @@ class ProjectDir(object):
         """Commit the current contents of the project directory to the git
         repository automatically."""
         if self._is_git_repo(self.path):
+            logger.debug('Detected git repository in project directory')
             repo = git.Repo(self.path)
             repo.git.add(all=True)
 
@@ -713,17 +731,24 @@ class ProjectDir(object):
             diff_list = repo.head.commit.diff()
             if diff_list:
                 try:
+                    logger.debug('New changes detected, committing')
                     repo.index.commit(
                         self.config.raw['project']['git']['auto_commit_message'])
+                    logger.debug('New changes committed in git repository')
                 except KeyError:
                     # There was an issue in the configuration, unstage any
                     # changes in git index
+                    logger.warning('Issue in DebOps configuration, unstaging '
+                                   'changes in git index')
                     repo.git.reset()
                     if interactive:
                         print('The "project.git.auto_commit_message" option is '
                               'not defined. Not committing any changes.')
+            else:
+                logger.debug('No new changes detected, nothing to commit')
 
     def refresh(self):
+        logger.debug("Refresing project directory")
         if self.project_type == 'modern':
             self.createdirs(self.path)
 

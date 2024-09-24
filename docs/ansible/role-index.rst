@@ -54,7 +54,6 @@ etc.
 - ``debops-contrib.foodsoft``
 - ``debops-contrib.homeassistant``
 - ``debops-contrib.kodi``
-- ``debops-contrib.volkszaehler``
 
 
 Application environments
@@ -111,7 +110,6 @@ are not accessed directly by end users.
 - :ref:`debops.tinyproxy`
 - :ref:`debops.reprepro`
 - ``debops.sks``
-- ``debops-contrib.bitcoind``
 - ``debops-contrib.x2go_server``
 
 
@@ -301,6 +299,7 @@ packages.
 - :ref:`debops.apt_mirror`
 - :ref:`debops.apt_preferences`
 - :ref:`debops.apt_proxy`
+- :ref:`debops.debconf`
 - :ref:`debops.debops_legacy`
 - :ref:`debops.extrepo`
 - :ref:`debops.keyring`

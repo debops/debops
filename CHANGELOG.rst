@@ -1,6 +1,6 @@
-.. Copyright (C) 2017-2023 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017-2024 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2018-2022 Robin Schneider <ypid@riseup.net>
-.. Copyright (C) 2017-2023 DebOps <https://debops.org/>
+.. Copyright (C) 2017-2024 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. _changelog:
@@ -21,7 +21,323 @@ You can read information about required changes between releases in the
 `debops master`_ - unreleased
 -----------------------------
 
-.. _debops master: https://github.com/debops/debops/compare/v3.1.0...master
+.. _debops master: https://github.com/debops/debops/compare/v3.2.0...master
+
+Added
+~~~~~
+
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- The role now supports `iterate_filter` for its LDAP configuration, allowing
+  :command:`doveadm` commands to iterate over all users. Note that you might
+  have to adjust the defaults for the :envvar:`dovecot__ldap_user_list_filter`
+  variable if you use the :envvar:`dovecot__ldap_user_filter` variable.
+
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- The :ref:`debops.root_account`, :ref:`debops.system_users` and
+  :ref:`debops.users` roles are now able to handle the symlinked
+  :file:`~/.ssh/authorized_keys` files correctly using optional ``follow``
+  parameter.
+
+Fixed
+~~~~~
+
+:ref:`debops.apache` role
+'''''''''''''''''''''''''
+
+- Fixed an issue with the vhost ``state: "absent"`` parameter not working
+  correctly when the ``enabled: False`` parameter was not set as well.
+
+:ref:`debops.dropbear_initramfs` role
+'''''''''''''''''''''''''''''''''''''
+
+- The role now supports both the old and the new location if the initramfs
+  configuration files.
+
+Removed
+~~~~~~~
+
+General
+'''''''
+
+- The ``volkszaehler`` (``debops-contrib``) role was removed because the role
+  maintainer considers the application to be superseded by Grafana.
+  See `Future of the project; The elephant in the room – Grafana`__.
+
+  .. __: https://github.com/volkszaehler/volkszaehler.org/issues/819
+
+- The ``bitcoind`` role was removed due to lack of interest by the role
+  maintainer.
+
+
+`debops v3.2.0`_ - 2024-09-16
+-----------------------------
+
+.. _debops v3.2.0: https://github.com/debops/debops/compare/v3.1.0...v3.2.0
+
+Added
+~~~~~
+
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.debconf` Ansible role can be used to pre-configure APT
+  packages which use the `debconf`__ configuration database and install them
+  afterwards. The role is included near the end of the :file:`site.yml`
+  playbook to allow of configuration of other needed services before the actual
+  package installation.
+
+  .. __: https://en.wikipedia.org/wiki/Debian_configuration_system
+
+General
+'''''''
+
+- The :command:`debops` script can now log its operation to standard error and
+  to the :command:`syslog` service. Use the ``--verbose`` or ``-v`` flag to
+  enable log output on the console.
+
+- Users can define "playbook sets" on the view level of the "modern" project
+  directories. Playbook sets can be used as aliases to call multiple playbooks
+  using a custom name. See :ref:`playbook_sets` documentation for more details.
+
+- Users can now enable "read-only Fridays" functionality on a per project
+  basis, to ensure that on Fridays, Ansible playbooks are run only in check
+  mode, with ``--check`` and ``--diff`` arguments automatically added to the
+  :command:`ansible-playbook` command options.
+
+:ref:`debops.apt_install` role
+''''''''''''''''''''''''''''''
+
+- The role will import the :ref:`debops.secret` role during execution to get
+  access to the :file:`secret/` directory. This permits use of stored passwords
+  in Debconf answers configured via the :ref:`debops.apt_install` role.
+
+:ref:`debops.dnsmasq` role
+''''''''''''''''''''''''''
+
+- The role can optionally ignore IP addresses on a network interface and use
+  only specified ones for :command:`dnsmasq` configuration. This can help with
+  Routing Advertisements issues on internal networks. See role documentation
+  for more details.
+
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Add support for defining per-realm UNIX environment variables set during
+  :command:`pki-realm` script execution. These variables can be used to augment
+  runtime environment, for example to define HTTP proxy to use inside internal
+  networks with restricted access to the outside world.
+
+:ref:`debops.rabbitmq_server` role
+''''''''''''''''''''''''''''''''''
+
+- The role can manage much more RabbitMQ internal structures - exchanges,
+  queues, bindings between them, as well as vhost and user limits.
+
+Changed
+~~~~~~~
+
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, support for the Debian Bullseye netboot
+  installer has been updated to v11.12; the Debian Bookworm installer has been
+  updated to v12.7.
+
+General
+'''''''
+
+- DebOps now uses `pipx`__ as the preferred installation method. This allows
+  for easier maintenance of the DebOps virtual environment.
+
+  .. __: https://pipx.pypa.io/
+
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- The role now supports new Elasticsearch v8.x password management mechanism.
+
+- The role can now manage passwords in separate Elasticsearch clusters defined
+  in one Ansible inventory.
+
+  .. warning:: Due to this change, Elasticsearch passwords stored in the
+               :file:`ansible/secret/` subdirectory will be read from a different
+               location. If passwords are not moved to the new location, role
+               will reset the Elasticsearch built-in users passwords
+               automatically. This might result in data loss.
+
+:ref:`debops.kibana` role
+'''''''''''''''''''''''''
+
+- The path to the password file stored in :file:`ansible/secret/` subdirectory
+  is now configurable using a variable.
+
+- The role uses new per-cluster Elasticsearch passwords by default. This is
+  done using a separate :envvar:`kibana__elasticsearch_cluster_name` variable,
+  which needs to be synchronized with the Elasticsearch configuration via
+  Ansible inventory (Kibana can be installed separately from Elasticsearch).
+
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- The role supports integration with the :command:`systemd-resolved` DNS
+  resolver. This permits use of the :command:`systemd-networkd` service to
+  manage networking on the LXC host.
+
+- LXC containers will be configured with AppArmor "unconfined" profile by
+  default. This change allows startup of various services inside of the
+  container without errors on Debian Bookwrom hosts.
+
+:ref:`debops.lxd` role
+''''''''''''''''''''''
+
+- The role supports integration with the :command:`systemd-resolved` DNS
+  resolver. This permits use of the :command:`systemd-networkd` service to
+  manage networking on the LXD host.
+
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The ``/index.html`` and ``/index.htm`` entries in the default ``try_files``
+  configuration option have been replaced with the ``$uri/index.html`` entry.
+  This change should ensure that any location not present on the server will
+  return error 404 correctly, instead of falling back to the ``/index.html``
+  file if it's present in the root of the website.
+
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- The :command:`autopostgresqlbackup` script was modified to have separate set
+  of options for the :command:`psql` command and the :command:`pg_dump`
+  command. This permits the use of the ``--format=custom`` option in
+  :command:`pg_dump` command, enabling more efficient database dumps.
+
+- The extension of the backup files created by the
+  :command:`autopostgresqlbackup` script can be configured via a default
+  variable. This change might cause existing installations to change the file
+  extension used during backups.
+
+:ref:`debops.proc_hidepid` role
+'''''''''''''''''''''''''''''''
+
+- The role will check if the host is in the ``debops_service_libvirtd`` Ansible
+  inventory group, or if the :ref:`debops.libvirtd` role was applied on the
+  host and will change the ``hidepid=`` value to ``0`` to avoid issues with
+  Polkit subsystem.
+
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- The log rotation configuration for logs managed by :command:`rsyslog` now has
+  an upper size limit of 1 GB to trigger the rotation. This should help in
+  cases when these logs are growing rapidly, but the rotation period is too
+  large to avoid filling up disk space.
+
+:ref:`debops.zabbix_agent` role
+'''''''''''''''''''''''''''''''
+
+- The fact script now supports both the old Zabbix Agent, and the new Zabbix
+  Agent 2 configuration files.
+
+Fixed
+~~~~~
+
+:ref:`debops.dpkg_cleanup` role
+'''''''''''''''''''''''''''''''
+
+- Various YAML lists used in the package removal script will be sorted at Jinja
+  level to avoid constand reordering of list elements during Ansible execution
+  which makes the role not idempotent.
+
+:ref:`debops.gitlab` role
+'''''''''''''''''''''''''
+
+- Fixed an issue with the :file:`/etc/gitlab/ssl/` directory changing its mode
+  from 0775 set by the role to 0755 set by the :command:`gitlab-ctl
+  reconfigure` command, making the role not idempotent.
+
+:ref:`debops.grub` role
+'''''''''''''''''''''''
+
+- Fixed an issue with the :file:`01_users` configuration file generating errors
+  and resulting in an empty user section in the configuration generated by the
+  :command:`update-grub` command.
+
+:ref:`debops.ifupdown` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue with the :file:`ifup-allow-boot.service` :command:`systemd`
+  unit not starting correctly on boot due to issues with the ``$`` character
+  escaping.
+
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- The role will by default disable NFtables integration within the
+  :command:`lxc-net` script, configurable via a default variable. This fixes
+  usage of LXC containers on Debian Bookworm with the :command:`ferm` service
+  used by DebOps.
+
+:ref:`debops.lxd` role
+''''''''''''''''''''''
+
+- Fixed an issue with the default LXD daemon preseed configuration by removing
+  the unsupported ``managed`` parameter. This should allow the LXD daemon to be
+  initialized correctly.
+
+- Fixed an issue with the role trying to copy the source-built libraries when
+  an APT-based installation is used. The role will check if the libraries exist
+  before trying to copy them.
+
+- Fixed an issue on Debian Bookworm where the :command:`lxd-apparmor-load`
+  binary is not present where the APT-based LXD daemon expects it. The role
+  will create a symlink for this binary when needed.
+
+:ref:`debops.networkd` role
+'''''''''''''''''''''''''''
+
+- Do not restart the :command:`systemd-networkd` service if the role detects
+  that the network stack is not managed by it. This should avoid the issue
+  where the role playbook hanged on first run of the role on a host not managed
+  by :command:`systemd-networkd` service.
+
+:ref:`debops.ntp` role
+''''''''''''''''''''''
+
+- Fixed an issue with conditional check for Linux capabilities not being
+  checked reliably to decide if NTP support should be enabled. The role should
+  now correctly detect when Linux capabilities are enforced.
+
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- List of log files which should be managed by the :command:`logrotate` service
+  will be sorted to avoid constant reordering during role execution, which
+  fixes role idempotency.
+
+:ref:`debops.swapfile` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue in the :command:`swapon` task conditional logic where the task
+  could not be executed correctly when the swap file was missing.
+
+- Ensure that the swap file is correctly disabled by the :command:`swapoff`
+  command before being removed with the ``absent`` state.
+
+Removed
+~~~~~~~
+
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- Debian 9 (Stretch) has been removed from Debian mirrors, therefore the role
+  will no longer offer support for installing Debian Stretch via PXE boot.
 
 
 `debops v3.1.0`_ - 2023-11-29

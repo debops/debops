@@ -1,0 +1,15 @@
+---
+# Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2024 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: '{{ item.name }}'  # noqa name[casing]
+  ansible.builtin.shell: '{{ item.script | d(item.shell | d(item.command)) }}'  # noqa command-instead-of-shell
+  args:
+    chdir:      '{{ item.chdir | d(omit) }}'
+    creates:    '{{ item.creates | d(omit) }}'
+    removes:    '{{ item.removes | d(omit) }}'
+    executable: '{{ item.executable | d("bash") }}'
+  when: item.name | d() and item.state not in ['absent', 'ignore']
+  no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
+  tags: [ 'role::late_tasks:commands' ]

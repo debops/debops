@@ -1,4 +1,4 @@
-.. Copyright (C) 2014-2019 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2014-2024 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
 .. Copyright (C) 2014-2019 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
@@ -55,6 +55,20 @@ for DHCP and disabled boot services:
        domain: 'custom.{{ ansible_domain }}'
        boot_enabled: False
 
+Generate interface configuration for an internal network with IPv6 Router
+Advertisements for specific internal IP addresses:
+
+.. code-block:: yaml
+
+   dnsmasq__interfaces:
+
+     - name: 'br_internal'
+       dhcp_ipv6_mode: 'ra-names,ra-stateless'
+       ignore_interface_addresses: True
+       addresses:
+         - '192.0.2.1/24'
+         - '2001:db8:feed:beef::1/64'
+
 Syntax
 ~~~~~~
 
@@ -98,6 +112,14 @@ specific parameters:
   and uses existing IP addresses defined on the network interface, therefore
   you don't need to use this parameter unless required for a specific
   application.
+
+``ignore_interface_addresses``
+  Optional, boolean. If ``True``, the role will not try to autodetect IP
+  addresses of a given network interface to add them to router advertisements.
+  This can be used with the ``address`` or ``addresses`` parameters to select
+  which IP addresses are advertised on a given network, for example to avoid
+  advertising public IPv6 router address on internal IPv6 network, which can
+  lead to multiple default routes on clients and issues with traffic flow.
 
 ``hostname``
   Optional. Specify the hostname which will be used in the interface DNS

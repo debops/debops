@@ -1,6 +1,6 @@
 ---
-# Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2017 DebOps <https://debops.org/>
+# Copyright (C) 2017-2024 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2017-2024 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
@@ -149,6 +149,31 @@
   tags: [ 'role::rabbitmq_server:vhost', 'role::rabbitmq_server:parameter',
           'role::rabbitmq_server:policy', 'role::rabbitmq_server:user' ]
 
+- name: Manage RabbitMQ virtual host limits
+  community.rabbitmq.rabbitmq_vhost_limits:
+    vhost: '{{ item.vhost }}'
+    node: '{{ item.node | d(omit) }}'
+    max_connections: '{{ item.max_connections | d(omit) }}'
+    max_queues: '{{ item.max_queues | d(omit) }}'
+    state: '{{ item.state | d("present") }}'
+  loop: '{{ q("flattened", rabbitmq_server__combined_vhost_limits) }}'
+  tags: [ 'role::rabbitmq_server:vhost' ]
+
+- name: Manage RabbitMQ feature flags
+  community.rabbitmq.rabbitmq_feature_flag:
+    name: '{{ item.name }}'
+    node: '{{ item.node | d(omit) }}'
+  loop: '{{ q("flattened", rabbitmq_server__combined_feature_flags) }}'
+
+- name: Manage RabbitMQ global parameters
+  community.rabbitmq.rabbitmq_global_parameter:
+    name:      '{{ item.name }}'
+    node:      '{{ item.node | d(omit) }}'
+    state:     '{{ item.state | d("present") }}'
+    value:     '{{ item.value | d(omit) }}'
+  loop: '{{ q("flattened", rabbitmq_server__combined_global_parameters) }}'
+  tags: [ 'role::rabbitmq_server:parameter' ]
+
 - name: Manage RabbitMQ parameters
   community.rabbitmq.rabbitmq_parameter:
     component: '{{ item.component }}'
@@ -197,6 +222,83 @@
                         if item.tags | d() else omit }}'
   loop: '{{ q("flattened", rabbitmq_server__combined_accounts) }}'
   tags: [ 'role::rabbitmq_server:user' ]
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Manage RabbitMQ user limits
+  community.rabbitmq.rabbitmq_user_limits:
+    user: '{{ item.user }}'
+    node: '{{ item.node | d(omit) }}'
+    max_connections: '{{ item.max_connections | d(omit) }}'
+    max_channels: '{{ item.max_channels | d(omit) }}'
+    state: '{{ item.state | d("present") }}'
+  loop: '{{ q("flattened", rabbitmq_server__combined_user_limits) }}'
+  tags: [ 'role::rabbitmq_server:user' ]
+
+- name: Manage RabbitMQ exchanges
+  community.rabbitmq.rabbitmq_exchange:
+    name: '{{ item.name }}'
+    arguments: '{{ item.arguments | d(omit) }}'
+    auto_delete: '{{ item.auto_delete | d(omit) }}'
+    ca_cert: '{{ item.ca_cert | d(omit) }}'
+    client_cert: '{{ item.client_cert | d(omit) }}'
+    client_key: '{{ item.client_key | d(omit) }}'
+    durable:  '{{ item.durable | d(omit) }}'
+    exchange_type: '{{ item.exchange_type | d(omit) }}'
+    internal: '{{ item.internal | d(omit) }}'
+    login_host: '{{ item.login_host | d(omit) }}'
+    login_password: '{{ item.login_password | d(omit) }}'
+    login_port: '{{ item.login_port | d(omit) }}'
+    login_protocol: '{{ item.login_protocol | d(omit) }}'
+    login_user: '{{ item.login_user | d(omit) }}'
+    state: '{{ item.state | d("present") }}'
+    vhost: '{{ item.vhost | d(omit) }}'
+  loop: '{{ q("flattened", rabbitmq_server__combined_exchanges) }}'
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Manage RabbitMQ queues
+  community.rabbitmq.rabbitmq_queue:
+    name: '{{ item.name }}'
+    arguments: '{{ item.arguments | d(omit) }}'
+    auto_delete: '{{ item.auto_delete | d(omit) }}'
+    auto_expires: '{{ item.auto_expires | d(omit) }}'
+    ca_cert: '{{ item.ca_cert | d(omit) }}'
+    client_cert: '{{ item.client_cert | d(omit) }}'
+    client_key: '{{ item.client_key | d(omit) }}'
+    dead_letter_exchange: '{{ item.dead_letter_exchange | d(omit) }}'
+    dead_letter_routing_key: '{{ item.dead_letter_routing_key | d(omit) }}'
+    durable:  '{{ item.durable | d(omit) }}'
+    login_host: '{{ item.login_host | d(omit) }}'
+    login_password: '{{ item.login_password | d(omit) }}'
+    login_port: '{{ item.login_port | d(omit) }}'
+    login_protocol: '{{ item.login_protocol | d(omit) }}'
+    login_user: '{{ item.login_user | d(omit) }}'
+    max_length: '{{ item.max_length | d(omit) }}'
+    max_priority: '{{ item.max_priority | d(omit) }}'
+    message_ttl: '{{ item.message_ttl | d(omit) }}'
+    state: '{{ item.state | d("present") }}'
+    vhost: '{{ item.vhost | d(omit) }}'
+  loop: '{{ q("flattened", rabbitmq_server__combined_queues) }}'
+  no_log: '{{ debops__no_log | d(True) }}'
+  tags: [ 'role::rabbitmq_server:queue' ]
+
+- name: Manage RabbitMQ bindings
+  community.rabbitmq.rabbitmq_binding:
+    name: '{{ item.name }}'
+    ca_cert: '{{ item.ca_cert | d(omit) }}'
+    client_cert: '{{ item.client_cert | d(omit) }}'
+    client_key: '{{ item.client_key | d(omit) }}'
+    destination: '{{ item.destination }}'
+    destination_type: '{{ item.destination_type }}'
+    login_host: '{{ item.login_host | d(omit) }}'
+    login_password: '{{ item.login_password | d(omit) }}'
+    login_port: '{{ item.login_port | d(omit) }}'
+    login_protocol: '{{ item.login_protocol | d(omit) }}'
+    login_user: '{{ item.login_user | d(omit) }}'
+    arguments: '{{ item.arguments | d(omit) }}'
+    routing_key: '{{ item.routing_key | d(omit) }}'
+    state: '{{ item.state | d("present") }}'
+    vhost: '{{ item.vhost | d(omit) }}'
+  loop: '{{ q("flattened", rabbitmq_server__combined_bindings) }}'
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Save RabbitMQ dependent configuration on Ansible Controller

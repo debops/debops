@@ -113,6 +113,17 @@ view" meant to be used to deploy an application:
 
    debops run -V deployment company.collection/app/setup -l appservers
 
+Run a playbook with DebOps in a verbose debug mode:
+
+.. code-block:: shell
+
+   debops run -vvv service/sshd -l webserver
+
+Same as above, but also enable verbose debug mode in Ansible itself:
+
+.. code-block:: shell
+
+   debops run -vvv service/sshd -l webserver -vvv
 
 :command:`debops check`
 -----------------------

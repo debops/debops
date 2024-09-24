@@ -1,0 +1,173 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2024 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _debconf__ref_defaults:
+
+# debops.debconf default variables
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# The :command:`debconf` configuration database [[[
+# -------------------------------------------------
+
+# Variables which define what configuration entries should be set in the Debconf
+# database. See :ref:`debconf__ref_entries` for more details.
+
+# .. envvar:: debconf__entries [[[
+#
+# List of Debconf database entries to set on all hosts in the Ansible inventory.
+debconf__entries: []
+
+                                                                   # ]]]
+# .. envvar:: debconf__group_entries [[[
+#
+# List of Debconf database entries to set on hosts in a specific Ansible
+# inventory group.
+debconf__group_entries: []
+
+                                                                   # ]]]
+# .. envvar:: debconf__host_entries [[[
+#
+# List of Debconf database entries to set on specific hosts in the Ansible
+# inventory.
+debconf__host_entries: []
+
+                                                                   # ]]]
+# .. envvar:: debconf__combined_entries [[[
+#
+# Variable which combines all other Debconf database entry lists and is used as
+# an input for the configuration filtering template.
+debconf__combined_entries: '{{ debconf__entries
+                                  + debconf__group_entries
+                                  + debconf__host_entries }}'
+
+                                                                   # ]]]
+# .. envvar:: debconf__filtered_entries [[[
+#
+# Variable that contains the output of the template that filters the
+# configuration of the Debconf database entries and is used in role tasks and
+# templates.
+debconf__filtered_entries: '{{ lookup("template",
+                                     "lookup/debconf__filtered_entries.j2",
+                                     convert_data=False) | from_yaml }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT package installation [[[
+# ----------------------------
+
+# .. envvar:: debconf__cache_valid_time [[[
+#
+# The role will ensure that the APT cache is updated to account for new package
+# releases that might be more frequent than the OS package updates. By default
+# APT cache will be updated if it's older than an hour.
+debconf__cache_valid_time: '{{ (60 * 60) }}'
+
+                                                                   # ]]]
+# .. envvar:: debconf__apt_state [[[
+#
+# Specify the state of the APT packages installed by the :ref:`debops.debconf`
+# role. Either ``present`` (packages will be installed but not upgraded) or
+# ``latest`` (packages will be installed or upgraded if already present). It's
+# best to use this variable on the command line to avoid issues with
+# idempotency.
+debconf__apt_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: debconf__packages [[[
+#
+# List of APT packages which should be installed by the :ref:`debops.debconf`
+# role on all hosts in the Ansible inventory.
+debconf__packages: []
+
+                                                                   # ]]]
+# .. envvar:: debconf__group_packages [[[
+#
+# List of APT packages which should be installed by the :ref:`debops.debconf`
+# role on hosts in a specific Ansible inventory group.
+debconf__group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: debconf__host_packages [[[
+#
+# List of APT packages which should be installed by the :ref:`debops.debconf`
+# role on specific hosts in the Ansible inventory.
+debconf__host_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Alternative package symlinks [[[
+# --------------------------------
+
+# These lists can be used to define alternative symlinks for certain packages
+# which provide similar functionality, using ``update-alternatives`` package.
+# See :ref:`debconf__ref_alternatives` for more details.
+
+# .. envvar:: debconf__alternatives [[[
+#
+# List of symlink configuration entries defined on all hosts in the Ansible
+# inventory.
+debconf__alternatives: []
+
+                                                                   # ]]]
+# .. envvar:: debconf__group_alternatives [[[
+#
+# List of symlink configuration entries defined on hosts in a specific Ansible
+# inventory group.
+debconf__group_alternatives: []
+
+                                                                   # ]]]
+# .. envvar:: debconf__host_alternatives [[[
+#
+# List of symlink configuration entries defined on specific hosts in the Ansible
+# inventory.
+debconf__host_alternatives: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Custom shell commands [[[
+# -------------------------
+
+# The variables below let you define shell commands (or even small shell
+# scripts) to execute on the remote hosts as the ``root`` UNIX account. You
+# need to ensure idempotency by yourself. This is not a replacement for
+# a normal Ansible role.
+#
+# See :ref:`debconf__ref_commands` for more details.
+
+# .. envvar:: debconf__commands [[[
+#
+# List of shell commands which should be executed on all hosts in the Ansible
+# inventory.
+debconf__commands: []
+
+                                                                   # ]]]
+# .. envvar:: debconf__group_commands [[[
+#
+# List of shell commands which should be executed on hosts in a specific Ansible
+# inventory group.
+debconf__group_commands: []
+
+                                                                   # ]]]
+# .. envvar:: debconf__host_commands [[[
+#
+# List of shell commands which should be executed on specific hosts in the
+# Ansible inventory.
+debconf__host_commands: []
+
+                                                                   # ]]]
+# .. envvar:: debconf__combined_commands [[[
+#
+# Variable which combines all other shell command variables and is used in the
+# role tasks.
+debconf__combined_commands: '{{ debconf__commands
+                                   + debconf__group_commands
+                                   + debconf__host_commands }}'
+                                                                   # ]]]
+                                                                   # ]]]

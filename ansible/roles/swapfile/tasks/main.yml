@@ -48,10 +48,26 @@
   with_items: '{{ swapfile__register_allocation.results | d([]) }}'
   register: swapfile__register_swapon
   changed_when: swapfile__register_swapon.changed | bool
-  when: (item is changed and item.state | d("present") != 'absent' and
-         ((ansible_system_capabilities_enforced | d()) | bool and
-          "cap_sys_admin" in ansible_system_capabilities) or
-         not (ansible_system_capabilities_enforced | d(True)) | bool)
+  when: (
+        (item is changed and item.state | d("present") != 'absent') and
+        ((
+            (ansible_system_capabilities_enforced | d()) | bool and
+            "cap_sys_admin" in ansible_system_capabilities
+        ) or not (ansible_system_capabilities_enforced | d(True)) | bool )
+        )
+
+- name: Disable swap files
+  ansible.builtin.shell: 'test -f {{ item.path | d(item) }} && swapoff -v {{ item.path | d(item) }} || true'  # noqa no-handler
+  with_items: '{{ swapfile__files }}'
+  register: swapfile__register_swapoff
+  changed_when: swapfile__register_swapoff.stdout == ('swapoff ' + item.path | d(item))
+  when: (
+        (item.state | d("present") == 'absent') and
+        ((
+            (ansible_system_capabilities_enforced | d()) | bool and
+            "cap_sys_admin" in ansible_system_capabilities
+        ) or not (ansible_system_capabilities_enforced | d(True)) | bool )
+        )
 
 - name: Manage swap files in /etc/fstab
   ansible.posix.mount:

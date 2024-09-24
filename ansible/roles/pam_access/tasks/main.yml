@@ -16,7 +16,7 @@
     pam_access__var_access_conf: '{{ "/etc/security/"
                                      + item.filename | d("access-" + (item.name | regex_replace("\.conf$", "")) + ".conf") }}'
   debops.debops.dpkg_divert:
-    path: '{{ access_conf }}'
+    path: '{{ pam_access__var_access_conf }}'
     state: '{{ item.state | d("present") }}'
     delete: True
   loop: '{{ pam_access__combined_rules | debops.debops.parse_kv_items }}'
