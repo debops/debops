@@ -194,3 +194,6 @@ Debian. The reason I joined the project is it’s commitment to excellence which
 I now like to give back to the project and all its users.
 
 "We do these things not because they are easy but because they are hard."
+
+Beginning of 2023 I became aware of NixOS which I consider revolutionary. You
+can read more how NixOS compares to DebOps in :ref:`other_projects_NixOS_module`.
