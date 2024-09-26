@@ -26,6 +26,13 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.nixos` role with its corresponding playbook can be used to
+  manage NixOS-based hosts. The role is not included in the main
+  :file:`site.yml` playbook, which is focused on Debian/Ubuntu hosts.
+
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
 

@@ -1,0 +1,30 @@
+---
+# Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2024 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# This playbook is not included in the DebOps main playbooks meant for
+# Debian/Ubuntu hosts and is meant to be used as standalone against NixOS
+# hosts. See the 'debops.nixos' role documentation for details.
+#
+# Usage examples:
+#     debops run nixos
+#     debops check nixos
+#     debops run nixos -l <host> --diff
+
+
+- name: Manage NixOS hosts using DebOps
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_nixos_hosts' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Configure NixOS system
+      ansible.builtin.import_role:
+        name: 'debops.debops.nixos'
+      tags: [ 'role::nixos', 'skip::nixos' ]

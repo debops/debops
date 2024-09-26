@@ -347,6 +347,7 @@ System configuration
 - :ref:`debops.machine`
 - :ref:`debops.mount`
 - :ref:`debops.netbase`
+- :ref:`debops.nixos`
 - :ref:`debops.nslcd`
 - :ref:`debops.nsswitch`
 - :ref:`debops.ntp`

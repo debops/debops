@@ -1,0 +1,381 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2024 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _nixos__ref_defaults:
+
+# debops.nixos default variables
+# ==============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Role configuration [[[
+# ----------------------
+
+# .. envvar:: nixos__config_dir [[[
+#
+# Absolute path to the directory where NixOS configuration is managed. Will be
+# accessed by the UNIX ``root`` account.
+nixos__config_dir: '/etc/nixos'
+
+                                                                   # ]]]
+# .. envvar:: nixos__src [[[
+#
+# Absolute path to the directory on Ansible Controller where NixOS
+# configuration templates can be found. You need to create this directory
+# manually.
+#
+# By default, path is relative to the Ansible inventory.
+nixos__src: '{{ inventory_dir | realpath + "/../nixos/" }}'
+
+                                                                   # ]]]
+# .. envvar:: nixos__rebuild [[[
+#
+# If enabled, the role will automatically execute the NixOS rebuild command
+# specified below on any changes in configuration on the host. This variable
+# can be specified on the command line to avoid immediate changes taking
+# effect.
+nixos__rebuild: True
+
+                                                                   # ]]]
+# .. envvar:: nixos__rebuild_command [[[
+#
+# The command used to rebuild the NixOS system on any changes in its
+# configuration. By default commands are executed by the ``root`` UNIX account,
+# so the :command:`sudo` command is not needed here.
+#
+# The ``switch`` argument will tell NixOS to switch to the new configuration
+# and make it default at boot. You can also use the ``test`` argument to switch
+# to a new configuration but not make it a default - in case something goes
+# wrong, rebooting the machine should bring the host back up in the old state.
+nixos__rebuild_command: 'nixos-rebuild switch'
+
+                                                                   # ]]]
+# .. envvar:: nixos__distribution_string [[[
+#
+# The role will check if the ``ansible_distribution`` Ansible variable contains
+# this string, to ensure that the role is only used on a compatible operating
+# system.
+nixos__distribution_string: 'NixOS'
+                                                                   # ]]]
+                                                                   # ]]]
+# Manage NixOS configuration via git [[[
+# --------------------------------------
+
+# These lists allow you to clone and manage :command:`git` repositories that
+# contain NixOS configuration on remote hosts. The NixOS system will be rebuilt
+# automatically on any changes in the cloned repositories. The ``repo`` and
+# ``version`` parameters are required. If not specified, the default ``dest``
+# parameter is :file:`/etc/nixos/`.
+#
+# See :ref:`nixos__ref_repositories` for more details.
+
+# .. envvar:: nixos__git_resync [[[
+#
+# This variable can be used on the command line if the :file:`/etc/nixos/`
+# directory itself should be a :command:`git` repository. The :command:`git`
+# command doesn't permit cloning to non-empty directories, this variable can be
+# used to circumvent that.
+#
+# If set to ``True``, and the :file:`/etc/nixos/.git/` directory doesn't exist,
+# the role will use :command:`rsync` to backup the existing files in the
+# :file:`/etc/nixos/` directory, and after cloning the repository, to restore
+# the existing files back and remove the backup directory.
+nixos__git_resync: False
+
+                                                                   # ]]]
+# .. envvar:: nixos__git_resync_options [[[
+#
+# List of options passed to the :command:`rsync` command during operation. By
+# default, :command:`rsync` will ignore files that are already present in the
+# destination directory during synchronization; this will ensure that for
+# example :file:`configuration.nix` configuration file committed in the
+# :command:`git` repository will not be overwritten by the older, non-commited
+# version.
+nixos__git_resync_options: [ '--ignore-existing' ]
+
+                                                                   # ]]]
+# .. envvar:: nixos__git_backup_dir [[[
+#
+# Absolute path to a directory which will be used by :command:`rsync` to
+# archive existing configuration files. It needs to be empty or not exist for
+# correct operation. It will be removed after use!
+nixos__git_backup_dir: '{{ nixos__config_dir + ".ansible-backup" }}'
+
+                                                                   # ]]]
+# .. envvar:: nixos__repositories [[[
+#
+# Manage :command:`git` repositories on all hosts in the Ansible inventory.
+nixos__repositories: []
+
+                                                                   # ]]]
+# .. envvar:: nixos__group_repositories [[[
+#
+# Manage :command:`git` repositories on hosts in a specific Ansible inventory
+# group.
+nixos__group_repositories: []
+
+                                                                   # ]]]
+# .. envvar:: nixos__host_repositories [[[
+#
+# Manage :command:`git` repositories on specific hosts in the Ansible
+# inventory.
+nixos__host_repositories: []
+                                                                   # ]]]
+                                                                   # ]]]
+# NixOS configuration files [[[
+# -----------------------------
+
+# These lists define configuration files placed in the :file:`/etc/nixos/`
+# directory. See :ref:`nixos__ref_configuration` for more details.
+
+# .. envvar:: nixos__default_configuration [[[
+#
+# List of the default NixOS configuration files defined by the role.
+nixos__default_configuration:
+
+    # This is a default NixOS configuration file with configuration that
+    # supports Ansible usage over SSH.
+    #
+    # /!\ The example configuration will not work without modification. /!\
+    #
+    # This configuration entry is ignored by default. You should copy it to the
+    # Ansible inventory (or use the role template system), modify it for your
+    # environment and then enable it by setting its "state" parameter to
+    # "present".
+  - name: 'configuration.nix'
+    comment: |
+      Edit this configuration file to define what should be installed on
+      your system. Help is available in the configuration.nix(5) man page, on
+      https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
+    raw: |
+      { config, lib, pkgs, ... }:
+
+      {
+        imports =
+          [ # Include the results of the hardware scan.
+            ./hardware-configuration.nix
+          ];
+
+        # Enable support for Nix Flakes
+        # nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+        # Allow non-free packages
+        # nixpkgs.config.allowUnfree = true;
+
+        # Use the GRUB 2 boot loader.
+        boot.loader.grub.enable = true;
+        # boot.loader.grub.efiSupport = true;
+        # boot.loader.grub.efiInstallAsRemovable = true;
+        # boot.loader.efi.efiSysMountPoint = "/boot/efi";
+        # Define on which hard drive you want to install Grub.
+        # boot.loader.grub.device = "/dev/vda"; # or "nodev" for efi only
+
+        # networking.hostName = "nixos"; # Define your hostname.
+        # Pick only one of the below networking options.
+        # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+        # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
+
+        # Set your time zone.
+        # time.timeZone = "Etc/UTC";
+
+        # Configure network proxy if necessary
+        # networking.proxy.default = "http://user:password@proxy:port/";
+        # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+
+        # Select internationalisation properties.
+        # i18n.defaultLocale = "en_US.UTF-8";
+        # console = {
+        #   font = "Lat2-Terminus16";
+        #   keyMap = "us";
+        #   useXkbConfig = true; # use xkb.options in tty.
+        # };
+
+        # Enable the X11 windowing system.
+        # services.xserver.enable = true;
+
+        # Configure keymap in X11
+        # services.xserver.xkb.layout = "us";
+        # services.xserver.xkb.options = "eurosign:e,caps:escape";
+
+        # Enable CUPS to print documents.
+        # services.printing.enable = true;
+
+        # Enable sound.
+        # hardware.pulseaudio.enable = true;
+        # OR
+        # services.pipewire = {
+        #   enable = true;
+        #   pulse.enable = true;
+        # };
+
+        # Enable touchpad support (enabled default in most desktopManager).
+        # services.libinput.enable = true;
+
+        # Define a user account. Don't forget to set a password with ‘passwd’.
+        users.users.ansible = {
+          isNormalUser = true;
+          extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+          packages = with pkgs; [
+            htop
+            tree
+          ];
+
+          # Add SSH agent public keys to user's ~/.ssh/authorized_keys
+          openssh.authorizedKeys.keys = [
+            "{{ lookup('pipe', 'ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/*.pub || cat ~/.ssh/authorized_keys || true') }}"
+          ];
+        };
+
+        # Allow the "ansible" user to elevate privileges without specifying a password
+        security.sudo.extraRules= [
+          { users = [ "ansible" ];
+            commands = [
+               { command = "ALL" ;
+                 options= [ "NOPASSWD" "SETENV" ];
+              }
+            ];
+          }
+        ];
+
+        # List packages installed in system profile. To search, run:
+        # $ nix search wget
+        environment.systemPackages = with pkgs; [
+          curl
+          git
+          htop
+          pkgs.pipx
+          python3
+          tmux
+          tree
+          vim
+          wget
+        ];
+
+        # Include ~/.local/bin in user's $PATH by default
+        environment.localBinInPath = true;
+
+        # Some programs need SUID wrappers, can be configured further or are
+        # started in user sessions.
+        # programs.mtr.enable = true;
+        # programs.gnupg.agent = {
+        #   enable = true;
+        #   enableSSHSupport = true;
+        # };
+
+        # List services that you want to enable:
+
+        # Enable the OpenSSH daemon.
+        services.openssh.enable = true;
+
+        # Open ports in the firewall.
+        # networking.firewall.allowedTCPPorts = [ ... ];
+        # networking.firewall.allowedUDPPorts = [ ... ];
+        # Or disable the firewall altogether.
+        # networking.firewall.enable = false;
+
+        # Copy the NixOS configuration file and link it from the resulting system
+        # (/run/current-system/configuration.nix). This is useful in case you
+        # accidentally delete configuration.nix.
+        # system.copySystemConfiguration = true;
+
+        # This option defines the first version of NixOS you have installed on this particular machine,
+        # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
+        #
+        # Most users should NEVER change this value after the initial install, for any reason,
+        # even if you've upgraded your system to a new NixOS release.
+        #
+        # This value does NOT affect the Nixpkgs version your packages and OS are pulled from,
+        # so changing it will NOT upgrade your system - see https://nixos.org/manual/nixos/stable/#sec-upgrading for how
+        # to actually do that.
+        #
+        # This value being lower than the current NixOS release does NOT mean your system is
+        # out of date, out of support, or vulnerable.
+        #
+        # Do NOT change this value unless you have manually inspected all the changes it would make to your configuration,
+        # and migrated your data accordingly.
+        #
+        # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
+        system.stateVersion = "24.05"; # Did you read the comment?
+
+      }
+    state: 'ignore'
+    # The entry state is set to 'ignore' instead of 'init' because the contents
+    # of the file need to be modified for it to work. Just enabling the entry
+    # via the Ansible inventory will not work correctly.
+
+                                                                   # ]]]
+# .. envvar:: nixos__configuration [[[
+#
+# List of NixOS configuration files which should be present on all hosts in the
+# Ansible inventory.
+nixos__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: nixos__group_configuration [[[
+#
+# List of NixOS configuration files which should be present on hosts in
+# a specific Ansible inventory group.
+nixos__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: nixos__host_configuration [[[
+#
+# List of NixOS configuration files which should be present on specific hosts
+# in the Ansible inventory.
+nixos__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: nixos__combined_configuration [[[
+#
+# Variable which combines all NixOS configuration lists and is used in role
+# tasks and templates.
+nixos__combined_configuration: '{{ nixos__default_configuration
+                                   + nixos__configuration
+                                   + nixos__group_configuration
+                                   + nixos__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Manage custom templates [[[
+# ---------------------------
+
+# These variables define how the role will manage custom configuration
+# templates on remote hosts. See :ref:`nixos__ref_templates` for more
+# details.
+
+# .. envvar:: nixos__templates [[[
+#
+# Directory which contains templates that should be generated on all hosts in
+# the Ansible inventory.
+nixos__templates: [ '{{ nixos__src + "templates/by-group/all" }}' ]
+
+                                                                   # ]]]
+# .. envvar:: nixos__group_templates [[[
+#
+# List of paths containing the directories of all the groups the current host is in, based on the content of ``group_names``.
+# See `Ansible - Playbooks Variables`__.
+#
+# .. __: https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#accessing-information-about-other-hosts-with-magic-variables
+#
+# For example if the host ``debian1`` is member of ``group-name1`` and ``group-name2``
+# `debops.nixos` will then search all template files inside the directories placed here: :file:`ansible/views/<view>/nixos/templates/by-group/`.
+# Resulting in: ``[ "ansible/views/<view>/nixos/templates/by-group/group-name1", "ansible/views/<view>/nixos/templates/by-group/group-name2" ]``.
+#
+# Read the documentation about :ref:`nixos__ref_templates` for more details on templating with :ref:`debops.nixos` role.
+nixos__group_templates: '{{ group_names | map("regex_replace", "^(.*)$", nixos__src + "templates/by-group/\1") | list }}'
+
+                                                                   # ]]]
+# .. envvar:: nixos__host_templates [[[
+#
+# Directory which contains templates that should be generated on specific hosts
+# in the Ansible inventory.
+nixos__host_templates: [ '{{ nixos__src + "templates/by-host/" + inventory_hostname }}' ]
+                                                                   # ]]]
+                                                                   # ]]]
