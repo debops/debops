@@ -1,0 +1,172 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2024 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Assert role configuration
+  ansible.builtin.assert:
+    that:
+      - 'ansible_distribution == nixos__distribution_string'
+      - 'nixos__config_dir != ""'
+      - 'nixos__config_dir.startswith("/")'
+    quiet: True
+
+- name: Import DebOps secret role
+  ansible.builtin.import_role:
+    name: 'debops.debops.secret'
+
+- name: Pre hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "nixos/pre_main.yml") }}'
+
+- name: Convert NixOS directory to a git repository
+  when: nixos__repositories | d() or nixos__group_repositories | d() or
+        nixos__host_repositories | d()
+  block:
+
+    - name: Check if NixOS configuration directory is a git repository
+      ansible.builtin.stat:
+        path: '{{ nixos__config_dir + "/.git" }}'
+      register: nixos__register_nixos_git
+
+    - name: Move NixOS configuration to a backup directory
+      ansible.posix.synchronize:
+        src: '{{ nixos__config_dir + "/" }}'
+        dest: '{{ nixos__git_backup_dir + "/" }}'
+        rsync_opts: '{{ nixos__git_resync_options }}'
+      delegate_to: '{{ inventory_hostname }}'
+      when: not nixos__register_nixos_git.stat.exists | bool and
+            nixos__git_resync | bool
+
+    - name: Clear out NixOS configuration before git clone
+      ansible.builtin.file:
+        path: '{{ nixos__config_dir }}'
+        state: 'absent'
+      when: not nixos__register_nixos_git.stat.exists | bool and
+            nixos__git_resync | bool
+
+    - name: Manage NixOS configuration using git repositories
+      ansible.builtin.git:
+        repo:             '{{ item.repo }}'
+        dest:             '{{ item.dest | d(nixos__config_dir) }}'
+        accept_hostkey:   '{{ item.accept_hostkey | d(omit) }}'
+        bare:             '{{ item.bare | d(omit) }}'
+        clone:            '{{ item.clone | d(omit) }}'
+        depth:            '{{ item.depth | d(omit) }}'
+        executable:       '{{ item.executable | d(omit) }}'
+        force:            '{{ item.force | d(omit) }}'
+        key_file:         '{{ item.key_file | d(omit) }}'
+        recursive:        '{{ item.recursive | d(omit) }}'
+        reference:        '{{ item.reference | d(omit) }}'
+        refspec:          '{{ item.refspec | d(omit) }}'
+        remote:           '{{ item.remote | d(omit) }}'
+        ssh_opts:         '{{ item.ssh_opts | d(omit) }}'
+        track_submodules: '{{ item.track_submodules | d(omit) }}'
+        umask:            '{{ item.umask | d(omit) }}'
+        update:           '{{ item["_update"] | d(omit) }}'
+        verify_commit:    '{{ item.verify_commit | d(omit) }}'
+        version:          '{{ item.version | d(omit) }}'
+      become: True
+      become_user:        '{{ item.owner | d("root") }}'
+      loop: '{{ q("flattened", nixos__repositories
+                               + nixos__group_repositories
+                               + nixos__host_repositories) }}'
+      notify: [ 'Rebuild NixOS system' ]
+      when: item.repo | d() and item.version | d()
+
+    - name: Move old NixOS configuration back to main directory
+      ansible.posix.synchronize:
+        src: '{{ nixos__git_backup_dir + "/" }}'
+        dest: '{{ nixos__config_dir + "/" }}'
+        delete: False
+        rsync_opts: '{{ nixos__git_resync_options }}'
+      delegate_to: '{{ inventory_hostname }}'
+      when: not nixos__register_nixos_git.stat.exists | bool and
+            nixos__git_resync | bool
+
+    - name: Remove old backup directory
+      ansible.builtin.file:
+        path: '{{ nixos__git_backup_dir }}'
+        state: 'absent'
+      when: not nixos__register_nixos_git.stat.exists | bool and
+            nixos__git_resync | bool
+
+- name: Remove NixOS configuration if requested
+  ansible.builtin.file:
+    path: '{{ nixos__config_dir + "/" + item.name }}'
+    state: 'absent'
+  loop: '{{ nixos__combined_configuration | flatten | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  notify: [ 'Rebuild NixOS system' ]
+  when: item.state | d("present") == 'absent'
+
+- name: Create directories for NixOS configuration files
+  ansible.builtin.file:
+    path: '{{ nixos__config_dir + "/" + (item.name | dirname) }}'
+    state: 'directory'
+    mode: '0755'
+  loop: '{{ nixos__combined_configuration | flatten | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name | dirname, "state": item.state | d("present")} }}'
+  when: item.raw | d() and item.state | d("present") not in ['absent', 'ignore', 'init'] and
+        item.name is search('/')
+
+- name: Generate NixOS configuration files
+  ansible.builtin.template:
+    src: 'etc/nixos/template.nix.j2'
+    dest: '{{ nixos__config_dir + "/" + item.name }}'
+    mode: '{{ item.mode | d("0644") }}'
+  loop: '{{ nixos__combined_configuration | flatten | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  notify: [ 'Rebuild NixOS system' ]
+  when: item.raw | d() and item.state | d("present") not in ['absent', 'ignore', 'init']
+
+- name: Ensure that template directories exist
+  ansible.builtin.file:
+    path: '/{{ item.path }}'
+    mode: '{{ item.mode }}'
+    state: 'directory'
+  loop_control:
+    label: '{{ {"path": item.path, "state": item.state, "mode": item.mode} }}'
+  with_community.general.filetree: '{{ (nixos__host_templates
+                                        + nixos__group_templates
+                                        + nixos__templates) | flatten }}'
+  notify: [ 'Rebuild NixOS system' ]
+  when: item.state == 'directory'
+
+- name: Generate custom templates
+  ansible.builtin.template:
+    src: '{{ item.src }}'
+    dest: '/{{ item.path }}'
+    mode: '{{ item.mode }}'
+  loop_control:
+    label: '{{ {"path": item.path, "state": item.state, "mode": item.mode} }}'
+  with_community.general.filetree: '{{ (nixos__host_templates
+                                        + nixos__group_templates
+                                        + nixos__templates) | flatten }}'
+  notify: [ 'Rebuild NixOS system' ]
+  when: item.state == 'file'
+
+- name: Recreate custom symlinks
+  ansible.builtin.file:
+    src: '{{ item.src }}'
+    dest: '/{{ item.path }}'
+    mode: '{{ item.mode }}'
+    state: 'link'
+    force: True
+  loop_control:
+    label: '{{ {"path": item.path, "state": item.state, "mode": item.mode} }}'
+  with_community.general.filetree: '{{ (nixos__host_templates
+                                        + nixos__group_templates
+                                        + nixos__templates) | flatten }}'
+  notify: [ 'Rebuild NixOS system' ]
+  when: item.state == 'link'
+
+- name: Flush handlers when needed
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Post hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "nixos/post_main.yml") }}'
