@@ -23,6 +23,28 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v3.2.0...master
 
+Added
+~~~~~
+
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- The role now supports `iterate_filter` for its LDAP configuration, allowing
+  :command:`doveadm` commands to iterate over all users. Note that you might
+  have to adjust the defaults for the :envvar:`dovecot__ldap_user_list_filter`
+  variable if you use the :envvar:`dovecot__ldap_user_filter` variable.
+
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- The :ref:`debops.root_account`, :ref:`debops.system_users` and
+  :ref:`debops.users` roles are now able to handle the symlinked
+  :file:`~/.ssh/authorized_keys` files correctly using optional ``follow``
+  parameter.
+
 Fixed
 ~~~~~
 
@@ -31,6 +53,27 @@ Fixed
 
 - Fixed an issue with the vhost ``state: "absent"`` parameter not working
   correctly when the ``enabled: False`` parameter was not set as well.
+
+:ref:`debops.dropbear_initramfs` role
+'''''''''''''''''''''''''''''''''''''
+
+- The role now supports both the old and the new location if the initramfs
+  configuration files.
+
+Removed
+~~~~~~~
+
+General
+'''''''
+
+- The ``volkszaehler`` (``debops-contrib``) role was removed because the role
+  maintainer considers the application to be superseded by Grafana.
+  See `Future of the project; The elephant in the room – Grafana`__.
+
+  .. __: https://github.com/volkszaehler/volkszaehler.org/issues/819
+
+- The ``bitcoind`` role was removed due to lack of interest by the role
+  maintainer.
 
 
 `debops v3.2.0`_ - 2024-09-16
