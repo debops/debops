@@ -223,13 +223,13 @@ List of other useful resources related to the :ref:`debops.nixos` Ansible role:
 
   .. __: https://nixos.org/manual/nixos/stable/
 
-- Unofficial `NixOS Wiki`__ maintained by users
+- Official `NixOS Wiki`__
 
-  .. __: https://nixos.wiki/
+  .. __: https://wiki.nixos.org
 
 - Collection of example `NixOS configurations`__ on NixOS Wiki
 
-  .. __: https://nixos.wiki/wiki/Configuration_Collection
+  .. __: https://wiki.nixos.org/wiki/Configuration_Collection
 
 - Comparison of `Debian and NixOS management commands`__
 
