@@ -220,6 +220,24 @@
   register: netbox__register_migration
   changed_when: netbox__register_migration.changed | bool
 
+- name: Check if Django superuser account exists
+  # In case of an upgrade (with DB migrations), the superuser will
+  # be existent but the createsuperuser command will run anyway (and fails).
+  # So we check if it exist beforehand and only run the create command if needed.
+  environment:
+    DJANGO_SUPERUSER_PASSWORD: '{{ netbox__superuser_password }}'
+  django_manage:
+    command: shell -c 'import sys; from django.contrib.auth.models import User; print(User.objects.filter(username="{{ netbox__superuser_name }}").count())'
+    app_path: '{{ netbox__git_checkout + "/netbox" }}'
+    virtualenv: '{{ netbox__virtualenv }}'
+  become: True
+  become_user: '{{ netbox__user }}'
+  when: netbox__primary|bool
+  no_log: '{{ debops__no_log | d(True) }}'
+  register: netbox__check_superuser
+  ignore_errors: true
+  changed_when: false
+
 - name: Create Django superuser account
   community.general.django_manage:
     command: 'createsuperuser --noinput --username={{ netbox__superuser_name }} --email={{ netbox__superuser_email }}'
@@ -230,7 +248,7 @@
   become: True
   become_user: '{{ netbox__user }}'
   when: (not netbox__register_installed.stat.exists | bool and
-         not netbox__register_migration.stdout is search('No migrations to apply.'))
+         netbox__check_superuser.out | trim == "0")
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate systemd service unit
