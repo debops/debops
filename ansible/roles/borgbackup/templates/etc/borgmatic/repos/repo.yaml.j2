@@ -28,14 +28,12 @@
 {# 1.8.0 version check, syntax #}
 {% if ansible_local.borgbackup.borgmatic_version is version("1.8.0", "<") %}
 location:
-  repositories:
-    {{ repo_list | to_nice_yaml(2) }}
+  repositories: {{ repo_list | to_yaml }}
 
 storage:
   encryption_passcommand: {{ passcommand }}
 {% else%}
-repositories:
-  {{ repo_list | to_nice_yaml(2) }}
+repositories: {{ repo_list | to_yaml }}
 
 encryption_passcommand: {{ passcommand }}
 {% endif %}

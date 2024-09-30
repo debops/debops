@@ -36,6 +36,13 @@
   when: ("debops_service_borgbackup" in group_names)
   tags: [ 'role::borgbackup:install' ]
 
+- name: 'Configure borgmatic bash completions'
+  ansible.builtin.shell: 'borgmatic --bash-completion > {{ borgbackup__completion_dir }}/borgmatic'
+  args:
+    creates: '{{ borgbackup__completion_dir }}/borgmatic'
+  when: ("debops_service_borgbackup" in group_names)
+  tags: [ 'role::borgbackup:install' ]
+
 - name: Save borgbackup local facts
   ansible.builtin.template:
     src: 'etc/ansible/facts.d/borgbackup.fact.j2'
