@@ -1142,6 +1142,7 @@ rsyslog__logrotate__dependent_config:
         options: |
           rotate {{ rsyslog__rotation_count_system }}
           {{ rsyslog__rotation_period_system }}
+          maxsize 1G
           missingok
           notifempty
           delaycompress
@@ -1154,10 +1155,11 @@ rsyslog__logrotate__dependent_config:
 
       - logs: '{{ (rsyslog__default_logfiles
                    + rsyslog__logfiles)
-                  | difference(["/var/log/syslog"]) }}'
+                  | difference(["/var/log/syslog"]) | sort }}'
         options: |
           rotate {{ rsyslog__rotation_count_system }}
           {{ rsyslog__rotation_period_system }}
+          maxsize 1G
           missingok
           notifempty
           compress
@@ -1177,6 +1179,7 @@ rsyslog__logrotate__dependent_config:
     options: |
       rotate {{ rsyslog__rotation_count_remote }}
       {{ rsyslog__rotation_period_remote }}
+      maxsize 1G
       missingok
       notifempty
       compress

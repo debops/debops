@@ -1,0 +1,12 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2024 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Rebuild NixOS system
+  ansible.builtin.command: '{{ nixos__rebuild_command }}'
+  register: nixos__register_rebuild_command
+  changed_when: nixos__register_rebuild_command.stdout != ''
+  when: nixos__rebuild | bool and not ansible_check_mode | bool

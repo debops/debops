@@ -108,6 +108,18 @@ lxc__net_deploy_state: '{{ "absent"
                            else "present" }}'
 
                                                                    # ]]]
+# .. envvar:: lxc__net_resolver [[[
+#
+# Specify the system-wide DNS resolver in use, detected automatically. The role
+# will integrate the internal LXC network with the system resolver to permit
+# resolution of container hostnames.
+lxc__net_resolver: '{{ "resolvconf"
+                       if ((ansible_local.resolvconf.deploy_state | d("absent")) == "present")
+                       else ("systemd-resolved"
+                             if ((ansible_local.resolved.state | d("disabled")) == "enabled")
+                             else "none") }}'
+
+                                                                   # ]]]
 # .. envvar:: lxc__net_bridge [[[
 #
 # Name of the network bridge which will be configured for the internal LXC
@@ -165,6 +177,12 @@ lxc__net_base_domain: '{{ ansible_domain }}'
 lxc__net_domain: '{{ "lxc" + (("." + lxc__net_base_domain)
                               if lxc__net_base_domain | d()
                               else "") }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc__net_use_nft [[[
+#
+# Enable or disable support for NFtables by the :command:`lxc-net` script.
+lxc__net_use_nft: 'false'
 
                                                                    # ]]]
 # .. envvar:: lxc__net_fqdn [[[
@@ -245,8 +263,9 @@ lxc__default_configuration:
                   if (lxc__version is version("2.1.0", "<"))
                   else "lxc.net.0.link" }}'
         value: '{{ "br0"
-                   if (ansible_local | d() and ansible_local.ifupdown | d() and
-                       (ansible_local.ifupdown.configured | d()) | bool)
+                   if ((ansible_local | d() and ansible_local.ifupdown | d() and
+                        (ansible_local.ifupdown.configured | d()) | bool) or
+                       (ansible_local.networkd.state | d("disabled")) == "enabled")
                    else (lxc__net_bridge
                          if (lxc__net_deploy_state == "present")
                          else "br0") }}'
@@ -302,12 +321,10 @@ lxc__default_configuration:
       # inside of the LXC unprivileged containers.
       # See also: https://bugs.debian.org/916644,
       # https://bugs.debian.org/918839, https://bugs.debian.org/911806
+      # https://github.com/lxc/lxc/issues/4333
       - name: 'lxc.apparmor.profile'
-        value: 'generated'
-        state: '{{ "absent"
-                   if (lxc__version is version("3.0.0", "<") or
-                       lxc__version is version("4.1.0", ">="))
-                   else "present" }}'
+        value: 'unconfined'
+        state: 'present'
 
       # Required in AppArmor environment to allow systemd services to start
       # inside of the LXC unprivileged containers.
@@ -333,8 +350,9 @@ lxc__default_configuration:
                   if (lxc__version is version("2.1.0", "<"))
                   else "lxc.net.0.link" }}'
         value: '{{ "br0"
-                   if (ansible_local | d() and ansible_local.ifupdown | d() and
-                       (ansible_local.ifupdown.configured | d()) | bool)
+                   if ((ansible_local | d() and ansible_local.ifupdown | d() and
+                        (ansible_local.ifupdown.configured | d()) | bool) or
+                       (ansible_local.networkd.state | d("disabled")) == "enabled")
                    else (lxc__net_bridge
                          if (lxc__net_deploy_state == "present")
                          else "br0") }}'
@@ -422,12 +440,10 @@ lxc__default_configuration:
       # inside of the LXC unprivileged containers.
       # See also: https://bugs.debian.org/916644,
       # https://bugs.debian.org/918839, https://bugs.debian.org/911806
+      # https://github.com/lxc/lxc/issues/4333
       - name: 'lxc.apparmor.profile'
-        value: 'generated'
-        state: '{{ "absent"
-                   if (lxc__version is version("3.0.0", "<") or
-                       lxc__version is version("4.1.0", ">="))
-                   else "present" }}'
+        value: 'unconfined'
+        state: 'present'
 
       # Required in AppArmor environment to allow systemd services to start
       # inside of the LXC unprivileged containers.
@@ -456,8 +472,9 @@ lxc__default_configuration:
                    if (lxc__version is version("2.1.0", "<"))
                    else "lxc.net.0.link" }}'
         value: '{{ "br0"
-                   if (ansible_local | d() and ansible_local.ifupdown | d() and
-                       (ansible_local.ifupdown.configured | d()) | bool)
+                   if ((ansible_local | d() and ansible_local.ifupdown | d() and
+                        (ansible_local.ifupdown.configured | d()) | bool) or
+                       (ansible_local.networkd.state | d("disabled")) == "enabled")
                    else (lxc__net_bridge
                          if (lxc__net_deploy_state == "present")
                          else "br0") }}'

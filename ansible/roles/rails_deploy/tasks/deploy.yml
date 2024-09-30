@@ -55,7 +55,9 @@
         rails_deploy_register_repo_status is changed
 
 - name: Prepare the database
-  ansible.builtin.shell: '{{ rails_deploy_env_source }} && bundle exec rake db:schema:load db:seed chdir={{ rails_deploy_src }}'
+  ansible.builtin.shell: '{{ rails_deploy_env_source }} && bundle exec rake db:schema:load db:seed'
+  args:
+    chdir: '{{ rails_deploy_src }}'
   when: (rails_deploy_database_create and rails_deploy_register_database_created is defined and
         rails_deploy_register_database_created is changed and
         rails_app_database_prepare) and
@@ -82,7 +84,9 @@
         rails_deploy_git_location is defined and rails_deploy_git_location
 
 - name: Execute shell commands before migration
-  ansible.builtin.shell: '{{ rails_deploy_env_source }} && {{ item }} chdir={{ rails_deploy_src }}'
+  ansible.builtin.shell: '{{ rails_deploy_env_source }} && {{ item }}'
+  args:
+    chdir: '{{ rails_deploy_src }}'
   when: rails_deploy_pre_migrate_shell_commands and rails_deploy_git_location and
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
@@ -93,7 +97,9 @@
   changed_when: rails_deploy__register_migration_pre_commands.changed | bool
 
 - name: Migrate the database
-  ansible.builtin.shell: '{{ rails_deploy_env_source }} && bundle exec rake db:migrate chdir={{ rails_deploy_src }}'
+  ansible.builtin.shell: '{{ rails_deploy_env_source }} && bundle exec rake db:migrate'
+  args:
+    chdir: '{{ rails_deploy_src }}'
   when: inventory_hostname == rails_deploy_hosts_master and
         (rails_deploy_database_force_migrate or
         (rails_deploy_register_repo_status is defined and
@@ -107,7 +113,9 @@
   become_user: '{{ rails_deploy_service }}'  # noqa no-handler
 
 - name: Execute shell commands after migration
-  ansible.builtin.shell: '{{ rails_deploy_env_source }} && {{ item }} chdir={{ rails_deploy_src }}'
+  ansible.builtin.shell: '{{ rails_deploy_env_source }} && {{ item }}'
+  args:
+    chdir: '{{ rails_deploy_src }}'
   when: rails_deploy_post_migrate_shell_commands and rails_deploy_git_location and
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
@@ -183,7 +191,9 @@
   with_items: '{{ rails_deploy_extra_services }}'
 
 - name: Execute shell commands after the backend is ready
-  ansible.builtin.shell: '{{ rails_deploy_env_source }} && {{ item }} chdir={{ rails_deploy_src }}'  # noqa no-handler
+  ansible.builtin.shell: '{{ rails_deploy_env_source }} && {{ item }}  # noqa no-handler'
+  args:
+    chdir: '{{ rails_deploy_src }}'
   when: rails_deploy_post_restart_shell_commands and rails_deploy_git_location and
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed

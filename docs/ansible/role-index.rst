@@ -54,7 +54,6 @@ etc.
 - ``debops-contrib.foodsoft``
 - ``debops-contrib.homeassistant``
 - ``debops-contrib.kodi``
-- ``debops-contrib.volkszaehler``
 
 
 Application environments
@@ -111,7 +110,6 @@ are not accessed directly by end users.
 - :ref:`debops.tinyproxy`
 - :ref:`debops.reprepro`
 - ``debops.sks``
-- ``debops-contrib.bitcoind``
 - ``debops-contrib.x2go_server``
 
 
@@ -350,6 +348,7 @@ System configuration
 - :ref:`debops.machine`
 - :ref:`debops.mount`
 - :ref:`debops.netbase`
+- :ref:`debops.nixos`
 - :ref:`debops.nslcd`
 - :ref:`debops.nsswitch`
 - :ref:`debops.ntp`
