@@ -33,6 +33,11 @@ New DebOps roles
   manage NixOS-based hosts. The role is not included in the main
   :file:`site.yml` playbook, which is focused on Debian/Ubuntu hosts.
 
+- The :ref:`debops.influxdb2` role can be used to install and configure
+  `InfluxDB v2.x`__ time-series database.
+
+  .. __: https://www.influxdata.com/products/influxdb/
+
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
 
