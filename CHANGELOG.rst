@@ -67,6 +67,11 @@ General
 - Fixed an issue with the vhost ``state: "absent"`` parameter not working
   correctly when the ``enabled: False`` parameter was not set as well.
 
+:ref:`debops.debconf` role
+''''''''''''''''''''''''''
+
+- Added the missing :file:`meta/main.yml` file in the role directory.
+
 :ref:`debops.dropbear_initramfs` role
 '''''''''''''''''''''''''''''''''''''
 
