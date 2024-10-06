@@ -587,13 +587,18 @@ class ProjectDir(object):
                              + os.path.join('ansible', 'collections',
                                             'requirements.yml') + ' file')
                 os.chdir(self.path)
-                galaxy_cmd = subprocess.Popen([self._commands['ansible-galaxy'],
-                                               'collection', 'install', '-r',
-                                               os.path.join('ansible',
-                                                            'collections',
-                                                            'requirements.yml')],
-                                              stdin=subprocess.PIPE)
-                galaxy_cmd.communicate()
+                try:
+                    galaxy_cmd = subprocess.Popen(
+                            [self._commands['ansible-galaxy'],
+                             'collection', 'install', '-r',
+                             os.path.join('ansible',
+                                          'collections',
+                                          'requirements.yml')],
+                            stdin=subprocess.PIPE)
+                    galaxy_cmd.communicate()
+                except FileNotFoundError:
+                    logger.notice('ansible-galaxy not available in $PATH, '
+                                  'not installing Ansible Collections')
                 logger.debug('Ansible Collections installed in project '
                              'directory')
 
