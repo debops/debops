@@ -1124,6 +1124,23 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/influxdb/.*'
     JANE_LOG_PATTERN: '\[influxdb\]'
 
+'influxdb2 role':
+  <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'ferm role'
+    - 'python role'
+    - 'nginx role'
+    - 'influxdata role'
+  variables:
+    JANE_TEST_FACT: 'influxdb2.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/influxdb2.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_influxdb2'
+    JANE_DIFF_PATTERN: '.*/roles/influxdb2/.*'
+    JANE_LOG_PATTERN: '\[influxdb2\]'
+
 'ipxe role':
   <<: *test_role_no_deps
   variables:

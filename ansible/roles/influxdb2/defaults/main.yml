@@ -1,0 +1,138 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2024 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _influxdb2__ref_defaults:
+
+# debops.influxdb2 default variables
+# ==================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: influxdb2__base_packages [[[
+#
+# List of the default APT packages to install for InfluxDB Server support.
+influxdb2__base_packages: [ 'influxdb2', 'influxdb2-cli' ]
+
+                                                                   # ]]]
+# .. envvar:: influxdb2__packages [[[
+#
+# List of additional APT packages to install with InfluxDB Server.
+influxdb2__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Basic configuration [[[
+# -----------------------
+
+# .. envvar:: influxdb2__fqdn [[[
+#
+# Fully Qualified Domain Name on which InfluxDB user interface will be
+# published by the webserver.
+influxdb2__fqdn: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: influxdb2__port [[[
+#
+# TCP port on which InfluxDB service listens for connections, needed by the
+# webserver to direct requests.
+influxdb2__port: '8086'
+
+                                                                   # ]]]
+# .. envvar:: influxdb2__allow [[[
+#
+# List of IP addresses or CIDR subnets which will be permitted to access the
+# InfluxDB user interface and API. If the list is empty, nobody can access the
+# service.
+influxdb2__allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# InfluxDB configuration file [[[
+# -------------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/influxdb/config.toml` configuration file.
+# See :ref:`influxdb2__ref_configuration` for more details.
+
+# .. envvar:: influxdb2__default_configuration [[[
+#
+# The default configuration options which should be present in the main
+# configuration file.
+influxdb2__default_configuration:
+
+  - name: 'default'
+    config:
+      bolt-path: '/var/lib/influxdb/influxd.bolt'
+      engine-path: '/var/lib/influxdb/engine'
+
+                                                                   # ]]]
+# .. envvar:: influxdb2__configuration [[[
+#
+# List of configuration options defined on all hosts in the InfluxDB inventory.
+influxdb2__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: influxdb2__combined_configuration [[[
+#
+# Actual list of InfluxDB configuration options passed to the
+# configuration template. This list defines the order in which the options from
+# different variables are processed.
+influxdb2__combined_configuration: '{{ influxdb2__default_configuration +
+                                       influxdb2__configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: influxdb2__influxdata__dependent_packages [[[
+#
+# Configuration for the :ref:`debops.influxdata` Ansible role.
+influxdb2__influxdata__dependent_packages:
+
+  - '{{ influxdb2__base_packages }}'
+  - '{{ influxdb2__packages }}'
+
+                                                                   # ]]]
+# .. envvar:: influxdb2__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+influxdb2__etc_services__dependent_list:
+
+  - name: 'influxdb2-http'
+    port: '{{ influxdb2__port }}'
+    protocol: [ 'tcp' ]
+
+                                                                   # ]]]
+# .. envvar:: influxdb2__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+influxdb2__nginx__dependent_upstreams:
+
+  - name: 'influxdb2_upstream'
+    server: '{{ "127.0.0.1:" + influxdb2__port }}'
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: influxdb2__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+influxdb2__nginx__dependent_servers:
+
+  - name: '{{ influxdb2__fqdn }}'
+    by_role: 'debops.influxdb2'
+    filename: 'debops.influxdb2'
+    state: 'present'
+    type: 'proxy'
+    proxy_pass: 'http://influxdb2_upstream'
+    allow: '{{ influxdb2__allow }}'
+                                                                   # ]]]
+                                                                   # ]]]

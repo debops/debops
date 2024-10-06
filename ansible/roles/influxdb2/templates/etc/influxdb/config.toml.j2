@@ -1,0 +1,14 @@
+{# Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2024 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# {{ ansible_managed }}
+
+{% set influxdb2__tpl_configuration = {} %}
+{% for element in influxdb2__combined_configuration | debops.debops.parse_kv_config %}
+{%   if element.name | d() and element.state | d('present') not in [ 'absent', 'init', 'ignore' ] and element.config | d() %}
+{%     set combined_config = influxdb2__tpl_configuration | combine(element.config, recursive=True) %}
+{%     set _ = influxdb2__tpl_configuration.update(combined_config) %}
+{%   endif %}
+{% endfor %}
+{{ influxdb2__tpl_configuration | debops.debops.to_toml | regex_replace('\n$','') }}
