@@ -71,6 +71,10 @@ General
 
   .. __: https://github.blog/open-source/git/git-security-vulnerability-announced/#cve-2022-24765
 
+- The :command:`debops` script will not try to download the required Ansible
+  Collections during new project creation if the :command:`ansible-galaxy`
+  command is not available in the user's ``$PATH``.
+
 :ref:`debops.apache` role
 '''''''''''''''''''''''''
 
