@@ -40,6 +40,16 @@ Added
   have to adjust the defaults for the :envvar:`dovecot__ldap_user_list_filter`
   variable if you use the :envvar:`dovecot__ldap_user_filter` variable.
 
+:ref:`debops.resolved` role
+'''''''''''''''''''''''''''
+
+- The role will add a new entry in the :file:`/etc/services` database (using
+  the :ref:`debops.etc_services` role) for the ``5355`` TCP and UDP ports,
+  reserved for the `Link-Local Multicast Name Resolution`__. This should help
+  with identification of unknown TCP/UDP ports of the listening services.
+
+  .. __: https://en.wikipedia.org/wiki/Link-Local_Multicast_Name_Resolution
+
 Changed
 ~~~~~~~
 

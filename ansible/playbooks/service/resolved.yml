@@ -15,5 +15,10 @@
 
   roles:
 
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ resolved__etc_services__dependent_list }}'
+
     - role: resolved
       tags: [ 'role::resolved', 'skip::resolved' ]
