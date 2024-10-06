@@ -66,6 +66,9 @@
     password:         '{{ root_account__password if root_account__password else omit }}'
     shell:            '{{ root_account__shell if root_account__shell else omit }}'
   when: root_account__enabled|bool
+  # Note: using the override variable might not work here correctly when
+  # 'passlib' Python module is not installed on the Ansible Controller.
+  # The task will show up as hidden even when the 'debops__no_log=false' is used.
   no_log: '{{ (debops__no_log | d(True)) if root_account__password else False }}'
 
 - name: Enforce root home permissions
