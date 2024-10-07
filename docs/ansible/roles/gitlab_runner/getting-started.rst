@@ -1,5 +1,5 @@
-.. Copyright (C) 2016 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2016 DebOps <https://debops.org/>
+.. Copyright (C) 2016-2024 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2016-2024 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
@@ -16,55 +16,33 @@ GitLab CI registration token
 ----------------------------
 
 To register a Runner with your GitLab CI instance, you need to provide
-a registration token. It can be found on the ``https://<host>/admin/runners``
-page of your GitLab installation.
+a `personal API access token`__. It can be generated using the profile
+preferences of your GitLab user account.
 
-The registration token is generated randomly on each GitLab startup, and
-unfortunately cannot be accessed using an API. Therefore, the easiest way to
-provide it to the role is to store it in an environment variable. The
-``debops.gitlab_runner`` checks the value of the ``$GITLAB_RUNNER_TOKEN`` system
-variable and uses the token found there.
+.. __: https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html
 
-The registration token is required to perform changes on the GitLab server
-itself, ie. registration and removal of Runners. It's not required for the role
-to manage the Runners on the host - the Runner tokens are saved in local
-Ansible facts and reused if necessary.
+Personal API access tokens are created for specific GitLab user accounts and
+shouldn't be shared in the Ansible inventory or secrets managed by the
+:ref:`debops.secret` Ansible role. The :ref:`debops.gitlab_runner` role checks
+the ``$GITLAB_API_TOKEN`` environment variable on the Ansible Controller to get
+the token string and use it for registration.
 
-An example way to run ``debops`` so that the role registers the Runners in
-GitLab CI:
+For convenience, the token can be stored in the :file:`.env` configuration file
+at the root of the DebOps project directory, which uses the ``dotenv`` format.
+Variables defined in this file will be automatically sourced in the execution
+environment when the :command:`debops` script is invoked.  Users can check the
+runtime environment by executing the command:
 
 .. code-block:: console
 
-   GITLAB_RUNNER_TOKEN=<random-token> debops run service/gitlab_runner
+   debops env
 
-To change the environment variable that holds the registration token, or save
-the token in Ansible inventory, you can use the :envvar:`gitlab_runner__token`
+The :file:`.env` file is ignored by :command:`git` and shouldn't be committed
+into the project's version control.
+
+To change the environment variable that holds the API access token, or save
+the token in Ansible inventory, you can use the :envvar:`gitlab_runner__api_token`
 variable.
-
-In case that you don't want to expose the registration token via the Ansible
-inventory directly, you can store it it in the
-:file:`ansible/secret/credentials/` directory managed by the
-:ref:`debops.secret` role in a predetermined location.
-
-To create the path and file to store the GitLab Token execute this commands in
-the root of the DebOps project directory with the relevant GitLab domain:
-
-.. code-block:: console
-
-   mkdir -pv ansible/secret/credentials/code.example.org/gitlab/runner
-   editor ansible/secret/credentials/code.example.org/gitlab/runner/token
-
-In the editor, paste the GitLab registration token and save the file. Then add
-the :envvar:`gitlab_runner__token` variable to your inventory.
-
-.. code-block:: console
-
-   gitlab_runner__token: '{{ lookup("password", secret
-                           + "/credentials/" + gitlab_runner__api_fqdn
-                           + "/gitlab/runner/token chars=ascii_letters,numbers") }}'
-
-This allows the token to be safely stored outside of the inventory but
-accessible at runtime.
 
 
 Initial configuration
