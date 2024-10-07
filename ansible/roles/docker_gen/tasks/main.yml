@@ -15,10 +15,12 @@
     group: 'root'
     mode: '0755'
   loop:
-    - [ '{{ docker_gen__src }}', '{{ docker_gen__lib }}', '{{ docker_gen__templates }}' ]
-    - [ '{{ ((docker_gen__nginx_dest | dirname)
-             if (docker_gen__nginx | d() and docker_gen__nginx)
-             else []) }}' ]
+    - '{{ docker_gen__src }}'
+    - '{{ docker_gen__lib }}'
+    - '{{ docker_gen__templates }}'
+    - '{{ ((docker_gen__nginx_dest | dirname)
+           if (docker_gen__nginx | d() and docker_gen__nginx)
+           else []) }}'
 
 - name: Download docker-gen sources
   ansible.builtin.get_url:
