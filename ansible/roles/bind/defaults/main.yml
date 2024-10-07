@@ -276,11 +276,11 @@ bind__doh_proxy_allow: >-
                    (ansible_interfaces
                     | map('extract', ansible_facts, 'ipv6')
                     | select('defined') | list | flatten)) | d([]) -%}
-  {%-   if item.address | d() and not item.address | ipaddr('link-local') -%}
+  {%-   if item.address | d() and not item.address | ansible.utils.ipaddr('link-local') -%}
   {%-     set address = item.address -%}
   {%-     set prefix_or_mask = item.prefix | d(item.netmask) -%}
   {%-     set cidr = '{}/{}'.format(address, prefix_or_mask) -%}
-  {%-     set _ = cidrs.append(cidr | ipaddr('network/prefix')) -%}
+  {%-     set _ = cidrs.append(cidr | ansible.utils.ipaddr('network/prefix')) -%}
   {%-   endif -%}
   {%- endfor -%}
   {{ cidrs | unique | sort }}
@@ -309,7 +309,7 @@ bind__stats_proxy_allow: '{{ ["127.0.0.1", "::1"]
                              + ansible_all_ipv4_addresses | d([])
                              + (ansible_all_ipv6_addresses | d([])
                                 | difference(ansible_all_ipv6_addresses | d([])
-                                             | ipaddr("link-local")))
+                                             | ansible.utils.ipaddr("link-local")))
                              | unique | sort }}'
 
                                                                    # ]]]
@@ -502,7 +502,7 @@ bind__default_configuration:
         options:
 
           - name: 'localhost'
-            raw: '127.0.0.1;'
+            raw: '::1;'
 
       - name: 'qname-minimization'
         comment: 'Perform strict QNAME minimization (RFC7816)'
