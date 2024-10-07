@@ -243,7 +243,9 @@ max_replication_slots = {{ item.max_replication_slots | d('0') }}
 
 # These settings are ignored on a standby server
 synchronous_standby_names = '{{ item.synchronous_standby_names | d("") }}'
+{% if (item.version | d(postgresql_server__version)) is version_compare('16','<') %}
 vacuum_defer_cleanup_age = {{ item.vacuum_defer_cleanup_age | d('0') }}
+{% endif %}
 
 
 # - Standby Servers -
