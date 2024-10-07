@@ -56,11 +56,6 @@ General
   Collections during new project creation if the :command:`ansible-galaxy`
   command is not available in the user's ``$PATH``.
 
-:ref:`debops.debconf` role
-''''''''''''''''''''''''''
-
-- Added the missing :file:`meta/main.yml` file in the role directory.
-
 
 `debops v3.1.2`_ - 2024-09-23
 -----------------------------
