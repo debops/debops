@@ -46,6 +46,16 @@ New DebOps roles
   have to adjust the defaults for the :envvar:`dovecot__ldap_user_list_filter`
   variable if you use the :envvar:`dovecot__ldap_user_filter` variable.
 
+:ref:`debops.resolved` role
+'''''''''''''''''''''''''''
+
+- The role will add a new entry in the :file:`/etc/services` database (using
+  the :ref:`debops.etc_services` role) for the ``5355`` TCP and UDP ports,
+  reserved for the `Link-Local Multicast Name Resolution`__. This should help
+  with identification of unknown TCP/UDP ports of the listening services.
+
+  .. __: https://en.wikipedia.org/wiki/Link-Local_Multicast_Name_Resolution
+
 Changed
 ~~~~~~~
 
@@ -59,6 +69,23 @@ General
 
 Fixed
 ~~~~~
+
+General
+'''''''
+
+- The :ref:`debops.system_users` and the :ref:`debops.users` roles will add the
+  dotfiles repository cloned by the ``root`` UNIX account in the
+  :ref:`debops.yadm` role to the list of trusted :command:`git` repositories in
+  the :file:`~/.gitconfig` configuration file of each user account managed by
+  the role. This is needed to allow :command:`git` to clone local repositories
+  not owned by the UNIX account, required by the mitigation of the
+  `CVE-2022-24765`__ security vulnerability.
+
+  .. __: https://github.blog/open-source/git/git-security-vulnerability-announced/#cve-2022-24765
+
+- The :command:`debops` script will not try to download the required Ansible
+  Collections during new project creation if the :command:`ansible-galaxy`
+  command is not available in the user's ``$PATH``.
 
 :ref:`debops.apache` role
 '''''''''''''''''''''''''

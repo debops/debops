@@ -179,7 +179,17 @@ you can use the command:
    pipx install debops
 
 In this case you will have to install Ansible and other optional dependencies
-required by DebOps separately.
+required by DebOps separately. An example with ``ansible-core`` package:
+
+.. code-block:: console
+
+   # Install system-wide required dependencies
+   sudo apt install build-essential python3-dev libffi-dev libssl-dev \
+                    libsasl2-dev libldap2-dev
+
+   # Install ansible-core in pipx venv and inject required Python modules
+   pipx install ansible-core
+   pipx inject ansible-core netaddr passlib python-ldap toml
 
 Ansible notes
 ~~~~~~~~~~~~~
