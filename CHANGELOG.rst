@@ -67,6 +67,14 @@ General
   :file:`~/.ssh/authorized_keys` files correctly using optional ``follow``
   parameter.
 
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- The role is now compatible with GitLab 17.x and newer releases.
+
+- The runner registration method has changed, see the role documentation for
+  details.
+
 Fixed
 ~~~~~
 
