@@ -36,6 +36,17 @@ Added
 
   .. __: https://en.wikipedia.org/wiki/Link-Local_Multicast_Name_Resolution
 
+Changed
+~~~~~~~
+
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- The role is now compatible with GitLab 17.x and newer releases.
+
+- The runner registration method has changed, see the role documentation for
+  details.
+
 Fixed
 ~~~~~
 
