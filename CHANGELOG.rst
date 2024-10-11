@@ -23,6 +23,17 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.0: https://github.com/debops/debops/compare/v3.0.0...stable-3.0
 
+Changed
+-------
+
+General
+~~~~~~~
+
+- The :command:`debops` script uses a more generalized function to check
+  current UNIX account during execution, which should work in
+  non-interactive/tty conexts like :command:`systemd` services and unattended
+  CI environments.
+
 
 `debops v3.0.9`_ - 2024-10-07
 -----------------------------
