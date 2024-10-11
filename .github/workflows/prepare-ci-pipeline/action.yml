@@ -1,6 +1,7 @@
 ---
 # Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2021 DebOps <https://debops.org/>
+# Copyright (C) 2023 Berkhan Berkdemir <berkhan@tekdanisman.com>
+# Copyright (C) 2021-2024 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 name: Prepare CI pipeline environment
@@ -12,16 +13,31 @@ runs:
 
     - name: Add ~/.local/bin to $PATH
       run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
-      shell: 'bash'
+      shell: bash
 
-    - name: Prepare test environment
+    - name: Install system dependencies
       run: |
         sudo apt-get -qq update
-        sudo apt-get remove --purge -yq ansible python python2.7 python2.7-minimal
-        pip3 install --user --upgrade pip wheel "setuptools==65.7.0"
-        pip3 install --user --upgrade Jinja2 ansible
-        pip3 install --user .
-        debops-init ~/src/controller
-        printf "[debops_all_hosts]\nlocalhost ansible_connection=local\n" \
-                >> ~/src/controller/ansible/inventory/hosts
-      shell: 'bash'
+        sudo apt-get install build-essential python3-dev libffi-dev libssl-dev \
+                 libsasl2-dev libldap2-dev libpq-dev python3-pip python3-psycopg2
+      shell: bash
+
+    - name: Configure VirtualEnv and install Python dependencies
+      run: |
+        python3 -m venv venv
+        source venv/bin/activate
+        pip install wheel "setuptools==65.7.0"
+        pip install -r requirements-integration.txt
+        pip install .
+      shell: bash
+
+    - name: Initialize DebOps project
+      run: |
+        source venv/bin/activate
+        debops project init ~/src/controller
+        cd ~/src/controller
+        cat <<EOL >> ansible/inventory/hosts
+        [debops_all_hosts]
+        localhost ansible_connection=local
+        EOL
+      shell: bash

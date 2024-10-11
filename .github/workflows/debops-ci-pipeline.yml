@@ -1,82 +1,22 @@
 ---
 # Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2021 DebOps <https://debops.org/>
+# Copyright (C) 2023 Berkhan Berkdemir <berkhan@tekdanisman.com>
+# Copyright (C) 2021-2024 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # TODO: The CI pipeline is not finished yet, it needs more work around
 # preparing the environment and Ansible configuration for execution.
 
-name: DebOps CI pipeline
-on: [ 'workflow_dispatch' ]
+name: 'DebOps CI Pipeline'
+on: [ 'push', 'pull_request' ]
 
 jobs:
-  apt_role:
+  bootstrap_playbook:
     runs-on: 'ubuntu-latest'
     steps:
 
-      - name: Check out the repository
-        uses: 'actions/checkout@v3'
-
-      - name: Prepare the CI pipeline environment
-        uses: './.github/workflows/prepare-ci-pipeline'
-
-      - name: Apply the role on the host
-        env:
-          PY_COLORS: 1
-          ANSIBLE_FORCE_COLOR: 1
-        run: |
-          cd ~/src/controller
-          debops run service/apt --diff
-          debops run service/apt --diff
-
-
-  apt_listchanges_role:
-    runs-on: 'ubuntu-latest'
-    steps:
-
-      - name: Check out the repository
-        uses: 'actions/checkout@v3'
-
-      - name: Prepare the CI pipeline environment
-        uses: './.github/workflows/prepare-ci-pipeline'
-
-      - name: Apply the role on the host
-        env:
-          PY_COLORS: 1
-          ANSIBLE_FORCE_COLOR: 1
-        run: |
-          cd ~/src/controller
-          debops run service/apt_listchanges --diff
-          debops run service/apt_listchanges --diff
-
-
-  python_role:
-    runs-on: 'ubuntu-latest'
-    steps:
-
-      - name: Check out the repository
-        uses: 'actions/checkout@v3'
-
-      - name: Prepare the CI pipeline environment
-        uses: './.github/workflows/prepare-ci-pipeline'
-
-      - name: Apply the role on the host
-        env:
-          PY_COLORS: 1
-          ANSIBLE_FORCE_COLOR: 1
-        run: |
-          cd ~/src/controller
-          printf "[debops_service_python]\nlocalhost\n" >> ansible/inventory/hosts
-          debops run service/python --diff
-          debops run service/python --diff
-
-
-  common_playbook:
-    runs-on: 'ubuntu-latest'
-    steps:
-
-      - name: Check out the repository
-        uses: 'actions/checkout@v3'
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Prepare the CI pipeline environment
         uses: './.github/workflows/prepare-ci-pipeline'
@@ -86,6 +26,145 @@ jobs:
           PY_COLORS: 1
           ANSIBLE_FORCE_COLOR: 1
         run: |
+          source venv/bin/activate
           cd ~/src/controller
-          debops common --diff
-          debops common --diff
+          debops run bootstrap --diff
+          debops run bootstrap --diff
+
+
+  common_playbook:
+    runs-on: 'ubuntu-latest'
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare the CI pipeline environment
+        uses: './.github/workflows/prepare-ci-pipeline'
+
+      - name: Apply the playbook on the host
+        env:
+          PY_COLORS: 1
+          ANSIBLE_FORCE_COLOR: 1
+        run: |
+          source venv/bin/activate
+          cd ~/src/controller
+          debops run common --diff
+          debops run common --diff
+
+
+  apt_role:
+    runs-on: 'ubuntu-latest'
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare the CI pipeline environment
+        uses: './.github/workflows/prepare-ci-pipeline'
+
+      - name: Apply the role on the host
+        env:
+          PY_COLORS: 1
+          ANSIBLE_FORCE_COLOR: 1
+        run: |
+          source venv/bin/activate
+          cd ~/src/controller
+          debops run service/apt --diff
+          debops run service/apt --diff
+
+
+  apt_listchanges_role:
+    runs-on: 'ubuntu-latest'
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare the CI pipeline environment
+        uses: './.github/workflows/prepare-ci-pipeline'
+
+      - name: Apply the role on the host
+        env:
+          PY_COLORS: 1
+          ANSIBLE_FORCE_COLOR: 1
+        run: |
+          source venv/bin/activate
+          cd ~/src/controller
+          debops run service/apt_listchanges --diff
+          debops run service/apt_listchanges --diff
+
+
+  mariadb_server_role:
+    runs-on: 'ubuntu-latest'
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare the CI pipeline environment
+        uses: './.github/workflows/prepare-ci-pipeline'
+
+      - name: Apply the role on the host
+        env:
+          PY_COLORS: 1
+          ANSIBLE_FORCE_COLOR: 1
+        run: |
+          source venv/bin/activate
+          cd ~/src/controller
+          cat <<EOL >> ansible/inventory/hosts
+          [debops_service_mariadb_server]
+          localhost
+          EOL
+          debops run service/mariadb_server --diff
+          debops run service/mariadb_server --diff
+
+
+  postgresql_server_role:
+    runs-on: 'ubuntu-latest'
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare the CI pipeline environment
+        uses: './.github/workflows/prepare-ci-pipeline'
+
+      - name: Apply the role on the host
+        env:
+          PY_COLORS: 1
+          ANSIBLE_FORCE_COLOR: 1
+        run: |
+          source venv/bin/activate
+          cd ~/src/controller
+          cat <<EOL >> ansible/inventory/hosts
+          [debops_service_postgresql_server]
+          localhost
+          EOL
+          debops run service/postgresql_server --diff
+          debops run service/postgresql_server --diff
+
+
+  python_role:
+    runs-on: 'ubuntu-latest'
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare the CI pipeline environment
+        uses: './.github/workflows/prepare-ci-pipeline'
+
+      - name: Apply the role on the host
+        env:
+          PY_COLORS: 1
+          ANSIBLE_FORCE_COLOR: 1
+        run: |
+          source venv/bin/activate
+          cd ~/src/controller
+          cat <<EOL >> ansible/inventory/hosts
+          [debops_service_python]
+          localhost
+          EOL
+          debops run service/python --diff
+          debops run service/python --diff

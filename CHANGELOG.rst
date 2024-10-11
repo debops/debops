@@ -67,6 +67,9 @@ General
   :file:`~/.ssh/authorized_keys` files correctly using optional ``follow``
   parameter.
 
+- The DebOps CI pipeline in GitHub Actions is improved and will be executed on
+  pull requests and pushes to test changes before merging them.
+
 :ref:`debops.gitlab_runner` role
 ''''''''''''''''''''''''''''''''
 
