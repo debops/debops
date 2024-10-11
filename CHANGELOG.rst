@@ -32,6 +32,11 @@ General
 - The DebOps CI pipeline in GitHub Actions is improved and will be executed on
   pull requests and pushes to test changes before merging them.
 
+- The :command:`debops` script uses a more generalized function to check
+  current UNIX account during execution, which should work in
+  non-interactive/tty conexts like :command:`systemd` services and unattended
+  CI environments.
+
 
 `debops v3.1.3`_ - 2024-10-07
 -----------------------------
