@@ -23,6 +23,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.1: https://github.com/debops/debops/compare/v3.1.0...stable-3.1
 
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- The DebOps CI pipeline in GitHub Actions is improved and will be executed on
+  pull requests and pushes to test changes before merging them.
+
 
 `debops v3.1.3`_ - 2024-10-07
 -----------------------------
