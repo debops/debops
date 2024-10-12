@@ -9,7 +9,7 @@
 
 from __future__ import print_function
 from json import loads, dumps
-from sys import exit, version_info
+from sys import exit, version_info, maxsize
 from grp import getgrall
 import socket
 
@@ -137,5 +137,10 @@ if not output['admin_private_email']:
                             for s in admin_users]))})
     else:
         output.update({"admin_private_email": ["root"]})
+
+if maxsize > 2**32:
+    output.update({"is_64bits": True})
+else:
+    output.update({"is_64bits": False})
 
 print(dumps(output, sort_keys=True, indent=4))
