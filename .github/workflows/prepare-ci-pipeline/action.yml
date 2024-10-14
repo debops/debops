@@ -1,6 +1,6 @@
 ---
-# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2023 Berkhan Berkdemir <berkhan@tekdanisman.com>
+# Copyright (C) 2021-2024 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2023      Berkhan Berkdemir <berkhan@tekdanisman.com>
 # Copyright (C) 2021-2024 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -38,6 +38,8 @@ runs:
         cd ~/src/controller
         cat <<EOL >> ansible/inventory/hosts
         [debops_all_hosts]
-        localhost ansible_connection=local
+        localhost ansible_connection=local ansible_python_interpreter=/usr/bin/python3
+        [all:vars]
+        debops__no_log=false
         EOL
       shell: bash

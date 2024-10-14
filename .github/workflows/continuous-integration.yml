@@ -206,6 +206,7 @@ jobs:
 
   debops-wheel:
     runs-on: 'ubuntu-latest'
+    timeout-minutes: 120
     steps:
 
       - name: Add ~/.local/bin to $PATH
@@ -221,7 +222,7 @@ jobs:
           sudo apt-get -qq update
           sudo apt-get -yq install pandoc pandoc-data graphviz
           pip3 install --user --upgrade pip wheel "setuptools==65.7.0" pypandoc
-          pip3 install --user --upgrade sphinx sphinx-autobuild sphinx_rtd_theme
+          pip3 install --user --upgrade sphinx==5.3.0 sphinx-autobuild sphinx_rtd_theme
 
       - name: Build DebOps Python wheel package
         run: |
@@ -233,6 +234,7 @@ jobs:
 
   debops-sdist:
     runs-on: 'ubuntu-latest'
+    timeout-minutes: 120
     steps:
 
       - name: Add ~/.local/bin to $PATH
@@ -248,7 +250,7 @@ jobs:
           sudo apt-get -qq update
           sudo apt-get -yq install pandoc pandoc-data graphviz
           pip3 install --user --upgrade pip wheel "setuptools==65.7.0" pypandoc
-          pip3 install --user --upgrade sphinx sphinx-autobuild sphinx_rtd_theme
+          pip3 install --user --upgrade sphinx==5.3.0 sphinx-autobuild sphinx_rtd_theme
 
       - name: Build DebOps Python sdist package
         run: |
@@ -282,6 +284,7 @@ jobs:
 
   documentation:
     runs-on: 'ubuntu-latest'
+    timeout-minutes: 120
     steps:
 
       - name: Add ~/.local/bin to $PATH
@@ -295,7 +298,7 @@ jobs:
           sudo apt-get -qq update
           sudo apt-get install -yq graphviz
           pip3 install --user --upgrade pip wheel "setuptools==65.7.0"
-          pip3 install --user --upgrade sphinx sphinx-autobuild sphinx_rtd-theme
+          pip3 install --user --upgrade sphinx==5.3.0 sphinx-autobuild sphinx_rtd-theme
 
       - name: Build documentation site
         run: |

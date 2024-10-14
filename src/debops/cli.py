@@ -10,6 +10,7 @@ from .ansiblerunner import AnsibleRunner
 from .ansibleplaybookrunner import AnsiblePlaybookRunner
 from .envrunner import EnvRunner
 import logging
+import getpass
 import sys
 import os
 
@@ -23,7 +24,7 @@ class Interpreter(object):
         self.config = Configuration()
         self.parsed_args = Subcommands(self.args)
         logger.debug('Command line interpreter initialized')
-        logger.debug('Control user=' + os.getlogin())
+        logger.debug('Control user=' + getpass.getuser())
 
         if self.parsed_args.section == 'project':
             if self.parsed_args.command == 'init':
