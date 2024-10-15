@@ -37,6 +37,16 @@ General
   non-interactive/tty conexts like :command:`systemd` services and unattended
   CI environments.
 
+Fixed
+~~~~~
+
+:ref:`debops.docker_gen` role
+'''''''''''''''''''''''''''''
+
+- Flattened the list of directories that are created by the ``file`` task. This
+  should fix the issue of Ansible stopping during execution due to nested lists
+  in the ``loop`` keyword.
+
 
 `debops v3.1.3`_ - 2024-10-07
 -----------------------------
