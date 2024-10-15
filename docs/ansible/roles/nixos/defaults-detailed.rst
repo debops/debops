@@ -105,29 +105,14 @@ system. Any changes in configuration trigger a rebuild of the NixOS system.
 Examples
 ~~~~~~~~
 
-Create an example configuration file in a subdirectory (a silly example):
+Create an `example configuration using flakes`__ (available in a separate file
+in the DebOps repository):
 
-.. code-block:: yaml
+.. __: https://nixos-and-flakes.thiscute.world/nixos-with-flakes/nixos-with-flakes-enabled
 
-   nixos__configuration:
-
-     - name: 'flakes/system.nix'
-       raw: |
-         {
-           description = "Custom system configuration";
-
-           inputs = {
-             nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05"
-           };
-
-           outputs = { nixpkgs, ... }: {
-             nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-               system = "x86_64-linux";
-               modules = [ ../configuration.nix ];
-             };
-           };
-         }
-       state: 'present'
+.. literalinclude:: examples/flake-configuration.yml
+   :language: yaml
+   :lines: 1,9-
 
 An example definition of the :file:`/etc/nixos/configuration.nix` configuration
 file can be found in the :envvar:`nixos__default_configuration` variable.

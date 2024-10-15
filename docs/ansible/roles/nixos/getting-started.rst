@@ -232,3 +232,7 @@ List of other useful resources related to the :ref:`debops.nixos` Ansible role:
 - Comparison of `Debian and NixOS management commands`__
 
   .. __: https://nixos.wiki/wiki/Nix_to_Debian_phrasebook
+
+- Beginners Guide to `NixOS & Flakes`__, an unofficial book for beginners
+
+  .. __: https://nixos-and-flakes.thiscute.world/
