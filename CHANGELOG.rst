@@ -38,7 +38,7 @@ General
   CI environments.
 
 Fixed
------
+~~~~~
 
 :ref:`debops.docker_gen` role
 '''''''''''''''''''''''''''''
