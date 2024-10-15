@@ -1,0 +1,34 @@
+---
+# Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2024 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Define a Flake-based system configuration
+# Ref: https://nixos-and-flakes.thiscute.world/nixos-with-flakes/nixos-with-flakes-enabled
+# File: ansible/inventory/group_vars/nixos-hosts/nixos.yml
+
+nixos__configuration:
+
+  - name: 'flake.nix'
+    raw: |
+      {
+        description = "A simple NixOS flake";
+
+        inputs = {
+          # NixOS official package source, using the nixos-24.05 branch here
+          nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+        };
+
+        outputs = { self, nixpkgs, ... }@inputs: {
+          # Please replace my-nixos with your hostname
+          nixosConfigurations.my-nixos = nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            modules = [
+              # Import the previous configuration.nix we used,
+              # so the old configuration file still takes effect
+              ./configuration.nix
+            ];
+          };
+        };
+      }
+    state: 'present'
