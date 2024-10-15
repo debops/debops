@@ -104,6 +104,13 @@ General
 - Fixed an issue with the vhost ``state: "absent"`` parameter not working
   correctly when the ``enabled: False`` parameter was not set as well.
 
+:ref:`debops.docker_gen` role
+'''''''''''''''''''''''''''''
+
+- Flattened the list of directories that are created by the ``file`` task. This
+  should fix the issue of Ansible stopping during execution due to nested lists
+  in the ``loop`` keyword.
+
 :ref:`debops.dropbear_initramfs` role
 '''''''''''''''''''''''''''''''''''''
 
