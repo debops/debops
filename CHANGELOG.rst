@@ -132,6 +132,19 @@ General
 - The ``bitcoind`` role was removed due to lack of interest by the role
   maintainer.
 
+Security
+~~~~~~~~
+
+:ref:`debops.icinga` role
+'''''''''''''''''''''''''
+
+- The GPG key of the Icinga upstream APT repository `has been replaced`__ on
+  30th September 2024. The role includes the new key which should be installed
+  on the host on the next run. The old GPG key will not be removed
+  automatically.
+
+  .. __: https://icinga.com/blog/2024/08/26/icinga-package-repository-key-rotation-2024/
+
 
 `debops v3.2.0`_ - 2024-09-16
 -----------------------------
