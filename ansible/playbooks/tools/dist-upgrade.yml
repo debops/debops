@@ -209,7 +209,8 @@
         group: 'root'
         mode: '0644'
         backup: False
-      when: dist_upgrade_register_etc_services is defined and
+      when: dist_upgrade_register_etc_services is not skipped and
+            dist_upgrade_register_etc_services is defined and
             dist_upgrade_register_etc_services.stat.exists
 
     - name: Remove the lockfile
