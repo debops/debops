@@ -117,6 +117,13 @@ General
 - The role now supports both the old and the new location if the initramfs
   configuration files.
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- Fixed an issue with the ``vacuum_defer_cleanup_age`` option removal in
+  PostgreSQL 16.x resulting in failed startup of the service. The option will
+  be added only on supported PostgreSQL versions.
+
 Removed
 ~~~~~~~
 
