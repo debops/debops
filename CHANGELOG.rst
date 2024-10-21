@@ -50,6 +50,12 @@ General
   should fix the issue of Ansible stopping during execution due to nested lists
   in the ``loop`` keyword.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Fixed conditional logic in a task which determines if the "autosetup"
+  operation should be performed during Nextcloud/ownCloud installation.
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
