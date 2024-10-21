@@ -23,6 +23,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.2: https://github.com/debops/debops/compare/v3.2.0...stable-3.2
 
+Added
+~~~~~
+
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Different file templates used in the role can now be overridden by the users
+  with the DebOps template override system and the ``template_src`` lookup
+  plugin.
+
 Changed
 ~~~~~~~
 
