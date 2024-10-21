@@ -127,6 +127,13 @@ General
 - The role now supports both the old and the new location if the initramfs
   configuration files.
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- The role will restart the :command:`fail2ban` service instead of reloading
+  it, which will ensure that the custom rules are re-added when the
+  :command:`ferm` service is restarted.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
