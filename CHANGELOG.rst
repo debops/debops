@@ -98,6 +98,9 @@ General
   Collections during new project creation if the :command:`ansible-galaxy`
   command is not available in the user's ``$PATH``.
 
+- The :ref:`tools/dist-upgrade.yml` playbook will not fail anymore during
+  :file:`/etc/services` database assembly if no upgrade was performed.
+
 :ref:`debops.apache` role
 '''''''''''''''''''''''''
 
