@@ -50,6 +50,13 @@ General
   should fix the issue of Ansible stopping during execution due to nested lists
   in the ``loop`` keyword.
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- The role will restart the :command:`fail2ban` service instead of reloading
+  it, which will ensure that the custom rules are re-added when the
+  :command:`ferm` service is restarted.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
