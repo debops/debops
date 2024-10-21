@@ -57,6 +57,10 @@ General
   it, which will ensure that the custom rules are re-added when the
   :command:`ferm` service is restarted.
 
+- Fixed an issue with the role failing if the :envvar:`ferm__parsed_rules`
+  variable is not defined correctly. The role will skip rule generation in such
+  case instead of failing with the "AnsibleUndefined" error message.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
