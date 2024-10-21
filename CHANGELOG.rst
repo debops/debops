@@ -46,6 +46,13 @@ New DebOps roles
   have to adjust the defaults for the :envvar:`dovecot__ldap_user_list_filter`
   variable if you use the :envvar:`dovecot__ldap_user_filter` variable.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Different file templates used in the role can now be overridden by the users
+  with the DebOps template override system and the ``template_src`` lookup
+  plugin.
+
 :ref:`debops.resolved` role
 '''''''''''''''''''''''''''
 
