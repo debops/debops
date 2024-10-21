@@ -1,7 +1,7 @@
 ---
-# Copyright (C) 2021-2022 Berkhan Berkdemir <berkhan@tekdanisman.com>
+# Copyright (C) 2021-2023 Berkhan Berkdemir <berkhan@tekdanisman.com>
 # Copyright (C) 2022      Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2022      DebOps <https://debops.org/>
+# Copyright (C) 2023      DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 # .. _miniflux__ref_defaults:
@@ -132,14 +132,6 @@ miniflux__database_password: '{{ lookup("password", secret + "/postgresql/" +
 # installation definition can be found in the
 # :envvar:`miniflux__golang__dependent_packages` variable.
 
-# .. envvar:: miniflux__upstream_gpg_key [[[
-#
-# The fingerprint of the GPG key which is used to sign the Miniflux
-# releases. It will be used to verify the downloaded signature file as
-# well as the :command:`git` tags in the source repository.
-miniflux__upstream_gpg_key: '5A7A 89AC F055 24CA A0F3  6F9B AEB7 A164 0710 8DB5'
-
-                                                                   # ]]]
 # .. envvar:: miniflux__upstream_type [[[
 #
 # Specify the method which should be used to install Miniflux binary.  The
@@ -155,7 +147,7 @@ miniflux__upstream_type: 'apt'
 # .. envvar:: miniflux__upstream_version [[[
 #
 # Version of the Miniflux upstream.
-miniflux__upstream_version: '2.0.35'
+miniflux__upstream_version: '2.0.48'
 
                                                                    # ]]]
 # .. envvar:: miniflux__upstream_url_mirror [[[
@@ -177,7 +169,7 @@ miniflux__upstream_platform: 'linux-amd64'
 #
 # The URL of the upstream :command:`git` repository which contains
 # Miniflux source code.
-miniflux__upstream_git_repository: 'https://github.com/miniflux/miniflux'
+miniflux__upstream_git_repository: 'https://github.com/miniflux/v2'
 
                                                                    # ]]]
 # .. envvar:: miniflux__binary [[[
@@ -253,9 +245,7 @@ miniflux__combined_configuration: '{{ miniflux__default_configuration
 
 miniflux__keyring__dependent_apt_keys:
 
-  - id: '{{ miniflux__upstream_gpg_key }}'
-    url: 'https://apt.miniflux.app/KEY.gpg'
-    repo: 'deb https://apt.miniflux.app/ /'
+  - repo: 'deb [trusted=yes] https://repo.miniflux.app/apt/ /'
     state: '{{ "present"
                if (miniflux__upstream_type == "apt")
                else "absent" }}'
@@ -321,21 +311,18 @@ miniflux__golang__dependent_packages:
   - name: 'miniflux'
     upstream_type: '{{ miniflux__upstream_type }}'
     apt_packages: [ 'miniflux' ]
-    gpg:
-      - id: '{{ miniflux__upstream_gpg_key }}'
-        url: 'https://apt.miniflux.app/KEY.gpg'
     url:
       - src: '{{ miniflux__upstream_url_mirror + "download/" + miniflux__upstream_version + "/miniflux-" + miniflux__upstream_platform }}'
-        dest: 'releases/{{ miniflux__upstream_platform }}/miniflux/miniflux/" + miniflux__upstream_version + "/miniflux_" + miniflux__upstream_version + "_linux_amd64'
+        dest: '{{ "releases/" + miniflux__upstream_platform + "/miniflux/v2/" + miniflux__upstream_version + "/miniflux_" + miniflux__upstream_version + "_" + miniflux__upstream_platform.replace("-", "_") }}'
     url_binaries:
-      - src: 'releases/{{ miniflux__upstream_platform }}/miniflux/miniflux/" + miniflux__upstream_version + "/miniflux_" + miniflux__upstream_version + "_linux_amd64'
+      - src: '{{ "releases/" + miniflux__upstream_platform + "/miniflux/v2/" + miniflux__upstream_version + "/miniflux_" + miniflux__upstream_version + "_" + miniflux__upstream_platform.replace("-", "_") }}'
         dest: 'miniflux'
         notify: [ 'Restart miniflux' ]
     git:
       - repo: '{{ miniflux__upstream_git_repository }}'
         version: '{{ miniflux__upstream_version }}'
         build_script: |
-          make clean linux-amd64
+          'make clean {{ miniflux__upstream_platform }}'
     git_binaries:
       - src: 'github.com/miniflux/v2/bin/miniflux.app'
         dest: 'miniflux'
