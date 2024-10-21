@@ -27,7 +27,7 @@
 
 - name: Create default welcome page if enabled
   ansible.builtin.template:
-    src: '{{ item.welcome_template | d(nginx_welcome_template) }}'
+    src: '{{ lookup("debops.debops.template_src", (item.welcome_template | d(nginx_welcome_template))) }}'
     dest: '{{ item.root + "/index.html"
               if item.root | d()
               else ("{}/sites/{}/{}/index.html".format(nginx_www + ("/" + item.owner if item.owner | d() else ""),
@@ -53,7 +53,7 @@
 
 - name: Copy 'normalize.css' CSS file for welcome page
   ansible.builtin.template:
-    src: 'srv/www/sites/welcome/public/normalize.css'
+    src: '{{ lookup("debops.debops.template_src", "srv/www/sites/welcome/public/normalize.css") }}'
     dest: '{{ item.root + "/normalize.css"
               if item.root | d()
               else ("{}/sites/{}/{}/normalize.css".format(nginx_www + ("/" + item.owner if item.owner | d() else ""),
@@ -163,7 +163,7 @@
 
 - name: Generate nginx server configuration
   ansible.builtin.template:
-    src: 'etc/nginx/sites-available/{{ item.type | d(nginx_default_type) }}.conf.j2'
+    src: '{{ lookup("debops.debops.template_src", "etc/nginx/sites-available/" + ( item.type | d(nginx_default_type) ) + ".conf.j2") }}'
     dest: '/etc/nginx/sites-available/{{ item.filename | d(item.name
                                                            if item.name is string
                                                            else item.name[0] | d("default")) }}.conf'
