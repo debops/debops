@@ -44,6 +44,13 @@ Fixed
   should fix the issue of Ansible stopping during execution due to nested lists
   in the ``loop`` keyword.
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- Fixed an issue with the ``vacuum_defer_cleanup_age`` option removal in
+  PostgreSQL 16.x resulting in failed startup of the service. The option will
+  be added only on supported PostgreSQL versions.
+
 Security
 ~~~~~~~~
 
