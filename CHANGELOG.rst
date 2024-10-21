@@ -120,6 +120,12 @@ General
 - The role now supports both the old and the new location if the initramfs
   configuration files.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Fixed conditional logic in a task which determines if the "autosetup"
+  operation should be performed during Nextcloud/ownCloud installation.
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
