@@ -65,7 +65,7 @@
 
 - name: Configure nginx upstreams
   ansible.builtin.template:
-    src: '{{ lookup("debops.debops.template_src", "'etc/nginx/conf.d/upstream_" + (item.type | d("default")) + ".conf.j2") }}'
+    src: '{{ lookup("debops.debops.template_src", "etc/nginx/conf.d/upstream_" + (item.type | d("default")) + ".conf.j2") }}'
     dest: '/etc/nginx/conf.d/upstream_{{ item.name }}.conf'
     owner: 'root'
     group: 'root'
