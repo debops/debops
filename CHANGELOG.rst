@@ -23,6 +23,14 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.2: https://github.com/debops/debops/compare/v3.2.0...stable-3.2
 
+Fixed
+~~~~~
+
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Fixed wrong Jinja syntax in "Configure nginx upstreams" task.
+
 
 `debops v3.2.3`_ - 2024-10-21
 -----------------------------
