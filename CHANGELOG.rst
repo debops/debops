@@ -394,7 +394,7 @@ Security
 '''''''''''''''''''''''''
 
 - The GPG key of the Icinga upstream APT repository `has been replaced`__ on
-  30th September 2024. The role includes the new key which should be installed
+  2024-09-30. The role includes the new key which should be installed
   on the host on the next run. The old GPG key will not be removed
   automatically.
 
