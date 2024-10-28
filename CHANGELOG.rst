@@ -94,6 +94,15 @@ General
 
   .. __: https://docs.python.org/3.11/whatsnew/3.10.html#distutils-deprecated
 
+:ref:`debops.snmpd` role
+''''''''''''''''''''''''
+
+- The :file:`snmpd.service` configuration file provided in the role will ensure
+  that the :command:`snmpd` daemon is restarted on failure. Older versions of
+  :command:`snmpd` can `fail due to rapid changes in network interfaces`__.
+
+  .. __: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1023656
+
 Fixed
 ~~~~~
 
