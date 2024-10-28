@@ -65,7 +65,7 @@ General
 
 - The :command:`debops` script uses a more generalized function to check
   current UNIX account during execution, which should work in
-  non-interactive/tty conexts like :command:`systemd` services and unattended
+  non-interactive/tty contexts like :command:`systemd` services and unattended
   CI environments.
 
 Fixed
