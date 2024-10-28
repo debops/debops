@@ -39,10 +39,14 @@
       become_user: '{{ opensearch__user }}'
       changed_when: False
 
+    - name: Populate service facts
+      ansible.builtin.service_facts:
+
     - name: Stop service
       ansible.builtin.service:
         name: 'opensearch'
         state: 'stopped'
+      when: ansible_facts.services['opensearch.service'] is defined
 
     - name: Remove old installation directory
       ansible.builtin.file:
