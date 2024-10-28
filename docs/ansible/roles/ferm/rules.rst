@@ -51,7 +51,7 @@ the following keys:
 
 ``domain``
   Optional. :command:`iptables` domain used for the firewall rule. Possible values:
-  :command:`ip`, ``ip6``. Defaults to :envvar:`ferm__domains`.
+  ``ip``, ``ip6``. Defaults to :envvar:`ferm__domains`.
 
 ``table``
   Optional. :command:`iptables` table to which the rule is added or from which it
@@ -637,5 +637,5 @@ on it, disable support completely by setting :envvar:`ferm__include_legacy`
 to ``False`` which will avoid the additional chain from being created.
 
 If you're not sure if you still have legacy rules defined, look for
-variable names with only on '_' after the :program:`ferm` prefix (e. g.
+variable names with only one '_' after the :program:`ferm` prefix (e. g.
 :envvar:`ferm_input_list` and :envvar:`ferm_input_dependent_list`).
