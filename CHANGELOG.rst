@@ -107,6 +107,13 @@ General
 - The runner registration method has changed, see the role documentation for
   details.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The custom :command:`systemd` override that ensures that the :command:`nginx`
+  service is started after network is available will be installed only on older
+  Debian/Ubuntu releases; it's now the default since Debian Bookworm.
+
 :ref:`debops.rspamd` role
 '''''''''''''''''''''''''
 
