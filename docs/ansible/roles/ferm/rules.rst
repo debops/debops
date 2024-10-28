@@ -51,7 +51,7 @@ the following keys:
 
 ``domain``
   Optional. :command:`iptables` domain used for the firewall rule. Possible values:
-  :command:``ip``, ``ip6``. Defaults to :envvar:`ferm__domains`.
+  ``ip``, ``ip6``. Defaults to :envvar:`ferm__domains`.
 
 ``table``
   Optional. :command:`iptables` table to which the rule is added or from which it
