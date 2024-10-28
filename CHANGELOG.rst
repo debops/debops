@@ -46,7 +46,7 @@ Fixed
 General
 '''''''
 
-- The :ref:`tools/dist-upgrade.yml` playbook will not fail anymore during
+- The :file:`tools/dist-upgrade.yml` playbook will not fail anymore during
   :file:`/etc/services` database assembly if no upgrade was performed.
 
 :ref:`debops.docker_gen` role
