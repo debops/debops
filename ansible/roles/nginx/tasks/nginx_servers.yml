@@ -163,7 +163,7 @@
 
 - name: Generate nginx server configuration
   ansible.builtin.template:
-    src: '{{ lookup("debops.debops.template_src", "etc/nginx/sites-available/" + ( item.type | d(nginx_default_type) ) + ".conf.j2") }}'
+    src: '{{ lookup("debops.debops.template_src", "etc/nginx/sites-available/" + (item.type | d(nginx_default_type)) + ".conf.j2") }}'
     dest: '/etc/nginx/sites-available/{{ item.filename | d(item.name
                                                            if item.name is string
                                                            else item.name[0] | d("default")) }}.conf'
