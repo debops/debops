@@ -185,6 +185,13 @@ General
   variable is not defined correctly. The role will skip rule generation in such
   case instead of failing with the "AnsibleUndefined" error message.
 
+:ref:`debops.ifupdown` role
+'''''''''''''''''''''''''''
+
+- The :file:`iface@.service` :command:`systemd` unit provided by the role is
+  changed to use ``After==sys-subsystem-net-devices-%i.device`` parameter. This
+  should ensure that the bridge interfaces are correctly started at boot time.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
