@@ -63,6 +63,13 @@ General
   :file:`Dockerfile` configuration file to ensure that the Docker image builds
   correctly. This fixes an error in the CI checks in GitHub Actions.
 
+:ref:`debops.ifupdown` role
+'''''''''''''''''''''''''''
+
+- The :file:`iface@.service` :command:`systemd` unit provided by the role is
+  changed to use ``After==sys-subsystem-net-devices-%i.device`` parameter. This
+  should ensure that the bridge interfaces are correctly started at boot time.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
