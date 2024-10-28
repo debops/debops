@@ -66,6 +66,9 @@ New DebOps roles
   enabled by default. DebOps respects this upstream default. You can change it
   using :envvar:`netbox__config_census_reporting`.
 
+- The role can be used with NetBox deployed in a clustered PostgreSQL setup
+  with primary/standby nodes.
+
 :ref:`debops.resolved` role
 '''''''''''''''''''''''''''
 
