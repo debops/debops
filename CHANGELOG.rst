@@ -52,19 +52,22 @@ New DebOps roles
   have to adjust the defaults for the :envvar:`dovecot__ldap_user_list_filter`
   variable if you use the :envvar:`dovecot__ldap_user_filter` variable.
 
-:ref:`debops.nginx` role
-''''''''''''''''''''''''
-
-- Different file templates used in the role can now be overridden by the users
-  with the DebOps template override system and the ``template_src`` lookup
-  plugin.
-
 :ref:`debops.netbox` role
 '''''''''''''''''''''''''
 
 - Starting with NetBox ``v3.4.9``, anonymized reporting of census data is being
   enabled by default. DebOps respects this upstream default. You can change it
   using :envvar:`netbox__config_census_reporting`.
+
+- The role can be used with NetBox deployed in a clustered PostgreSQL setup
+  with primary/standby nodes.
+
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Different file templates used in the role can now be overridden by the users
+  with the DebOps template override system and the ``template_src`` lookup
+  plugin.
 
 :ref:`debops.resolved` role
 '''''''''''''''''''''''''''
