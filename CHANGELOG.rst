@@ -58,6 +58,13 @@ Updates of upstream application versions
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
   ``v3.7.2``.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The custom :command:`systemd` override that ensures that the :command:`nginx`
+  service is started after network is available will be installed only on older
+  Debian/Ubuntu releases; it's now the default since Debian Bookworm.
+
 :ref:`debops.rspamd` role
 '''''''''''''''''''''''''
 
