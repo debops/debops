@@ -23,6 +23,18 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.1: https://github.com/debops/debops/compare/v3.1.0...stable-3.1
 
+Changed
+~~~~~~~
+
+:ref:`debops.rspamd` role
+'''''''''''''''''''''''''
+
+- Due to the `removal`__ of the ``distutils`` Python module from Python v3.12,
+  custom scripts included in the role which create and update DKIM keys have
+  been updated to use the ``shutil`` module instead.
+
+  .. __: https://docs.python.org/3.11/whatsnew/3.10.html#distutils-deprecated
+
 Fixed
 ~~~~~
 
