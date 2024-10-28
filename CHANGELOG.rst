@@ -42,6 +42,13 @@ Added
 - The role can be used with NetBox deployed in a clustered PostgreSQL setup
   with primary/standby nodes.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Different file templates used in the role can now be overridden by the users
+  with the DebOps template override system and the ``template_src`` lookup
+  plugin.
+
 Changed
 ~~~~~~~
 
