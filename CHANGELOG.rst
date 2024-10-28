@@ -38,6 +38,12 @@ New DebOps roles
 
   .. __: https://www.influxdata.com/products/influxdb/
 
+:ref:`debops.core` role
+'''''''''''''''''''''''
+
+- A new local fact, ``ansible_local.core.is_64bits``, can be used to determine
+  if the current system supports 32-bit or 64-bit architecture.
+
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
 
@@ -168,6 +174,12 @@ General
 - Fixed an issue with the ``vacuum_defer_cleanup_age`` option removal in
   PostgreSQL 16.x resulting in failed startup of the service. The option will
   be added only on supported PostgreSQL versions.
+
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- The :file:`50-pid-max.conf` configuration file will be installed only on
+  platforms which support 64-bit architecture.
 
 Removed
 ~~~~~~~
