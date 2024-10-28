@@ -312,6 +312,9 @@ sysctl__default_parameters:
       To override settings in this file, create a local file in /etc
       (e.g. /etc/sysctl.d/90-override.conf), and put any assignments
       there.
+    state: '{{ "present"
+               if ((ansible_local.core.is_64bits | d(True)) | bool)
+               else "absent" }}'
     options:
 
       - name: 'kernel.pid_max'
