@@ -59,6 +59,13 @@ New DebOps roles
   with the DebOps template override system and the ``template_src`` lookup
   plugin.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Starting with NetBox ``v3.4.9``, anonymized reporting of census data is being
+  enabled by default. DebOps respects this upstream default. You can change it
+  using :envvar:`netbox__config_census_reporting`.
+
 :ref:`debops.resolved` role
 '''''''''''''''''''''''''''
 
@@ -71,6 +78,12 @@ New DebOps roles
 
 Changed
 ~~~~~~~
+
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.netbox` role, the NetBox version has been updated to
+  ``v3.7.2``.
 
 General
 '''''''
@@ -195,6 +208,15 @@ General
 
 - The ``bitcoind`` role was removed due to lack of interest by the role
   maintainer.
+
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- The NAPALM integration feature found in NetBox 3.4 and before has been moved
+  to a dedicated plugin. If you want to continue using it, you will have to
+  install the plugin. All role variables about NAPALM except
+  :envvar:`netbox__napalm_ssh_generate` and
+  :envvar:`netbox__napalm_ssh_generate_bits` have been removed.
 
 Security
 ~~~~~~~~
