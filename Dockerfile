@@ -31,6 +31,7 @@ RUN apt-get -q update \
        python3-wheel \
        python3-pypandoc \
        python3-sphinx \
+       python3-sphinx-rtd-theme \
        pandoc \
        make \
        git

@@ -26,6 +26,13 @@ You can read information about required changes between releases in the
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- The ``python3-sphinx-rtd-theme`` APT package is included in the
+  :file:`Dockerfile` configuration file to ensure that the Docker image builds
+  correctly. This fixes an error in the CI checks in GitHub Actions.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
