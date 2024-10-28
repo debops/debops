@@ -23,6 +23,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.1: https://github.com/debops/debops/compare/v3.1.0...stable-3.1
 
+Added
+~~~~~
+
+:ref:`debops.core` role
+'''''''''''''''''''''''
+
+- A new local fact, ``ansible_local.core.is_64bits``, can be used to determine
+  if the current system supports 32-bit or 64-bit architecture.
+
 Changed
 ~~~~~~~
 
@@ -58,6 +67,12 @@ General
 ''''''''''''''''''''''''
 
 - Fixed wrong Jinja syntax in "Configure nginx upstreams" task.
+
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- The :file:`50-pid-max.conf` configuration file will be installed only on
+  platforms which support 64-bit architecture.
 
 
 `debops v3.1.4`_ - 2024-10-21
