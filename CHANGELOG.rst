@@ -38,6 +38,11 @@ New DebOps roles
 
   .. __: https://www.influxdata.com/products/influxdb/
 
+:ref:`debops.miniflux` role
+'''''''''''''''''''''''''''
+
+- Bump Miniflux version from 2.0.48 to 2.2.1.
+
 :ref:`debops.core` role
 '''''''''''''''''''''''
 
