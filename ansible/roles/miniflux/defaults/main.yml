@@ -134,14 +134,13 @@ miniflux__database_password: '{{ lookup("password", secret + "/postgresql/" +
 
 # .. envvar:: miniflux__upstream_type [[[
 #
-# Specify the method which should be used to install Miniflux binary.  The
-# ``apt`` method will install Miniflux via the configured APT repository, if
-# it's available. The ``url`` method will download the :command:`miniflux`
-# compiled binary and install it directly after verification with the official
-# GPG key. The ``git`` method will download Miniflux source code and compile it
-# locally (this method doesn't work on Debian Bullseye due to missing "embed"
-# Go library).
-miniflux__upstream_type: 'apt'
+# Specify the method which should be used to install Miniflux binary. The
+# ``url`` method will download the :command:`miniflux` compiled binary and
+# install it directly after verification with the official GPG key. The
+# ``git`` method will download Miniflux source code and compile it locally
+# (this method doesn't work on Debian Bullseye due to missing "embed" Go
+# library).
+miniflux__upstream_type: 'url'
 
                                                                    # ]]]
 # .. envvar:: miniflux__upstream_version [[[
@@ -243,14 +242,6 @@ miniflux__combined_configuration: '{{ miniflux__default_configuration
 # Configuration variables for other Ansible roles [[[
 # ---------------------------------------------------
 
-miniflux__keyring__dependent_apt_keys:
-
-  - repo: 'deb [trusted=yes] https://repo.miniflux.app/apt/ /'
-    state: '{{ "present"
-               if (miniflux__upstream_type == "apt")
-               else "absent" }}'
-
-                                                                   # ]]]
 # .. envvar:: miniflux__postgresql__dependent_roles [[[
 #
 # Role configuration for the :ref:`debops.postgresql` Ansible role.
@@ -310,7 +301,6 @@ miniflux__golang__dependent_packages:
 
   - name: 'miniflux'
     upstream_type: '{{ miniflux__upstream_type }}'
-    apt_packages: [ 'miniflux' ]
     url:
       - src: '{{ miniflux__upstream_url_mirror + "download/" + miniflux__upstream_version + "/miniflux-" + miniflux__upstream_platform }}'
         dest: '{{ "releases/" + miniflux__upstream_platform + "/miniflux/v2/" + miniflux__upstream_version + "/miniflux_" + miniflux__upstream_version + "_" + miniflux__upstream_platform.replace("-", "_") }}'

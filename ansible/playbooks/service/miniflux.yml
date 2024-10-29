@@ -16,17 +16,6 @@
 
   roles:
 
-    - role: keyring
-      tags: [ 'role::keyring', 'skip::keyring', 'role::golang' ]
-      keyring__dependent_apt_keys:
-        - '{{ miniflux__keyring__dependent_apt_keys }}'
-      keyring__dependent_gpg_user: '{{ golang__keyring__dependent_gpg_user }}'
-      keyring__dependent_gpg_keys:
-        - '{{ nginx__keyring__dependent_apt_keys }}'
-        - '{{ golang__keyring__dependent_gpg_keys }}'
-      golang__dependent_packages:  # noqa var-naming[no-role-prefix]
-        - '{{ miniflux__golang__dependent_packages }}'
-
     - role: postgresql
       tags: [ 'role::postgresql', 'skip::postgresql' ]
       postgresql__dependent_roles:
