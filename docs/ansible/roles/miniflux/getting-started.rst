@@ -13,10 +13,9 @@ Getting started
 Installation methods
 --------------------
 
-The default installation method will be using an upstream APT repository,
-configured by the :ref:`debops.keyring` Ansible role. The :ref:`debops.golang`
-manages the actual installation and provides an option to install from
-a precombined binary or from the source code as well. You can use the
+The default installation method will be using an upstream URL download. The
+:ref:`debops.golang` manages the actual installation and provides an option to
+install from the source code as well. You can use the
 :envvar:`miniflux__upstream_type` variable to select the desired installation
 method.
 
