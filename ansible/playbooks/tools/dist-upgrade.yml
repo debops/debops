@@ -116,29 +116,29 @@
 
     - name: Find all apt sources.list files
       ansible.builtin.find:
-        paths: "/etc/apt/"
-        patterns: "*.list"
+        paths: '/etc/apt/'
+        patterns: '*.list'
         recurse: True
       register: dist_upgrade_register_apt_sources
 
     - name: Change current release in APT sources
       ansible.builtin.replace:
-        dest: "{{ item.path }}"
+        dest: '{{ item.path }}'
         regexp: '{{ dist_upgrade_current_release }}'
         replace: '{{ dist_upgrade_new_release }}'
       register: dist_upgrade_register_replace
       with_items:
-        - "{{ dist_upgrade_register_apt_sources.files }}"
+        - '{{ dist_upgrade_register_apt_sources.files }}'
       when: dist_upgrade_current_release in dist_upgrade_version_map.keys() and
             dist_upgrade_new_release is defined and dist_upgrade_new_release
 
     - name: Fix APT sources (buster/updates becomes bullseye-security)
       ansible.builtin.replace:
-        dest: "{{ item.path }}"
+        dest: '{{ item.path }}'
         regexp: '\s{{ dist_upgrade_new_release }}/updates\s'
         replace: ' {{ dist_upgrade_new_release }}-security '
       with_items:
-        - "{{ dist_upgrade_register_apt_sources.files }}"
+        - '{{ dist_upgrade_register_apt_sources.files }}'
       when: dist_upgrade_new_release == 'bullseye'
 
     - name: Remove all APT preferences for backported packages
