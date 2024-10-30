@@ -1,0 +1,44 @@
+---
+# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2023 DebOps https://debops.org/
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Create the control user on the controller
+  ansible.builtin.import_role:
+    name: users
+  vars:
+    users__dependent_accounts: '{{ borgbackup__control_user_accounts }}'
+  tags: [ 'role::borgbackup:control' ]
+
+- name: Store a copy of the backup controller SSH key on the Ansible controller
+  ansible.builtin.fetch:
+    src: '/var/local/{{ borgbackup__control_user }}/.ssh/id_ed25519.pub'
+    dest: '{{ secret + "/borgbackup/control/" + borgbackup__control_user + "_id_ed25519.pub" }}'
+    flat: yes
+  tags: [ 'role::borgbackup:ssh' ]
+
+- name: Install the borg_controller script
+  ansible.builtin.template:
+    src: 'usr/local/bin/borg_controller.j2'
+    dest: '/usr/local/bin/borg_controller'
+    mode: '0755'
+  tags: [ 'role::borgbackup:install' ]
+
+- name: Enable periodic remote backup jobs via cron
+  ansible.builtin.cron:
+    name: 'Trigger remote backups using BorgBackup'
+    job: 'bash -c "/usr/local/bin/borg_controller >> /var/local/{{ borgbackup__control_user }}/borg_controller.log 2>&1"'
+    cron_file: 'borg-controller'
+    user: '{{ borgbackup__control_user }}'
+    special_time: '{{ borgbackup__controller_backup_period }}'
+    state: '{{ "present" if borgbackup__controller_service_enabled else "absent" }}'
+
+  when: ansible_service_mgr != "systemd" and not ansible_check_mode
+  tags: [ 'role::borgbackup:service' ]
+
+- name: Configure the borg-controller service
+  ansible.builtin.include_role:
+    name: systemd
+  vars:
+    systemd__dependent_units: '{{ borgbackup__controller_systemd_units }}'
+  tags: [ 'role::borgbackup:service' ]
