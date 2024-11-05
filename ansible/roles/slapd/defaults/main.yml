@@ -2,7 +2,8 @@
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 # .. Copyright (C) 2016-2020 Maciej Delmanowski <drybjed@gmail.com>
-# .. Copyright (C) 2016-2020 DebOps <https://debops.org/>
+# .. Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# .. Copyright (C) 2016-2023 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _slapd__ref_defaults:
@@ -63,11 +64,14 @@ slapd__default_schemas:
   - '{{ slapd__debops_schema_path + "/orgstructure.schema" }}'
 
   # Password Policy schema, included in the 'slapd' APT package
-  - '/etc/ldap/schema/ppolicy.schema'
+  # This schema is built-in since OpenLDAP 2.5.x
+  - '{{ "/etc/ldap/schema/ppolicy.schema"
+        if ansible_distribution_release in ["buster", "bullseye", "focal"]
+        else [] }}'
 
   # Support for 'host' and 'authorizedService' attributes, useful for granular
   # access control to services and machines
-  - '/etc/ldap/schema/fusiondirectory/ldapns.schema'
+  - '{{ slapd__debops_schema_path + "/ldapns.schema" }}'
 
   # Custom schema which defines a 'groupOfEntries' LDAP object which can create
   # empty groups
@@ -77,7 +81,7 @@ slapd__default_schemas:
   - '{{ slapd__debops_schema_path + "/openssh-lpk.schema" }}'
 
   # Support for 'sudo' rules in LDAP directory
-  - '/etc/ldap/schema/fusiondirectory/sudo.schema'
+  - '{{ slapd__debops_schema_path + "/sudo.schema" }}'
 
   # Support for 'eduPerson' and 'eduOrg' schema, included in DebOps
   - '{{ slapd__debops_schema_path + "/eduperson.schema" }}'
@@ -151,26 +155,19 @@ slapd__combined_schemas: '{{ slapd__default_schemas
 # .. envvar:: slapd__base_packages [[[
 #
 # List of required APT packages for OpenLDAP service.
-slapd__base_packages: [ 'slapd', 'ldap-utils', 'ssl-cert', 'libldap-common' ]
-
-                                                                   # ]]]
-# .. envvar:: slapd__rfc2307bis_packages [[[
-#
-# List of APT packages to install in preparation to use ``rfc2307bis`` schema
-# instead of the ``nis`` schema.
-slapd__rfc2307bis_packages: [ 'fusiondirectory-schema' ]
+slapd__base_packages:
+  - 'slapd'
+  - 'ldap-utils'
+  - 'ssl-cert'
+  - 'libldap-common'
+  - 'schema2ldif'
 
                                                                    # ]]]
 # .. envvar:: slapd__schema_packages [[[
 #
-# List of APT packages that contain LDAP schemas loaded into the directory by
-# the server. Debian has multiple ``fusiondirectory-*-schema`` and
-# ``gosa-*-schema`` packages that conflict with each other, therefore the list
-# of packages should be synchronized.
-slapd__schema_packages:
-
-  # Support for 'sudo' rules in LDAP
-  - 'fusiondirectory-plugin-sudo-schema'
+# List of APT packages that contain LDAP schemas to be loaded into the
+# directory by the server.
+slapd__schema_packages: []
 
                                                                    # ]]]
 # .. envvar:: slapd__packages [[[
@@ -539,7 +536,11 @@ slapd__default_tasks:
 
   - name: 'Enable AutoGroup overlay in the main database'
     dn: 'olcOverlay={10}autogroup,olcDatabase={1}mdb,cn=config'
-    objectClass: [ 'olcOverlayConfig', 'olcAutomaticGroups' ]
+    objectClass:
+      - 'olcOverlayConfig'
+      - '{{ "olcAutomaticGroups"
+            if ansible_distribution_release in ["buster", "bullseye", "focal"]
+            else "olcAutoGroupConfig" }}'
     attributes:
       olcOverlay: '{10}autogroup'
 
@@ -648,13 +649,25 @@ slapd__default_tasks:
         - 'mailAlternateAddress set "this/mailAlternateAddress & this/mail"'
     state: 'exact'
 
-  - name: 'Configure AutoGroup overlay in the main database'
+  - name: 'Configure AutoGroup overlay in the main database (old naming)'
     dn: 'olcOverlay={10}autogroup,olcDatabase={1}mdb,cn=config'
     attributes:
       olcAGattrSet:
         - '{0}groupOfURLs memberURL member'
       olcAGmemberOfAd: 'memberOf'
-    state: 'exact'
+    state: '{{ "exact"
+               if ansible_distribution_release in ["buster", "bullseye", "focal"]
+               else "ignore" }}'
+
+  - name: 'Configure AutoGroup overlay in the main database'
+    dn: 'olcOverlay={10}autogroup,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcAutoGroupAttrSet:
+        - '{0}groupOfURLs memberURL member'
+      olcAutoGroupMemberOfAd: 'memberOf'
+    state: '{{ "exact"
+               if ansible_distribution_release not in ["buster", "bullseye", "focal"]
+               else "ignore" }}'
 
   - name: 'Configure LastBind overlay in the main database'
     dn: 'olcOverlay={11}lastbind,olcDatabase={1}mdb,cn=config'
@@ -1079,7 +1092,6 @@ slapd__structure_tasks:
     objectClass: 'organizationalRole'
     attributes:
       cn: 'Hidden Object Viewer'
-      memberOf: '{{ (["cn=Hidden Objects", "ou=Groups"] + slapd__base_dn) | join(",") }}'
       description: 'LDAP objects which can see hidden objects'
 
   - name: 'Create cn=Hidden Objects group'
@@ -1088,10 +1100,14 @@ slapd__structure_tasks:
     attributes:
       cn: 'Hidden Objects'
       member:
-        - '{{ (["cn=Hidden Objects", "ou=Groups"] + slapd__base_dn) | join(",") }}'
         - '{{ (["cn=Hidden Object Viewer", "ou=Roles"] + slapd__base_dn) | join(",") }}'
-      memberOf: '{{ (["cn=Hidden Objects", "ou=Groups"] + slapd__base_dn) | join(",") }}'
       description: 'LDAP objects which are accessible only by privileged accounts'
+
+  - name: 'Add cn=Hidden Objects group to itself'
+    dn: '{{ ["cn=Hidden Objects", "ou=Groups"] + slapd__base_dn }}'
+    attributes:
+      member:
+        - '{{ (["cn=Hidden Objects", "ou=Groups"] + slapd__base_dn) | join(",") }}'
 
   - name: 'Create cn=UNIX SSH users group'
     dn: '{{ ["cn=UNIX SSH users", "ou=Groups"] + slapd__base_dn }}'
@@ -1236,7 +1252,7 @@ slapd__ports:
   # Plaintext and StartTLS connections on port 389/tcp
   - 'ldap'
 
-  # Encrypted SSL connections on port 636/tcp (deprecated)
+  # Encrypted SSL connections on port 636/tcp
   - '{{ "ldaps" if slapd__pki | bool else [] }}'
 
                                                                    # ]]]
