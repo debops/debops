@@ -225,7 +225,7 @@
 - name: Generate static content
   ## Since we do not run the manage.py file on secondary sites
   ## we need to generate those files in an extra task.
-  shell:  # noqa no-handler
+  ansible.builtin.shell:  # noqa no-handler
     cmd: |
       set -o nounset -o pipefail -o errexit
       ./manage.py collectstatic --no-input
@@ -242,7 +242,7 @@
   changed_when: not netbox__register_collectstatic.stdout is search('0 static files copied')
 
 - name: Create local session directory
-  file:
+  ansible.builtin.file:
     path: '{{ netbox__data + "/sessions" }}'
     owner: '{{ netbox__user }}'
     group: '{{ netbox__group }}'
@@ -257,7 +257,7 @@
 - name: Cleanup stale contenttypes and sessions
   ## Since we do not run the manage.py file on secondary sites
   ## we need to run the cleanup in an extra task.
-  shell:  # noqa no-handler
+  ansible.builtin.shell:  # noqa no-handler
     cmd: |
       set -o nounset -o pipefail -o errexit
       ./manage.py remove_stale_contenttypes --no-input
