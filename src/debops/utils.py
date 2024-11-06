@@ -4,6 +4,21 @@
 
 from .constants import DEBOPS_USER_HOME_DIR
 
+_MAP = {
+    'y': True,
+    'yes': True,
+    't': True,
+    'true': True,
+    'on': True,
+    '1': True,
+    'n': False,
+    'no': False,
+    'f': False,
+    'false': False,
+    'off': False,
+    '0': False
+}
+
 
 def unexpanduser(path):
     """Replace the absolute path of the home directory with '~'
@@ -17,3 +32,10 @@ def unexpanduser(path):
         return path.replace(DEBOPS_USER_HOME_DIR, '~', 1)
     else:
         return path
+
+
+def strtobool(value):
+    try:
+        return _MAP[str(value).lower()]
+    except KeyError:
+        raise ValueError('"{}" is not a valid bool value'.format(value))

@@ -58,7 +58,7 @@ try:
 except ImportError:
     LookupBase = object
 
-from distutils.version import LooseVersion
+from looseversion import LooseVersion
 from ansible import __version__ as __ansible_version__
 
 
