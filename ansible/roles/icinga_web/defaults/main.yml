@@ -864,9 +864,10 @@ icinga_web__ldap_binddn: '{{ ([icinga_web__ldap_self_rdn]
 #
 # The password stored in the account LDAP object used by the Icinga Web service
 # to bind to the LDAP directory.
-icinga_web__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
-                                     + icinga_web__ldap_binddn | to_uuid
-                                     + ".password length=48 "
+icinga_web__ldap_bindpw: '{{ (lookup("ldap_password",
+                                     secret + "/ldap/credentials/",
+                                     icinga_web__ldap_binddn,
+                                     "length=48 "
                                      + "chars=ascii_letters,digits,.-_"))
                               if icinga_web__ldap_enabled | bool
                               else "" }}'

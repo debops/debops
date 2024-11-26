@@ -246,10 +246,11 @@ slapd__basedn: '{{ slapd__base_dn | join(",") }}'
 # .. envvar:: slapd__superuser_config_password [[[
 #
 # The hashed password defined for the superuser of the ``cn=config`` LDAP database.
-slapd__superuser_config_password: '{{ "{CRYPT}" + lookup("password", secret
-                                                         + "/slapd/credentials/"
-                                                         + slapd__config_rootdn | to_uuid + ".password"
-                                                         + " encrypt=sha512_crypt length=32") }}'
+slapd__superuser_config_password: '{{ "{CRYPT}"
+                                      + lookup("ldap_password",
+                                               secret + "/slapd/credentials/",
+                                               slapd__config_rootdn,
+                                               "encrypt=sha512_crypt length=32") }}'
 
                                                                    # ]]]
 # .. envvar:: slapd__config_rootdn [[[
@@ -270,10 +271,11 @@ slapd__config_rootpw: '{{ lookup("file", secret + "/slapd/credentials/"
 # .. envvar:: slapd__superuser_data_password [[[
 #
 # The password defined for the superuser of the main LDAP database.
-slapd__superuser_data_password: '{{ "{CRYPT}" + lookup("password", secret
-                                                       + "/slapd/credentials/"
-                                                       + slapd__data_rootdn | to_uuid + ".password"
-                                                       + " encrypt=sha512_crypt length=32") }}'
+slapd__superuser_data_password: '{{ "{CRYPT}"
+                                    + lookup("ldap_password",
+                                             secret + "/slapd/credentials/",
+                                             slapd__data_rootdn,
+                                             "encrypt=sha512_crypt length=32") }}'
 
                                                                    # ]]]
 # .. envvar:: slapd__data_rootdn [[[
