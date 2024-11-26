@@ -57,36 +57,21 @@
     - name: 'modules/x509'
   when: item.state | d('present') not in ['absent', 'ignore', 'init']
 
-- name: Download and install Icinga upstream modules
-  ansible.builtin.git:
-    repo: '{{ item.git_repo }}'
-    dest: '{{ icinga_web__src + "/" + item.git_repo.split("://")[1] }}'
-    version: '{{ item.git_version }}'
-  with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | debops.debops.parse_kv_items }}'
-  when: item.name | d() and item.git_repo | d() and
-        item.git_version | d() and item.state | d('present') != 'absent'
-
-- name: Symlink Icinga upstream modules to Icinga Web application
-  ansible.builtin.file:
-    path: '{{ "/usr/share/icingaweb2/modules/" + item.name }}'
-    src: '{{ icinga_web__src + "/" + item.git_repo.split("://")[1] }}'
-    state: 'link'
-    force: '{{ True if ansible_check_mode | bool else omit }}'
-    mode: '0755'
-  with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | debops.debops.parse_kv_items }}'
-  when: item.name | d() and item.git_repo | d() and
-        item.git_version | d() and item.state | d('present') != 'absent'
-
-- name: Manage Icinga Web modules
-  ansible.builtin.file:
-    path: '/etc/icingaweb2/enabledModules/{{ item.name }}'
-    src: '{{ (item.path | d("/usr/share/icingaweb2/modules/" + item.name))
-             if (item.state | d("present") != "absent" and (item.enabled | d(True)) | bool) else omit }}'
-    state: '{{ "link" if (item.state | d("present") != "absent" and (item.enabled | d(True)) | bool) else "absent" }}'
-    force: '{{ True if ansible_check_mode | bool else omit }}'
-    mode: '0755'
-  with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | debops.debops.parse_kv_items }}'
-  when: item.name | d()
+- name: Manage Icinga web modules
+  ansible.builtin.include_tasks: 'manage_web_module.yml'
+  loop: '{{ icinga_web__combined_modules | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ "module: " + item.name + ", state: " + item.state | d("present") }}'
+  when: item.name | d() and
+        ((item.state | d('present') == 'absent') or
+         (item.state | d('present') == 'present' and
+          ((item.source | d('any') == 'package' and
+            item.package | d()) or
+           (item.source | d('any') == 'git' and
+            item.git_repo | d() and item.git_version | d()) or
+           (item.source | d('any') == 'any' and
+            (item.package | d() or
+             (item.git_repo | d() and item.git_version | d()))))))
 
 - name: Generate Icinga Web configuration
   ansible.builtin.template:
@@ -96,7 +81,7 @@
     group: '{{ icinga_web__group }}'
     mode: '0660'
   no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
-  with_items:
+  loop:
     - filename: 'authentication.ini'
       config: '{{ icinga_web__combined_authentication }}'
     - filename: 'config.ini'
@@ -118,6 +103,8 @@
       config: '{{ icinga_web__combined_director_kickstart_cfg }}'
     - filename: 'modules/x509/config.ini'
       config: '{{ icinga_web__combined_x509_cfg }}'
+  loop_control:
+    label: '{{ item.filename }}'
   when: item.state | d('present') not in ['absent', 'ignore', 'init']
 
 - name: Generate initial data file
@@ -317,5 +304,6 @@
   when: icinga_web__director_enabled | bool and
         item.state | d('present') not in ['absent', 'init', 'ignore']
   changed_when: icinga_web__register_director_templates.status == 201
+  until: icinga_web__register_director_templates is succeeded
   no_log: '{{ debops__no_log | d(True) }}'
   tags: [ 'role::icinga_web:templates' ]
