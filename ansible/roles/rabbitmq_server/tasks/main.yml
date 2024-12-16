@@ -180,7 +180,7 @@
     name:      '{{ item.name }}'
     node:      '{{ item.node | d(omit) }}'
     state:     '{{ item.state | d("present") }}'
-    value:     '{{ item.value | d(omit) }}'
+    value:     '{{ item.value | to_json or omit }}'
     vhost:     '{{ item.vhost | d(omit) }}'
   loop: '{{ q("flattened", rabbitmq_server__combined_parameters) }}'
   when: (item.name | d() and item.component | d())
