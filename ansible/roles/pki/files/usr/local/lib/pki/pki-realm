@@ -1199,7 +1199,7 @@ request_acme_dns_certificate() {
     local email=""
 
     if [ -n "${config['acme_contacts']}" ]; then
-        email="-m${config['acme_contacts']}"
+        email="-m ${config['acme_contacts']}"
     fi
 
     local all_dns
@@ -1249,7 +1249,7 @@ request_acme_dns_certificate() {
     # remove duplicate lines without sorting
     all_dns_str=$(printf '%s\n' "${all_dns[@]}" | awk '!x[$0]++' | xargs)
     # shellcheck disable=SC2086
-    all_dns_str=$(echo " "${all_dns_str} | sed 's/ / -d/g')
+    all_dns_str=$(echo " "${all_dns_str} | sed 's/ / -d /g')
 
     if test "${config['acme_ca']}" == 'le-live-v2'; then
       # shellcheck disable=SC2086
@@ -1278,7 +1278,7 @@ request_acme_manual_certificate() {
     local email=""
 
     if [ -n "${config['acme_contacts']}" ]; then
-        email="-m${config['acme_contacts']}"
+        email="-m ${config['acme_contacts']}"
     fi
 
     local all_dns
@@ -1328,7 +1328,7 @@ request_acme_manual_certificate() {
     # remove duplicate lines without sorting
     all_dns_str=$(printf '%s\n' "${all_dns[@]}" | awk '!x[$0]++' | xargs)
     # shellcheck disable=SC2086
-    all_dns_str=$(echo " "${all_dns_str} | sed 's/ / -d/g')
+    all_dns_str=$(echo " "${all_dns_str} | sed 's/ / -d /g')
 
     if test "${config['acme_ca']}" == 'le-live-v2'; then
       # shellcheck disable=SC2086
