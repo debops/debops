@@ -98,11 +98,11 @@
   community.postgresql.postgresql_user:
     name: '{{ item.name | d(item.role) }}'
     port: '{{ item.port | d(postgresql__port if postgresql__port else omit) }}'
-    password: '{{ item.password | d(lookup("password",
+    password: '{{ item.password if item.password is defined else lookup("password",
                   secret + "/postgresql/" + postgresql__password_hostname +
                   "/" + (item.port | d(postgresql__port)) +
                   "/credentials/" + item.name | d(item.role) + "/password " +
-                  "length=" + postgresql__password_length + " chars=" + postgresql__password_characters)) }}'
+                  "length=" + postgresql__password_length + " chars=" + postgresql__password_characters) }}'
     encrypted: '{{ item.encrypted | d(True) }}'
     expires: '{{ item.expires | d(omit) }}'
     role_attr_flags: '{{ (item.flags | d() | join(",")) | d(omit) }}'
@@ -268,11 +268,11 @@
                (item.port | d(postgresql__port)),
                (item.database | d("*")),
                (item.role | d(item.owner)),
-               (item.password | d(lookup("password",
+               (item.password if item.password is defined else lookup("password",
                                   secret + "/postgresql/" + (item.server | d(postgresql__password_hostname))
                                   + "/" + (item.port | d(postgresql__port)) + "/credentials/"
                                   + item.name | d(item.role | d(item.owner))
-                                  + "/password length=" + postgresql__password_length))
+                                  + "/password length=" + postgresql__password_length)
                                  | regex_replace("\\", "\\\\") | regex_replace(":", "\:"))]
               | join(":") }}'
     state: 'present'
