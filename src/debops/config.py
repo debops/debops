@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .constants import DEBOPS_PACKAGE_DATA
-from .utils import unexpanduser
+from .utils import unexpanduser, strtobool
 import os
 import sys
 import dotenv
@@ -13,7 +13,6 @@ import collections.abc
 import toml
 import json
 import yaml
-from distutils.util import strtobool
 from xdg.BaseDirectory import xdg_config_home
 try:
     import configparser
