@@ -29,7 +29,8 @@ libvirt__base_packages:
            else "virt-top" }}'
   - '{{ "virt-goodies"
         if (ansible_local | d() and ansible_local.python | d() and
-            (ansible_local.python.installed2 | d()) | bool)
+            (ansible_local.python.installed2 | d()) | bool and
+            ansible_distribution_releare in ["buster"])
         else [] }}'
 
                                                                    # ]]]
