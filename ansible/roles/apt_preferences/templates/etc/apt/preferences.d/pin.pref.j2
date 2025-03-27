@@ -26,7 +26,7 @@ Package: {{ item.packages | join(" ") }}
 Pin: version {{ item.version + '*' }}
 Pin-Priority: {{ item.priority | d(apt_preferences__priority_version) }}
 {%     else %}
-Pin: {{ item.pin | d('release a=' + ansible_distribution_release + '-backports') }}
+Pin: {{ item.pin | d('release n=' + ansible_distribution_release + '-backports') }}
 Pin-Priority: {{ item.priority | d(apt_preferences__priority_default) }}
 {%     endif %}
 {%   else %}
