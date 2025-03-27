@@ -205,6 +205,12 @@ General
   PostgreSQL 16.x resulting in failed startup of the service. The option will
   be added only on supported PostgreSQL versions.
 
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- Fixed default syslog home folder for Ubuntu Noble (24.04) hosts. The role
+  will now use the correct path to the syslog home folder.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 

@@ -121,8 +121,10 @@ rsyslog__append_groups: '{{ ["ssl-cert"] if (rsyslog__unprivileged | bool
 # The home directory of the :envvar:`rsyslog__user` user, dependent on the OS
 # defaults. Takes effect only when the unprivileged mode is enabled.
 rsyslog__home: '{{ "/home/syslog"
-                   if (ansible_distribution in ["Ubuntu"])
-                   else "/var/log" }}'
+                   if (ansible_distribution in ["Ubuntu"] and ansible_distribution_release not in ["noble"])
+                   else ("/nonexistent"
+                         if (ansible_distribution in ["Ubuntu"] and ansible_distribution_release in ["noble"])
+                         else "/var/log") }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__file_owner [[[
