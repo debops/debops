@@ -1,6 +1,6 @@
-.. Copyright (C) 2017-2024 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017-2025 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2018-2022 Robin Schneider <ypid@riseup.net>
-.. Copyright (C) 2017-2024 DebOps <https://debops.org/>
+.. Copyright (C) 2017-2025 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. _changelog:
@@ -102,6 +102,14 @@ General
 - The :command:`debops` script and custom Ansible lookup plugins should now be
   compatible with Python 3.12+ due to removal of the ``distutils`` Python
   dependency, replaced by the ``packaging`` Python module.
+
+:ref:`debops.gitlab` role
+'''''''''''''''''''''''''
+
+- Users can now select specific GitLab version to install using the APT
+  preferences, by specifying the package version in the
+  :envvar:`gitlab__preferred_version` variable. By default, the latest version
+  will be installed.
 
 :ref:`debops.gitlab_runner` role
 ''''''''''''''''''''''''''''''''
