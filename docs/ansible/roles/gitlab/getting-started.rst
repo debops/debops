@@ -19,6 +19,14 @@ Edition as well as the Enterprise Edition, which can be selected using the
 package is also supported, in which case the role can be used to configure such
 installation and provide integration with the rest of the environment.
 
+Specific version of the GitLab Omnibus package can be selected using the
+:envvar:`gitlab__preferred_version` variable (by default, role installs the
+latest available version). The version number needs to be specified in the
+format understood by APT, for example ``19.9.1-ce.0``. This functionality can
+be used to in GitLab instance migrations to a new environment, where after
+installing older version of the application and importing the database, normal
+APT upgrades can be performed to update GitLab.
+
 By default, the installation will be configured to publish GitLab on the
 ``code.{{ gitlab__domain }}`` DNS domain, to aid configuration of GitLab Runner
 instances. This can be changed by overriding the :envvar:`gitlab__fqdn`
