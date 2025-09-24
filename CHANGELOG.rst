@@ -111,6 +111,10 @@ General
   :envvar:`gitlab__preferred_version` variable. By default, the latest version
   will be installed.
 
+- The :command:`nginx` service inside of the GitLab Omnibus installation will
+  be restarted when X.509 certificates managed by the :ref:`debops.pki` role
+  are reissued, for example via ACME.
+
 :ref:`debops.gitlab_runner` role
 ''''''''''''''''''''''''''''''''
 
