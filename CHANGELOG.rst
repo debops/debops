@@ -86,7 +86,7 @@ Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
-  ``v3.7.2``.
+  ``v4.4.1``.
 
 General
 '''''''
