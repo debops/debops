@@ -26,6 +26,12 @@ You can read information about required changes between releases in the
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.netbox` role, the NetBox version has been updated to
+  ``v4.4.1``.
+
 General
 '''''''
 
