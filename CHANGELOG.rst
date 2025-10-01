@@ -51,6 +51,16 @@ General
   be restarted when X.509 certificates managed by the :ref:`debops.pki` role
   are reissued, for example via ACME.
 
+Fixed
+~~~~~
+
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Fixed an issue with the Django superuser creation task that failed execution
+  if the ``error`` string was not present in command output; this resulted in
+  an incomplete installation.
+
 
 `debops v3.2.4`_ - 2024-10-28
 -----------------------------
