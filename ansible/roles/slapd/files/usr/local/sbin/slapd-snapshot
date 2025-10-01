@@ -123,7 +123,7 @@ create_lock () {
     sleep 0.5
 
     # Exclusive lock failed
-    if [ "x$(cat "${pidfile}")" != "x${pid}" ] ; then
+    if [ "$(cat "${pidfile}")" != "${pid}" ] ; then
         log_message "OpenLDAP snapshot procedure started by $(< "${pidfile}")"
         exit 0
     fi
