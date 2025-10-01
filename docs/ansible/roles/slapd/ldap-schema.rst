@@ -155,7 +155,7 @@ This schema provides the basic LDAP object identifiers (OIDs) for other LDAP
 schemas that are created by DebOps project - the Private Enterprise Number
 assigned to the project by IANA and the separate namespace designated to be
 used for LDAP schemas. These object identifiers are in a separate "schema" so
-that they can be re-used in multiple LDAP schemas imported after this schema
+that they can be reused in multiple LDAP schemas imported after this schema
 without creating conflicts in the OpenLDAP ``cn=schema`` subtree.
 
 
