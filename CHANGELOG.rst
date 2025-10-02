@@ -23,6 +23,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.2: https://github.com/debops/debops/compare/v3.2.0...stable-3.2
 
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- The :command:`debops` script and custom Ansible lookup plugins should now be
+  compatible with Python 3.12+ due to removal of the ``distutils`` Python
+  dependency, replaced by the ``packaging`` Python module.
+
 
 `debops v3.2.4`_ - 2024-10-28
 -----------------------------
