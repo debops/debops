@@ -28,6 +28,15 @@
 gitlab__edition: 'community'
 
                                                                    # ]]]
+# .. envvar:: gitlab__preferred_version [[[
+#
+# Specify the version of the GitLab APT package to install, in the
+# :man:`apt_preferences(5)` format. By default any version is preferred, which
+# will usually select the latest version available. An example selection of
+# a specific version: ``16.9.1-ce.0``.
+gitlab__preferred_version: '*'
+
+                                                                   # ]]]
 # .. envvar:: gitlab__base_packages [[[
 #
 # List of the default APT packages used to install GitLab Omnibus on a host.
@@ -173,6 +182,12 @@ gitlab__pki_enabled: '{{ (ansible_local.pki.enabled | d(False)) | bool }}'
 # The base path of the PKI infrastructure managed by the :ref:`debops.pki`
 # Ansible role.
 gitlab__pki_path: '{{ ansible_local.pki.path | d("/etc/pki/realms") }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__pki_hook_path [[[
+#
+# Directory with PKI hooks.
+gitlab__pki_hook_path: '{{ ansible_local.pki.hooks | d("/etc/pki/hooks") }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab__pki_realm [[[
@@ -666,6 +681,21 @@ gitlab__combined_configuration: '{{ gitlab__default_configuration
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: gitlab__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` Ansible role.
+gitlab__apt_preferences__dependent_list:
+
+  - filename: 'gitlab.pref'
+    package: '{{ "gitlab-ce"
+                 if (gitlab__edition == "community")
+                 else ("gitlab-ee"
+                       if (gitlab__edition == "enterprise")
+                       else "") }}'
+    version: '{{ gitlab__preferred_version }}'
+    state: 'present'
+
+                                                                   # ]]]
 # .. envvar:: gitlab__etc_services__dependent_list [[[
 #
 # List of custom :file:`/etc/services` to configure for the :ref:`debops.etc_services`

@@ -1,6 +1,6 @@
-.. Copyright (C) 2017-2024 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017-2025 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2018-2022 Robin Schneider <ypid@riseup.net>
-.. Copyright (C) 2017-2024 DebOps <https://debops.org/>
+.. Copyright (C) 2017-2025 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. _changelog:
@@ -86,7 +86,7 @@ Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
-  ``v3.7.2``.
+  ``v4.4.1``.
 
 General
 '''''''
@@ -102,6 +102,18 @@ General
 - The :command:`debops` script and custom Ansible lookup plugins should now be
   compatible with Python 3.12+ due to removal of the ``distutils`` Python
   dependency, replaced by the ``packaging`` Python module.
+
+:ref:`debops.gitlab` role
+'''''''''''''''''''''''''
+
+- Users can now select specific GitLab version to install using the APT
+  preferences, by specifying the package version in the
+  :envvar:`gitlab__preferred_version` variable. By default, the latest version
+  will be installed.
+
+- The :command:`nginx` service inside of the GitLab Omnibus installation will
+  be restarted when X.509 certificates managed by the :ref:`debops.pki` role
+  are reissued, for example via ACME.
 
 :ref:`debops.gitlab_runner` role
 ''''''''''''''''''''''''''''''''
@@ -195,6 +207,13 @@ General
 - The :file:`iface@.service` :command:`systemd` unit provided by the role is
   changed to use ``After==sys-subsystem-net-devices-%i.device`` parameter. This
   should ensure that the bridge interfaces are correctly started at boot time.
+
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Fixed an issue with the Django superuser creation task that failed execution
+  if the ``error`` string was not present in command output; this resulted in
+  an incomplete installation.
 
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
@@ -429,7 +448,7 @@ Fixed
 '''''''''''''''''''''''''''''''
 
 - Various YAML lists used in the package removal script will be sorted at Jinja
-  level to avoid constand reordering of list elements during Ansible execution
+  level to avoid constant reordering of list elements during Ansible execution
   which makes the role not idempotent.
 
 :ref:`debops.gitlab` role
