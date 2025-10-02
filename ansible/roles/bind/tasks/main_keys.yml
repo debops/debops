@@ -136,7 +136,7 @@
 
 - name: Build combined list of SIG(0) keys to fetch
   ansible.builtin.set_fact:
-    bind__tmp_sig0_fetch: '{{ bind__tmp_sig0_fetch | d([]) + item.files | map(attribute="path") }}'
+    bind__tmp_sig0_fetch: '{{ bind__tmp_sig0_fetch | d([]) + item.files | map(attribute="path") }}'  # noqa jinja[invalid]
   loop: '{{ bind__tmp_find_sig0_keys.results | d([]) }}'
   when: item.files is defined
   loop_control:
