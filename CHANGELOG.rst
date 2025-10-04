@@ -38,6 +38,14 @@ New DebOps roles
 
   .. __: https://www.influxdata.com/products/influxdb/
 
+:ref:`debops.miniflux` role
+'''''''''''''''''''''''''''
+
+- Removed the APT repository option and the :ref:`debops.keyring` dependency due
+  to upstream removed GPG support. The :ref:`debops.miniflux` role now uses URLs
+  as the primary installation method.
+- Bump Miniflux version from 2.0.48 to 2.2.1.
+
 :ref:`debops.core` role
 '''''''''''''''''''''''
 
