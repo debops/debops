@@ -153,6 +153,12 @@ General
   service is started after network is available will be installed only on older
   Debian/Ubuntu releases; it's now the default since Debian Bookworm.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- The default key type in :command:`certbot` is set to RSA, since currently
+  there's no support for different key types in DebOps PKI infrastructure.
+
 :ref:`debops.reprepro` role
 '''''''''''''''''''''''''''
 
