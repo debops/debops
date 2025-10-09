@@ -78,6 +78,15 @@ Fixed
   :command:`systemd-resolved` service (enabled by default in systemd v256) to
   allow resolution of the host's FQDN queries by upstream DNS server.
 
+Removed
+~~~~~~~
+
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- Debian 10 (Buster) has been archived and it's no longer available on Debian
+  mirrors, support for its installer has been removed from the role.
+
 
 `debops v3.2.4`_ - 2024-10-28
 -----------------------------
