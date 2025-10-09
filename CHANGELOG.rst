@@ -61,6 +61,12 @@ General
 - Debian 13 (Trixie) has been released. It's now marked as a Stable Debian
   release, and Debian 10 (Buster) is moved to the "archive" state.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- The default key type in :command:`certbot` is set to RSA, since currently
+  there's no support for different key types in DebOps PKI infrastructure.
+
 :ref:`debops.reprepro` role
 '''''''''''''''''''''''''''
 

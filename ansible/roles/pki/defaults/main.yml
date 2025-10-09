@@ -259,6 +259,12 @@ pki_create_acme_challenge_dir: '{{ True if (ansible_local.nginx.acme|d() and
 # The default contents of the Certbot configuration file defined by the role.
 pki_certbot_default_configuration:
 
+  - name: 'key-type'
+    comment: |
+      Define the default key signature algorithm to use for certificates.
+      DebOps currently supports only RSA signature algorithm.
+    value: 'rsa'
+
   - name: 'max-log-backups'
     comment: |
       Because we are using logrotate for greater flexibility, disable the
