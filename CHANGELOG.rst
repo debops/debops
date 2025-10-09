@@ -306,6 +306,14 @@ General
   copy of the :file:`/usr/local/bin/acme-tiny` command to be installed
   correctly.
 
+:ref:`debops.pdns` role
+'''''''''''''''''''''''
+
+- The PowerDNS service will be configured to listen on all external IPv4 and
+  IPv6 addresses of a host insteand of listening on "all" IP addresses to
+  ensure that the service is started while the :command:`systemd-resolved`
+  service listens on the loopback interface.
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
