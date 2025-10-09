@@ -61,6 +61,15 @@ General
 - Debian 13 (Trixie) has been released. It's now marked as a Stable Debian
   release, and Debian 10 (Buster) is moved to the "archive" state.
 
+:ref:`debops.reprepro` role
+'''''''''''''''''''''''''''
+
+- The role now configures local APT repositories for Debian 13 (Trixie) and
+  Debian 14 (Forky) by default. Configuration for Debian Buster repositories
+  has been removed. Symlinks for the :file:`stable/`, :file:`oldstable/` and
+  :file:`oldoldstable/` releases will be updated automatically to point to the
+  correct Debian releases.
+
 Removed
 ~~~~~~~
 
