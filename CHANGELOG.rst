@@ -228,6 +228,13 @@ General
   PostgreSQL 16.x resulting in failed startup of the service. The option will
   be added only on supported PostgreSQL versions.
 
+:ref:`debops.resolved` role
+'''''''''''''''''''''''''''
+
+- The role will disable synthesis of local hostname by the
+  :command:`systemd-resolved` service (enabled by default in systemd v256) to
+  allow resolution of the host's FQDN queries by upstream DNS server.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
