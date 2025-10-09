@@ -33,6 +33,12 @@ General
   compatible with Python 3.12+ due to removal of the ``distutils`` Python
   dependency, replaced by the ``packaging`` Python module.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- Debian 13 (Trixie) has been released. It's now marked as a Stable Debian
+  release, and Debian 10 (Buster) is moved to the "archive" state.
+
 
 `debops v3.0.11`_ - 2024-10-28
 ------------------------------
