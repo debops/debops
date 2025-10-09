@@ -153,6 +153,15 @@ General
   service is started after network is available will be installed only on older
   Debian/Ubuntu releases; it's now the default since Debian Bookworm.
 
+:ref:`debops.reprepro` role
+'''''''''''''''''''''''''''
+
+- The role now configures local APT repositories for Debian 13 (Trixie) and
+  Debian 14 (Forky) by default. Configuration for Debian Buster repositories
+  has been removed. Symlinks for the :file:`stable/`, :file:`oldstable/` and
+  :file:`oldoldstable/` releases will be updated automatically to point to the
+  correct Debian releases.
+
 :ref:`debops.rspamd` role
 '''''''''''''''''''''''''
 
