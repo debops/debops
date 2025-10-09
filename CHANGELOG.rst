@@ -92,6 +92,12 @@ General
   :file:`oldoldstable/` releases will be updated automatically to point to the
   correct Debian releases.
 
+:ref:`debops.resouces` role
+'''''''''''''''''''''''''''
+
+- The :command:`git` repositories will be processed by the role first, since
+  :command:`git` can handle directory creation if needed.
+
 Fixed
 ~~~~~
 
