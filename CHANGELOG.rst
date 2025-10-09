@@ -23,6 +23,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.2: https://github.com/debops/debops/compare/v3.2.0...stable-3.2
 
+Added
+~~~~~
+
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- Debian 13 (Trixie) has been released, support for its installer has been added
+  to the role. Debian Trixie is now the primary Stable release available in the
+  netboot installation menu.
+
 Changed
 ~~~~~~~
 
