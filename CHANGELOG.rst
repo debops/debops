@@ -77,6 +77,15 @@ General
   be restarted when X.509 certificates managed by the :ref:`debops.pki` role
   are reissued, for example via ACME.
 
+:ref:`debops.reprepro` role
+'''''''''''''''''''''''''''
+
+- The role now configures local APT repositories for Debian 13 (Trixie) and
+  Debian 14 (Forky) by default. Configuration for Debian Buster repositories
+  has been removed. Symlinks for the :file:`stable/`, :file:`oldstable/` and
+  :file:`oldoldstable/` releases will be updated automatically to point to the
+  correct Debian releases.
+
 Fixed
 ~~~~~
 
