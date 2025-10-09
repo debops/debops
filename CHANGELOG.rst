@@ -303,6 +303,13 @@ General
   :envvar:`netbox__napalm_ssh_generate` and
   :envvar:`netbox__napalm_ssh_generate_bits` have been removed.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- The ``python3-future`` and ``python-future`` APT packages have been removed
+  from Debian Stable release, and will not be installed by default by the
+  :ref:`debops.python` role.
+
 Security
 ~~~~~~~~
 
