@@ -26,6 +26,12 @@ You can read information about required changes between releases in the
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, the Debian Bookworm installer has been
+  updated to v12.12.
+
 General
 '''''''
 
