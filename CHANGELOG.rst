@@ -1,6 +1,6 @@
-.. Copyright (C) 2017-2024 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017-2025 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2018-2022 Robin Schneider <ypid@riseup.net>
-.. Copyright (C) 2017-2024 DebOps <https://debops.org/>
+.. Copyright (C) 2017-2025 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. _changelog:
@@ -22,6 +22,12 @@ You can read information about required changes between releases in the
 ---------------------------------
 
 .. _debops stable-3.0: https://github.com/debops/debops/compare/v3.0.0...stable-3.0
+
+
+`debops v3.0.12`_ - 2025-10-09
+------------------------------
+
+.. _debops v3.0.12: https://github.com/debops/debops/compare/v3.0.11...v3.0.12
 
 Added
 ~~~~~
