@@ -61,6 +61,13 @@ Fixed
   if the ``error`` string was not present in command output; this resulted in
   an incomplete installation.
 
+:ref:`debops.resolved` role
+'''''''''''''''''''''''''''
+
+- The role will disable synthesis of local hostname by the
+  :command:`systemd-resolved` service (enabled by default in systemd v256) to
+  allow resolution of the host's FQDN queries by upstream DNS server.
+
 
 `debops v3.2.4`_ - 2024-10-28
 -----------------------------
