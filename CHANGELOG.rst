@@ -52,6 +52,13 @@ New DebOps roles
   have to adjust the defaults for the :envvar:`dovecot__ldap_user_list_filter`
   variable if you use the :envvar:`dovecot__ldap_user_filter` variable.
 
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- Debian 13 (Trixie) has been released, support for its installer has been added
+  to the role. Debian Trixie is now the primary Stable release available in the
+  netboot installation menu.
+
 :ref:`debops.netbox` role
 '''''''''''''''''''''''''
 
