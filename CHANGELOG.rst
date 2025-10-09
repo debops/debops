@@ -77,6 +77,12 @@ General
   be restarted when X.509 certificates managed by the :ref:`debops.pki` role
   are reissued, for example via ACME.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- The default key type in :command:`certbot` is set to RSA, since currently
+  there's no support for different key types in DebOps PKI infrastructure.
+
 :ref:`debops.reprepro` role
 '''''''''''''''''''''''''''
 
