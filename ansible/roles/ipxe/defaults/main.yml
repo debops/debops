@@ -103,7 +103,7 @@ ipxe__debian_netboot_firmware_mirror: 'https://cdimage.debian.org/cdimage/unoffi
 #
 # Specify which Debian releases will be prepared for iPXE boot on a given host.
 # The releases need to be defined in the OS release map below.
-ipxe__debian_netboot_releases: [ 'buster', 'bullseye', 'bookworm' ]
+ipxe__debian_netboot_releases: [ 'bullseye', 'bookworm' ]
 
                                                                    # ]]]
 # .. envvar:: ipxe__debian_netboot_architectures [[[
@@ -124,23 +124,6 @@ ipxe__debian_netboot_architectures: [ 'amd64', 'i386', 'arm64' ]
 #
 # The list of the default Debian Installer releases defined by the role.
 ipxe__debian_netboot_default_release_map:
-
-  - name: 'buster-amd64'
-    release: 'buster'
-    architecture: 'amd64'
-    netboot_version: '20190702+deb10u13'
-    netboot_checksum: 'sha256:b53335ff1737b810f1e963e8e2b248bdf8fb82ee25814566f6e69028fd6404d8'  # netboot.tar.gz
-    firmware_version: '20220910'
-    firmware_checksum: 'sha256:99a0fb05239940e3427ac25ea4ea0bd8a90b029c92facb058d74f9b1cf5a55bf'  # firmware.cpio.gz
-
-  - name: 'buster-amd64-gtk'
-    release: 'buster'
-    architecture: 'amd64'
-    netboot_subdir: '/gtk'
-    netboot_version: '20190702+deb10u13'
-    netboot_checksum: 'sha256:5ee7c015826be526a354b465359dad7ca5fd403f58bba3279ac4add760ed7336'  # netboot.tar.gz
-    firmware_version: '20220910'
-    firmware_checksum: 'sha256:99a0fb05239940e3427ac25ea4ea0bd8a90b029c92facb058d74f9b1cf5a55bf'  # firmware.cpio.gz
 
   - name: 'bullseye-amd64'
     release: 'bullseye'
@@ -422,7 +405,6 @@ ipxe__default_scripts:
       item --gap Select release:
       item bookworm ${space} Debian GNU/Linux 12 (Bookworm)
       item bullseye ${space} Debian GNU/Linux 11 (bullseye)
-      item buster ${space} Debian GNU/Linux 10 (buster)
       choose --default ${debian-installer-cursor} version || goto debian_exit
       set debian-installer-cursor ${version}
 

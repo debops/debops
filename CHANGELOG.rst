@@ -45,6 +45,15 @@ General
 - Debian 13 (Trixie) has been released. It's now marked as a Stable Debian
   release, and Debian 10 (Buster) is moved to the "archive" state.
 
+Removed
+~~~~~~~
+
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- Debian 10 (Buster) has been archived and it's no longer available on Debian
+  mirrors, support for its installer has been removed from the role.
+
 
 `debops v3.0.11`_ - 2024-10-28
 ------------------------------
