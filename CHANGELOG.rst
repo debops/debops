@@ -23,6 +23,12 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.2: https://github.com/debops/debops/compare/v3.2.0...stable-3.2
 
+
+`debops v3.2.5`_ - 2025-10-09
+-----------------------------
+
+.. _debops v3.2.5: https://github.com/debops/debops/compare/v3.2.4...v3.2.5
+
 Added
 ~~~~~
 
