@@ -76,6 +76,12 @@ New DebOps roles
   with the DebOps template override system and the ``template_src`` lookup
   plugin.
 
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- The role will now generate preseed templates for Debian 13 (Trixie)
+  automated installation.
+
 :ref:`debops.resolved` role
 '''''''''''''''''''''''''''
 
