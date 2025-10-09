@@ -260,32 +260,6 @@
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
   tags: [ 'role::users:forward', 'skip::users:forward', 'skip::check' ]
 
-  # Fix for git vulnerability: CVE-2022-24765
-- name: Add the cloned dotfiles repo to safe directories in user's ~/.gitconfig
-  community.general.git_config:
-    scope: 'global'
-    name: 'safe.directory'
-    value: '{{ item.dotfiles_repo | d(users__dotfiles_repo) }}'
-    add_mode: 'add'  # noqa args[module]
-    state: 'present'
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
-  loop_control:
-    label: '{{ {"name": item.name,
-                "state": item.state | d("present"),
-                "dotfiles": (item.dotfiles | d(item.dotfiles_enabled | d(users__dotfiles_enabled))),
-                "dotfiles_repo": ((item.dotfiles_repo | d(users__dotfiles_repo))
-                                  if ((item.dotfiles | d(item.dotfiles_enabled | d(users__dotfiles_enabled))) | bool)
-                                  else "")} }}'
-  become: True
-  become_user: '{{ item.name }}'
-  when: (users__enabled | bool and item.name | d() and item.name != 'root' and
-         item.state | d('present') not in ['absent', 'ignore'] and item.create_home | d(True) and
-         (ansible_local | d() and ansible_local.yadm | d() and (ansible_local.yadm.installed | d()) | bool) and
-         (item.dotfiles | d(item.dotfiles_enabled | d(users__dotfiles_enabled))) | bool and
-         (item.dotfiles_repo | d(users__dotfiles_repo)) and (item.user | d(True)) | bool and not (item.chroot | d()) | bool)
-  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
-  tags: [ 'role::users:dotfiles', 'skip::users:dotfiles', 'skip::check' ]
-
 - name: Manage users dotfiles
   environment:
     LC_MESSAGES: 'C'
