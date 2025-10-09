@@ -159,6 +159,11 @@ General
 - The default key type in :command:`certbot` is set to RSA, since currently
   there's no support for different key types in DebOps PKI infrastructure.
 
+- The permission of the :file:`config/environment` configuration file in PKI
+  realms will be se to ``0644`` so that other UNIX accounts can read it. This is
+  needed by the :command:`acme-tiny` command which is executed on a separate
+  UNIX account.
+
 :ref:`debops.reprepro` role
 '''''''''''''''''''''''''''
 
