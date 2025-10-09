@@ -258,6 +258,12 @@ General
   if the ``error`` string was not present in command output; this resulted in
   an incomplete installation.
 
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- The role will avoid interacting with the LDAP server when LDAP support is
+  disabled while DebOps is used in LDAP environment.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
