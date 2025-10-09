@@ -55,11 +55,12 @@ Specific steps to take to replace the ``ifupdown`` package with
       user@host:~$ debops check service/networkd -l hostname
       user@host:~$ debops run service/networkd -l hostname
 
-3. Login to the host on the local console, purge ``ifupdown`` package and reboot the host.
+3. Login to the host on the local console, purge ``ifupdown`` and
+   ``dhcpcd-base`` APT packages and reboot the host.
 
    .. code-block:: console
 
-      user@host:~$ sudo apt purge ifupdown
+      user@host:~$ sudo apt purge ifupdown dhcpcd-base
       user@host:~$ sudo systemctl reboot
 
 4. Login to the host and check if the new configuration has been set up
