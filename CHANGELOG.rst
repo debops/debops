@@ -127,6 +127,14 @@ Fixed
 - The role will avoid interacting with the LDAP server when LDAP support is
   disabled while DebOps is used in LDAP environment.
 
+:ref:`debops.pdns` role
+'''''''''''''''''''''''
+
+- The PowerDNS service will be configured to listen on all external IPv4 and
+  IPv6 addresses of a host insteand of listening on "all" IP addresses to
+  ensure that the service is started while the :command:`systemd-resolved`
+  service listens on the loopback interface.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
