@@ -460,7 +460,10 @@ nullmailer__ldap__dependent_tasks:
     objectClass: '{{ nullmailer__ldap_self_object_classes }}'
     attributes: '{{ nullmailer__ldap_self_attributes }}'
     no_log: '{{ debops__no_log | d(True) }}'
-    state: '{{ "present" if nullmailer__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present"
+               if (nullmailer__ldap_enabled | bool and
+                   nullmailer__ldap_device_dn | d())
+               else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__ferm__dependent_rules [[[
