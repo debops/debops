@@ -183,6 +183,12 @@ preseed__default_definitions:
     options: '{{ preseed__options_interactive_partman
                  + preseed__options_enable_nonfree }}'
 
+  - name: 'debian-trixie'
+    flavor: 'debian'
+    release: 'trixie'
+    options: '{{ preseed__options_interactive_partman
+                 + preseed__options_enable_nonfree }}'
+
   - name: 'debian-stretch-user'
     flavor: 'debian-user'
     release: 'stretch'
@@ -215,6 +221,14 @@ preseed__default_definitions:
                  + preseed__options_enable_nonfree }}'
     admin_username: '{{ preseed__admin_name }}'
 
+  - name: 'debian-trixie-user'
+    flavor: 'debian-user'
+    release: 'trixie'
+    options: '{{ preseed__options_interactive_partman
+                 + preseed__options_ansible_user
+                 + preseed__options_enable_nonfree }}'
+    admin_username: '{{ preseed__admin_name }}'
+
   - name: 'debian-stretch-vm'
     flavor: 'debian-vm'
     release: 'stretch'
@@ -230,6 +244,10 @@ preseed__default_definitions:
   - name: 'debian-bookworm-vm'
     flavor: 'debian-vm'
     release: 'bookworm'
+
+  - name: 'debian-trixie-vm'
+    flavor: 'debian-vm'
+    release: 'trixie'
 
   - name: 'debian-stretch-vm-user'
     flavor: 'debian-vm-user'
@@ -252,6 +270,12 @@ preseed__default_definitions:
   - name: 'debian-bookworm-vm-user'
     flavor: 'debian-vm-user'
     release: 'bookworm'
+    options: '{{ preseed__options_ansible_user }}'
+    admin_username: '{{ preseed__admin_name }}'
+
+  - name: 'debian-trixie-vm-user'
+    flavor: 'debian-vm-user'
+    release: 'trixie'
     options: '{{ preseed__options_ansible_user }}'
     admin_username: '{{ preseed__admin_name }}'
 

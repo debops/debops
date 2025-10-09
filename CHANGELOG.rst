@@ -33,6 +33,12 @@ Added
   to the role. Debian Trixie is now the primary Stable release available in the
   netboot installation menu.
 
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- The role will now generate preseed templates for Debian 13 (Trixie)
+  automated installation.
+
 Changed
 ~~~~~~~
 
