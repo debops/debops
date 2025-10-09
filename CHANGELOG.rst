@@ -112,6 +112,13 @@ Removed
 - Debian 10 (Buster) has been archived and it's no longer available on Debian
   mirrors, support for its installer has been removed from the role.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- The ``python3-future`` and ``python-future`` APT packages have been removed
+  from Debian Stable release, and will not be installed by default by the
+  :ref:`debops.python` role.
+
 
 `debops v3.2.4`_ - 2024-10-28
 -----------------------------
