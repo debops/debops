@@ -103,6 +103,13 @@ General
   compatible with Python 3.12+ due to removal of the ``distutils`` Python
   dependency, replaced by the ``packaging`` Python module.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The Debian 10 (Buster) release has been archived and removed from Debian
+  mirrors. The role will use https://archive.debian.org/debian as the
+  repository URL on Debian Buster hosts.
+
 :ref:`debops.gitlab` role
 '''''''''''''''''''''''''
 
