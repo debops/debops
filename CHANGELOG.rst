@@ -197,6 +197,19 @@ General
 
   .. __: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1023656
 
+:ref:`debops.yadm` role
+'''''''''''''''''''''''
+
+- The paths to the repositories that are safe to clone by the :command:`git`
+  command, used for dotfiles by the :ref:`debops.system_users` and
+  :ref:`debops.users` roles, will be defined in the :file:`/etc/gitconfig`
+  system-wide configuration file instead of the per-user :file:`~/.gitconfig`
+  configuration files. This avoids the issue of modifying per-user environment
+  from the system-wide level on which DebOps operates and ensires that the
+  cloned dotfiles are not modified. The specific tasks that do this have been
+  moved from the :ref:`debops.system_users` and :ref:`debops.users` role into
+  the :ref:`debops.yadm` role.
+
 Fixed
 ~~~~~
 

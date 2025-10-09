@@ -40,12 +40,9 @@ Unsafe Repository error handling
 Due to the `CVE-2022-24765`__ :command:`git` security vulnerability, UNIX
 accounts cannot clone local :command:`git` repositories that are not owned by
 themselves. This causes issues with the :command:`yadm` repositories managed by
-the ``root`` UNIX account via the role. To mitigate that, other Ansible roles
-that want to utilize the dotfiles installed by the :ref:`debops.yadm` role need
-to add the respective :command:`git` repositories as "safe" in the user's
-:file:`~/.gitconfig` configuration file. The :ref:`debops.system_users` and
-:ref:`debops.users` Ansible roles already contain the needed tasks and can be
-used as examples to follow.
+the ``root`` UNIX account via the role. To mitigate that, the role will add
+path to the clone repository in the :file:`/etc/gitconfig` configuration file
+to tell :command:`git` that these specific repositories are safe.
 
 .. __: https://github.blog/open-source/git/git-security-vulnerability-announced/#cve-2022-24765
 
