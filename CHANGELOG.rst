@@ -253,6 +253,23 @@ General
 - Fixed conditional logic in a task which determines if the "autosetup"
   operation should be performed during Nextcloud/ownCloud installation.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- The Let's Encrypt service dropped support for the ``contacts`` option. This
+  requires a new version of the :command:`acme-tiny` command to be installed on
+  client hosts to work properly. Since the ``acme-tiny`` APT package in Debian
+  Bookworm is too old, on this release the role will install
+  :command:`acme-tiny` from source. On existing installations, the
+  ``acme-tiny`` APT package might need to be removed manually.
+
+- The ``acme-tiny`` source repository switched from the ``master`` branch to
+  the ``main`` branch, existing source installations need to remove the local
+  clone of the repository in :file:`/usr/local/src/pki-acme/diafygi/acme-tiny/`
+  so that it can be cloned correctly by Ansible. You should also remove the
+  copy of the :file:`/usr/local/bin/acme-tiny` command to be installed
+  correctly.
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
