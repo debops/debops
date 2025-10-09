@@ -266,6 +266,12 @@ General
 - The ``bitcoind`` role was removed due to lack of interest by the role
   maintainer.
 
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- Debian 10 (Buster) has been archived and it's no longer available on Debian
+  mirrors, support for its installer has been removed from the role.
+
 :ref:`debops.netbox` role
 '''''''''''''''''''''''''
 
