@@ -32,6 +32,9 @@ Updates of upstream application versions
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
   ``v4.4.1``.
 
+- In the :ref:`debops.ipxe` role, the Debian Bookworm installer has been
+  updated to v12.12.
+
 General
 '''''''
 
