@@ -167,7 +167,8 @@ class AnsibleInventory(object):
             os.path.join('inventory', 'group_vars', 'all'),
             os.path.join('inventory', 'host_vars'),
             os.path.join('playbooks', 'roles'),
-            os.path.join('resources'),
+            os.path.join('resources', 'templates', 'by-group', 'all'),
+            os.path.join('resources', 'templates', 'by-host'),
             os.path.join('secret'),
         )
 
