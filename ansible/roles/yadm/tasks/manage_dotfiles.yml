@@ -28,3 +28,18 @@
   loop_control:
     loop_var: 'item_git'
   when: dotfile.git | d() and dotfile.state | d('present') == 'absent'
+
+- name: Manage the cloned dotfiles repo in system-wide /etc/gitconfig
+  community.general.git_config:
+    scope: 'system'
+    name: 'safe.directory'
+    value: '{{ yadm__dotfiles_root + "/"
+              + (item_git.repo | d(item_git)).split("://")[1] | regex_replace("\.git$", "")
+              + ".git" }}'
+    add_mode: 'add'
+    state: '{{ "present"
+               if (dotfile.git | d() and (dotfile.state | d("present")) == "present")
+               else "absent" }}'
+  loop: '{{ q("flattened", dotfile.git) }}'
+  loop_control:
+    loop_var: 'item_git'
