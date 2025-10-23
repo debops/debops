@@ -110,6 +110,26 @@ resolved__skip_packages: [ 'resolvconf', 'openresolv' ]
 resolved__version: '{{ ansible_local.resolved.version | d("0") }}'
                                                                    # ]]]
                                                                    # ]]]
+# The :command:`systemd-resolved` service configuration [[[
+# ---------------------------------------------------------
+
+# These variables affect the behaviour of the
+# :command:`systemd-resolved.service` unit that can't be configured at the
+# daemon configuration level.
+
+# .. envvar:: resolved__synthesize_hostname [[[
+#
+# If enabled, the :command:`systemd-resolved` daemon will generate responses
+# for queries about local hostname without sending them to the upstream DNS
+# servers. This might result in undesired behaviour, for example not resolving
+# a host's FQDN by its hostname. If disabled, queries for local hostname are
+# sent to upstream DNS servers. Ref: https://github.com/systemd/systemd/issues/34897
+#
+# This option is enabled by default in systemd v256, but is disabled in DebOps
+# to preserve previous functionality.
+resolved__synthesize_hostname: False
+                                                                   # ]]]
+                                                                   # ]]]
 # The :command:`systemd-resolved` daemon configuration [[[
 # --------------------------------------------------------
 

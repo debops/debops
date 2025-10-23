@@ -94,6 +94,24 @@
     mode: '0644'
   when: gitlab__backup_enabled | bool
 
+- name: Make sure that PKI hook directory exists
+  ansible.builtin.file:
+    path: '{{ gitlab__pki_hook_path }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: gitlab__pki_enabled | bool
+
+- name: Manage PKI gitlab hook
+  ansible.builtin.template:
+    src: '{{ lookup("debops.debops.template_src", "etc/pki/hooks/gitlab.j2") }}'
+    dest: '{{ gitlab__pki_hook_path + "/gitlab" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: gitlab__pki_enabled | bool
+
 - name: Install GitLab APT packages
   environment:
     GITLAB_ROOT_PASSWORD: '{{ gitlab__initial_root_password }}'

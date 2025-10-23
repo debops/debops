@@ -49,6 +49,23 @@
     - resolved__resolv_conf != '/etc/resolv.conf'
     - not (ansible_local.resolved.installed | d()) | bool
 
+- name: Create systemd-resolved.service configuration directory
+  ansible.builtin.file:
+    path: '/etc/systemd/system/systemd-resolved.service.d'
+    state: 'directory'
+    mode: '0755'
+  when:
+    - resolved__enabled | bool
+
+- name: Configure synthesis of local hostname by systemd-resolved
+  ansible.builtin.template:
+    src: 'etc/systemd/system/systemd-resolved.service.d/synthesize-hostname.conf.j2'
+    dest: '/etc/systemd/system/systemd-resolved.service.d/synthesize-hostname.conf'
+    mode: '0644'
+  when:
+    - resolved__enabled | bool
+  notify: [ 'Reload systemd daemon', 'Restart systemd-resolved service' ]
+
 - name: Install required resolved packages
   ansible.builtin.package:
     name: '{{ resolved__base_packages + resolved__packages }}'

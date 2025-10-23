@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Install shellcheck in CI environment
+
+# Copyright (C) 2025 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2025 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# This is needed because shellcheck v0.9.0 present in many OS releases has
+# a bug triggered by DebOps codebase.
+# Ref: https://github.com/koalaman/shellcheck/issues/2846
+
+# This script should run only in CI pipeline
+
+set -o nounset -o pipefail -o errexit
+
+shellcheck_url="https://github.com/koalaman/shellcheck/releases/download/stable/shellcheck-stable.linux.x86_64.tar.xz"
+shellcheck_tarball="shellcheck-static.tar.xz"
+source_dir="$(mktemp -d)"
+
+cd "${source_dir}"
+curl --location --output "${shellcheck_tarball}" "${shellcheck_url}"
+tar xf "${shellcheck_tarball}"
+
+mkdir -p "${HOME}/.local/bin"
+cp "shellcheck-stable/shellcheck" "${HOME}/.local/bin"
