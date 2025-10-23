@@ -236,4 +236,4 @@
     autoremove: True
   register: apt__register_purge_packages
   until: apt__register_purge_packages is succeeded
-  when: apt__enabled | bool
+  when: (apt__enabled | bool and apt__purge_allowed | bool)
