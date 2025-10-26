@@ -8,6 +8,8 @@
 
 ## {{ ansible_managed }}
 cat <<EOF
+# jinja templating is not supported by shellcheck
+# shellcheck disable=all
 {% set superusers = grub__combined_users|rejectattr("superuser", "none") | map(attribute = 'name') | join(' ') %}
 {% if superusers | length == 0 %}
 ## No users have been defined.
