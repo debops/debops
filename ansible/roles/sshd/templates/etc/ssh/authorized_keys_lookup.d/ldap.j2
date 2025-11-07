@@ -28,7 +28,10 @@ ldap_binddn="{{ sshd__ldap_binddn }}"
 
 ldap_filter="{{ sshd__ldap_filter }}"
 
-ATTRIBUTE=$(ldapsearch -Z -LLL -x -y /etc/ssh/ldap_authorized_keys_bindpw -D "${ldap_binddn}" -o ldif-wrap=no -S sshPublicKey "${ldap_filter}" sshPublicKey | grep -v 'dn:')
+ATTRIBUTE=$(ldapsearch {{ "-Z" if ansible_local.ldap.start_tls | d(True) | bool else "" }} \
+  -LLL -x -y /etc/ssh/ldap_authorized_keys_bindpw -D "${ldap_binddn}" \
+  -o ldif-wrap=no -S sshPublicKey "${ldap_filter}" sshPublicKey       \
+  | grep -v 'dn:')
 
 if [[ $ATTRIBUTE == sshPublicKey::* ]];
 then
