@@ -2095,7 +2095,7 @@ owncloud__nginx__dependent_maps:
   - name: 'asset_immutable'
     map: '$arg_v $asset_immutable'
     mapping: '"" "";'
-    default: 'immutable'
+    default: '", immutable"'
 
 
 # .. envvar:: owncloud__nginx_options
@@ -2309,7 +2309,15 @@ owncloud__nginx__dependent_servers:
         options: |
           # Serve static files
           try_files {{ "$1" if (owncloud__http_psk_subpath_enabled | bool) else "$uri" }} /{{ owncloud__http_psk_subpath_end_slash }}index.php$request_uri;
-          add_header Cache-Control "public, max-age=15778463, $asset_immutable";
+
+          # HTTP response headers borrowed from Nextcloud `.htaccess`
+          add_header Cache-Control                     "public, max-age=15778463$asset_immutable";
+          add_header Referrer-Policy                   "no-referrer"       always;
+          add_header X-Content-Type-Options            "nosniff"           always;
+          add_header X-Frame-Options                   "SAMEORIGIN"        always;
+          add_header X-Permitted-Cross-Domain-Policies "none"              always;
+          add_header X-Robots-Tag                      "noindex, nofollow" always;
+          add_header X-XSS-Protection                  "1; mode=block"     always;
 
           {% if not (owncloud__nginx_access_log_assets | bool) %}
           access_log off;
