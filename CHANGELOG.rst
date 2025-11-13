@@ -23,6 +23,19 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.1: https://github.com/debops/debops/compare/v3.1.0...stable-3.1
 
+Changed
+~~~~~~~
+
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- The role can now support `pgBadger`__ log analyzer by enabling verbose log
+  output and modifying access to the log files themselves in the
+  :file:`/var/log/postgresql/` directory. This functionality is enabled by
+  default and can be disabled using a role variable.
+
+  .. __: https://pgbadger.darold.net/
+
 
 `debops v3.1.6`_ - 2025-10-09
 -----------------------------
