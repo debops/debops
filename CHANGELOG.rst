@@ -38,6 +38,9 @@ New DebOps roles
 
   .. __: https://www.influxdata.com/products/influxdb/
 
+- The :ref:`debops.pgbadger` role can be used to generate PostgreSQL log
+  reports from local or remote hosts over SSH.
+
 :ref:`debops.core` role
 '''''''''''''''''''''''
 

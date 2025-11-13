@@ -1,0 +1,131 @@
+---
+# Copyright (C) 2025 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2025 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Install pgBadger APT packages
+  ansible.builtin.package:
+    name: '{{ q("flattened", pgbadger__base_packages
+                             + pgbadger__packages) }}'
+    state: 'present'
+  register: pgbadger__register_packages
+  until: pgbadger__register_packages is succeeded
+
+- name: Create system UNIX group for pgBadger
+  ansible.builtin.group:
+    name: '{{ pgbadger__group }}'
+    state: 'present'
+    system: True
+
+- name: Create system UNIX account for pgBadger
+  ansible.builtin.user:
+    name: '{{ pgbadger__user }}'
+    group: '{{ pgbadger__group }}'
+    groups: '{{ pgbadger__additional_groups }}'
+    home: '{{ pgbadger__home }}'
+    comment: '{{ pgbadger__comment }}'
+    shell: '/bin/bash'
+    state: 'present'
+    system: True
+    generate_ssh_key: True
+
+- name: Create webroot directory for pgBadger
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ pgbadger__user }}'
+    group: '{{ pgbadger__group }}'
+    mode: '0755'
+  loop:
+    - '{{ pgbadger__www_root }}'
+    - '{{ pgbadger__scripts_path }}'
+
+- name: Get pgBadger SSH public key from its account
+  ansible.builtin.slurp:
+    src: '{{ pgbadger__ssh_public_key_file }}'
+  register: pgbadger__register_ssh_public_key
+  when: pgbadger__ssh_accounts_enabled | bool
+  tags: [ 'role::pgbadger:ssh' ]
+
+- name: Gather facts from remote hosts
+  ansible.builtin.setup:
+    gather_subset: '!all'
+    fact_path: '/dev/null'
+  delegate_to: '{{ item }}'
+  delegate_facts: True
+  loop: '{{ groups[pgbadger__ssh_inventory_group] }}'
+  when: pgbadger__ssh_accounts_enabled | bool and
+        pgbadger__ssh_inventory_group in groups
+  tags: [ 'role::pgbadger:ssh' ]
+
+- name: Set up remote SSH access for pgBadger
+  ansible.builtin.include_tasks:
+    file: 'ssh_accounts.yml'
+    apply:
+      tags: [ 'role::pgbadger:ssh' ]
+  loop: '{{ groups[pgbadger__ssh_inventory_group] }}'
+  when: pgbadger__ssh_accounts_enabled | bool and
+        pgbadger__ssh_inventory_group in groups and
+        item != inventory_hostname
+  tags: [ 'role::pgbadger:ssh' ]
+
+- name: Verify that all required parameters are present
+  ansible.builtin.assert:
+    that:
+      - 'item.name is defined and item.name is truthy'
+      - '(item.host is defined and item.host is truthy) or (item.raw is defined)'
+      - '(item.output is defined and item.output is truthy) or (item.raw is defined)'
+    quiet: True
+  loop: '{{ pgbadger__combined_instances | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state} }}'
+
+- name: Remove pgBadger instance scripts when requested
+  ansible.builtin.file:
+    path: '{{ pgbadger__scripts_path + "/" + item.name }}'
+    state: 'absent'
+  loop: '{{ pgbadger__combined_instances | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state} }}'
+  when: (item.state | d('present')) in [ 'absent' ]
+
+- name: Generate pgBadger instance scripts
+  ansible.builtin.template:
+    src: 'home/scripts/instance.j2'
+    dest: '{{ pgbadger__scripts_path + "/" + item.name }}'
+    owner: '{{ pgbadger__user }}'
+    group: '{{ pgbadger__group }}'
+    mode: '0755'
+  loop: '{{ pgbadger__combined_instances | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state} }}'
+  when: (item.state | d('present')) not in [ 'absent', 'ignore', 'init' ]
+
+- name: Manage pgBadger cron entry
+  ansible.builtin.cron:
+    name: 'Execute pgbadger scripts'
+    special_time: '{{ pgbadger__cron_interval }}'
+    state: '{{ pgbadger__cron_deploy_state }}'
+    user: '{{ pgbadger__user }}'
+    job: 'run-parts {{ pgbadger__scripts_path }}'
+
+- name: Make sure that Ansible local facts directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save pgbadger local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/pgbadger.fact.j2'
+    dest: '/etc/ansible/facts.d/pgbadger.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Update Ansible facts if they were modified
+  ansible.builtin.meta: 'flush_handlers'

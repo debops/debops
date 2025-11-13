@@ -128,6 +128,7 @@ Databases
 - :ref:`debops.ldap`
 - :ref:`debops.mariadb`
 - :ref:`debops.mariadb_server`
+- :ref:`debops.pgbadger`
 - :ref:`debops.postgresql`
 - :ref:`debops.postgresql_server`
 - :ref:`debops.redis_server`
