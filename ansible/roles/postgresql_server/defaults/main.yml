@@ -84,6 +84,13 @@ postgresql_server__group: 'postgres'
 # should point to the FQDN hostname of the server so that other role can
 # correctly delegate Ansible tasks.
 postgresql_server__delegate_to: '{{ inventory_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__pgbadger_logs [[[
+#
+# Enable or disable support for storing database logs for ingestion by
+# pgBadger. This option enables verbose logs, changes the output format.
+postgresql_server__pgbadger_logs: True
                                                                    # ]]]
                                                                    # ]]]
 # Network connections, firewall [[[
@@ -159,7 +166,9 @@ postgresql_server__trusted: '{{ ansible_local.core.admin_users | d([]) }}'
 #
 # Where to log system/error messages.
 # Options: ``stderr``, ``csvlog``, ``syslog``, and ``eventlog``.
-postgresql_server__log_destination: 'syslog'
+postgresql_server__log_destination: '{{ "stderr"
+                                        if (postgresql_server__pgbadger_logs | bool)
+                                        else "syslog" }}'
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__locale [[[
@@ -439,7 +448,7 @@ postgresql_server__data_directory: '/var/lib/postgresql'
 # server. You can use this variable to put the log files on a different
 # partition; if it's not specified, the default :file:`/var/log/postgresql/`
 # directory is used.
-postgresql_server__log_directory: ''
+postgresql_server__log_directory: '/var/log/postgresql'
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__clusters [[[

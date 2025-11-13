@@ -1,0 +1,267 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Copyright (C) 2025 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2025 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _pgbadger__ref_defaults:
+
+# debops.pgbadger default variables
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: pgbadger__base_packages [[[
+#
+# The list of APT packages required to install pgBadger.
+pgbadger__base_packages: [ 'pgbadger' ]
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__packages [[[
+#
+# List of additional APT packages to install with pgBadger.
+pgbadger__packages: []
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__user [[[
+#
+# Name of the system UNIX account used by pgBadger to generate raports and
+# connect to remote hosts via SSH.
+pgbadger__user: 'pgbadger'
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__group [[[
+#
+# Name of the system UNIX group used by pgBadger.
+pgbadger__group: 'pgbadger'
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__additional_groups [[[
+#
+# List of additional UNIX groups in which the pgBadger UNIX account will be
+# added. The ``adm`` UNIX group is traditionally used for access to log files
+# and might be needed if pgBadger will be used to generate PostgreSQL logs on
+# the same host.
+pgbadger__additional_groups: [ 'adm' ]
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__home [[[
+#
+# Absolute path to the ``$HOME`` directory of the pgBadger UNIX account.
+pgbadger__home: '{{ (ansible_local.fhs.www | d("/srv/www")) + "/" + pgbadger__user }}'
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__comment [[[
+#
+# The contents of the GECOS field set for the pgBadger UNIX account.
+pgbadger__comment: 'pgBadger'
+                                                                   # ]]]
+                                                                   # ]]]
+# Remote SSH configuration [[[
+# ----------------------------
+
+# .. envvar:: pgbadger__ssh_accounts_enabled [[[
+#
+# Enable or disable management of SSH public keys on the remote hosts accessed
+# by pgBadger.
+pgbadger__ssh_accounts_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__ssh_inventory_group [[[
+#
+# Name of the Ansisble inventory group which will be used as the list of hosts
+# on which the role will configure SSH access for pgBadger. The default group
+# is the same as the inventory group used by the
+# :ref:`debops.postgresql_server` role and its playbook. If the pgBadger host
+# is included in this group, SSH configuration on that host will be
+# automatically skipped.
+pgbadger__ssh_inventory_group: 'debops_service_postgresql_server'
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__ssh_user [[[
+#
+# Name of the remote UNIX account which will be created to allow pgBadger
+# access over SSH.
+pgbadger__ssh_user: 'pgbadger'
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__ssh_group [[[
+#
+# Name of the remote UNIX group created as the primary group for the pgBadger
+# UNIX account.
+pgbadger__ssh_group: 'pgbadger'
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__ssh_additional_groups [[[
+#
+# List of additional UNIX groups the remote pgBadger UNIX account will be
+# included in. The ``sshusers`` group permits access over SSH (managed by the
+# :ref:`debops.system_groups` Ansible role), the ``adm`` group is used to
+# permit access to the log files.
+pgbadger__ssh_additional_groups:
+  - '{{ (ansible_local.system_groups.local_prefix | d("")) + "sshusers" }}'
+  - 'adm'
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__ssh_home [[[
+#
+# The absolute path of the ``$HOME`` directory for the remote pgBadger UNIX
+# account.
+pgbadger__ssh_home: '{{ (ansible_local.fhs.home | d("/var/local")) + "/" + pgbadger__user }}'
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__ssh_public_key_file [[[
+#
+# Path of the SSH public key of the pgBadger UNIX account, created by default
+# by Ansible. The contents of this file will be added to the
+# :file:`~/.ssh/authorized_keys` files on the remote pgBadger UNIX accounts to
+# allow for SSH access.
+pgbadger__ssh_public_key_file: '{{ pgbadger__home + "/.ssh/id_rsa.pub" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Webserver configuration [[[
+# ---------------------------
+
+# .. envvar:: pgbadger__fqdn [[[
+#
+# The Fully Qualified Domain Name of the pgBadger website configured in the
+# webserver, managed by the :ref:`debops.nginx` role.
+pgbadger__fqdn: '{{ "pgbadger." + ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__www_root [[[
+#
+# Absolute path to the WWW root directory published by the webserver.
+pgbadger__www_root: '{{ pgbadger__home + "/sites/" + pgbadger__fqdn + "/public" }}'
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__nginx_access_policy [[[
+#
+# Name of the "HTTP access policy" defined in the :command:`nginx` inventory
+# configuration for pgBadger webpages. If set to empty, an access policy is not
+# enabled. See :ref:`debops.nginx` Ansible role for more details.
+pgbadger__nginx_access_policy: ''
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__nginx_auth_realm [[[
+#
+# Text displayed in the :command:`nginx` HTTP Auth window when access policy is
+# enabled.
+pgbadger__nginx_auth_realm: 'pgBadger access is restricted'
+                                                                   # ]]]
+                                                                   # ]]]
+# pgBadger scripts and cron job configuration [[[
+# -----------------------------------------------
+
+# .. envvar:: pgbadger__scripts_path [[[
+#
+# Absolute path to directory where Bash scripts that execute
+# :command:`pgbadger` will be generated. All of them will be executed in order
+# by the :command:`cron` job.
+pgbadger__scripts_path: '{{ pgbadger__home + "/scripts" }}'
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__scripts_command [[[
+#
+# The default :command:`pgbadger` command used in generated scripts. The
+# ``--outfile`` parameter will be added automatically.
+pgbadger__scripts_command: 'pgbadger --quiet --start-monday'
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__cron_deploy_state [[[
+#
+# Variable used to control the presence if the default :command:`cron` job
+# which will execute all pgBadger scripts. To enable more fine-grained control,
+# set the state to ``absent`` and use the :ref:`debops.cron` role to create
+# custom :command:`cron` jobs.
+pgbadger__cron_deploy_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__cron_interval [[[
+#
+# The default interval for the :command:`cron` job that executes the pgBadger
+# scripts. Can be ``hourly``, ``daily``, ``hourly``.
+pgbadger__cron_interval: 'daily'
+                                                                   # ]]]
+                                                                   # ]]]
+# pgBadger instances [[[
+# ----------------------
+
+# These variables define the contents of the pgBadger scripts that are
+# generated by the role. See :ref:`pgbadger__ref_instances` documentation for
+# more details.
+
+# .. envvar:: pgbadger__default_instances [[[
+#
+# List of pgBadger instances defined in the role by default.
+pgbadger__default_instances:
+
+  - name: 'local'
+    output: 'local.html'
+    host: 'localhost'
+    state: '{{ "present"
+               if (inventory_hostname in (groups[pgbadger__ssh_inventory_group] | d([])))
+               else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__instances [[[
+#
+# List of pgBadger instances that should be created on all hosts in the Ansible
+# inventory.
+pgbadger__instances: []
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__group_instances [[[
+#
+# List of pgBadger instances that should be created on hosts in a specific
+# Ansible inventory group.
+pgbadger__group_instances: []
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__host_instances [[[
+#
+# List of pgBadger instances that should be created on specific hosts in the
+# Ansible inventory.
+pgbadger__host_instances: []
+
+                                                                   # ]]]
+# .. envvar:: pgbadger__combined_instances [[[
+#
+# Variable which combines all pgBadger instance lists and is used in role tasks
+# and templates.
+pgbadger__combined_instances: '{{ pgbadger__default_instances
+                                  + pgbadger__instances
+                                  + pgbadger__group_instances
+                                  + pgbadger__host_instances }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: pgbadger__nginx__dependent_servers [[[
+#
+# Configuration for the :ref:`debops.nginx` Ansible role.
+pgbadger__nginx__dependent_servers:
+
+  - name: '{{ pgbadger__fqdn }}'
+    filename: 'debops.pgbadger'
+    root: '{{ pgbadger__www_root }}'
+    webroot_create: False
+    access_policy: '{{ pgbadger__nginx_access_policy }}'
+    auth_basic_realm: '{{ pgbadger__nginx_auth_realm }}'
+    location_list:
+      - pattern: '/'
+        options: |
+          try_files $uri $uri/ $uri.html $uri.htm $uri/index.html =404;
+          autoindex on;
+    state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]

@@ -1,0 +1,34 @@
+{# Copyright (C) 2025 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2025 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# pgBadger instance: {{ item.name }}
+
+set -o nounset -o pipefail -o errexit
+
+output_dir="{{ item.chdir | d(pgbadger__www_root) }}"
+{% if (item.output | d()) is truthy %}
+output_file="{{ item.output }}"
+{% endif %}
+
+if [ ! -d "${output_dir}" ] ; then
+    mkdir -p "${output_dir}"
+fi
+cd "${output_dir}"
+
+{% if (item.comment | d()) is truthy %}
+{{   item.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') }}
+{% endif %}
+{% if (item.raw | d()) is truthy %}
+{{   item.raw | regex_replace('\n$', '') }}
+{% elif (item.host | d()) is truthy %}
+{%   if item.host == 'localhost' %}
+{{ pgbadger__scripts_command }} --outfile "${output_file}" /var/log/postgresql/{{ item.log | d('*.log') }}
+{%   else %}
+{{ pgbadger__scripts_command }} --outfile "${output_file}" "ssh://{{ item.user | d(pgbadger__ssh_user) }}@{{ item.host }}//var/log/postgresql/{{ item.log | d('*.log') }}"
+{%   endif %}
+{% endif %}

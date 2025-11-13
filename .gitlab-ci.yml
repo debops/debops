@@ -1922,6 +1922,21 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/persistent_paths/.*'
     JANE_LOG_PATTERN: '\[persistent_paths\]'
 
+'pgbadger role':
+  <<: *test_role_3rd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'python role'
+    - 'nginx role'
+  variables:
+    JANE_TEST_FACT: 'pgbadger.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/pgbadger.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_pgbadger'
+    JANE_DIFF_PATTERN: '.*/roles/pgbadger/.*'
+    JANE_LOG_PATTERN: '\[pgbadger\]'
+
 'php role':
   <<: *test_role_1st_deps
   needs:
