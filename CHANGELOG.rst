@@ -164,6 +164,16 @@ General
   needed by the :command:`acme-tiny` command which is executed on a separate
   UNIX account.
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- The role can now support `pgBadger`__ log analyzer by enabling verbose log
+  output and modifying access to the log files themselves in the
+  :file:`/var/log/postgresql/` directory. This functionality is enabled by
+  default and can be disabled using a role variable.
+
+  .. __: https://pgbadger.darold.net/
+
 :ref:`debops.reprepro` role
 '''''''''''''''''''''''''''
 

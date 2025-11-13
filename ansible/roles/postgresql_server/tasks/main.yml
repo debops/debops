@@ -59,10 +59,10 @@
   ansible.builtin.file:
     path: '{{ postgresql_server__log_directory }}'
     state: 'directory'
-    owner: '{{ postgresql_server__user }}'
-    group: '{{ postgresql_server__group }}'
-    mode: '0750'
-  when: postgresql_server__log_directory | d()
+    owner: '{{ "postgres" if (postgresql_server__pgbadger_logs | bool) else "root" }}'
+    group: '{{ "adm" if (postgresql_server__pgbadger_logs | bool) else "postgres" }}'
+    mode: '{{ "u=rwx,g=rxs,o=rxt" if (postgresql_server__pgbadger_logs | bool) else "u=rwx,g=rwx,o=rxt" }}'
+  when: postgresql_server__log_directory
 
 - name: Count number of currently configured clusters
   ansible.builtin.set_fact:

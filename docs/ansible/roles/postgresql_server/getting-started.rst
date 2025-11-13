@@ -85,6 +85,26 @@ A **pki realm** can be picked with the :envvar:`postgresql_server__pki_realm`
 variable, then remote connections to the server will be automatically
 encrypted over SSL, otherwise dropped by default.
 
+Support for pgBadger log analyzer
+---------------------------------
+
+The role includes support for `pgBadger`__, PostgreSQL log analyzer. The
+support is enabled by default, but can be disabled using the
+:envvar:`postgresql_server__pgbadger_logs` variable.
+
+.. __: https://pgbadger.darold.net/
+
+When enabled, the role will change the attributes of the
+:file:`/var/log/postgresql/` directory - the owner will be set to the
+``postgres`` UNIX account and group will be set to ``adm``; the SGID bit will
+be set as well, which will make any new files to be owned by the ``adm`` group.
+With this configuration, log rotation and any new PostgreSQL logs will have
+correct permissions to be readable by the members of the ``adm`` system group.
+
+With this setup, users can create a separate, unprivileged UNIX account which
+can have read-only access to PostgreSQL logs (or any other logs that belong to
+the ``adm`` group.
+
 
 Example inventory
 -----------------
