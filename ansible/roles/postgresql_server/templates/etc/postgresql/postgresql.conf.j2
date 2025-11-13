@@ -321,12 +321,12 @@ join_collapse_limit = {{ item.join_collapse_limit | d('8') }}
 log_destination = '{{ item.log_destination | d(postgresql_server__log_destination) }}'
 
 # This is used when logging to stderr:
-logging_collector = {{ item.logging_collector | d('off') }}
+logging_collector = {{ item.logging_collector | d('on' if (postgresql_server__pgbadger_logs | bool) else 'off') }}
 
 # These are only used if logging_collector is on:
-log_directory = '{{ item.log_directory | d("pg_log") }}'
-log_filename = '{{ item.log_filename | d("postgresql-%Y-%m-%d_%H%M%S.log") }}'
-log_file_mode = {{ item.log_file_mode | d('0600') }}
+log_directory = '{{ item.log_directory | d(postgresql_server__log_directory) }}'
+log_filename = '{{ item.log_filename | d("postgresql-" + (item.version | d(postgresql_server__version)) + "-" + item.name + ".log") }}'
+log_file_mode = {{ item.log_file_mode | d('0640' if (postgresql_server__pgbadger_logs | bool) else '0600') }}
 log_truncate_on_rotation = {{ item.log_truncate_on_rotation | d('off') }}
 log_rotation_age = {{ item.log_rotation_age | d('1d') }}
 log_rotation_size = {{ item.log_rotation_size | d('10MB') }}
@@ -350,14 +350,14 @@ debug_print_parse = {{ item.debug_print_parse | d('off') }}
 debug_print_rewritten = {{ item.debug_print_rewritten | d('off') }}
 debug_print_plan = {{ item.debug_print_plan | d('off') }}
 debug_pretty_print = {{ item.debug_pretty_print | d('on') }}
-log_checkpoints = {{ item.log_checkpoints | d('off') }}
-log_connections = {{ item.log_connections | d('off') }}
-log_disconnections = {{ item.log_disconnections | d('off') }}
-log_duration = {{ item.log_duration | d('off') }}
-log_error_verbosity = {{ item.log_error_verbosity | d('default') }}
-log_hostname = {{ item.log_hostname | d('off') }}
-log_line_prefix = '{{ item.log_line_prefix | d("%t [%p-%l] %q%u@%d ") }}'
-log_lock_waits = {{ item.log_lock_waits | d('off') }}
+log_checkpoints = {{ item.log_checkpoints | d('on' if (postgresql_server__pgbadger_logs | bool) else 'off') }}
+log_connections = {{ item.log_connections | d('on' if (postgresql_server__pgbadger_logs | bool) else 'off') }}
+log_disconnections = {{ item.log_disconnections | d('on' if (postgresql_server__pgbadger_logs | bool) else 'off') }}
+log_duration = {{ item.log_duration | d('on' if (postgresql_server__pgbadger_logs | bool) else 'off') }}
+log_error_verbosity = {{ item.log_error_verbosity | d('verbose' if (postgresql_server__pgbadger_logs | bool) else 'default') }}
+log_hostname = {{ item.log_hostname | d('on' if (postgresql_server__pgbadger_logs | bool) else 'off') }}
+log_line_prefix = '{{ item.log_line_prefix | d(("%t [%p]: version=" + (item.version | d(postgresql_server__version)) + ",cluster=" + item.name + ",user=%u,db=%d,app=%a,client=%h ") if (postgresql_server__pgbadger_logs | bool) else "%t [%p-%l] %q%u@%d ") }}'
+log_lock_waits = {{ item.log_lock_waits | d('on' if (postgresql_server__pgbadger_logs | bool) else 'off') }}
 log_statement = '{{ item.log_statement | d("none") }}'
 log_temp_files = {{ item.log_temp_files | d('-1') }}
 log_timezone = '{{ item.log_timezone | d(postgresql_server__timezone) }}'
