@@ -71,6 +71,13 @@ General
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- The :file:`lxc_ssh.py` Ansible connection plugin included in DebOps will now
+  use the ``selectors`` module from the ``community.docker`` Ansible collection
+  instead of the ``ansible.compat`` collection, which was deprecated.
+
 :ref:`debops.apparmor` role
 '''''''''''''''''''''''''''
 
