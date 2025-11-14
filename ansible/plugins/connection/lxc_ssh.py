@@ -29,7 +29,6 @@ import fcntl
 import hashlib
 import os
 import pty
-import selectors
 import shlex
 import subprocess
 import sys
@@ -41,6 +40,8 @@ from ansible.errors import (
     AnsibleConnectionFailure,
     AnsibleFileNotFound,
 )
+from ansible.errors import AnsibleOptionsError
+from ansible_collections.community.docker.plugins.module_utils.selectors import selectors
 from ansible.module_utils._text import to_bytes, to_native, to_text
 from ansible.plugins.connection import ConnectionBase
 from ansible.utils.path import unfrackpath, makedirs_safe
