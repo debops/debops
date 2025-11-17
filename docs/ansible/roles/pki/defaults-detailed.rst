@@ -148,12 +148,6 @@ List of parameters related to the entire PKI realm:
   Optional, directory where the ACME client should store responses to ACME CA
   challenges. Defaults to :envvar:`pki_acme_challenge_dir`.
 
-``acme_contacts``
-  Optional, list of (mailto:) URLs that the ACME server can use to contact you
-  for issues related to your account. For example, the server may wish to
-  notify you about server-initiated revocation or certificate expiration. If
-  not specified, the list defined in :envvar:`pki_acme_contacts` will be used.
-
 ``internal``
   Optional, boolean. Enable or disable support for internal CA certificates in
   a given realm. If you disable internal CA support, an alternative,
