@@ -172,8 +172,8 @@ General
 
 - The role can now support `pgBadger`__ log analyzer by enabling verbose log
   output and modifying access to the log files themselves in the
-  :file:`/var/log/postgresql/` directory. This functionality is enabled by
-  default and can be disabled using a role variable.
+  :file:`/var/log/postgresql/` directory. This functionality is disabled by
+  default and can be enabled using a role variable.
 
   .. __: https://pgbadger.darold.net/
 
