@@ -177,6 +177,9 @@ General
 
   .. __: https://pgbadger.darold.net/
 
+- The default log ident string is changed to ``postgresql-<version>-<name>`` to
+  better distinguish different PostgreSQL instances in the system logs.
+
 :ref:`debops.reprepro` role
 '''''''''''''''''''''''''''
 
