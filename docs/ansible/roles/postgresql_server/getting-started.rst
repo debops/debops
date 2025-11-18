@@ -89,7 +89,7 @@ Support for pgBadger log analyzer
 ---------------------------------
 
 The role includes support for `pgBadger`__, PostgreSQL log analyzer. The
-support is enabled by default, but can be disabled using the
+support is disabled by default, but can be enabled using the
 :envvar:`postgresql_server__pgbadger_logs` variable.
 
 .. __: https://pgbadger.darold.net/
@@ -101,9 +101,17 @@ be set as well, which will make any new files to be owned by the ``adm`` group.
 With this configuration, log rotation and any new PostgreSQL logs will have
 correct permissions to be readable by the members of the ``adm`` system group.
 
+The default log output will be set to ``stderr`` which will redirect PostgreSQL
+logs to separate log files instead of syslog / journald service. This can be
+controlled using the :envvar:`postgresql_server__log_destination` variable.
+
 With this setup, users can create a separate, unprivileged UNIX account which
 can have read-only access to PostgreSQL logs (or any other logs that belong to
 the ``adm`` group.
+
+Enabling pgBadger support can cause rapid log file size increase, depending on
+the amount of traffic in the database. Ensure that a sufficient amount of disk
+space is available for log files and check the configuration of log rotation.
 
 
 Example inventory
