@@ -5,12 +5,12 @@
 
 - name: Reconfigure GitLab Omnibus
   ansible.builtin.command: 'gitlab-ctl reconfigure'
-  register: gitlab__register_reconfigure
-  changed_when: gitlab__register_reconfigure.changed | bool
+  register: global_handlers__gitlab_register_reconfigure
+  changed_when: global_handlers__gitlab_register_reconfigure.changed | bool
   when: (ansible_local.gitlab.omnibus | d()) | bool
 
 - name: Restart GitLab Omnibus
   ansible.builtin.command: 'gitlab-ctl restart'
-  register: gitlab__register_restart
-  changed_when: gitlab__register_restart.changed | bool
+  register: global_handlers__gitlab_register_restart
+  changed_when: global_handlers__gitlab_register_restart.changed | bool
   when: (ansible_local.gitlab.omnibus | d()) | bool

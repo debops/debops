@@ -9,20 +9,20 @@
   ansible.builtin.command: make
   args:
     chdir: '/etc/postfix'
-  register: handlers__register_postfix_make
+  register: global_handlers__postfix_register_make
   notify: [ 'Check postfix and reload' ]
-  changed_when: 'not handlers__register_postfix_make.stdout.startswith("make: Nothing to be done")'
+  changed_when: 'not global_handlers__postfix_register_make.stdout.startswith("make: Nothing to be done")'
 
 - name: Check postfix and restart
   ansible.builtin.command: /usr/sbin/postfix -c /etc/postfix check
-  register: postfix__register_check_restart
-  changed_when: postfix__register_check_restart.changed | bool
+  register: global_handlers__postfix_register_check_restart
+  changed_when: global_handlers__postfix_register_check_restart.changed | bool
   notify: [ 'Restart postfix' ]
 
 - name: Check postfix and reload
   ansible.builtin.command: /usr/sbin/postfix -c /etc/postfix check
-  register: postfix__register_check_reload
-  changed_when: postfix__register_check_reload.changed | bool
+  register: global_handlers__postfix_register_check_reload
+  changed_when: global_handlers__postfix_register_check_reload.changed | bool
   notify: [ 'Reload postfix' ]
 
 - name: Restart postfix

@@ -5,8 +5,8 @@
 
 - name: Test metricbeat configuration and restart
   ansible.builtin.command: 'metricbeat test config'
-  register: metricbeat__register_test_config
-  changed_when: metricbeat__register_test_config.changed | bool
+  register: global_handlers__metricbeat_register_test_config
+  changed_when: global_handlers__metricbeat_register_test_config.changed | bool
   notify:
     - 'Restart metricbeat'
     - 'Commit changes in etckeeper'
@@ -14,8 +14,8 @@
 
 - name: Test metricbeat output and restart
   ansible.builtin.command: 'metricbeat test output'
-  register: metricbeat__register_test_output
-  changed_when: metricbeat__register_test_output.changed | bool
+  register: global_handlers__metricbeat_register_test_output
+  changed_when: global_handlers__metricbeat_register_test_output.changed | bool
   notify: [ 'Restart metricbeat' ]
   when: (ansible_local.metricbeat.installed | d()) | bool
 
