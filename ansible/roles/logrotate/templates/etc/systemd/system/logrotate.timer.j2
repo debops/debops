@@ -1,0 +1,16 @@
+{# Copyright (C) 2025 Seven beep <seven-beep@entreparentheses.xyz>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+[Unit]
+Description={{ logrotate__scheduler_period | title }} rotation of log files
+Documentation=man:logrotate(8) man:logrotate.conf(5)
+
+[Timer]
+OnCalendar={{ logrotate__scheduler_period }}
+AccuracySec=1h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

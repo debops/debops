@@ -37,19 +37,39 @@ logrotate__base_packages: [ 'logrotate' ]
 logrotate__packages: []
 
                                                                    # ]]]
+# .. envvar:: logrotate__scheduler [[[
+#
+# Scheduler used to periodically apply log rotation.  Supported values are:
+# ``cron``, ``systemd``.
+logrotate__scheduler: '{{
+    "cron" if (ansible_distribution == "Debian"
+               and ansible_distribution_major_version is version("11", "<="))
+           or (ansible_distribution == "Ubuntu"
+               and ansible_distribution_major_version is version("24", "<="))
+           else
+    "systemd"
+  }}'
+
+                                                                   # ]]]
+# .. envvar:: logrotate__scheduler_period [[[
+#
+# Specify how often :ref:`logrotate__config` should execute log rotation. By
+# default the ``logrotate`` command will be executed daily. Available periods
+# are: ``hourly``, ``daily``, ``weekly``, ``monthly``.
+logrotate__scheduler_period: 'daily'
+
+                                                                   # ]]]
 # .. envvar:: logrotate__cron_period [[[
 #
-# Specify how often :program:`cron` should execute log rotation. By default the
-# ``logrotate`` command will be executed daily. Available periods are:
-# ``hourly``, ``daily``, ``weekly``, ``monthly``.
-logrotate__cron_period: 'daily'
+# Deprecated, use :ref:`logrotate__scheduler_period` instead.
+logrotate__cron_period: '{{ logrotate__scheduler_period }}'
 
                                                                    # ]]]
 # .. envvar:: logrotate__default_period [[[
 #
 # Select the default log rotation period. Supported values are: ``daily``,
-# ``weekly``, ``monthly``, ``yearly``. The ``logrotate`` command is currently
-# run daily via a :program:`cron` script.
+# ``weekly``, ``monthly``, ``yearly``.  The ``logrotate`` command is currently
+# run daily via a :program:`cron` script or a :program:`systemd` timer.
 logrotate__default_period: 'weekly'
 
                                                                    # ]]]

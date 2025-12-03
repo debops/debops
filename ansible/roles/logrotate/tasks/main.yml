@@ -1,6 +1,7 @@
 ---
 # Copyright (C) 2016-2017 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2016-2017 DebOps <https://debops.org/>
+# Copyright (C) 2025-2026 Seven beep <seven-beep@entreparentheses.xyz>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Install required packages
@@ -19,7 +20,9 @@
     executable: 'bash'
   register: logrotate__register_cron_diversion
   changed_when: False
-  when: logrotate__enabled | bool
+  when:
+    - logrotate__enabled | bool
+    - logrotate__scheduler == "cron"
 
 - name: Remove previous cron log rotation
   debops.debops.dpkg_divert:
@@ -28,6 +31,7 @@
     state: 'absent'
     delete: True
   when: (logrotate__enabled | bool and
+         logrotate__scheduler == "cron" and
          logrotate__register_cron_diversion.stdout | d() and
          logrotate__register_cron_diversion.stdout | d() !=
          ('/etc/cron.' + logrotate__cron_period + '/logrotate'))
@@ -37,7 +41,20 @@
     path: '/etc/cron.daily/logrotate'
     divert: '/etc/cron.{{ logrotate__cron_period }}/logrotate'
   when: (logrotate__enabled | bool and
+         logrotate__scheduler == "cron" and
          logrotate__cron_period in ['hourly', 'weekly', 'monthly'])
+
+- name: Configure systemd logrotate.timer {{ logrotate__scheduler_period }}
+  ansible.builtin.template:
+    src: 'etc/systemd/system/logrotate.timer.j2'
+    dest: '/etc/systemd/system/logrotate.timer'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when:
+    - logrotate__enabled | bool
+    - logrotate__scheduler == "systemd"
+  notify: [ 'Reload systemd daemon' ]
 
 - name: Add/remove diversion of the logrotate config file
   debops.debops.dpkg_divert:
