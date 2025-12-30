@@ -37,14 +37,13 @@ class CallbackModule(CallbackBase):
     """
     A plugin for timing tasks
     """
-
     def __init__(self):
         self.stats = {}
         self.current = None
         self.disabled = None
         self.wants_implicit_task = None
 
-    def playbook_on_task_start(self, name, is_conditional):
+    def v2_playbook_on_task_start(self, name, is_conditional):
         """
         Logs the start of each task
         """
@@ -56,7 +55,7 @@ class CallbackModule(CallbackBase):
         self.current = name
         self.stats[self.current] = time.time()
 
-    def playbook_on_stats(self, stats):
+    def v2_playbook_on_stats(self, stats):
         """
         Prints the timings
         """
@@ -74,5 +73,5 @@ class CallbackModule(CallbackBase):
         # Print the timings
         for name, elapsed in results:
             print("{0:-<70}{1:->9}".format(
-                '{0} '.format(name),
-                ' {0:.02f}s'.format(elapsed)))
+                    '{0} '.format(name),
+                    ' {0:.02f}s'.format(elapsed)))
