@@ -1080,7 +1080,6 @@ slapd__structure_tasks:
     objectClass: 'organizationalRole'
     attributes:
       cn: 'Hidden Object Viewer'
-      memberOf: '{{ (["cn=Hidden Objects", "ou=Groups"] + slapd__base_dn) | join(",") }}'
       description: 'LDAP objects which can see hidden objects'
 
   - name: 'Create cn=Hidden Objects group'
@@ -1091,7 +1090,6 @@ slapd__structure_tasks:
       member:
         - '{{ (["cn=Hidden Objects", "ou=Groups"] + slapd__base_dn) | join(",") }}'
         - '{{ (["cn=Hidden Object Viewer", "ou=Roles"] + slapd__base_dn) | join(",") }}'
-      memberOf: '{{ (["cn=Hidden Objects", "ou=Groups"] + slapd__base_dn) | join(",") }}'
       description: 'LDAP objects which are accessible only by privileged accounts'
 
   - name: 'Create cn=UNIX SSH users group'
