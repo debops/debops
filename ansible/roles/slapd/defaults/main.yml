@@ -657,7 +657,7 @@ slapd__default_tasks:
     state: 'exact'
 
   - name: 'Configure LastBind overlay in the main database'
-    dn: 'olcOverlay={11}lastbind,olcDatabase={1}mdb,cn=config'
+    dn: [ 'olcDatabase={1}mdb', 'cn=config' ]
     attributes:
       olcLastBindPrecision: '{{ (60 * 60 * 24) }}'
     state: 'exact'
