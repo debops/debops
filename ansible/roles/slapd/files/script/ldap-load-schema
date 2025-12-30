@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 
 # Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2015-2019 DebOps <https://debops.org/>
+# Copyright (C) 2015-2025 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 # Check if specified LDAP schema file is loaded in the local slapd cn=config
 # database. If not, try loading it in the server.
-
 
 set -o nounset -o pipefail -o errexit
 
@@ -51,8 +50,11 @@ if [[ "${schema_file}" == *.ldif ]] ; then
 # The schema is not converted to ldif, defer to a helper script
 elif [[ "${schema_file}" == *.schema ]] ; then
 
-    if type fusiondirectory-insert-schema > /dev/null ; then
-        fusiondirectory-insert-schema -i "${schema_file}"
+    if type schema2ldif > /dev/null ; then
+        # convert schema to ldif
+        schema2ldif "${schema_file}" >"${schema_file/%.schema/.ldif}"
+        relaunch the script with the ldif to load it
+        $0 "${schema_file/%.schema/.ldif}"
     else
         printf "Error: %s needs to be in the .ldif format\\n" "${schema_file}" && exit 1
     fi
