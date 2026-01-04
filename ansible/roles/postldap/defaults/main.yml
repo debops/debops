@@ -249,7 +249,8 @@ postldap__postfix__dependent_maincf:
     section: 'virtual'
     state: 'absent'
 
-  # Optional lookup table with the SASL login names that own the sender (MAIL FROM) addresses.
+  # Optional lookup table with the SASL login names that own the sender
+  # (MAIL FROM) addresses.
   - name: 'smtpd_sender_login_maps'
     value: [ 'ldap:/etc/postfix/ldap_smtpd_sender_login_maps.cf' ]
     section: 'base'
@@ -399,11 +400,20 @@ postldap__postfix__dependent_lookup_tables:
   - name: 'ldap_smtpd_sender_login_maps.cf'
     state: 'present'
     comment: |
-      The smtpd_sender_login_maps configurations performs a lookup from an incoming
-      email-sender to a username. Postfix first performs a full lookup
-      on user@domain, then user and then @domain.
-      The later one is also used for catchalls where the mailAlternateAddress
-      is set to e.g. @foobar.com
+      The smtpd_sender_login_maps configuration performs a lookup using a given
+      sender (MAIL FROM) address and expects to get a list of SASL login names
+      that "own" the given email address (read: are allowed to send email using
+      the email address as the envelope from address).
+
+      Note that the SASL login process can alter the SASL login name, e.g.
+      "dovecot auth test bob@example.com" can return "user=foo@example.com,
+      original_user=bob@example.com", in which case the *new* login name is
+      used for comparisons).
+
+      Postfix first performs a lookup with user@domain, then user (only if the
+      domain part is considered local), and then @domain, which can be
+      used for catchalls where the mailAlternateAddress is set to e.g.
+      @example.com.
     no_log: '{{ debops__no_log | d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_base_dn | join(",") }}'
