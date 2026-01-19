@@ -1,8 +1,8 @@
 ---
 # Copyright (C) 2015      Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
 # Copyright (C) 2017-2020 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2021      David Härdeman <david@hardeman.nu>
-# Copyright (C) 2015-2021 DebOps <https://debops.org/>
+# Copyright (C) 2021-2026 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2015-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
@@ -71,30 +71,6 @@
   notify: [ 'Refresh host facts' ]
   tags: [ 'meta::facts' ]
 
-- name: Remove old diversions
-  debops.debops.dpkg_divert:
-    path: '/etc/dovecot/conf.d/{{ item }}'
-    state: 'absent'
-    delete: True
-  loop:
-    - '10-auth.conf'
-    - '10-master.conf'
-    - '10-mail.conf'
-    - '10-ssl.conf'
-    - '15-lda.conf'
-    - '20-pop3.conf'
-    - '20-imap.conf'
-    - '20-lmtp.conf'
-    - '20-managesieve.conf'
-    - '90-sieve.conf'
-    - '90-sieve-extprograms.conf'
-    - 'auth-deny.conf.ext'
-    - 'auth-system.conf.ext'
-    - 'auth-sql.conf.ext'
-    - 'auth-ldap.conf.ext'
-    - 'auth-passwdfile.conf.ext'
-    - 'auth-checkpassword.conf.ext'
-
 - name: Uninstall disabled Dovecot protocols
   ansible.builtin.package:
     pkg: '{{ q("flattened", ((["dovecot-imapd"]
@@ -137,7 +113,7 @@
   notify: [ 'Restart dovecot' ]
   tags: [ "role::dovecot:conf" ]
 
-- name: Generate Dovecot SQL configuration
+- name: Generate separate Dovecot SQL configuration
   ansible.builtin.template:
     src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/dovecot-sql.conf.ext.j2') }}"
     dest: '/etc/dovecot/dovecot-sql.conf.ext'
@@ -145,10 +121,18 @@
     group: 'root'
     mode: '0600'
   notify: [ 'Restart dovecot' ]
-  when: "dovecot__user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite'])"
+  when: "dovecot__version is version('2.4.0', '<') and dovecot__user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite']) | length > 0"
   tags: [ "role::dovecot:conf", "role::dovecot:conf:sql" ]
 
-- name: Generate Dovecot LDAP configuration
+- name: Remove separate Dovecot SQL configuration
+  ansible.builtin.file:
+    path: '/etc/dovecot/dovecot-sql.conf.ext'
+    state: 'absent'
+  notify: [ 'Restart dovecot' ]
+  when: "dovecot__version is version('2.4.0', '>=') or dovecot__user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite']) | length == 0"
+  tags: [ "role::dovecot:conf", "role::dovecot:conf:ldap" ]
+
+- name: Generate separate Dovecot LDAP configuration
   ansible.builtin.template:
     src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/dovecot-ldap-combined.conf.j2') }}"
     dest: '/etc/dovecot/dovecot-ldap-combined.conf'
@@ -156,7 +140,15 @@
     group: 'root'
     mode: '0600'
   notify: [ 'Restart dovecot' ]
-  when: "'ldap' in dovecot__user_accounts"
+  when: "dovecot__version is version('2.4.0', '<') and 'ldap' in dovecot__user_accounts"
+  tags: [ "role::dovecot:conf", "role::dovecot:conf:ldap" ]
+
+- name: Remove separate Dovecot LDAP configuration
+  ansible.builtin.file:
+    path: '/etc/dovecot/dovecot-ldap-combined.conf'
+    state: 'absent'
+  notify: [ 'Restart dovecot' ]
+  when: "dovecot__version is version('2.4.0', '>=') or 'ldap' not in dovecot__user_accounts"
   tags: [ "role::dovecot:conf", "role::dovecot:conf:ldap" ]
 
 - name: Generate Dovecot deny user list
