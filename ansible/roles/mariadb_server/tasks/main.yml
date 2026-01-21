@@ -29,6 +29,15 @@
   changed_when: False
   failed_when: False
 
+- name: Confgure upstream MariaDB repositories if required
+  ansible.builtin.deb822_repository:
+    name: 'MariaDB'
+    uris: 'https://deb.mariadb.org/{{ mariadb_server__upstream_version }}/{{ ansible_local.core.distribution | d(ansible__distribution) | lower }}'
+    signed_by: 'https://mariadb.org/mariadb_release_signing_key.pgp'
+    components: 'main'
+    suites: '{{ ansible_distribution_release }}'
+  when: mariadb_server__flavor == "mariadb_upstream"
+
 - name: Install database server packages
   ansible.builtin.package:
     name: '{{ q("flattened", (mariadb_server__base_packages
