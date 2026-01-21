@@ -220,7 +220,8 @@
     cache_valid_time: '{{ omit
                          if (apt__register_sources_template is changed or
                              apt__register_sources_diversion is changed or
-                             apt__register_apt_repositories is changed)
+                             apt__register_apt_repositories is changed or 
+                             apt__register_deb822_repositories is changed)
                          else apt__cache_valid_time }}'
   register: apt__register_apt_update
   until: apt__register_apt_update is succeeded
