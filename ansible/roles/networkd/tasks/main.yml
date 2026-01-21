@@ -32,7 +32,7 @@
     enabled: True
   when: networkd__enabled | bool
 
-- name: Remove systemd-networkd configuuration if requested
+- name: Remove systemd-networkd configuration if requested
   ansible.builtin.file:
     path: '/etc/systemd/networkd.conf.d/ansible.conf'
     state: 'absent'
@@ -82,7 +82,8 @@
   loop: '{{ networkd__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
-  when: networkd__enabled | bool and item.raw | d() and
+  when: networkd__enabled | bool and
+        (item.raw | d() or item.sections | d()) and
         item.state | d("present") not in ['absent', 'ignore', 'init'] and
         (item.name | dirname).endswith('.d')
 
@@ -90,12 +91,15 @@
   ansible.builtin.template:
     src: 'etc/systemd/network/template.j2'
     dest: '{{ "/etc/systemd/network/" + item.name }}'
-    mode: '0644'
-  loop: '{{ networkd__combined_units | flatten | debops.debops.parse_kv_items }}'
+    owner: '{{ item.owner | d("root") }}'
+    group: '{{ item.group | d("systemd-network") }}'
+    mode: '{{ item.mode | d("0644") }}'
+  loop: '{{ networkd__combined_units | flatten | debops.debops.parse_kv_items(merge_keys=["sections"]) }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   notify: [ 'Restart systemd-networkd service' ]
-  when: networkd__enabled | bool and item.raw | d() and
+  when: networkd__enabled | bool and
+        (item.raw | d() or item.sections | d()) and
         item.state | d("present") not in ['absent', 'ignore', 'init']
 
 - name: Flush handlers when needed

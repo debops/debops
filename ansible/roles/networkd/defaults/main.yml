@@ -61,11 +61,13 @@ networkd__version: '{{ ansible_local.networkd.version | d("0") }}'
 # The :command:`systemd-networkd` daemon configuration [[[
 # --------------------------------------------------------
 
-# These variables define the contents of the ``[Network]`` section in the
-# :file:`/etc/systemd/networkd.conf` configuration file. Check the
-# :man:`networkd.conf(5)` manual page for more information about the
-# configuration options, and :ref:`networkd__ref_configuration` for details
-# about the configuration of the role itself.
+# These variables define the contents of the
+# :file:`/etc/systemd/networkd.conf.d/ansible.conf` drop-in which, in turn,
+# overrides the defaults from the :file:`/etc/systemd/networkd.conf`
+# configuration file.  Check the :man:`networkd.conf(5)` manual page for more
+# information about the configuration options (note: they tend to change from
+# release to release), and :ref:`networkd__ref_configuration` for details about
+# the configuration of the role itself.
 #
 # By default the configuration is not applied on the hosts, you need to set
 # :envvar:`networkd__deploy_state` variable to ``present`` to deploy the
@@ -76,17 +78,56 @@ networkd__version: '{{ ansible_local.networkd.version | d("0") }}'
 # List of the default configuration options defined by the role.
 networkd__default_configuration:
 
-  - name: 'SpeedMeter'
-    value: False
-    state: 'init'
+  - name: 'Network'
+    options:
 
-  - name: 'SpeedMeterIntervalSec'
-    value: '10sec'
-    state: 'init'
+      - name: 'SpeedMeter'
+        value: False
+        state: 'comment'
 
-  - name: 'ManageForeignRoutes'
-    value: True
-    state: 'init'
+      - name: 'SpeedMeterIntervalSec'
+        value: '10sec'
+        state: 'comment'
+
+      - name: 'ManageForeignRoutingPolicyRules'
+        value: True
+        state: 'comment'
+
+      - name: 'ManageForeignRoutes'
+        value: True
+        state: 'comment'
+
+      - name: 'RouteTable'
+        value: ''
+        state: 'comment'
+
+  - name: 'DHCPv4'
+    options:
+
+      - name: 'DUIDType'
+        value: 'vendor'
+        state: 'comment'
+
+      - name: 'DUIDRawData'
+        value: ''
+        state: 'comment'
+
+  - name: 'DHCPv6'
+    options:
+
+      - name: 'DUIDType'
+        value: 'vendor'
+        state: 'comment'
+
+      - name: 'DUIDRawData'
+        value: ''
+        state: 'comment'
+
+                                                                   # ]]]
+# .. envvar:: networkd__dependent_configuration [[[
+#
+# List of the configuration options defined by other Ansible roles.
+networkd__dependent_configuration: []
 
                                                                    # ]]]
 # .. envvar:: networkd__configuration [[[
@@ -115,68 +156,11 @@ networkd__host_configuration: []
 # Variable which combines all configuration lists and is used in the role tasks
 # and templates.
 networkd__combined_configuration: '{{ networkd__default_configuration
-                                     + networkd__configuration
-                                     + networkd__group_configuration
-                                     + networkd__host_configuration }}'
-                                                                   # ]]]
-                                                                   # ]]]
-# The :command:`systemd-networkd` DHCP configuration [[[
-# ------------------------------------------------------
+                                      + networkd__dependent_configuration
+                                      + networkd__configuration
+                                      + networkd__group_configuration
+                                      + networkd__host_configuration }}'
 
-# These variables define configuration of the ``[DHCP]`` section in the
-# :file:`/etc/systemd/networkd.conf` configuration file. Check the
-# :man:`networkd.conf(5)` manual page for more information about the
-# configuration options, and :ref:`networkd__ref_configuration` for details
-# about the configuration of the role itself.
-#
-# By default the configuration is not applied on the hosts, you need to set
-# :envvar:`networkd__deploy_state` variable to ``present`` to deploy the
-# configuration.
-
-# .. envvar:: networkd__dhcp_default_configuration [[[
-#
-# List of the default DHCP configuration options for the user instances,
-# defined by the role.
-networkd__dhcp_default_configuration:
-
-  - name: 'DUIDType'
-    value: 'vendor'
-    state: 'init'
-
-  - name: 'DUIDRawData'
-    value: ''
-    state: 'init'
-
-                                                                   # ]]]
-# .. envvar:: networkd__dhcp_configuration [[[
-#
-# List of the DHCP configuration options which should be present on all hosts
-# in the Ansible inventory.
-networkd__dhcp_configuration: []
-
-                                                                   # ]]]
-# .. envvar:: networkd__dhcp_group_configuration [[[
-#
-# List of the DHCP configuration options which should be present on hosts in
-# a specific Ansible inventory group.
-networkd__dhcp_group_configuration: []
-
-                                                                   # ]]]
-# .. envvar:: networkd__dhcp_host_configuration [[[
-#
-# List of the DHCP configuration options which should be present on specific
-# hosts in the Ansible inventory.
-networkd__dhcp_host_configuration: []
-
-                                                                   # ]]]
-# .. envvar:: networkd__dhcp_combined_configuration [[[
-#
-# Variable which combines all DHCP configuration lists and is used in role
-# tasks and templates.
-networkd__dhcp_combined_configuration: '{{ networkd__dhcp_default_configuration
-                                          + networkd__dhcp_configuration
-                                          + networkd__dhcp_group_configuration
-                                          + networkd__dhcp_host_configuration }}'
                                                                    # ]]]
                                                                    # ]]]
 # The :command:`systemd-networkd` configuration units [[[
@@ -187,7 +171,8 @@ networkd__dhcp_combined_configuration: '{{ networkd__dhcp_default_configuration
 # :file:`/etc/systemd/network/` directory. Check the :man:`systemd.network(5)`,
 # :man:`systemd.netdev(5)` and :file:`systemd.link(5)` manual pages for more
 # information about files themselves, and :ref:`networkd__ref_units` for
-# details about configuring units using this role.
+# details about configuring units using this role. Note that the files are
+# processed in alphanumeric order.
 
 # .. envvar:: networkd__default_units [[[
 #
@@ -195,20 +180,39 @@ networkd__dhcp_combined_configuration: '{{ networkd__dhcp_default_configuration
 networkd__default_units:
 
   - name: 'wired-dhcp.network'
+    state: 'absent'
+
+  - name: '90-wired-dhcp.network'
     comment: 'Configure any wired Ethernet interface via DHCP'
-    raw: |
-      [Match]
-      Name=e*
-
-      [Network]
-      DHCP=yes
-      MulticastDNS=yes
-      LLDP=yes
-      EmitLLDP=yes
-
-      [DHCPv4]
-      UseDomains=true
     state: 'present'
+    sections:
+
+      - name: 'Match'
+        options:
+
+          - name: 'Name'
+            value: 'e*'
+
+      - name: 'Network'
+        options:
+
+          - name: 'DHCP'
+            value: True
+
+          - name: 'MulticastDNS'
+            value: True
+
+          - name: 'LLDP'
+            value: True
+
+          - name: 'EmitLLDP'
+            value: True
+
+      - name: 'DHCPv4'
+        options:
+
+          - name: 'UseDomains'
+            value: True
 
                                                                    # ]]]
 # .. envvar:: networkd__units [[[
