@@ -1,0 +1,22 @@
+---
+
+- name: Display maintenance.html page
+  # TODO: Add some image, add link for mailing admins
+  template:
+    src: 'var/local/discourse/public/maintenance.html.j2'
+    dest: '{{ discourse_git_checkout + "/public/maintenance.html" }}'
+
+- name: Create backup of Discourse instance
+  command: bundle exec rake discourse:backup:create RAILS_ENV=production
+  args:
+    chdir: '{{ discourse_git_checkout }}'
+  register: discourse__register_backup
+  become: True
+  become_user: '{{ discourse_user }}'
+  changed_when: discourse__register_backup.stdout|d()
+  when: False  # TODO: Check how to, if at all
+
+- name: Stop Discourse before upgrade (systemd)
+  service:
+    name: 'discourse.service'
+    state: 'stopped'
