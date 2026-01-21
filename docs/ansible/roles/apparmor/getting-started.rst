@@ -114,7 +114,7 @@ Available role tags:
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
 
-``role::apparmor:pkg``
+``role::apparmor:pkgs``
   Tasks related to the installation of packages.
 
 ``role::apparmor:grub``

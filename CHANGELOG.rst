@@ -115,6 +115,16 @@ General
   :file:`~/.ssh/authorized_keys` files correctly using optional ``follow``
   parameter.
 
+- Harmonize all roles on `role::ROLE:pkgs` Ansible tag. The roles:
+
+  - :ref:`debops.apparmor`
+  - :ref:`debops.imapproxy`
+  - :ref:`debops.owncloud`
+  - :ref:`debops.roundcube`
+  - :ref:`debops.rspamd`
+
+  used `role::ROLE:pkg` previously.
+
 - The DebOps CI pipeline in GitHub Actions is improved and will be executed on
   pull requests and pushes to test changes before merging them.
 
@@ -128,6 +138,12 @@ General
 - The Debian 10 (Buster) release has been archived and removed from Debian
   mirrors. The role will use https://archive.debian.org/debian as the
   repository URL on Debian Buster hosts.
+
+:ref:`debops.cryptsetup` role
+'''''''''''''''''''''''''''''
+
+- Make PBKDF configurable and already set Argon2id which is the new default of
+  cryptsetup 2.4.0. See :envvar:`cryptsetup__pbkdf` for details.
 
 :ref:`debops.gitlab` role
 '''''''''''''''''''''''''
@@ -394,7 +410,7 @@ Security
 '''''''''''''''''''''''''
 
 - The GPG key of the Icinga upstream APT repository `has been replaced`__ on
-  30th September 2024. The role includes the new key which should be installed
+  2024-09-30. The role includes the new key which should be installed
   on the host on the next run. The old GPG key will not be removed
   automatically.
 
@@ -905,7 +921,7 @@ Updates of upstream application versions
   ``v24.0`` and ``v25.0``.
 
 General
-~~~~~~~
+'''''''
 
 - Tasks which use modules and plugins from the ``ansible.builtin`` Ansible
   Collection have been updated to refer to them via their Fully Qualified
