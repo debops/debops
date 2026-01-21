@@ -1005,8 +1005,9 @@ sshd__ldap_binddn: '{{ ([sshd__ldap_self_rdn] + sshd__ldap_device_dn) | join(","
 #
 # The password defined in the ``sshd`` LDAP account object used to authenticate
 # to the LDAP directory.
-sshd__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
-                               + sshd__ldap_binddn | to_uuid + ".password length=32"))
+sshd__ldap_bindpw: '{{ (lookup("ldap_password",
+                               secret + "/ldap/credentials/",
+                               sshd__ldap_binddn, "length=32"))
                        if sshd__ldap_enabled | bool
                        else "" }}'
 
