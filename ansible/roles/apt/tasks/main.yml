@@ -4,6 +4,7 @@
 # Copyright (C) 2013-2023 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
 # Copyright (C) 2014-2023 DebOps <https://debops.org/>
+# Copyright (C) 2025-2026 seven-beep <seven-beep@entreparentheses.xyz>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
@@ -206,19 +207,43 @@
   register: apt__register_sources_diversion
   when: (apt__enabled | bool and apt__deploy_state in ['absent', 'present'])
 
+- name: Register the presence of upstream Ubuntu deb822 sources
+  ansible.builtin.stat:
+    path: "/etc/apt/sources.list.d/ubuntu.sources"
+  register: ubuntu_deb822_system_sources
+
 - name: Configure operating system sources.list
   ansible.builtin.template:
     src: 'etc/apt/sources.list.j2'
     dest: '/etc/apt/sources.list'
     mode: '0644'
   register: apt__register_sources_template
-  when: (apt__enabled | bool and apt__deploy_state == 'present')
+  when: (apt__enabled | bool and apt__deploy_state == 'present' and
+         not ubuntu_deb822_system_sources.stat.exists )
+
+- name: Add diversion of upstream Ubuntu deb822 sources
+  debops.debops.dpkg_divert:
+    path: '/etc/apt/sources.list.d/ubuntu.sources'
+    state: "present"
+    delete: True
+  when: (apt__enabled | bool and apt__deploy_state == 'present' and
+        ubuntu_deb822_system_sources.stat.exists)
+
+- name: Configure operating system deb822 sources
+  ansible.builtin.template:
+    src: 'etc/apt/sources.list.d/system.sources.j2'
+    dest: '/etc/apt/sources.list.d/ubuntu.sources'
+    mode: '0644'
+  register: apt__register_deb822_sources_template
+  when: (apt__enabled | bool and apt__deploy_state == 'present' and
+         ubuntu_deb822_system_sources.stat.exists )
 
 - name: Update APT cache
   ansible.builtin.apt:
     update_cache: True
     cache_valid_time: '{{ omit
                          if (apt__register_sources_template is changed or
+                             apt__register_deb822_sources_template is changed or
                              apt__register_sources_diversion is changed or
                              apt__register_apt_repositories is changed)
                          else apt__cache_valid_time }}'
