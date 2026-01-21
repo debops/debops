@@ -63,11 +63,11 @@ dovecot__deny_users: [ 'root' ]
                                                                    # ]]]
 # .. envvar:: dovecot__mail_location [[[
 #
-# Mailbox location. For mbox set something like
-# ``mbox:~/mail:INBOX=/var/mail/%u``.  For more information about the supported
-# format, see the `Dovecot Mail Location`__ documentation.
+# Mailbox location. For a fresh deployment, you might want to change this to
+# ``mdbox:~/mdbox`` for better performance. For more information about the
+# supported formats, see the `Dovecot Mailbox Formats`__ documentation.
 #
-# .. __: https://doc.dovecot.org/configuration_manual/mail_location/
+# .. __: https://doc.dovecot.org/admin_manual/mailbox_formats/
 dovecot__mail_location: 'maildir:~/Maildir'
 
                                                                    # ]]]
@@ -81,7 +81,7 @@ dovecot__auth_default_realm: '{{ ansible_domain }}'
                                                                    # ]]]
 # Virtual Mail [[[
 # ----------------
-#
+
 # These settings makes it possible to host multiple (virtual) domains and to
 # manage mail for users which do not need to have a local system account.
 #
@@ -136,9 +136,42 @@ dovecot__vmail_home: '{{ dovecot__vmail_base ~ "/%d/%n" }}'
 
                                                                    # ]]]
                                                                    # ]]]
-# DSync Settings [[[
-# --------------
+# Backup snapshots [[[
+# --------------------
+
+# These variables configure periodic backup snapshots of users' mailboxes.
+# See :ref:`dovecot__ref_backup_restore` for more details.
+
+# .. envvar:: dovecot__snapshot_deploy_state [[[
 #
+# If ``present``, the snapshot :command:`cron` jobs will be configured to run
+# the :command:`debops-dovecot-snapshot` script periodically to create
+# snapshots of user mailboxes. If ``absent``, the :command:`cron` jobs will be
+# removed.
+dovecot__snapshot_deploy_state: 'absent'
+
+                                                                   # ]]]
+# .. envvar:: dovecot__snapshot_user_filter [[[
+#
+# A list of strings corresponding to usernames for which backups should be
+# created. By default, usernames are in ``user@domain`` (e.g.
+# ``foo@example.com``) format, but this depends on the Dovecot settings.
+# The wildcards ``*`` and ``?`` are supported (e.g. ``*@example.com``).
+# Use :command:`doveadm user "<some_pattern>"` on the Dovecot server to get
+# a list of users which correspond to a given pattern.
+dovecot__snapshot_user_filter: [ '*' ]
+
+                                                                   # ]]]
+# .. envvar:: dovecot__snapshot_cron_jobs [[[
+#
+# List of :command:`cron` periods during which the
+# :command:`debops-dovecot-snapshot` script should be executed.
+dovecot__snapshot_cron_jobs: [ 'daily', 'weekly', 'monthly' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# DSync Settings [[[
+# ------------------
+
 # Dovecot supports master/master replication using ``dsync``.  For more
 # information, see :ref:`dovecot__ref_dsync`.
 
@@ -181,7 +214,7 @@ dovecot__dsync_password: '{{ lookup("password", secret + "/"
                                                                    # ]]]
                                                                    # ]]]
 # SQL Authentication Settings [[[
-# ---------------------------
+# -------------------------------
 #
 
 # .. envvar:: dovecot__sql_connect [[[
@@ -428,6 +461,12 @@ dovecot__default_configuration:
              map("regex_replace", "^(imap|pop3)s$", "\1") |
              list | unique | join(' ') }}
 
+      - name: 'mail_plugins_zlib'
+        option: 'mail_plugins'
+        value: '$mail_plugins zlib'
+        comment: 'The zlib plugin needs to be enabled globally for e.g. dsync'
+        state: '{{ "present" if "zlib" in dovecot__features else "absent" }}'
+
   - section: 'authentication'
     title: 'Client Configuration'
     options:
@@ -522,18 +561,28 @@ dovecot__default_configuration:
             value: 'ldap'
 
           - name: 'args'
-            value: '/etc/dovecot/dovecot-ldap-passdb.conf'
+            value: '/etc/dovecot/dovecot-ldap-combined.conf'
 
       - name: 'userdb_ldap'
         option: 'userdb'
         state: '{{ "present" if "ldap" in dovecot__user_accounts else "absent" }}'
+        comment: 'userdb data is already looked up by the passdb'
+        options:
+
+          - name: 'driver'
+            value: 'prefetch'
+
+      - name: 'userdb_ldap_fallback'
+        option: 'userdb'
+        state: '{{ "present" if "ldap" in dovecot__user_accounts else "absent" }}'
+        comment: 'fallback userdb for LDA/LMTP'
         options:
 
           - name: 'driver'
             value: 'ldap'
 
           - name: 'args'
-            value: '/etc/dovecot/dovecot-ldap-userdb.conf'
+            value: '/etc/dovecot/dovecot-ldap-combined.conf'
 
       - name: 'passdb_passwd'
         option: 'passdb'
@@ -888,6 +937,12 @@ dovecot__default_configuration:
             value: 'yes'
             comment: 'There can be only one INBOX, and this setting defines which namespace has it.'
 
+          - name: 'separator'
+            value: '.'
+            comment: |
+              We set the separator explicitly so that it doesn't change if the
+              mailbox format is changed.
+
           - name: 'mailbox Drafts'
             options:
               - name: 'special_use'
@@ -909,8 +964,9 @@ dovecot__default_configuration:
 
           - name: 'mailbox Sent'
             comment: |
-              For \Sent mailboxes there are two widely used names. We'll mark both of
-              them as \Sent. User typically deletes one of them if duplicates are created.
+              For \Sent mailboxes there are two widely used names. We'll mark
+              both of them as \Sent. Users typically delete one of them if
+              duplicates are created.
             options:
 
               - name: 'special_use'
@@ -922,7 +978,7 @@ dovecot__default_configuration:
               - name: 'special_use'
                 value: '\Sent'
 
-          - name: 'mailbox virtual/All'
+          - name: 'mailbox virtual.All'
             comment: 'If you have a virtual "All Messages" mailbox:'
             state: 'comment'
             options:
@@ -933,7 +989,7 @@ dovecot__default_configuration:
               - name: 'comment'
                 value: 'All my messages'
 
-          - name: 'mailbox virtual/Flagged'
+          - name: 'mailbox virtual.Flagged'
             comment: 'If you have a virtual "Flagged" mailbox:'
             state: 'comment'
             options:
@@ -944,7 +1000,7 @@ dovecot__default_configuration:
               - name: 'comment'
                 value: 'All my flagged messages'
 
-          - name: 'mailbox virtual/Important'
+          - name: 'mailbox virtual.Important'
             comment: 'If you have a virtual "Important" mailbox:'
             state: 'comment'
             options:
@@ -973,6 +1029,15 @@ dovecot__default_configuration:
           - name: 'mail_replica'
             value: '{{ dovecot__dsync_replica }}'
             state: '{{ "present" if "dsync" in dovecot__features else "absent" }}'
+
+          - name: 'zlib_save'
+            value: 'zstd'
+            comment: 'zstd requires Dovecot v2.3.12+ (Debian Bullseye)'
+            state: '{{ "present" if "zlib" in dovecot__features else "absent" }}'
+
+          - name: 'zlib_save_level'
+            value: '3'
+            state: '{{ "present" if "zlib" in dovecot__features else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__configuration [[[
@@ -1207,10 +1272,7 @@ dovecot__ldap_start_tls: '{{ ansible_local.ldap.start_tls | d(True) | bool }}'
 # See :ref:`ldap__ref_admin` for more information.
 dovecot__ldap_user_filter: '(&
                               (objectClass=mailRecipient)
-                              (|
-                                (uid=%n)
-                                (mail=%u)
-                              )
+                              (mail=%u)
                               (|
                                 (authorizedService=all)
                                 (authorizedService=mail:access)
@@ -1218,27 +1280,16 @@ dovecot__ldap_user_filter: '(&
                             )'
 
                                                                    # ]]]
-# .. envvar:: dovecot__ldap_user_list_filter [[[
+# .. envvar:: dovecot__ldap_iterate_filter [[[
 #
-# The LDAP filter used to look list user accounts in the directory. This allows
-# commands like :command:`doveadm users '*'` or :command:`doveadm purge -A` to
-# work.
-# See :ref:`ldap__ref_admin` for more information.
-dovecot__ldap_user_list_filter: '(&
-                                   (objectClass=mailRecipient)
-                                   (|
-                                     (authorizedService=all)
-                                     (authorizedService=mail:access)
-                                   )
-                                 )'
-
-                                                                   # ]]]
-# .. envvar:: dovecot__ldap_user_list_filter_attribute [[[
-#
-# The attribute used by the :envvar:`dovecot__ldap_user_list_filter` filter as
-# the identifier of the user.
-# See :ref:`ldap__ref_admin` for more information.
-dovecot__ldap_user_list_filter_attribute: 'mail'
+# The LDAP filter used to look up all user accounts in the directory.
+dovecot__ldap_iterate_filter: '(&
+                                 (objectClass=mailRecipient)
+                                 (|
+                                   (authorizedService=all)
+                                   (authorizedService=mail:access)
+                                 )
+                               )'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_quota_attribute [[[
