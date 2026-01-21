@@ -873,6 +873,11 @@ General
 
 - The playbook can now be configured to skip the saslauthd role execution.
 
+:ref:`debops.system_users` role
+'''''''''''''''''''''''''''''''
+
+- System users now default to system users (UID < 1000).
+
 :ref:`debops.zabbix_agent` role
 '''''''''''''''''''''''''''''''
 
