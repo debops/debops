@@ -1,6 +1,7 @@
 ---
 # Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2019 DebOps <https://debops.org/>
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2019-2022 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 # DebOps uses the "to_uuid" Ansible filter to convert LDAP Distinguished Names
@@ -24,7 +25,7 @@
 #
 #     uid=user,ou=People,dc=example,dc=org
 #
-# Usage: debops ldap/get-uuid -l ldap-host
+# Usage: debops run ldap/get-uuid -l ldap-host [-e "object_dn=<DN>"]
 
 
 - name: Convert LDAP Distinguished Name to UUID
@@ -32,7 +33,12 @@
                  'debops.roles02', 'debops.roles03' ]
   hosts: [ 'all' ]
   serial: '1'
-  gather_subset: [ '!all' ]
+  gather_facts: '{{ false if object_dn is defined else true }}'
+  gather_subset:
+    - '!all'
+    - '!min'
+    - 'network'
+    - 'local'
 
   vars:
 
@@ -51,9 +57,9 @@
     person_rdn: 'uid={{ person_uid.user_input }}'
 
     # Distinguished Name of an LDAP object to convert to an UUID
-    object_dn: '{{ (([ person_rdn, ldap_people_rdn ] + ldap_base_dn) | join(","))
-                   if person_uid.user_input | d()
-                   else object_dn_string.user_input }}'
+    input_object_dn: '{{ (([ person_rdn, ldap_people_rdn ] + ldap_base_dn) | join(","))
+                         if person_uid.user_input | d()
+                         else object_dn_string.user_input }}'
 
   tasks:
 
@@ -61,15 +67,22 @@
       ansible.builtin.pause:
         prompt: 'uid (case-sensitive)'
       register: person_uid
+      when: not object_dn | d()
 
     - name: Get the UUID of a Distinguished Name
       ansible.builtin.pause:
         prompt: 'dn (case-sensitive)'
       register: object_dn_string
-      when: not person_uid.user_input | d()
+      when: not object_dn | d() and not person_uid.user_input | d()
 
     - name: LDAP object information
       ansible.builtin.debug:
         msg: '{{ {"DN:": object_dn,
                   "UUID:": (object_dn | to_uuid)} }}'
       when: object_dn | d()
+
+    - name: LDAP object information
+      ansible.builtin.debug:
+        msg: '{{ {"DN:": input_object_dn,
+                  "UUID:": (input_object_dn | to_uuid)} }}'
+      when: not object_dn | d()
