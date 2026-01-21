@@ -1,0 +1,75 @@
+---
+# Copyright (C) 2019-2023 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2024 Tasos Alvas <tasos.alvas@qwertyuiopia.com>
+# Copyright (C) 2019-2024 DebOps https://debops.org/
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  ansible.builtin.import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  ansible.builtin.import_role:
+    name: 'secret'
+
+- name: Install borgbackup base packages
+  ansible.builtin.package:
+    name: '{{ (borgbackup__base_packages + borgbackup__packages) | flatten }}'
+    state: 'present'
+  register: borgbackup__register_packages
+  until: borgbackup__register_packages is succeeded
+  when: ("debops_service_borgbackup" in group_names or
+         "debops_service_borgbackup_server" in group_names)
+  tags: [ 'role::borgbackup:install' ]
+
+- name: Install borgmatic
+  ansible.builtin.package:
+    name: '{{ borgbackup__client_packages }}'
+    state: 'present'
+  register: borgbackup__register_client_packages
+  until: borgbackup__register_client_packages is succeeded
+  when: ("debops_service_borgbackup" in group_names)
+  tags: [ 'role::borgbackup:install' ]
+
+- name: 'Configure borgmatic bash completions'
+  ansible.builtin.shell: 'borgmatic --bash-completion > {{ borgbackup__completion_dir }}/borgmatic'
+  args:
+    creates: '{{ borgbackup__completion_dir }}/borgmatic'
+  when: ("debops_service_borgbackup" in group_names)
+  tags: [ 'role::borgbackup:install' ]
+
+- name: Save borgbackup local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/borgbackup.fact.j2'
+    dest: '/etc/ansible/facts.d/borgbackup.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Update Ansible facts if they were modified
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Import borgbackup server tasks
+  ansible.builtin.include_tasks: 'server.yml'
+  when: ("debops_service_borgbackup_server" in group_names)
+  tags: [ 'role::borgbackup:server' ]
+
+- name: Import borgbackup client tasks
+  ansible.builtin.include_tasks: 'client.yml'
+  when: ("debops_service_borgbackup" in group_names)
+  tags: [ 'role::borgbackup:client' ]
+
+- name: Import borgbackup controller tasks
+  ansible.builtin.include_tasks: 'controller.yml'
+  when: ("debops_service_borgbackup_controller" in group_names)
+  tags: [ 'role::borgbackup:control' ]
+
+- name: Import borgbackup controlled tasks
+  ansible.builtin.include_tasks: 'controlled.yml'
+  when: ("debops_service_borgbackup_controlled" in group_names)
+  tags: [ 'role::borgbackup:control' ]
