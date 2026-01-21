@@ -124,10 +124,6 @@ group level, in the
    # implicitly enables 'certbot' support.
    pki_acme_type: 'dns-cloudflare'
 
-   # Certbot requires a working e-mail account (it will be validated), you
-   # might need to specify it if the role uses a non-existent e-mail address.
-   pki_acme_contacts: [ 'admin@example.org' ]
-
    # If you want to try the staging Let's Encrypt CA to test if the
    # certificates are obtained correctly, uncomment this variable.
    #pki_acme_ca: 'le-staging-v2'
