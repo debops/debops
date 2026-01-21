@@ -320,6 +320,7 @@ owncloud__variant_name_map:
 # Upcoming:
 #
 # * Nextcloud ``25.0`` (Implemented based on documentation changes but untested).
+# * Nextcloud ``26.0`` (Implemented based on documentation changes, no changes from ``25.0``).
 #
 # Unsupported:
 #
@@ -2290,9 +2291,11 @@ owncloud__nginx__dependent_servers:
           fastcgi_request_buffering off;
           {% endif %}
 
+          fastcgi_max_temp_file_size 0;
+
           fastcgi_read_timeout {{ owncloud__timeout }};
 
-      - pattern: '~ {{ owncloud__http_psk_subpath_begin_slash }}(/.*\.(?:css|js|svg|gif|png|jpg|ico|wasm|tflite))$'
+      - pattern: '~ {{ owncloud__http_psk_subpath_begin_slash }}(/.*\.(?:css|js|svg|gif|png|jpg|ico|wasm|tflite|map))$'
         options: |
           try_files {{ "$1" if (owncloud__http_psk_subpath_enabled | bool) else "$uri" }} /{{ owncloud__http_psk_subpath_end_slash }}index.php$request_uri;
           add_header Cache-Control "public, max-age=15778463, $asset_immutable";
