@@ -40,8 +40,10 @@ class CallbackModule(CallbackBase):
     def __init__(self):
         self.stats = {}
         self.current = None
+        self.disabled = None
+        self.wants_implicit_task = None
 
-    def playbook_on_task_start(self, name, is_conditional):
+    def v2_playbook_on_task_start(self, name, is_conditional):
         """
         Logs the start of each task
         """
@@ -53,7 +55,7 @@ class CallbackModule(CallbackBase):
         self.current = name
         self.stats[self.current] = time.time()
 
-    def playbook_on_stats(self, stats):
+    def v2_playbook_on_stats(self, stats):
         """
         Prints the timings
         """
