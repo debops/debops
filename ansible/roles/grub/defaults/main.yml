@@ -4,7 +4,8 @@
 # .. Copyright (C) 2015 Patryk Ściborek <patryk@sciborek.com>
 # .. Copyright (C) 2015-2018 Maciej Delmanowski <drybjed@gmail.com>
 # .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-# .. Copyright (C) 2015-2018 DebOps <https://debops.org/>
+# .. Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# .. Copyright (C) 2015-2023 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _grub__ref_defaults:
@@ -23,16 +24,20 @@
 
 # These variables define the contents of the
 # :file:`/etc/default/grub.d/ansible.cfg` configuration file which is used to
-# generate GRUB configuration in :file:`/boot/grub/grub.cfg`. Option names
-# don't contain the ``GRUB_`` prefix and will be converted to uppercase in the
-# final configuration file.
+# override values from :file:`/etc/default/grub` before the GRUB configuration
+# file :file:`/boot/grub/grub.cfg` is generated.
+#
+# Option names will be converted to uppercase and given a ``GRUB_`` prefix in
+# the final configuration file (for example: ``default`` will turn into
+# ``GRUB_DEFAULT``).
 #
 # See :ref:`grub__ref_configuration` for more details about the syntax.
 
 # .. envvar:: grub__original_configuration [[[
 #
-# This variable contains original configuration present in the GRUB
-# configuration file on Debian/Ubuntu hosts.
+# This variable largely corresponds to the original configuration present in
+# the GRUB configuration file on Debian/Ubuntu hosts (except where values are
+# imported from the original file via the ``original`` parameter).
 grub__original_configuration:
 
   - name: 'default'
@@ -63,6 +68,17 @@ grub__original_configuration:
     value: []
     original: True
 
+  - name: 'os_prober'
+    comment: |
+      If your computer has multiple operating systems installed, then you
+      probably want to run os-prober. However, if your computer is a host
+      for guest OSes installed via LVM or raw disk devices, running
+      os-prober can cause damage to those guest OSes as it mounts
+      filesystems to look for things.
+    value: False
+    state: 'comment'
+    quote: False
+
   - name: 'badram'
     comment: |
       Uncomment to enable BadRAM filtering, modify to suit your needs
@@ -72,7 +88,7 @@ grub__original_configuration:
     state: 'comment'
 
   - name: 'terminal'
-    comment: 'Uncomment to disable graphical terminal (grub-pc only)'
+    comment: 'Uncomment to disable graphical terminal'
     value: 'console'
     state: 'comment'
     quote: False
@@ -96,28 +112,12 @@ grub__original_configuration:
     comment: 'Uncomment to disable generation of recovery mode menu entries'
     value: True
     state: 'comment'
+    quote: False
 
   - name: 'init_tune'
     comment: 'Uncomment to get a beep at grub start'
     value: '480 440 1'
     state: 'comment'
-
-                                                                   # ]]]
-# .. envvar:: grub__fact_configuration [[[
-#
-# This variable contains configuration based on the Ansible local facts of
-# a given host. This is used to keep the list of kernel parameters idempotent
-# and preserve the original parameters on first run of the role.
-grub__fact_configuration:
-
-  - name: 'default'
-    value: '{{ ansible_local.grub.default | d("0") }}'
-
-  - name: 'cmdline_linux_default'
-    value: '{{ ansible_local.grub.cmdline_default | d([]) }}'
-
-  - name: 'cmdline_linux'
-    value: '{{ ansible_local.grub.cmdline | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: grub__default_configuration [[[
@@ -133,17 +133,10 @@ grub__default_configuration:
                    ansible_virtualization_role not in ["guest"])
                else grub__timeout_virtual }}'
 
-  # Enable support for cgroup memory management, useful for LXC/Docker
-  # containers
+  # Enable console blanking (screensaver)
   - name: 'cmdline_linux_default'
     value:
-      - 'cgroup_enable=memory'
-      - 'swapaccount=1'
-
-  # Disable I/O scheduler in virtual machines for better performance
-  - name: 'cmdline_linux_default'
-    value: [ 'elevator=noop' ]
-    state: '{{ "present" if (ansible_virtualization_role | d() == "guest") else "ignore" }}'
+      - 'consoleblank=300'
 
   # Activate GRUB serial console support when requested
   - name: 'terminal'
@@ -213,7 +206,6 @@ grub__dependent_configuration: []
 # This variable combines all of the configuration variables in a specific order
 # which defines the hierarchy. It's used in the final configuration template.
 grub__combined_configuration: '{{ grub__original_configuration
-                                  + grub__fact_configuration
                                   + grub__default_configuration
                                   + lookup("flattened",
                                            grub__dependent_configuration,
