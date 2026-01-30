@@ -4,8 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Security assertions
-  collections: [ 'debops.debops', 'debops.roles01',
-                 'debops.roles02', 'debops.roles03' ]
+  collections: [ 'debops.debops' ]
   hosts: [ 'all' ]
   tags: [ 'play::security-assertions' ]
   gather_facts: False
@@ -29,8 +28,7 @@
       delegate_to: 'localhost'
 
 - name: Prepare APT configuration on a host
-  collections: [ 'debops.debops', 'debops.roles01',
-                 'debops.roles02', 'debops.roles03' ]
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_all_hosts', '!debops_no_common' ]
   become: True
 
@@ -52,8 +50,7 @@
 
 
 - name: Common configuration for all hosts
-  collections: [ 'debops.debops', 'debops.roles01',
-                 'debops.roles02', 'debops.roles03' ]
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_all_hosts', '!debops_no_common' ]
   gather_facts: True
   become: True
