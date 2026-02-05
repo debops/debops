@@ -672,7 +672,7 @@ sshd__default_configuration:
   - name: 'Ciphers'
     comment: 'List of ciphers which are allowed for connections'
     raw: |
-      {% set sshd__tpl_ciphers_max_version = sshd__ciphers_map.keys() | select('version_compare', sshd__version, '<=') | max %}
+      {% set sshd__tpl_ciphers_max_version = sshd__ciphers_map.keys() | select('version_compare', sshd__version, '<=') | map("float") | max | string %}
       {% set sshd__tpl_ciphers = sshd__ciphers_map[sshd__tpl_ciphers_max_version] %}
       {% set sshd__tpl_ciphers = (sshd__tpl_ciphers + sshd__ciphers_additional) | unique %}
       {% if sshd__tpl_ciphers and sshd__paranoid | bool %}
@@ -686,7 +686,7 @@ sshd__default_configuration:
   - name: 'KexAlgorithms'
     comment: 'List of allowed key exchange algorithms'
     raw: |
-      {% set sshd__tpl_kex_algorithms_max_version = sshd__kex_algorithms_map.keys() | select('version_compare', sshd__version, '<=') | max %}
+      {% set sshd__tpl_kex_algorithms_max_version = sshd__kex_algorithms_map.keys() | select('version_compare', sshd__version, '<=') | map("float") | max | string %}
       {% set sshd__tpl_kex_algorithms = sshd__kex_algorithms_map[sshd__tpl_kex_algorithms_max_version] %}
       {% set sshd__tpl_kex_algorithms = (sshd__tpl_kex_algorithms + sshd__kex_algorithms_additional) | unique %}
       {% if sshd__tpl_kex_algorithms and sshd__paranoid | bool %}
@@ -700,7 +700,7 @@ sshd__default_configuration:
   - name: 'MACs'
     comment: 'List of allowed Message Authentication Code algorithms'
     raw: |
-      {% set sshd__tpl_macs_max_version = sshd__macs_map.keys() | select('version_compare', sshd__version, '<=') | max %}
+      {% set sshd__tpl_macs_max_version = sshd__macs_map.keys() | select('version_compare', sshd__version, '<=') | map("float") | max | string %}
       {% set sshd__tpl_macs = sshd__macs_map[sshd__tpl_macs_max_version] %}
       {% set sshd__tpl_macs = (sshd__tpl_macs + sshd__macs_additional) | unique %}
       {% if sshd__tpl_macs and sshd__paranoid | bool %}
