@@ -14,6 +14,21 @@ output_dir="{{ item.chdir | d(pgbadger__www_root) }}"
 {% if (item.output | d()) is truthy %}
 output_file="{{ item.output }}"
 {% endif %}
+script_name="$(basename "${0}")"
+log_tag="pgbadger-${script_name}"
+lock_file="/tmp/pgbadger.${script_name}.lock"
+
+{% if (item.raw_header | d()) is truthy %}
+{{   item.raw_header | regex_replace('\n$', '') }}
+{% else %}
+if ( set -o noclobber ; echo "$$" > "${lock_file}" ) 2> /dev/null ; then
+    trap 'rm -f "${lock_file}" ; exit $?' INT TERM EXIT
+    logger -t "${log_tag}" -p user.notice "Preparing new log scan using pgBadger '${script_name}' instance"
+else
+    logger -t "${log_tag}" -p user.notice "pgBadger '${script_name}' instance already running, not starting the same instance"
+    exit 0
+fi
+{% endif %}
 
 if [ ! -d "${output_dir}" ] ; then
     mkdir -p "${output_dir}"

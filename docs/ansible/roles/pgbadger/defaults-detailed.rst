@@ -83,6 +83,14 @@ parameters:
   If the ``raw`` parameter is not used, the ``host`` and ``output`` parameters
   are required.
 
+``raw_header``
+  String or YAML tezt block with custom Bash script inserted into a template.
+  This script will be used to prepare the execution environment for the rest of
+  the pgBadger execution.
+
+  If not specified, a boilerplate lock file will be created to prevent repeated
+  execution of the same script.
+
 ``user``
   Optional. Name of the remote SSH user to use for SSH connection. If not
   specified, :envvar:`pgbadger__ssh_user` value will be used by default.
