@@ -2324,7 +2324,7 @@ owncloud__nginx__dependent_servers:
           access_log off;
           {% endif %}
 
-      - pattern: '~ {{ owncloud__http_psk_subpath_begin_slash }}(/.*\.woff2?)$'
+      - pattern: '~ {{ owncloud__http_psk_subpath_begin_slash }}(/.*\.(otf|woff2?))$'
         options: |
           try_files {{ "$1" if (owncloud__http_psk_subpath_enabled | bool) else "$uri" }} /{{ owncloud__http_psk_subpath_end_slash }}index.php$request_uri;
           expires 7d;         # Cache-Control policy borrowed from `.htaccess`
