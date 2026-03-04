@@ -2299,7 +2299,7 @@ owncloud__nginx__dependent_servers:
 
           fastcgi_intercept_errors on;
           {% if (ansible_local.nginx.version | d("0.0")) is version_compare("1.7.11", '>=') %}
-          fastcgi_request_buffering off;
+          fastcgi_request_buffering on;                   # Required as PHP-FPM does not support chunked transfer encoding and requires a valid ContentLength header.
           {% endif %}
 
           fastcgi_max_temp_file_size 0;
