@@ -2206,6 +2206,9 @@ owncloud__nginx__dependent_servers:
     ## DebOps default should be fine.
     # keepalive: '3600'
 
+    # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection
+    xss_protection: '{{ omit }}'
+
     robots_tag: [ 'none' ]
     permitted_cross_domain_policies: 'none'
     frame_options: '{{ omit if (owncloud__variant == "nextcloud" and
@@ -2318,7 +2321,6 @@ owncloud__nginx__dependent_servers:
           add_header X-Frame-Options                   "SAMEORIGIN"        always;
           add_header X-Permitted-Cross-Domain-Policies "none"              always;
           add_header X-Robots-Tag                      "noindex, nofollow" always;
-          add_header X-XSS-Protection                  "1; mode=block"     always;
 
           {% if not (owncloud__nginx_access_log_assets | bool) %}
           access_log off;
