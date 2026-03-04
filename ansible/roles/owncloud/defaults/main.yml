@@ -2123,7 +2123,7 @@ owncloud__nginx_options: |-
   # that file is correctly served; if it doesn't, then the request is passed to
   # the front-end controller. This consistent behaviour means that we don't need
   # to specify custom rules for certain paths (e.g. images and other assets,
-  # `/updater`, `/ocm-provider`, `/ocs-provider`), and thus
+  # `/updater`, `/ocs-provider`), and thus
   # `try_files $uri $uri/ /index.php$request_uri`
   # always provides the desired behaviour.
   index index.php index.html /index.php$request_uri;
@@ -2271,7 +2271,7 @@ owncloud__nginx__dependent_servers:
 
           # Required for legacy support
           # https://github.com/nextcloud/documentation/pull/2197#issuecomment-721432337
-          rewrite ^/{{ owncloud__http_psk_subpath_end_slash }}(?!index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|oc[ms]-provider\/.+|.+\/richdocumentscode\/proxy) /{{ owncloud__http_psk_subpath_end_slash }}index.php$request_uri;
+          rewrite ^/{{ owncloud__http_psk_subpath_end_slash }}(?!index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|ocs-provider\/.+|.+\/richdocumentscode\/proxy) /{{ owncloud__http_psk_subpath_end_slash }}index.php$request_uri;
 
           # (/.*|): The "or empty" regex alternative is needed for custom
           # subpath because otherwise the whole regex would not match and would
