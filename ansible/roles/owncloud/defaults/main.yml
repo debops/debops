@@ -2306,7 +2306,7 @@ owncloud__nginx__dependent_servers:
 
           fastcgi_read_timeout {{ owncloud__timeout }};
 
-      - pattern: '~ {{ owncloud__http_psk_subpath_begin_slash }}(/.*\.(?:css|js|mjs|svg|gif|png|jpg|ico|wasm|tflite|map))$'
+      - pattern: '~ {{ owncloud__http_psk_subpath_begin_slash }}(/.*\.(?:css|js|mjs|svg|gif|png|jpg|ico|wasm|tflite|map|ogg|flac))$'
         options: |
           # Serve static files
           try_files {{ "$1" if (owncloud__http_psk_subpath_enabled | bool) else "$uri" }} /{{ owncloud__http_psk_subpath_end_slash }}index.php$request_uri;
