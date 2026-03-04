@@ -2107,13 +2107,14 @@ owncloud__nginx_options: |-
   # Remove X-Powered-By, which is an information leak
   fastcgi_hide_header X-Powered-By;
 
-  # Add .mjs as a file extension for javascript
+  # Set .mjs and .wasm MIME types
   # Either include it in the default mime.types list
-  # or include you can include that list explicitly and add the file extension
+  # and include that list explicitly or add the file extension
   # only for Nextcloud like below:
   include mime.types;
   types {
       text/javascript js mjs;
+      application/wasm wasm;
   }
 
   # Specify how to handle directories -- specifying `/index.php$request_uri`
@@ -2322,10 +2323,6 @@ owncloud__nginx__dependent_servers:
           {% if not (owncloud__nginx_access_log_assets | bool) %}
           access_log off;
           {% endif %}
-
-          location ~ \.wasm$ {
-              default_type application/wasm;
-          }
 
       - pattern: '~ {{ owncloud__http_psk_subpath_begin_slash }}(/.*\.woff2?)$'
         options: |
