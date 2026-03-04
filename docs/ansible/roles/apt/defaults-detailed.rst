@@ -98,7 +98,11 @@ apt__keys
 
 This list, along with ``apt__group_keys`` and ``apt__host_keys``
 and can be used to manage APT repository keys through Ansible inventory, using
-the :man:`apt-key(8)` command.
+the :man:`apt-key(8)` command. The role supports two modes or operation - using
+the old :command:`apt-key` command through the Ansible's
+``ansible.builtin.apt_key`` module (activated using the ``item.apt_key``
+parameter), or directly managing the keyring files in the
+:file:`/etc/apt/keyrings/` directory.
 
 .. warning:: Support for the :command:`apt-key` command is deprecated in Debian
    and might be removed in future release. Consider using the
@@ -108,13 +112,15 @@ the :man:`apt-key(8)` command.
 Examples
 ~~~~~~~~
 
-Add an APT GPG key on all hosts without any conditions:
+Add an APT GPG key on all hosts without any conditions, the key will be stored
+in :file:`/etc/apt/keyrings/apt-key.asc` file:
 
 .. code-block:: yaml
 
    apt__keys:
 
      - url: 'http://example.com/apt-key.asc'
+       keyring: 'apt-key.asc'
 
 Add an APT GPG key only on hosts with Debian OS:
 
@@ -123,6 +129,7 @@ Add an APT GPG key only on hosts with Debian OS:
    apt__keys:
 
      - url: 'http://example.com/apt-key.asc'
+       keyring: 'apt-key.asc'
        state: '{{ "present"
                   if (ansible_distribution == "Debian")
                   else "absent" }}'
@@ -135,6 +142,7 @@ Add an APT GPG key only on Ubuntu hosts that have been already configured once
    apt__keys:
 
      - url: 'http://example.com/apt-key.asc'
+       keyring: 'apt-key.asc'
        state: '{{ "present"
                   if ((ansible_local.apt.configured | d()) | bool and
                       ansible_distribution == "Ubuntu")
@@ -146,23 +154,36 @@ Syntax
 Each entry is a YAML dictionary with parameters that correspond to the
 ``apt_key`` module parameters:
 
+``apt_key``
+  Optional, boolean. If ``False`` (default), the role will manage the keyring
+  files themselves, if ``True``, the role will use the deprecated
+  ``ansible.builtin.apt_key`` module to manage the GPG key.
+
 ``data``
-  Optional. GPG key contents provided directly.
+  Optional. YAML text block with GPG key contents provided directly or via
+  a ``lookup("file")`` lookup.
 
 ``file``
-  Optional. Path to the GPG key file on the remote host.
+  Optional. Path to the GPG key file on the remote host. Not used in the direct
+  mode.
 
 ``id``
-  Optional. GPG key identifier.
+  Optional. GPG key identifier. Not used in the direct mode.
 
 ``url``
   Optional. The URL of the GPG key to download and install on the host.
 
 ``keyring``
-  Optional. Path to the keyring file in :file:`/etc/apt/trusted.gpg.d/` directory.
+  Optional. Path to the keyring file in :file:`/etc/apt/trusted.gpg.d/`
+  directory. In the direct mode, path to the file with the GPG key stored in
+  the :file:`/etc/apt/keyrings/` directory.
+
+  If not specified, the role will try to use the basename of the URL which
+  usually is a filename, but not in all cases. Use caution.
 
 ``keyserver``
   Optional. IP address or FQDN of the GPG keyserver to download the keys from.
+  Not used in the direct mode.
 
 ``state``
   Optional. Either ``present`` for the key to be present (default), or
