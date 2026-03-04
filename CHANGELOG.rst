@@ -129,6 +129,14 @@ General
   mirrors. The role will use https://archive.debian.org/debian as the
   repository URL on Debian Buster hosts.
 
+- The role now can manage repository GPG keys directly, stored in the
+  :file:`/etc/apt/keyrings/` directory, bypassing the deprecated
+  ``ansible.builtin.apt_key`` module. Support for the Ansible module is
+  present, but needs to be enabled explicitly.
+
+  Existing role configuration might need to be updated to support new changes,
+  check the role documentation for details.
+
 :ref:`debops.gitlab` role
 '''''''''''''''''''''''''
 
