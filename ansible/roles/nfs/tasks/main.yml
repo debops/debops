@@ -32,7 +32,7 @@
   loop: '{{ q("flattened", nfs__shares
                            + nfs__group_shares
                            + nfs__host_shares) }}'
-  when: item.path | d() and item.src | d() and item.state | d('mounted') == 'present'
+  when: item.path | d() | length > 0 and item.src | d() | length > 0 and item.state | d('mounted') == 'present'
 
 - name: Manage NFS mount points
   ansible.posix.mount:
@@ -48,7 +48,7 @@
                            + nfs__group_shares
                            + nfs__host_shares) }}'
   register: nfs__register_devices
-  when: item.path | d() and item.src | d()
+  when: item.path | d() | length > 0 and item.src | d() | length > 0
 
 - name: Restart 'remote-fs.target' systemd unit
   ansible.builtin.systemd:  # noqa no-handler

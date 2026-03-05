@@ -112,7 +112,7 @@
     mode: '0644'
     unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
-  when: item.value.state | d('present') != 'absent' and item.value.tinc_options | d()
+  when: item.value.state | d('present') != 'absent' and item.value.tinc_options | d() | length > 0
   notify: [ 'Reload tinc' ]
 
 - name: Remove deprecated dhclient hook script
@@ -254,7 +254,7 @@
   with_nested:
     - '{{ lookup("template", "lookup/tinc__network_list.j2", convert_data=False) | from_yaml }}'
     - '{{ lookup("template", "lookup/tinc__inventory_groups.j2", convert_data=False) | from_yaml }}'
-  when: (item.0.name | d() and item.0.state | d('present') != 'absent' and
+  when: (item.0.name | d() | length > 0 and item.0.state | d('present') != 'absent' and
          item.1 in item.0.inventory_groups | d([]) and item.1 in group_names)
   notify: [ 'Reload tinc' ]
 
@@ -330,7 +330,7 @@
     state: '{{ (item.value.state | d("present") in ["absent"]) | ternary("stopped", "started") }}'
   with_dict: '{{ tinc__combined_networks }}'
   when: tinc__systemd | bool and item.value.state | d('present') != 'absent' and
-        item.value.port | d()
+        item.value.port | d() | length > 0
 
 # Ansible facts [[[1
 
