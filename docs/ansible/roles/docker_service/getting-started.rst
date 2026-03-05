@@ -24,6 +24,11 @@ The role uses the ``community.docker`` Ansible collection to manage containers.
 The ``python3-docker`` package is installed automatically to provide the
 required Python bindings.
 
+The role imports the :ref:`debops.secret` role to provide access to the
+``secret`` variable. This allows service definitions to use the
+``lookup("password", ...)`` plugin to auto-generate and store secrets in
+the DebOps secret directory on the Ansible Controller.
+
 
 Default setup
 -------------
@@ -126,7 +131,8 @@ Deploy VictoriaMetrics and Grafana side by side:
          - '/srv/docker/grafana/data:/var/lib/grafana'
        env:
          GF_SERVER_ROOT_URL: 'https://grafana.example.com'
-         GF_SECURITY_ADMIN_PASSWORD: 'changeme'
+         GF_SECURITY_ADMIN_PASSWORD: '{{ lookup("password", secret
+                                         + "/docker_service/grafana/admin_password") }}'
        nginx:
          enabled: true
          fqdn: 'grafana.example.com'

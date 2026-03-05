@@ -105,20 +105,18 @@ docker_service__python__dependent_packages3:
 # .. envvar:: docker_service__nginx__dependent_upstreams [[[
 #
 # Upstream configuration for the :ref:`debops.nginx` Ansible role.
-# Generated dynamically from the service definitions that have
-# :command:`nginx` reverse proxy enabled.
-docker_service__nginx__dependent_upstreams: '{{ lookup("template",
-                                                "lookup/docker_service__nginx_upstreams.j2")
-                                                | from_yaml }}'
+# Populated dynamically by the ``build_nginx_vars`` task file which is
+# included as a ``pre_task`` in the playbook. The template lookup must
+# run in the ``docker_service`` role context to find the templates.
+docker_service__nginx__dependent_upstreams: []
 
                                                                    # ]]]
 # .. envvar:: docker_service__nginx__dependent_servers [[[
 #
 # Server configuration for the :ref:`debops.nginx` Ansible role.
-# Generated dynamically from the service definitions that have
-# :command:`nginx` reverse proxy enabled.
-docker_service__nginx__dependent_servers: '{{ lookup("template",
-                                              "lookup/docker_service__nginx_servers.j2")
-                                              | from_yaml }}'
+# Populated dynamically by the ``build_nginx_vars`` task file which is
+# included as a ``pre_task`` in the playbook. The template lookup must
+# run in the ``docker_service`` role context to find the templates.
+docker_service__nginx__dependent_servers: []
                                                                    # ]]]
                                                                    # ]]]
