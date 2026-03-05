@@ -82,12 +82,12 @@
                            + apt_preferences__host_list
                            + apt_preferences__dependent_list) }}'
   when: ((((item.state | d('present')) != 'absent' and (not (item.delete | d() | bool))) and
-          (item.package | d() or item.packages | d()) | bool) and
-         ((item.raw | d() or
-          item.version | d() or
+          (item.package | d() | length > 0 or item.packages | d() | length > 0)) and
+         (item.raw | d() | length > 0 or
+          item.version | d() | length > 0 or
           (item.pin is undefined and
            (item.backports is undefined or
             (item.backports is iterable and item.backports and
              ansible_distribution_release in item.backports)) and
             ansible_distribution_release in apt_preferences__next_release.keys()) or
-           item.pin | d()) | bool))
+           item.pin | d() | length > 0))

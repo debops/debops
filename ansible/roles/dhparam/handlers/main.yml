@@ -18,5 +18,5 @@
     units: '{{ dhparam__generate_init_units }}'
     unique: True
   when: (dhparam__generate_init | bool and
-         (ansible_local | d()) | bool and (ansible_local.atd | d()) | bool and
+         ansible_local | d() | length > 0 and ansible_local.atd | d() | length > 0 and
          ansible_local.atd.enabled | bool)
