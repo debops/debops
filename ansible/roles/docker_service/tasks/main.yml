@@ -1,0 +1,91 @@
+---
+# Copyright (C) 2024-2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2024-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Install required packages
+  ansible.builtin.apt:
+    name: '{{ docker_service__python__dependent_packages3 | flatten }}'
+    state: 'present'
+    install_recommends: False
+  register: docker_service__register_packages
+  until: docker_service__register_packages is succeeded
+
+- name: Create persistent data directories for bind mounts
+  ansible.builtin.file:
+    path: '{{ item.1.split(":") | first }}'
+    state: 'directory'
+    mode: '0755'
+  loop: '{{ docker_service__combined_services | d([])
+            | subelements("volumes", skip_missing=True) }}'
+  loop_control:
+    label: '{{ item.0.name }}: {{ item.1.split(":") | first }}'
+  when:
+    - item.0.state | d('present') not in ['absent', 'ignore']
+    - item.1.split(":") | first is match("/")
+  tags: [ 'role::docker_service:config' ]
+
+- name: Pull Docker images
+  community.docker.docker_image:
+    name: '{{ item.image }}'
+    source: 'pull'
+    force_source: '{{ item.pull | d(docker_service__pull) | bool }}'
+  loop: '{{ docker_service__combined_services | d([]) }}'
+  loop_control:
+    label: '{{ item.name }}: {{ item.image }}'
+  when:
+    - item.state | d('present') not in ['absent', 'ignore']
+    - item.pull | d(docker_service__pull) | bool
+  tags: [ 'role::docker_service:containers' ]
+
+- name: Manage Docker containers
+  community.docker.docker_container:
+    name: '{{ item.name }}'
+    image: '{{ item.image | d(omit) }}'
+    state: '{{ {"present": "started",
+                "stopped": "stopped",
+                "absent": "absent"}[item.state | d("present")] }}'
+    restart_policy: '{{ item.restart_policy
+                        | d(docker_service__restart_policy) }}'
+    command: '{{ item.command | d(omit) }}'
+    entrypoint: '{{ item.entrypoint | d(omit) }}'
+    user: '{{ item.user | d(omit) }}'
+    ports: '{{ item.ports | d(omit) }}'
+    networks: '{{ item.networks | d(omit) }}'
+    dns_servers: '{{ item.dns | d(omit) }}'
+    hostname: '{{ item.hostname | d(omit) }}'
+    volumes: '{{ item.volumes | d(omit) }}'
+    tmpfs: '{{ item.tmpfs | d(omit) }}'
+    env: '{{ item.env | d(omit) }}'
+    memory: '{{ item.memory | d(omit) }}'
+    memory_reservation: '{{ item.memory_reservation | d(omit) }}'
+    cpus: '{{ item.cpus | d(omit) }}'
+    capabilities: '{{ item.capabilities | d(omit) }}'
+    sysctls: '{{ item.sysctls | d(omit) }}'
+    read_only: '{{ item.read_only | d(omit) }}'
+    labels: '{{ item.labels | d(omit) }}'
+    healthcheck: '{{ item.healthcheck | d(omit) }}'
+    pull: false
+  loop: '{{ docker_service__combined_services | d([]) }}'
+  loop_control:
+    label: '{{ item.name }}'
+  when: item.state | d('present') != 'ignore'
+  tags: [ 'role::docker_service:containers' ]
+
+- name: Make sure that Ansible local facts directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save docker_service local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/docker_service.fact.j2'
+    dest: '/etc/ansible/facts.d/docker_service.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
