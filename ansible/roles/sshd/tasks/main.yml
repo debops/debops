@@ -77,7 +77,7 @@
       This file disables the ssh server.  It was created by debops.sshd.
       This file will be removed when configuration is successfully completed.
     mode: '0644'
-  when: (ansible_local | d() and ansible_local.sshd | d() and
+  when: (ansible_local | d() | length > 0 and ansible_local.sshd | d() | length > 0 and
          not (ansible_local.sshd.installed | d()) | bool)
 
   # In a case where the OpenSSH server is installed by the role but not started
@@ -191,7 +191,7 @@
   loop: '{{ q("flattened", sshd__known_hosts
                            + sshd__group_known_hosts
                            + sshd__host_known_hosts) }}'
-  when: item is defined and item
+  when: item is defined and item | d() | length > 0
   register: sshd__register_known_hosts
   changed_when: False
   failed_when: False
@@ -218,7 +218,7 @@
   notify: [ 'Test sshd configuration and restart' ]
   register: sshd__register_moduli
   changed_when: sshd__register_moduli.changed | bool
-  when: sshd__register_moduli.stdout
+  when: sshd__register_moduli.stdout | d() | length > 0
 
 - name: Remove block on OpenSSH server startup
   ansible.builtin.file:
