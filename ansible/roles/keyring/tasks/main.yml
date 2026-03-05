@@ -11,6 +11,13 @@
   ansible.builtin.import_role:
     name: 'secret'
 
+- name: Check if required parameters are defined
+  ansible.builtin.assert:
+    that:
+      - 'item.keyring is defined'
+    quiet: '{{ debops__no_log | d(True) }}'
+  loop: '{{ q("flattened", (keyring__dependent_apt_keys)) }}'
+
 - name: Get list of local GPG key fingerprints on Ansible Controller
   ansible.builtin.set_fact:
     keyring__fact_local_keys: '{{ (q("fileglob", (keyring__local_path + "/*.asc"))
@@ -41,7 +48,7 @@
 - name: Re-read local facts if they have been modified
   ansible.builtin.meta: 'flush_handlers'
 
-- name: Import specified GPG keys to APT keyring
+- name: Import specified GPG keys to APT keyring with apt_key
   ansible.builtin.apt_key:  # noqa args[module]
     id: '{{ (item.id | d(item)) | replace(" ", "") }}'
     data: '{{ item.data | d((lookup("file", keyring__local_path + "/0x" + ((item.id | d(item)) | replace(" ", "")) + ".asc"))
@@ -60,10 +67,55 @@
   loop: '{{ q("flattened", (keyring__dependent_apt_keys)) }}'
   register: keyring__register_apt_key
   until: keyring__register_apt_key is succeeded
-  when: keyring__enabled | bool and ansible_pkg_mgr == 'apt' and
+  when: keyring__enabled | bool and ansible_pkg_mgr == 'apt' and (item.apt_key | d(False)) | bool and
         (item.id | d() or item is string) and
         (item.extrepo is undefined or
          item.extrepo not in (ansible_local.extrepo.sources | d([])))
+  tags: [ 'role::keyring:apt_key' ]
+
+- name: Ensure that /etc/apt/keyrings/ directory exists
+  ansible.builtin.file:
+    path: '/etc/apt/keyrings'
+    state: 'directory'
+    mode: '0755'
+  when: keyring__enabled | bool
+  tags: [ 'role::keyring:apt_key' ]
+
+- name: Copy APT keys from local keyring
+  ansible.builtin.copy:
+    content: '{{ item.data | d((lookup("file", keyring__local_path + "/0x" + ((item.id | d(item)) | replace(" ", "")) + ".asc"))
+                            if (item.state | d("present") != "absent" and item.url is undefined and item.keybase is undefined and
+                                ((item.id | d(item)) | replace(" ", "")) in keyring__fact_local_keys)
+                            else omit) }}'
+    dest: '{{ "/etc/apt/keyrings/" + item.keyring }}'
+    checksum: '{{ item.checksum | d(omit) }}'
+    mode: '0644'
+  loop: '{{ q("flattened", (keyring__dependent_apt_keys)) }}'
+  when: keyring__enabled | bool and ansible_pkg_mgr == 'apt' and
+        (item.id | d() or item is string) and
+        (item.extrepo is undefined or
+         item.extrepo not in (ansible_local.extrepo.sources | d([]))) and
+        ((item.id | d(item)) | replace(" ", "")) in keyring__fact_local_keys
+  tags: [ 'role::keyring:apt_key' ]
+
+- name: Download custom APT keys
+  ansible.builtin.get_url:
+    url: '{{ item.url | d((keyring__keybase_api + item.keybase + "/pgp_keys.asc?fingerprint=" + ((item.id | d(item)) | replace(" ", "")))
+                          if item.keybase | d()
+                          else (keyring__keyserver_api + ((item.id | d(item)) | replace(" ", ""))
+                                if (item.id | d(item))
+                                else omit)) }}'
+    dest: '{{ "/etc/apt/keyrings/" + item.keyring }}'
+    checksum: '{{ item.checksum | d(omit) }}'
+    mode: '0644'
+  loop: '{{ q("flattened", (keyring__dependent_apt_keys)) }}'
+  register: keyring__register_get_url
+  until: keyring__register_get_url is succeeded
+  when: keyring__enabled | bool and (item.url | d(item.id)) and (item.state | d("present")) not in [ "absent" ] and
+        not (item.apt_key | d(False)) | bool and
+        (item.extrepo is undefined or
+         item.extrepo not in (ansible_local.extrepo.sources | d([]))) and
+        ((item.id | d(item)) | replace(" ", "")) not in keyring__fact_local_keys
   tags: [ 'role::keyring:apt_key' ]
 
 - name: Configure specified upstream APT repositories
