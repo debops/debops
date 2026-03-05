@@ -1,0 +1,48 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2024-2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2024-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps
+import subprocess
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {
+    'installed': cmd_exists('docker'),
+    'containers': {},
+}
+
+if output['installed']:
+    try:
+        ps_output = subprocess.check_output(
+            ['docker', 'ps', '-a',
+             '--format', '{% raw %}{{.Names}}\t{{.Image}}\t{{.Status}}{% endraw %}'],
+            stderr=subprocess.DEVNULL
+        ).decode('utf-8').strip()
+
+        for line in ps_output.split('\n'):
+            if line:
+                parts = line.split('\t')
+                if len(parts) >= 3:
+                    name = parts[0]
+                    output['containers'][name] = {
+                        'image': parts[1],
+                        'status': parts[2],
+                    }
+    except Exception:
+        pass
+
+print(dumps(output, sort_keys=True, indent=4))
