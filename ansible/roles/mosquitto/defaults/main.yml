@@ -39,8 +39,8 @@ mosquitto__upstream_key_id: '8277 CCB4 9EC5 B595 F2D2 C713 6161 1AE4 3099 3623'
 #
 # APT URLs of the upstream Mosquitto repositories based on the OS distribution.
 mosquitto__upstream_repository:
-  Debian:   'deb http://repo.mosquitto.org/debian {{ ansible_distribution_release }} main'
-  Raspbian: 'deb http://repo.mosquitto.org/debian {{ ansible_distribution_release }} main'
+  Debian:   'deb [signed-by=/etc/apt/keyrings/mosquitto.asc] http://repo.mosquitto.org/debian {{ ansible_distribution_release }} main'
+  Raspbian: 'deb [signed-by=/etc/apt/keyrings/mosquitto.asc] http://repo.mosquitto.org/debian {{ ansible_distribution_release }} main'
   Ubuntu:   'ppa:mosquitto-dev/mosquitto-ppa'
 
                                                                    # ]]]
@@ -653,6 +653,7 @@ mosquitto__etc_services__dependent_list:
 mosquitto__keyring__dependent_apt_keys:
 
   - id: '{{ mosquitto__upstream_key_id }}'
+    keyring: 'mosquitto.asc'
     repo: '{{ mosquitto__upstream_repository[ansible_distribution] }}'
     state: '{{ "present" if mosquitto__upstream | bool else "absent" }}'
 
