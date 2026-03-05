@@ -47,9 +47,9 @@ elastic_co__key_id: '4609 5ACC 8548 582C 1A26 99A9 D27D 666C D88E 42B4'
 #
 # APT repository entry to configure for Elastic repository.
 elastic_co__repositories:
-  - repo: 'deb https://artifacts.elastic.co/packages/{{ elastic_co__version }}/apt stable main'
+  - repo: 'deb [signed-by=/etc/apt/keyrings/elastic_co.asc] https://artifacts.elastic.co/packages/{{ elastic_co__version }}/apt stable main'
 
-  - repo: 'deb https://packages.elastic.co/curator/{{ elastic_co__curator_version }}/debian9 stable main'
+  - repo: 'deb [signed-by=/etc/apt/keyrings/elastic_co.asc] https://packages.elastic.co/curator/{{ elastic_co__curator_version }}/debian9 stable main'
     enabled: "{{ ansible_distribution_release in ['stretch'] }}"
 
                                                                    # ]]]
@@ -117,6 +117,8 @@ elastic_co__apt_preferences__dependent_list:
 elastic_co__keyring__dependent_apt_keys:
 
   - id: '{{ elastic_co__key_id }}'
+    keyring: 'elastic_co.asc'
+    checksum: 'sha256:c2dd75ce213a4f03afda62d6187d91dca02c393da89cb53f0b6fcffb38e3ab7d'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
