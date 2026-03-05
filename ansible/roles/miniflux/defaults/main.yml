@@ -254,8 +254,9 @@ miniflux__combined_configuration: '{{ miniflux__default_configuration
 miniflux__keyring__dependent_apt_keys:
 
   - id: '{{ miniflux__upstream_gpg_key }}'
+    keyring: 'miniflux.asc'
     url: 'https://apt.miniflux.app/KEY.gpg'
-    repo: 'deb https://apt.miniflux.app/ /'
+    repo: 'deb [signed-by=/etc/apt/keyrings/miniflux.asc] https://apt.miniflux.app/ /'
     state: '{{ "present"
                if (miniflux__upstream_type == "apt")
                else "absent" }}'
