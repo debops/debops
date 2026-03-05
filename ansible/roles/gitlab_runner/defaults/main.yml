@@ -36,7 +36,7 @@ gitlab_runner__apt_key: 'F6403F6544A38863DAA0B6E03F01618A51312F3F'
 # .. envvar:: gitlab_runner__apt_repo [[[
 #
 # APT ``sources.list`` configuration of the upstream GitLab Runner repository.
-gitlab_runner__apt_repo: 'deb https://packages.gitlab.com/runner/gitlab-runner/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} main'
+gitlab_runner__apt_repo: 'deb [signed-by=/etc/apt/keyrings/gitlab.asc] https://packages.gitlab.com/runner/gitlab-runner/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} main'
 
                                                                    # ]]]
 # .. envvar:: gitlab_runner__base_packages [[[
@@ -740,6 +740,7 @@ gitlab_runner__run_untagged: True
 gitlab_runner__keyring__dependent_apt_keys:
 
   - id: '{{ gitlab_runner__apt_key }}'
+    keyring: 'gitlab.asc'
     repo: '{{ gitlab_runner__apt_repo }}'
     state: '{{ "present" if gitlab_runner__apt_upstream | bool else "absent" }}'
                                                                    # ]]]
