@@ -24,13 +24,13 @@
 #
 # The fingerprint of the APT repository GPG key to configure.
 # from: https://portal.influxdata.com/downloads/
-influxdata__key_id: '9D53 9D90 D332 8DC7 D6C8 D3B9 D8FF 8E1F 7DF8 B07E'
+influxdata__key_id: 'AC10 D744 9F34 3ADC EFDD C2B6 DA61 C26A 0585 BD3B'
 
                                                                    # ]]]
 # .. envvar:: influxdata__repository [[[
 #
 # APT repository entry to configure for InfluxData repository.
-influxdata__repository: 'deb https://repos.influxdata.com/{{ ansible_distribution | lower }} stable main'
+influxdata__repository: 'deb [signed-by=/etc/apt/keyrings/influxdata.asc] https://repos.influxdata.com/{{ ansible_distribution | lower }} stable main'
                                                                    # ]]]
                                                                    # ]]]
 # APT packages [[[
@@ -73,6 +73,7 @@ influxdata__dependent_packages: []
 influxdata__keyring__dependent_apt_keys:
 
   - id: '{{ influxdata__key_id }}'
+    keyring: 'influxdata.asc'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
