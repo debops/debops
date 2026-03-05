@@ -41,8 +41,8 @@ postgresql_server__upstream_apt_repo: 'deb [signed-by=/etc/apt/keyrings/pgdg.asc
 # .. envvar:: postgresql_server__base_packages [[[
 #
 # List of base PostgreSQL packages to install.
-postgresql_server__base_packages: [ 'postgresql', 'postgresql-client',
-                                    'postgresql-contrib', 'pgtop' ]
+postgresql_server__base_packages: '{{ [ "postgresql", "postgresql-client", "pgtop" ] +
+                                      [ "postgresql-contrib" ] if postgresql_server__version is version("15","<=") else [] }}'
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__python_packages [[[
