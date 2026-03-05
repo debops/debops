@@ -11,13 +11,6 @@
   ansible.builtin.import_role:
     name: 'secret'
 
-- name: Check if required parameters are defined
-  ansible.builtin.assert:
-    that:
-      - 'item.keyring is defined'
-    quiet: '{{ debops__no_log | d(True) }}'
-  loop: '{{ q("flattened", (keyring__dependent_apt_keys)) }}'
-
 - name: Get list of local GPG key fingerprints on Ansible Controller
   ansible.builtin.set_fact:
     keyring__fact_local_keys: '{{ (q("fileglob", (keyring__local_path + "/*.asc"))
@@ -111,8 +104,8 @@
   loop: '{{ q("flattened", (keyring__dependent_apt_keys)) }}'
   register: keyring__register_get_url
   until: keyring__register_get_url is succeeded
-  when: keyring__enabled | bool and (item.url | d(item.id)) and (item.state | d("present")) not in [ "absent" ] and
-        not (item.apt_key | d(False)) | bool and
+  when: keyring__enabled | bool and (item.url | d(item.id | d())) and (item.state | d("present")) not in [ "absent" ] and
+        not (item.apt_key | d(False)) | bool and item.keyring is defined and
         (item.extrepo is undefined or
          item.extrepo not in (ansible_local.extrepo.sources | d([]))) and
         ((item.id | d(item)) | replace(" ", "")) not in keyring__fact_local_keys
