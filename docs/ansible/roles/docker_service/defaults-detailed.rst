@@ -56,7 +56,7 @@ Service with port mapping and persistent storage:
          fqdn: 'vmetrics.example.com'
          port: '8428'
 
-Service with environment variables and resource limits:
+Service with environment variables, secrets and resource limits:
 
 .. code-block:: yaml
 
@@ -70,6 +70,8 @@ Service with environment variables and resource limits:
          - '/srv/docker/grafana/data:/var/lib/grafana'
        env:
          GF_SERVER_ROOT_URL: 'https://grafana.example.com'
+         GF_SECURITY_ADMIN_PASSWORD: '{{ lookup("password", secret
+                                         + "/docker_service/grafana/admin_password") }}'
        memory: '512m'
        cpus: 1.0
        nginx:
@@ -158,7 +160,10 @@ parameters:
 
 ``env``
   Optional, dictionary. Environment variables passed to the container.
-  Keys are variable names, values are strings.
+  Keys are variable names, values are strings. Sensitive values such as
+  passwords can be auto-generated using the ``lookup("password", secret +
+  "/docker_service/<name>/...")`` pattern -- the :ref:`debops.secret` role
+  is imported automatically to provide the ``secret`` variable.
 
 ``memory``
   Optional, string. Memory limit for the container (e.g. ``512m``, ``1g``).

@@ -13,6 +13,15 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - name: Build docker_service nginx configuration
+      ansible.builtin.import_role:
+        name: 'docker_service'
+        tasks_from: 'build_nginx_vars'
+      tags: [ 'role::docker_service', 'skip::docker_service',
+              'role::nginx', 'skip::nginx' ]
+
   roles:
 
     - role: keyring
