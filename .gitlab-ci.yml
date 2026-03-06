@@ -565,6 +565,24 @@ stages:
     JANE_LOG_PATTERN: '\[docker_server\]'
   tags: [ 'shell', 'vagrant-vm' ]
 
+'docker_service role':
+  <<: *test_role_2nd_deps
+  needs:
+    - 'resolvconf role'
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'python role'
+    - 'nginx role'
+    - 'docker_server role'
+  variables:
+    JANE_TEST_FACT: 'docker_service.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/docker_service.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_docker_service'
+    JANE_DIFF_PATTERN: '.*/roles/docker_service/.*'
+    JANE_LOG_PATTERN: '\[docker_service\]'
+  tags: [ 'shell', 'vagrant-vm' ]
+
 'dokuwiki role':
   <<: *test_role_2nd_deps
   needs:
