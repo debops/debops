@@ -81,6 +81,45 @@ Service with environment variables, secrets and resource limits:
          proxy_options: |
            proxy_buffering off;
 
+Service with inline config file (``content`` mode):
+
+.. code-block:: yaml
+
+   docker_service__host_services:
+
+     - name: 'vmauth'
+       image: 'victoriametrics/vmauth:latest'
+       config_files:
+         - dest: '/srv/docker/vmauth/auth.yml'
+           content: |
+             users:
+               - username: admin
+                 password: "{{ lookup('password', secret
+                               + '/docker_service/vmauth/admin_password') }}"
+                 url_prefix: "http://127.0.0.1:8428/"
+           mode: '0640'
+       volumes:
+         - '/srv/docker/vmauth/auth.yml:/etc/vmauth/auth.yml:ro'
+       ports:
+         - '127.0.0.1:8427:8427'
+       command: '-auth.config=/etc/vmauth/auth.yml'
+
+Service with a config directory (``config_dir`` mode):
+
+.. code-block:: yaml
+
+   docker_service__host_services:
+
+     - name: 'homepage'
+       image: 'ghcr.io/gethomepage/homepage:latest'
+       config_dir:
+         src: 'docker_service/homepage/config'
+         dest: '/srv/docker/homepage/config'
+       volumes:
+         - '/srv/docker/homepage/config:/app/config:ro'
+       ports:
+         - '127.0.0.1:3000:3000'
+
 Removing a previously deployed service:
 
 .. code-block:: yaml
@@ -194,6 +233,68 @@ parameters:
   following keys: ``test`` (list), ``interval`` (string), ``timeout``
   (string), ``retries`` (integer), ``start_period`` (string).
 
+``config_files``
+  Optional, list of dictionaries. Configuration files to create on the host
+  before starting the container. Each entry creates a file that can then be
+  bind-mounted into the container via the ``volumes`` parameter. The container
+  is automatically restarted when a config file changes. Two modes are
+  supported:
+
+  ``dest``
+    Required, string. Absolute path on the host where the file will be
+    created. Parent directories are created automatically.
+
+  ``content``
+    Optional, string. Inline file content. Mutually exclusive with ``src``.
+    Jinja2 expressions are evaluated at variable expansion time.
+
+  ``src``
+    Optional, string. Path to a Jinja2 template file, relative to the
+    Ansible ``templates/`` search path. Mutually exclusive with ``content``.
+
+  ``mode``
+    Optional, string. File permissions. Defaults to ``0644``.
+
+  ``owner``
+    Optional, string. File owner. Defaults to ``root``.
+
+  ``group``
+    Optional, string. File group. Defaults to ``root``.
+
+``config_dir``
+  Optional, dictionary. A directory of template files to render on the host,
+  useful for applications that need many configuration files (e.g. Homepage).
+  The directory tree is scanned using ``community.general.filetree`` and all
+  files are rendered as Jinja2 templates. The container is automatically
+  restarted when any file changes.
+
+  ``src``
+    Required, string. Path to a directory of template files on the Ansible
+    Controller. Relative paths are resolved against the ``templates/``
+    search path. The directory structure is replicated under ``dest``.
+
+  ``dest``
+    Required, string. Absolute path on the host where the rendered files
+    will be placed. This directory can then be bind-mounted into the
+    container via ``volumes``.
+
+  ``mode``
+    Optional, string. Default file permissions for rendered files. Individual
+    file permissions from the source tree take precedence. Defaults to
+    ``0644``.
+
+  ``owner``
+    Optional, string. File owner. Defaults to ``root``.
+
+  ``group``
+    Optional, string. File group. Defaults to ``root``.
+
+``postgresql``
+  Optional, dictionary. When present, the role automatically provisions a
+  PostgreSQL database and user via the :ref:`debops.postgresql` role. The
+  database password is auto-generated and stored in the DebOps secret
+  directory. See :ref:`docker_service__ref_postgresql` for details.
+
 ``nginx``
   Optional, dictionary. When present and ``enabled: true``, configures an
   :command:`nginx` reverse proxy virtual host for this service. See
@@ -295,3 +396,48 @@ Syntax
 ``auth_basic_realm``
   Optional, string. The authentication realm displayed to users when
   ``auth_basic`` is enabled.
+
+
+.. _docker_service__ref_postgresql:
+
+docker_service__services postgresql parameters
+-----------------------------------------------
+
+The ``postgresql`` dictionary within a service entry enables automatic
+PostgreSQL database provisioning via the :ref:`debops.postgresql` role. When
+a service defines a ``postgresql`` block, the role generates
+``postgresql__dependent_*`` variables that create the required database, user
+and pgpass entry.
+
+Examples
+~~~~~~~~
+
+Service with automatic PostgreSQL provisioning:
+
+.. code-block:: yaml
+
+   docker_service__host_services:
+
+     - name: 'bugsink'
+       image: 'bugsink/bugsink:latest'
+       postgresql:
+         database: 'bugsink'
+         user: 'bugsink'
+       env:
+         DATABASE_URL: 'postgresql:///bugsink?host=/var/run/postgresql'
+         SECRET_KEY: '{{ lookup("password", secret
+                         + "/docker_service/bugsink/secret_key
+                            chars=ascii_letters,digits length=50") }}'
+
+Syntax
+~~~~~~
+
+``database``
+  Required, string. Name of the PostgreSQL database to create.
+
+``user``
+  Required, string. Name of the PostgreSQL user (role) to create. This user
+  will be granted access to the database.
+
+``port``
+  Optional, string. PostgreSQL server port. Defaults to ``5432``.

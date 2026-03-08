@@ -14,6 +14,7 @@ debops.docker_service
    :maxdepth: 2
 
    getting-started
+   guides
    defaults/main
    defaults-detailed
 

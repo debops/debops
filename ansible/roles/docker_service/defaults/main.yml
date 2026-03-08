@@ -45,6 +45,15 @@ docker_service__restart_policy: 'unless-stopped'
 # If ``True``, the role will pull Docker images before creating or updating
 # containers. Can be overridden per service.
 docker_service__pull: True
+
+                                                                   # ]]]
+# .. envvar:: docker_service__templates_path [[[
+#
+# Absolute path to the ``resources/templates`` directory on the Ansible
+# Controller. Used by the ``config_dir`` feature to locate template
+# directories. By default the path is derived from the inventory location,
+# following the same convention as :ref:`debops.resources`.
+docker_service__templates_path: '{{ inventory_dir | realpath + "/../resources/templates" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Service definitions [[[
@@ -100,6 +109,30 @@ docker_service__combined_services: '{{ docker_service__default_services
 # Ansible collection used to manage containers.
 docker_service__python__dependent_packages3:
   - 'python3-docker'
+
+                                                                   # ]]]
+# .. envvar:: docker_service__postgresql__dependent_roles [[[
+#
+# Role configuration for the :ref:`debops.postgresql` Ansible role.
+# Populated dynamically by the ``build_postgresql_vars`` task file which is
+# included as a ``pre_task`` in the playbook.
+docker_service__postgresql__dependent_roles: []
+
+                                                                   # ]]]
+# .. envvar:: docker_service__postgresql__dependent_databases [[[
+#
+# Database configuration for the :ref:`debops.postgresql` Ansible role.
+# Populated dynamically by the ``build_postgresql_vars`` task file which is
+# included as a ``pre_task`` in the playbook.
+docker_service__postgresql__dependent_databases: []
+
+                                                                   # ]]]
+# .. envvar:: docker_service__postgresql__dependent_pgpass [[[
+#
+# The ``~/.pgpass`` configuration for the :ref:`debops.postgresql` Ansible
+# role. Populated dynamically by the ``build_postgresql_vars`` task file
+# which is included as a ``pre_task`` in the playbook.
+docker_service__postgresql__dependent_pgpass: []
 
                                                                    # ]]]
 # .. envvar:: docker_service__nginx__dependent_upstreams [[[

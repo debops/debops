@@ -1,0 +1,54 @@
+---
+# Copyright (C) 2024-2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2024-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Included by main.yml for each service with a 'config_dir' block.
+# The outer loop variable is 'docker_service__config_dir_service'.
+#
+# The config_dir.src path is resolved against the DebOps project
+# resources/templates directory (by-host, then by-group/all).
+# Absolute paths in config_dir.src are used as-is.
+
+- name: Resolve config_dir source path
+  ansible.builtin.set_fact:
+    _docker_service__resolved_config_dir_src: >-
+      {{ docker_service__config_dir_service.config_dir.src
+         if (docker_service__config_dir_service.config_dir.src | regex_search("^/"))
+         else (docker_service__templates_path + "/by-host/"
+               + inventory_hostname + "/"
+               + docker_service__config_dir_service.config_dir.src) }}
+
+- name: Create base config directory
+  ansible.builtin.file:
+    path: '{{ docker_service__config_dir_service.config_dir.dest }}'
+    state: 'directory'
+    mode: '0755'
+
+- name: Create subdirectories from config_dir tree
+  ansible.builtin.file:
+    path: '{{ docker_service__config_dir_service.config_dir.dest + "/" + item.path }}'
+    state: 'directory'
+    mode: '{{ item.mode | d("0755") }}'
+  with_community.general.filetree:
+    - '{{ _docker_service__resolved_config_dir_src }}'
+  when: item.state == 'directory'
+
+- name: Generate files from config_dir tree
+  ansible.builtin.template:
+    src: '{{ item.src }}'
+    dest: '{{ docker_service__config_dir_service.config_dir.dest + "/" + item.path }}'
+    owner: '{{ docker_service__config_dir_service.config_dir.owner | d("root") }}'
+    group: '{{ docker_service__config_dir_service.config_dir.group | d("root") }}'
+    mode: '{{ docker_service__config_dir_service.config_dir.mode | d(item.mode | d("0644")) }}'
+  with_community.general.filetree:
+    - '{{ _docker_service__resolved_config_dir_src }}'
+  when: item.state == 'file'
+  register: docker_service__register_config_dir
+
+- name: Track containers needing restart due to config_dir changes
+  ansible.builtin.set_fact:
+    docker_service__restart_containers: >-
+      {{ docker_service__restart_containers | d([])
+         + [docker_service__config_dir_service.name] }}
+  when: docker_service__register_config_dir is changed

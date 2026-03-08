@@ -1,0 +1,15 @@
+{# Copyright (C) 2024-2026 Patryk Ściborek <patryk@sciborek.com>
+ # Copyright (C) 2024-2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+---
+{% for svc in docker_service__combined_services | d([]) %}
+{%   if svc.state | d('present') not in ['absent', 'ignore'] %}
+{%     if svc.postgresql is defined %}
+{%       set pg = svc.postgresql %}
+- name: '{{ pg.user }}'
+- name: '{{ pg.database }}'
+  flags: [ 'NOLOGIN' ]
+{%     endif %}
+{%   endif %}
+{% endfor %}

@@ -42,6 +42,10 @@ automatically configures an :command:`nginx` reverse proxy virtual host that
 forwards traffic to the container. SSL/TLS is handled by the DebOps PKI
 infrastructure.
 
+For complete deployment examples of popular applications (Grafana,
+VictoriaMetrics, Vaultwarden, Bugsink, Homepage and more), see the
+:ref:`docker_service__ref_guides` page.
+
 
 Nginx reverse proxy
 -------------------
@@ -165,7 +169,9 @@ Available role tags:
   tasks as well as role dependencies.
 
 ``role::docker_service:config``
-  Tasks related to creating persistent data directories.
+  Tasks related to creating persistent data directories, generating
+  configuration files (``config_files`` and ``config_dir``), and restarting
+  containers when configuration changes.
 
 ``role::docker_service:containers``
   Tasks related to pulling Docker images and managing containers.
