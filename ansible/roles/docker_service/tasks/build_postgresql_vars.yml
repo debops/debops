@@ -1,0 +1,21 @@
+---
+# Copyright (C) 2024-2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2024-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# This task file is included via pre_tasks in the playbook to build
+# postgresql dependent variables before the postgresql role runs. The
+# template lookup must execute in the docker_service role context to
+# find the templates in this role's templates/ directory.
+
+- name: Build postgresql dependent variables from service definitions
+  ansible.builtin.set_fact:
+    docker_service__postgresql__dependent_roles: '{{ lookup("template",
+                                                     "lookup/docker_service__postgresql_roles.j2")
+                                                     | from_yaml }}'
+    docker_service__postgresql__dependent_databases: '{{ lookup("template",
+                                                         "lookup/docker_service__postgresql_databases.j2")
+                                                         | from_yaml }}'
+    docker_service__postgresql__dependent_pgpass: '{{ lookup("template",
+                                                      "lookup/docker_service__postgresql_pgpass.j2")
+                                                      | from_yaml }}'

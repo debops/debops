@@ -22,30 +22,54 @@
       tags: [ 'role::docker_service', 'skip::docker_service',
               'role::nginx', 'skip::nginx' ]
 
+    - name: Build docker_service postgresql configuration
+      ansible.builtin.import_role:
+        name: 'docker_service'
+        tasks_from: 'build_postgresql_vars'
+      tags: [ 'role::docker_service', 'skip::docker_service',
+              'role::postgresql', 'skip::postgresql' ]
+
   roles:
 
     - role: keyring
       tags: [ 'role::keyring', 'skip::keyring' ]
       keyring__dependent_gpg_keys:
         - '{{ nginx__keyring__dependent_apt_keys }}'
+      when: docker_service__nginx__dependent_servers | d([]) | length > 0
 
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ nginx__apt_preferences__dependent_list }}'
+      when: docker_service__nginx__dependent_servers | d([]) | length > 0
 
     - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
+      when: docker_service__nginx__dependent_servers | d([]) | length > 0
 
     - role: python
       tags: [ 'role::python', 'skip::python' ]
       python__dependent_packages3:
         - '{{ docker_service__python__dependent_packages3 }}'
-        - '{{ nginx__python__dependent_packages3 }}'
+        - '{{ nginx__python__dependent_packages3
+              if (docker_service__nginx__dependent_servers | d([]) | length > 0)
+              else [] }}'
       python__dependent_packages2:
-        - '{{ nginx__python__dependent_packages2 }}'
+        - '{{ nginx__python__dependent_packages2
+              if (docker_service__nginx__dependent_servers | d([]) | length > 0)
+              else [] }}'
+
+    - role: postgresql
+      tags: [ 'role::postgresql', 'skip::postgresql' ]
+      postgresql__dependent_roles:
+        - '{{ docker_service__postgresql__dependent_roles }}'
+      postgresql__dependent_databases:
+        - '{{ docker_service__postgresql__dependent_databases }}'
+      postgresql__dependent_pgpass:
+        - '{{ docker_service__postgresql__dependent_pgpass }}'
+      when: docker_service__postgresql__dependent_roles | d([]) | length > 0
 
     - role: nginx
       tags: [ 'role::nginx', 'skip::nginx' ]
@@ -53,6 +77,7 @@
         - '{{ docker_service__nginx__dependent_servers }}'
       nginx__dependent_upstreams:
         - '{{ docker_service__nginx__dependent_upstreams }}'
+      when: docker_service__nginx__dependent_servers | d([]) | length > 0
 
     - role: docker_service
       tags: [ 'role::docker_service', 'skip::docker_service' ]
