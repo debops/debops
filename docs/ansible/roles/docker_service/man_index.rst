@@ -1,7 +1,7 @@
 :orphan:
 
-.. Copyright (C) 2024-2026 Patryk Ściborek <patryk@sciborek.com>
-.. Copyright (C) 2024-2026 DebOps <https://debops.org/>
+.. Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+.. Copyright (C) 2026 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 debops.docker_service
