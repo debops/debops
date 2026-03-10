@@ -78,16 +78,16 @@ nginx__flavor_apt_repository: '{{ nginx__flavor_apt_repository_map[nginx_flavor]
 #
 # Dicrionary which maps the APT GPG key ids to their respective flavors.
 nginx__flavor_apt_key_id_map:
-  'nginx.org': '573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62'
-  'passenger': '16378A33A6EF16762922526E561F9B9CAC40B2F7'
+  'nginx.org': '8540A6F18833A80E9C1653A42FD21310B49F6B46'
+  'passenger': 'C6F448ED4BC80A4E95257250D870AB033FB45BD1'
 
                                                                    # ]]]
 # .. envvar:: nginx__flavor_apt_repository_map [[[
 #
 # Dicrionary which maps the APT GPG repositories to their respective flavors.
 nginx__flavor_apt_repository_map:
-  'nginx.org': 'deb https://nginx.org/packages/{{ ansible_distribution | lower }}/ {{ nginx__flavor_distribution_release }} nginx'
-  'passenger': 'deb https://oss-binaries.phusionpassenger.com/apt/passenger {{ nginx__flavor_distribution_release }} main'
+  'nginx.org': 'deb [signed-by=/etc/apt/keyrings/nginx.asc] https://nginx.org/packages/{{ ansible_distribution | lower }}/ {{ nginx__flavor_distribution_release }} nginx'
+  'passenger': 'deb [signed-by=/etc/apt/keyrings/passenger.asc] https://oss-binaries.phusionpassenger.com/apt/passenger {{ nginx__flavor_distribution_release }} main'
 
                                                                    # ]]]
 # .. envvar:: nginx__flavor_packages [[[
@@ -1257,10 +1257,19 @@ nginx__ferm__dependent_rules:
 # Configuration for the :ref:`debops.nginx` Ansible role.
 nginx__keyring__dependent_apt_keys:
 
-  - id: '{{ nginx__flavor_apt_key_id }}'
-    repo: '{{ nginx__flavor_apt_repository }}'
+  - id: '{{ nginx__flavor_apt_key_id_map["nginx.org"] }}'
+    keyring: 'nginx.asc'
+    repo: '{{ nginx__flavor_apt_repository_map["nginx.org"] }}'
     state: '{{ "present"
-               if (nginx_flavor in ["nginx.org", "passenger"] and
+               if (nginx_flavor in ["nginx.org"] and
+                   nginx__deploy_state == "present")
+               else "absent" }}'
+
+  - id: '{{ nginx__flavor_apt_key_id_map["passenger"] }}'
+    keyring: 'passenger.asc'
+    repo: '{{ nginx__flavor_apt_repository_map["passenger"] }}'
+    state: '{{ "present"
+               if (nginx_flavor in ["passenger"] and
                    nginx__deploy_state == "present")
                else "absent" }}'
 
