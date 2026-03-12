@@ -268,6 +268,10 @@ General
 - The :file:`tools/dist-upgrade.yml` playbook will not fail anymore during
   :file:`/etc/services` database assembly if no upgrade was performed.
 
+- New DebOps project directories will use fixed Ansible configuration for
+  callback plugins and will default to a YAML output format of the playbook
+  results.
+
 :ref:`debops.apache` role
 '''''''''''''''''''''''''
 
