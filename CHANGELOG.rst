@@ -61,6 +61,16 @@ Changed
   Existing role configuration might need to be updated to support new changes,
   check the role documentation for details.
 
+Fixed
+~~~~~
+
+General
+'''''''
+
+- New DebOps project directories will use fixed Ansible configuration for
+  callback plugins and will default to a YAML output format of the playbook
+  results.
+
 
 `debops v3.1.6`_ - 2025-10-09
 -----------------------------
