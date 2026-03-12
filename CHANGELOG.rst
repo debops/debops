@@ -388,6 +388,10 @@ General
 - The ``bitcoind`` role was removed due to lack of interest by the role
   maintainer.
 
+- The ``profile_tasks.py`` Ansible callback plugin has been removed due to
+  "Unexpected Exception" error on Ansible v2.19. Users should use its upstream
+  alternative, ``ansible.posix.profile_tasks`` plugin.
+
 :ref:`debops.ipxe` role
 '''''''''''''''''''''''
 
