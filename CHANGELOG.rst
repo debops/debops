@@ -71,6 +71,16 @@ General
   callback plugins and will default to a YAML output format of the playbook
   results.
 
+Removed
+~~~~~~~
+
+General
+'''''''
+
+- The ``profile_tasks.py`` Ansible callback plugin has been removed due to
+  "Unexpected Exception" error on Ansible v2.19. Users should use its upstream
+  alternative, ``ansible.posix.profile_tasks`` plugin.
+
 
 `debops v3.2.5`_ - 2025-10-09
 -----------------------------
