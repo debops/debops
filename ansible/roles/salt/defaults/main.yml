@@ -55,10 +55,10 @@ salt__upstream_apt_key_id: '754A1A7AE731F165D5E6D4BD0E08A149DE57BFBE'
 # A YAML dictionary that defines the upstream APT repository URLs depending on
 # the current OS distribution, release and processor architecture.
 salt__upstream_apt_repo_map:
-  Debian: '{{ "deb http://repo.saltstack.com/apt/debian/"
+  Debian: '{{ "deb [signed-by=/etc/apt/keyrings/saltstack.asc] http://repo.saltstack.com/apt/debian/"
               + ansible_distribution_major_version + "/" + salt__upstream_arch_map[ansible_architecture]
               + "/" + salt__upstream_branch + " " + ansible_distribution_release + " main" }}'
-  Ubuntu: '{{ "deb http://repo.saltstack.com/apt/ubuntu/"
+  Ubuntu: '{{ "deb [signed-by=/etc/apt/keyrings/saltstack.asc] http://repo.saltstack.com/apt/ubuntu/"
               + ansible_distribution_version + "/" + salt__upstream_arch_map[ansible_architecture]
               + "/" + salt__upstream_branch + " " + ansible_distribution_release + " main" }}'
                                                                    # ]]]
@@ -154,6 +154,7 @@ salt__custom_options: ''
 salt__keyring__dependent_apt_keys:
 
   - id: '{{ salt__upstream_apt_key_id }}'
+    keyring: 'saltstack.asc'
     repo: '{{ salt__upstream_apt_repo_map[ansible_distribution] }}'
     state: '{{ "present" if salt__upstream | bool else "absent" }}'
 

@@ -22,6 +22,30 @@ repositories are enabled. Users can control this using the
 :envvar:`apt__nonfree` and :envvar:`apt__nonfree_firmware` boolean variables.
 
 
+.. _apt_signing_key_not_bound:
+
+"Signing key is not bound" error
+--------------------------------
+
+SHA1 algorithm used in old GPG signatures is considered not secure after
+2026-02-01. This can cause an error message during APT update and can result in
+an error during Ansible execution. Fixing this issue requires updated APT
+repository keys that can only be done by third parties.
+
+There are two ways to mitigate the issue in the meantime, described in `an
+Ansible forum post`__. First one is to override the default APT Sequoia
+configuration stored in :file:`/usr/share/apt/default-sequoia.config`
+configuration file to change the cutoff date for specific signature algorithms.
+This method is not implemented in DebOps at the moment.
+
+The other way is to mark specific APT repositories as trusted, using
+``[trusted=yes]`` option in APT repository configuration. This way is more
+granular and visible to the system administrator, therefore it will be used in
+APT repositories managed by DebOps when needed.
+
+.. __: https://forum.ansible.com/t/ubuntu-ppa-key-signature/45237
+
+
 Example inventory
 -----------------
 

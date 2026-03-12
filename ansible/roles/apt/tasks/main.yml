@@ -25,7 +25,7 @@
   loop_control:
     label: '{{ item.name }}'
 
-- name: Configure custom APT keys
+- name: Configure custom APT keys with apt_key
   ansible.builtin.apt_key:
     data:      '{{ item.data | d(omit) }}'
     file:      '{{ item.file | d(omit) }}'
@@ -39,8 +39,55 @@
                            + apt__host_keys) }}'
   register: apt__register_apt_key
   until: apt__register_apt_key is succeeded
-  when: apt__enabled | bool and (item.url | d() or item.data | d() or item.id | d() or item.file | d())
+  when: apt__enabled | bool and (item.url | d() or item.data | d() or item.id | d() or item.file | d()) and
+        (item.apt_key | d(False)) | bool
   tags: [ 'role::apt:keys' ]
+
+- name: Ensure that /etc/apt/keyrings/ directory exists
+  ansible.builtin.file:
+    path: '/etc/apt/keyrings'
+    state: 'directory'
+    mode: '0755'
+  when: apt__enabled | bool
+  tags: [ 'role::apt:keys' ]
+
+- name: Copy local APT keys to remote hosts
+  ansible.builtin.copy:
+    content: '{{ item.data | d() }}'
+    dest: '{{ "/etc/apt/keyrings/" + item.keyring }}'
+    checksum: '{{ item.checksum | d(omit) }}'
+    mode: '0644'
+  loop: '{{ q("flattened", apt__keys
+                           + apt__group_keys
+                           + apt__host_keys) }}'
+  when: apt__enabled | bool and (item.data | d()) and (item.state | d("present")) not in [ "absent" ] and
+        not (item.apt_key | d(False)) | bool
+  tags: [ 'role::apt:keys' ]
+
+- name: Download custom APT keys
+  ansible.builtin.get_url:
+    url: '{{ item.url }}'
+    dest: '{{ "/etc/apt/keyrings/" + (item.keyring | d(item.url | basename)) }}'
+    checksum: '{{ item.checksum | d(omit) }}'
+    mode: '0644'
+  loop: '{{ q("flattened", apt__keys
+                           + apt__group_keys
+                           + apt__host_keys) }}'
+  register: apt__register_apt_key_get
+  until: apt__register_apt_key_get is succeeded
+  when: apt__enabled | bool and (item.url | d()) and (item.state | d("present")) not in [ "absent" ] and
+        not (item.apt_key | d(False)) | bool
+  tags: [ 'role::apt:keys' ]
+
+- name: Remove custom APT keys
+  ansible.builtin.file:
+    path: '{{ "/etc/apt/keyrings/" + (item.keyring | d(item.url | basename)) }}'
+    state: 'absent'
+  loop: '{{ q("flattened", apt__keys
+                           + apt__group_keys
+                           + apt__host_keys) }}'
+  when: apt__enabled | bool and ((item.url | d()) or (item.keyring | d())) and
+        (item.state | d("present")) in [ "absent" ] and not (item.apt_key | d(False)) | bool
 
 - name: Add/remove diversion of repository sources
   debops.debops.dpkg_divert:

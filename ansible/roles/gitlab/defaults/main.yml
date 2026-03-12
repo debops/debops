@@ -715,7 +715,8 @@ gitlab__etc_services__dependent_list:
 gitlab__keyring__dependent_apt_keys:
 
   - id: 'F640 3F65 44A3 8863 DAA0  B6E0 3F01 618A 5131 2F3F'
-    repo: 'deb https://packages.gitlab.com/gitlab/gitlab-ee/debian/ {{ ansible_distribution_release }} main'
+    keyring: 'gitlab_ee.asc'
+    repo: 'deb [signed-by=/etc/apt/keyrings/gitlab_ee.asc] https://packages.gitlab.com/gitlab/gitlab-ee/debian/ {{ ansible_distribution_release }} main'
     filename: 'gitlab_ee'
     state: '{{ "present"
                if (gitlab__edition == "enterprise")

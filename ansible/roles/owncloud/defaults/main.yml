@@ -390,7 +390,7 @@ owncloud__src_remote_dir: '{{
 # .. envvar:: owncloud__apt_repo_source
 #
 # APT ``sources.list`` URL of the ownCloud ``.deb`` repository.
-owncloud__apt_repo_source: '{{ "deb https://" + owncloud__apt_repo_base + "/" +
+owncloud__apt_repo_source: '{{ "deb [signed-by=/etc/apt/keyrings/owncloud.asc] https://" + owncloud__apt_repo_base + "/" +
                                owncloud__distribution + "/ /" }}'
 
 
@@ -1914,6 +1914,7 @@ owncloud__apt_preferences__dependent_list_optional:
 owncloud__keyring__dependent_apt_keys:
 
   - id: '{{ owncloud__apt_repo_key_id }}'
+    keyring: 'owncloud.asc'
     state: '{{ "present" if (owncloud__variant in ["owncloud"]) else "absent" }}'
 
     # Old or unused OpenPGP public keys specified by fingerprint which where

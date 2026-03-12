@@ -16,7 +16,7 @@
 
 - name: Configure HWRaid APT repository
   ansible.builtin.apt_repository:
-    repo: 'deb http://hwraid.le-vert.net/{{ hwraid_distribution | lower }} {{ hwraid_register_release | lower }} main'
+    repo: 'deb [signed-by=/etc/apt/keyrings/hwraid.asc] http://hwraid.le-vert.net/{{ hwraid_distribution | lower }} {{ hwraid_register_release | lower }} main'
     state: 'present'
     update_cache: True
   when: hwraid_register_release is defined and hwraid_register_release
