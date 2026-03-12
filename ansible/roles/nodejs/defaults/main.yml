@@ -45,29 +45,25 @@ nodejs__node_upstream: '{{ ansible_local.nodejs.node_upstream
 # See https://github.com/nodejs/Release for the current release and maintenance
 # schedule. Available releases:
 #
-# - ``node_8.x``
-#
-# - ``node_10.x``
-#
-# - ``node_12.x``
+# - ``node_22.x``
 #
 nodejs__node_upstream_release: '{{ "node_8.x"
                                    if (nodejs__distribution_release in
                                        ["stretch", "trusty",
                                         "xenial", "bionic"])
-                                   else "node_10.x" }}'
+                                   else "node_22.x" }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__node_upstream_key_id [[[
 #
 # GPG fingerprint of APT repository signing key.
-nodejs__node_upstream_key_id: '9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280'
+nodejs__node_upstream_key_id: '6F71F525282841EEDAF851B42F59B5F99B1BE0B4'
 
                                                                    # ]]]
 # .. envvar:: nodejs__node_upstream_repository [[[
 #
 # URL of the NodeSource APT repository in ``sources.list`` format.
-nodejs__node_upstream_repository: 'deb https://deb.nodesource.com/{{ nodejs__node_upstream_release }} {{ nodejs__distribution_release }} main'
+nodejs__node_upstream_repository: 'deb [signed-by=/etc/apt/keyrings/nodesource.asc] https://deb.nodesource.com/{{ nodejs__node_upstream_release }} nodistro main'
                                                                    # ]]]
                                                                    # ]]]
 # Yarn upstream configuration [[[
@@ -90,13 +86,13 @@ nodejs__yarn_upstream: '{{ True
 # .. envvar:: nodejs__yarn_upstream_key_id [[[
 #
 # GPG fingerprint of Yarn APT repository signing key.
-nodejs__yarn_upstream_key_id: '72ECF46A56B4AD39C907BBB71646B01B86E50310'
+nodejs__yarn_upstream_key_id: 'FF7CB5667B542092084BBDC562D54FD4003F6525'
 
                                                                    # ]]]
 # .. envvar:: nodejs__yarn_upstream_repository [[[
 #
 # URL of the NodeSource APT repository in ``sources.list`` format.
-nodejs__yarn_upstream_repository: 'deb https://dl.yarnpkg.com/debian/ stable main'
+nodejs__yarn_upstream_repository: 'deb [signed-by=/etc/apt/keyrings/yarn.asc] https://dl.yarnpkg.com/debian/ stable main'
                                                                    # ]]]
                                                                    # ]]]
 # APT packages [[[
@@ -241,10 +237,13 @@ nodejs__apt_preferences__dependent_list:
 nodejs__keyring__dependent_apt_keys:
 
   - id: '{{ nodejs__node_upstream_key_id }}'
+    url: 'https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key'
+    keyring: 'nodesource.asc'
     repo: '{{ nodejs__node_upstream_repository }}'
     state: '{{ "present" if nodejs__node_upstream | bool else "absent" }}'
 
   - id: '{{ nodejs__yarn_upstream_key_id }}'
+    keyring: 'yarn.asc'
     repo: '{{ nodejs__yarn_upstream_repository }}'
     state: '{{ "present" if nodejs__yarn_upstream | bool else "absent" }}'
                                                                    # ]]]
