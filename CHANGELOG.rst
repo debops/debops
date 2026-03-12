@@ -122,6 +122,10 @@ General
   compatible with Python 3.12+ due to removal of the ``distutils`` Python
   dependency, replaced by the ``packaging`` Python module.
 
+- References to the old ``debops.roleXX`` Ansible Collections have been removed
+  from all playbooks, since the project is now contained in a single Ansible
+  Collection.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
