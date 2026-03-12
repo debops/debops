@@ -26,6 +26,13 @@ You can read information about required changes between releases in the
 Changed
 ~~~~~~~
 
+General
+'''''''
+
+- References to the old ``debops.roleXX`` Ansible Collections have been removed
+  from all playbooks, since the project is now contained in a single Ansible
+  Collection.
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
