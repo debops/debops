@@ -1267,6 +1267,7 @@ request_acme_dns_certificate() {
         ln -vsfT "${letsencrypt}/privkey.pem"   "${pkirealm}/private/key.pem"
         ln -vsfT "${letsencrypt}/cert.pem"      "${pkirealm}/acme/cert.pem"
         ln -vsfT "${letsencrypt}/chain.pem"     "${pkirealm}/acme/intermediate.pem"
+        ln -vsfT "${letsencrypt}/fullchain.pem" "${pkirealm}/acme/root.pem"
     else
       echo "error: could not symlink let's encrypt certificates into pki realm" >&2
     fi
@@ -1346,6 +1347,7 @@ request_acme_manual_certificate() {
         ln -vsfT "${letsencrypt}/privkey.pem"   "${pkirealm}/private/key.pem"
         ln -vsfT "${letsencrypt}/cert.pem"      "${pkirealm}/acme/cert.pem"
         ln -vsfT "${letsencrypt}/chain.pem"     "${pkirealm}/acme/intermediate.pem"
+        ln -vsfT "${letsencrypt}/fullchain.pem" "${pkirealm}/acme/root.pem"
     else
       echo "error: could not symlink let's encrypt certificates into pki realm" >&2
     fi
