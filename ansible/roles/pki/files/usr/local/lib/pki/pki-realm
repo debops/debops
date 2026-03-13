@@ -181,8 +181,6 @@ initialize_environment () {
     )
     config["acme_ca_api"]="${acme_ca_api_map[${config['acme_ca']}]}"
 
-    config["acme_contacts"]=""
-
     config["acme_expiration_days"]="30"
 
     # shellcheck disable=SC2154
@@ -1100,10 +1098,6 @@ request_acme_tiny_certificate () {
                     --directory-url \"${config['acme_ca_api']}\" --csr acme/request.pem \
                     --acme-dir \"${config['acme_challenge_dir']}\""
 
-            if [ -n "${config['acme_contacts']}" ]; then
-                acme_tiny_request_params+=(" --contact \"${config['acme_contacts']//,/\" \"}\"")
-            fi
-
             if [ "$EUID" -eq 0 ] ; then
 
                 set +e
@@ -1198,10 +1192,6 @@ request_acme_dns_certificate() {
     local pkirealm=/etc/pki/realms/${config['name']}
     local email=""
 
-    if [ -n "${config['acme_contacts']}" ]; then
-        email="-m${config['acme_contacts']}"
-    fi
-
     local all_dns
     local req_subjects=${config['subject']:-${config['pki_default_subject']:-}}
     # shellcheck disable=SC2001
@@ -1276,10 +1266,6 @@ request_acme_manual_certificate() {
     # We expect the API secrets to be in ./private/dns-*-credentials.key
     local pkirealm=/etc/pki/realms/${config['name']}
     local email=""
-
-    if [ -n "${config['acme_contacts']}" ]; then
-        email="-m${config['acme_contacts']}"
-    fi
 
     local all_dns
     local req_subjects=${config['subject']:-${config['pki_default_subject']:-}}
@@ -2504,12 +2490,6 @@ sub_init () {
                         ;;
                     acme-ca-api=*)
                         args["acme_ca_api"]=${OPTARG#*=}
-                        ;;
-                    acme-contacts)
-                        args["acme_contacts"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))
-                        ;;
-                    acme-contacts=*)
-                        args["acme_contacts"]=${OPTARG#*=}
                         ;;
                     acme-default-subdomains)
                         args["acme_default_subdomains"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))
