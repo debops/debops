@@ -48,7 +48,7 @@
                            + apt_preferences__group_list
                            + apt_preferences__host_list
                            + apt_preferences__dependent_list) }}'
-  when: ((((item.state | d() and item.state == 'absent') or item.delete | d() | bool) and
+  when: ((((item.state | d() and item.state == 'absent') or (item.delete is defined and item.delete is truthy) | bool) and
           (item.package | d() or item.packages | d()) and
           (item.version is undefined or (item.version is defined and not item.version))) or
          (item.raw is undefined and
@@ -56,7 +56,7 @@
           (item.backports is undefined or
            (item.backports is iterable and item.backports and
             ansible_distribution_release not in item.backports)) and
-           ansible_distribution_release not in apt_preferences__next_release.keys()))
+           ansible_distribution_release not in apt_preferences__next_release.keys())) | bool
 
 - name: Create APT preferences
   ansible.builtin.template:
@@ -81,7 +81,7 @@
                            + apt_preferences__group_list
                            + apt_preferences__host_list
                            + apt_preferences__dependent_list) }}'
-  when: ((((item.state | d('present')) != 'absent' and (not (item.delete | d() | bool))) and
+  when: ((((item.state | d('present')) != 'absent' and (not ((item.delete is defined and item.delete is truthy) | bool))) and
           (item.package | d() or item.packages | d())) and
          (item.raw | d() or
           item.version | d() or
@@ -90,4 +90,4 @@
             (item.backports is iterable and item.backports and
              ansible_distribution_release in item.backports)) and
             ansible_distribution_release in apt_preferences__next_release.keys()) or
-           item.pin | d()))
+           item.pin | d())) | bool

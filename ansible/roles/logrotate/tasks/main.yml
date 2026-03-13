@@ -28,8 +28,8 @@
     state: 'absent'
     delete: True
   when: (logrotate__enabled | bool and
-         logrotate__register_cron_diversion.stdout | d() and
-         logrotate__register_cron_diversion.stdout | d() !=
+         logrotate__register_cron_diversion.stdout is truthy and
+         logrotate__register_cron_diversion.stdout !=
          ('/etc/cron.' + logrotate__cron_period + '/logrotate'))
 
 - name: Configure cron log rotation {{ logrotate__cron_period }}
@@ -63,7 +63,8 @@
                else "absent" }}'
     delete: True
   loop: '{{ logrotate__combined_config | flatten }}'
-  when: item.filename | d() and item.divert | d(False) | bool
+  when: item.filename is defined and item.filename is truthy and
+        item.divert is defined and item.divert is truthy | bool
 
 - name: Generate custom log rotation configuration
   ansible.builtin.template:
@@ -73,7 +74,7 @@
     group: 'root'
     mode: '0644'
   loop: '{{ logrotate__combined_config | flatten }}'
-  when: (logrotate__enabled | bool and item.filename | d() and
+  when: (logrotate__enabled | bool and item.filename is defined and item.filename is truthy and
          item.state | d('present') != 'absent')
 
 - name: Remove custom log rotation configuration
@@ -81,5 +82,5 @@
     path: '/etc/logrotate.d/{{ item.filename }}'
     state: 'absent'
   loop: '{{ logrotate__combined_config | flatten }}'
-  when: (item.filename | d() and not item.divert | d(False) | bool and
+  when: (item.filename is defined and item.filename is truthy and not (item.divert is defined and item.divert is truthy) | bool and
          (not logrotate__enabled | bool or item.state | d('present') == 'absent'))
