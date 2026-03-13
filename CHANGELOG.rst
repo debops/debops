@@ -1,6 +1,6 @@
-.. Copyright (C) 2017-2025 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017-2026 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2018-2022 Robin Schneider <ypid@riseup.net>
-.. Copyright (C) 2017-2025 DebOps <https://debops.org/>
+.. Copyright (C) 2017-2026 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. _changelog:
