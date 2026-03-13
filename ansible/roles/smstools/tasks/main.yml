@@ -26,19 +26,19 @@
   ansible.builtin.service:
     name: 'smstools'
     state: 'stopped'
-  when: smstools_register_home is defined and smstools_register_home.stdout | d()
+  when: smstools_register_home is defined and smstools_register_home.stdout | d() | length > 0
 
 - name: Fix smsd home directory
   ansible.builtin.user:
     name: 'smsd'
     home: '/var/spool/sms'
-  when: smstools_register_home is defined and smstools_register_home.stdout | d()
+  when: smstools_register_home is defined and smstools_register_home.stdout | d() | length > 0
 
 - name: Start smsd with new home directory
   ansible.builtin.service:
     name: 'smstools'
     state: 'started'
-  when: smstools_register_home is defined and smstools_register_home.stdout | d()
+  when: smstools_register_home is defined and smstools_register_home.stdout | d() | length > 0
 
 - name: Configure smsd
   ansible.builtin.template:
@@ -119,7 +119,7 @@
     owner: 'root'
     group: 'root'
     mode: '0440'
-  when: (ansible_local | d() and ansible_local.sudo | d() and
+  when: (ansible_local | d() | length > 0 and ansible_local.sudo | d() | length > 0 and
          (ansible_local.sudo.installed | d()) | bool)
 
 - name: Configure xinetd SMS service
@@ -165,7 +165,7 @@
     job: '/usr/local/lib/smstools/test-sms-on-reboot'
     special_time: 'reboot'
     state: 'present'
-  when: (smstools_test_recipients is defined and smstools_test_recipients)
+  when: (smstools_test_recipients is defined and smstools_test_recipients | d() | length > 0)
 
 - name: Check if rsyslog is installed
   ansible.builtin.stat:
@@ -180,7 +180,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Restart rsyslogd' ]
-  when: (smstools_register_rsyslog is defined and smstools_register_rsyslog) and
+  when: (smstools_register_rsyslog is defined and smstools_register_rsyslog | d() | length > 0) and
         smstools_register_rsyslog.stat.exists
 
 - name: Configure logrotate
@@ -190,5 +190,5 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: (smstools_register_rsyslog is defined and smstools_register_rsyslog) and
+  when: (smstools_register_rsyslog is defined and smstools_register_rsyslog | d() | length > 0) and
         smstools_register_rsyslog.stat.exists
