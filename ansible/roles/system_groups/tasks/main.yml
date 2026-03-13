@@ -46,9 +46,12 @@
     path: '/etc/sudoers.d/{{ item.sudoers_filename | d("system_groups-" + item.name) }}'
     state: 'absent'
   with_items: '{{ system_groups__combined_list | debops.debops.parse_kv_items }}'
-  when: system_groups__enabled | bool and system_groups__sudo_enabled | bool and
-        item.name | d() and item.state | d('present') not in ['init', 'absent', 'ignore'] and
-        not item.sudoers | d()
+  when:
+    - system_groups__enabled | bool
+    - system_groups__sudo_enabled | bool
+    - item.name is defined and item.name is truthy
+    - item.state | d('present') not in [ 'init', 'absent', 'ignore' ]
+    - item.sudoers is undefined
 
 - name: Configure sudo for UNIX system groups
   ansible.builtin.template:
@@ -59,18 +62,24 @@
     mode: '0440'
     validate: '/usr/sbin/visudo -cf %s'
   with_items: '{{ system_groups__combined_list | debops.debops.parse_kv_items }}'
-  when: system_groups__enabled | bool and system_groups__sudo_enabled | bool and
-        item.name | d() and item.state | d('present') not in ['init', 'absent', 'ignore'] and
-        item.sudoers | d()
+  when:
+    - system_groups__enabled | bool
+    - system_groups__sudo_enabled | bool
+    - item.name is defined and item.name is truthy
+    - item.state | d('present') not in [ 'init', 'absent', 'ignore' ]
+    - item.sudoers is defined and item.sudoers is truthy
 
 - name: Remove tmpfiles configuration if not specified
   ansible.builtin.file:
     path: '/etc/tmpfiles.d/{{ item.tmpfiles_filename | d("system_groups-" + item.name + ".conf") }}'
     state: 'absent'
   with_items: '{{ system_groups__combined_list | debops.debops.parse_kv_items }}'
-  when: system_groups__enabled | bool and ansible_service_mgr == 'systemd' and
-        item.name | d() and item.state | d('present') not in ['init', 'absent', 'ignore'] and
-        not item.tmpfiles | d()
+  when:
+    - system_groups__enabled | bool
+    - ansible_service_mgr == 'systemd'
+    - item.name is defined and item.name is truthy
+    - item.state | d('present') not in [ 'init', 'absent', 'ignore' ]
+    - item.tmpfiles is undefined
 
 - name: Generate tmpfiles configuration for UNIX system groups
   ansible.builtin.template:
@@ -81,9 +90,12 @@
     mode: '0644'
   with_items: '{{ system_groups__combined_list | debops.debops.parse_kv_items }}'
   notify: [ 'Create temporary files' ]
-  when: system_groups__enabled | bool and ansible_service_mgr == 'systemd' and
-        item.name | d() and item.state | d('present') not in ['init', 'absent', 'ignore'] and
-        item.tmpfiles | d()
+  when:
+    - system_groups__enabled | bool
+    - ansible_service_mgr == 'systemd'
+    - item.name is defined and item.name is truthy
+    - item.state | d('present') not in [ 'init', 'absent', 'ignore' ]
+    - item.tmpfiles is defined and item.tmpfiles is truthy
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:

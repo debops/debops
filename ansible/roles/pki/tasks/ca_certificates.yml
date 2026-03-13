@@ -47,7 +47,7 @@
   register: pki_register_ca_certificates_blacklist
   changed_when: False
   check_mode: False
-  when: pki_system_ca_certificates_blacklist is defined and pki_system_ca_certificates_blacklist
+  when: pki_system_ca_certificates_blacklist is defined and pki_system_ca_certificates_blacklist is truthy
 
 - name: Get list of whitelisted certificates
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
@@ -58,7 +58,7 @@
   register: pki_register_ca_certificates_whitelist
   changed_when: False
   check_mode: False
-  when: pki_system_ca_certificates_whitelist is defined and pki_system_ca_certificates_whitelist
+  when: pki_system_ca_certificates_whitelist is defined and pki_system_ca_certificates_whitelist is truthy
 
 - name: Configure system CA certificates
   ansible.builtin.template:

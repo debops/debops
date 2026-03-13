@@ -209,7 +209,7 @@
 - name: Check if /etc/ssh/moduli contains weak DH parameters
   ansible.builtin.shell: awk '$5 < {{ (sshd__moduli_minimum | int - 1) }}' /etc/ssh/moduli
   register: sshd__register_moduli
-  changed_when: sshd__register_moduli.stdout
+  changed_when: sshd__register_moduli.stdout is defined and sshd__register_moduli.stdout is truthy
   check_mode: False
 
 - name: Remove DH parameters smaller than the requested size
@@ -218,7 +218,7 @@
   notify: [ 'Test sshd configuration and restart' ]
   register: sshd__register_moduli
   changed_when: sshd__register_moduli.changed | bool
-  when: sshd__register_moduli.stdout
+  when: sshd__register_moduli.stdout is truthy
 
 - name: Remove block on OpenSSH server startup
   ansible.builtin.file:

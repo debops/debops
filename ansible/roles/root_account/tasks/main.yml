@@ -32,7 +32,7 @@
   ansible.builtin.stat:
     path: '{{ root_account__shell }}'
   register: root_account__register_shell
-  when: root_account__enabled | bool and root_account__shell | d(False)
+  when: root_account__enabled | bool and root_account__shell is truthy
 
 - name: Fail if setting a shell that does not exist
   ansible.builtin.fail:
