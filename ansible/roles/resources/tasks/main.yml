@@ -44,8 +44,8 @@
   loop: '{{ q("flattened", resources__repositories
                            + resources__group_repositories
                            + resources__host_repositories) }}'
-  when: (resources__enabled | bool and (item.repo | d() or item.url | d() or item.src | d()) and
-         (item.dest | d() or item.name | d() or item.path | d()))
+  when: (resources__enabled | bool and (item.repo | d() | length > 0 or item.url | d() | length > 0 or item.src | d() | length > 0) and
+         (item.dest | d() | length > 0 or item.name | d() | length > 0 or item.path | d() | length > 0))
   tags: [ 'role::resources:repositories' ]
 
 # Manage custom templates [[[1
@@ -106,7 +106,7 @@
                            + resources__group_paths
                            + resources__host_paths) }}'
   when: (resources__enabled | bool and
-         ((item.path | d() or item.dest | d() or item.name | d()) or item))
+         ((item.path | d() | length > 0 or item.dest | d() | length > 0 or item.name | d() | length > 0) or item | d() | length > 0))
   tags: [ 'role::resources:paths' ]
 
 # Create parent directories [[[1
@@ -153,8 +153,8 @@
   loop: '{{ q("flattened", resources__urls
                            + resources__group_urls
                            + resources__host_urls) }}'
-  when: (resources__enabled | bool and (item.url | d() or item.src | d()) and
-         (item.dest | d() or item.name | d() or item.path | d()))
+  when: (resources__enabled | bool and (item.url | d() | length > 0 or item.src | d() | length > 0) and
+         (item.dest | d() | length > 0 or item.name | d() | length > 0 or item.path | d() | length > 0))
   no_log: '{{ debops__no_log | d(True if item.url_password | d() else omit) }}'
   tags: [ 'role::resources:urls' ]
 
@@ -182,8 +182,8 @@
   loop: '{{ q("flattened", resources__archives
                            + resources__group_archives
                            + resources__host_archives) }}'
-  when: (resources__enabled | bool and item.src | d() and
-         (item.dest | d() or item.name | d() or item.path | d()))
+  when: (resources__enabled | bool and item.src | d() | length > 0 and
+         (item.dest | d() | length > 0 or item.name | d() | length > 0 or item.path | d() | length > 0))
   tags: [ 'role::resources:archives' ]
 
 # Manage custom files [[[1
@@ -196,7 +196,7 @@
                            + resources__group_files
                            + resources__host_files) }}'
   when: (resources__enabled | bool and
-         (item.dest | d() or item.path | d() or item.name | d()) and
+         (item.dest | d() | length > 0 or item.path | d() | length > 0 or item.name | d() | length > 0) and
          (item.state | d('present') == 'absent'))
   tags: [ 'role::resources:files' ]
 
@@ -222,8 +222,8 @@
                            + resources__group_files
                            + resources__host_files) }}'
   when: (resources__enabled | bool and
-         (item.src | d() or item.content is defined) and
-         (item.dest | d() or item.path | d() or item.name | d()) and
+         (item.src | d() | length > 0 or item.content is defined) and
+         (item.dest | d() | length > 0 or item.path | d() | length > 0 or item.name | d() | length > 0) and
          (item.state | d('present') != 'absent'))
   tags: [ 'role::resources:files' ]
 
@@ -248,7 +248,7 @@
   become: True
   become_user: '{{ item.owner | d("root") }}'
   when: (resources__enabled | bool and
-         (item.name | d() or item.requirements is defined) and
+         (item.name | d() | length > 0 or item.requirements is defined) and
          (item.state | d('present') != 'absent'))
   tags: [ 'role::resources:pip' ]
 
@@ -275,8 +275,8 @@
   loop: '{{ q("flattened", resources__replacements
                            + resources__group_replacements
                            + resources__host_replacements) }}'
-  when: (resources__enabled | bool and item.regexp | d() and
-         (item.dest | d() or item.path | d() or item.name | d()))
+  when: (resources__enabled | bool and item.regexp | d() | length > 0 and
+         (item.dest | d() | length > 0 or item.path | d() | length > 0 or item.name | d() | length > 0))
   tags: [ 'role::resources:lineinfile' ]
 
 # Manage ACLs [[[1
@@ -341,7 +341,7 @@
                            + resources__group_delayed_paths
                            + resources__host_delayed_paths) }}'
   when: (resources__enabled | bool and
-         ((item.path | d() or item.dest | d() or item.name | d()) or item))
+         ((item.path | d() | length > 0 or item.dest | d() | length > 0 or item.name | d() | length > 0) or item | d() | length > 0))
   tags: [ 'role::resources:paths' ]
 
 - name: Set custom file capabilities
@@ -361,7 +361,7 @@
   loop_control:
     label: '{{ {"name": item.name} }}'
   when: resources__enabled | bool and
-        item.name | d() and item.state | d('present') not in [ 'absent', 'ignore' ]
+        item.name | d() | length > 0 and item.state | d('present') not in [ 'absent', 'ignore' ]
   no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
   tags: [ 'role::resources:commands' ]
 
