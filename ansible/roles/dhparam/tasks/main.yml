@@ -33,7 +33,8 @@
 - name: Assert that required software is installed
   ansible.builtin.assert:
     that:
-      - 'dhparam__register_version is defined and dhparam__register_version.stdout'
+      - dhparam__register_version is defined
+      - dhparam__register_version.stdout | length > 0
   delegate_to: 'localhost'
   become: False
   run_once: True

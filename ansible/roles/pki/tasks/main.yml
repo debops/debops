@@ -85,7 +85,7 @@
   delegate_to: 'localhost'
   become: False
   run_once: True
-  when: pki_authorities | d() and pki_dependent_authorities | d()
+  when: pki_authorities | d() | length > 0 and pki_dependent_authorities | d() | length > 0
 # .. ]]]
 
 # Create scripts and library/secrets directory [[[
@@ -106,7 +106,7 @@
   become: False
   delegate_to: 'localhost'
   run_once: True
-  when: (pki_authorities or pki_dependent_authorities)
+  when: pki_authorities | d() | length > 0 or pki_dependent_authorities | d() | length > 0
 
 - name: Install remote PKI scripts
   ansible.builtin.copy:
@@ -404,7 +404,7 @@
   register: pki_register_sign_by_host
   become: False
   run_once: True
-  when: (pki_authorities or pki_dependent_authorities)
+  when: pki_authorities | d() | length > 0 or pki_dependent_authorities | d() | length > 0
   changed_when: pki_register_sign_by_host.stdout | d()
 # ]]]
 
