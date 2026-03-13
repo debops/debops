@@ -16,6 +16,12 @@ Unreleased
 ----------
 
 
+v3.3.0 (2026-03-13)
+-------------------
+
+No significant changes which require a manual intervention.
+
+
 v3.2.0 (2024-09-16)
 -------------------
 
