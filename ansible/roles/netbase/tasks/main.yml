@@ -62,15 +62,18 @@
     dest:    '/etc/hosts'
     regexp:  '^{{ item.name | replace(".", "\.") }}\s+'
     line:    "{{ item.name }}\t{{ ('\t' if (item.name | string | length < 8) else '') }}{{ item.value
-                 if (item.value is string)
+                 if (item.value is defined and item.value is string)
                  else ((item.value | d()) | selectattr('name', 'defined') | map(attribute='name') | list | join(' ')) }}"
-    state:   '{{ "present" if item.value | d() else "absent" }}'
+    state:   '{{ "present" if item.value is defined else "absent" }}'
     mode:    '0644'
   loop: '{{ netbase__combined_hosts | debops.debops.parse_kv_config }}'
   loop_control:
     label: '{{ {item.name: (item.value | d([])) | selectattr("name", "defined") | map(attribute="name") | list} }}'
   notify: [ 'Refresh host facts' ]
-  when: netbase__enabled | bool and netbase__hosts_config_type == 'lineinfile' and item.name | d()
+  when:
+    - netbase__enabled | bool
+    - netbase__hosts_config_type == 'lineinfile'
+    - item.name is defined and item.name is truthy
 
 - name: Manage entries in /etc/networks
   ansible.builtin.lineinfile:  # noqa no-tabs

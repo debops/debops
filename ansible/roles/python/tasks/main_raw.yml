@@ -10,7 +10,9 @@
     fi
   register: python__register_etc_hosts
   changed_when: python__register_etc_hosts.stdout == ''
-  when: python__enabled | bool and python__raw_etc_hosts | d()
+  when:
+    - python__enabled | bool
+    - python__raw_etc_hosts is truthy
 
 - name: Detect the OS release manually, no Ansible facts available
   ansible.builtin.raw: grep -E '^VERSION=' /etc/os-release | tr -d '(")' | cut -d" " -f2
