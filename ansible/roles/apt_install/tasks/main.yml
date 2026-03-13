@@ -90,7 +90,8 @@
                            + apt_install__alternatives
                            + apt_install__group_alternatives
                            + apt_install__host_alternatives) }}'
-  when: item.name | d() and item.path | d()
+  when: item.name is defined and item.name is truthy and
+        item.path is defined and item.path is truthy
 
 - name: Configure automatic alternatives
   ansible.builtin.command: update-alternatives --auto {{ item.name }}
@@ -98,7 +99,8 @@
   loop: '{{ q("flattened", apt_install__alternatives
                            + apt_install__group_alternatives
                            + apt_install__host_alternatives) }}'
-  when: item.name | d() and not item.path | d()
+  when: item.name is defined and item.name is truthy and
+        not (item.path is defined and item.path is truthy)
   changed_when: apt_install__register_alternatives.stdout | d()
 
 - name: Disable kernel hints about pending upgrades

@@ -60,7 +60,7 @@
   loop: '{{ q("flattened", apt__keys
                            + apt__group_keys
                            + apt__host_keys) }}'
-  when: apt__enabled | bool and (item.data | d()) and (item.state | d("present")) not in [ "absent" ] and
+  when: apt__enabled | bool and (item.data is defined and item.data is truthy) and (item.state | d("present")) not in [ "absent" ] and
         not (item.apt_key | d(False)) | bool
   tags: [ 'role::apt:keys' ]
 
@@ -146,7 +146,7 @@
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   register: apt__register_deb822_repositories
-  when: (apt__enabled|bool and item.uris | d() and item.repo is undefined and
+  when: (apt__enabled|bool and item.uris is defined and item.uris is truthy and item.repo is undefined and
          (item.state | d("present")) not in [ "divert", "ignore", "init" ])
 
 - name: Remove APT auth configuration if requested

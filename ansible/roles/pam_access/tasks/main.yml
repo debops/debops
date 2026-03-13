@@ -37,7 +37,7 @@
   loop: '{{ pam_access__combined_rules | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"access_conf": pam_access__var_access_conf, "state": item.state | d("present")} }}'
-  when: pam_access__enabled | bool and item.name | d() and item.options | d() and
+  when: pam_access__enabled | bool and item.name is defined and item.name is truthy and item.options is defined and item.options is truthy and
         item.state | d('present') not in ['absent', 'init', 'ignore']
 
 - name: Remove PAM access control files
@@ -50,8 +50,8 @@
   loop: '{{ pam_access__combined_rules | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"access_conf": pam_access__var_access_conf, "state": item.state | d("present")} }}'
-  when: pam_access__enabled | bool and item.name | d() and
-        not item.divert | d(False) | bool and
+  when: pam_access__enabled | bool and item.name is defined and item.name is truthy and
+        not (item.divert is defined and item.divert is truthy) | bool and
         item.state | d('present') == 'absent'
 
 - name: Make sure that Ansible local facts directory exists

@@ -158,7 +158,8 @@
     system: '{{ item.system | d(True) }}'
   loop: '{{ q("flattened", (keyring__dependent_gpg_keys)) }}'
   when: keyring__enabled | bool and (item.create_user | d(True)) | bool and
-        item.user | d() and item.state | d('present') not in ['absent', 'ignore']
+        item.user is defined and item.user is truthy and
+        item.state | d('present') not in ['absent', 'ignore']
 
 - name: Ensure that required UNIX accounts exist
   ansible.builtin.user:
@@ -169,7 +170,8 @@
     state: 'present'
   loop: '{{ q("flattened", (keyring__dependent_gpg_keys)) }}'
   when: keyring__enabled | bool and (item.create_user | d(True)) | bool and
-        item.user | d() and item.state | d('present') not in ['absent', 'ignore']
+        item.user is defined and item.user is truthy and
+        item.state | d('present') not in ['absent', 'ignore']
 
 - name: Gather information about existing UNIX accounts
   ansible.builtin.getent:

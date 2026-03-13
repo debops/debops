@@ -58,9 +58,9 @@
                            + atd_group_allow
                            + atd_host_allow) }}'
   when: (atd_enabled | bool and
-         (atd_default_allow | d() or atd_allow | d() or
-          atd_group_allow | d() or atd_host_allow | d()) and
-          item | d())
+         (atd_default_allow is truthy or atd_allow is truthy or
+          atd_group_allow is truthy or atd_host_allow is truthy) and
+          item is truthy)
   tags: [ 'role::atd:users' ]
 
 - name: Remove /etc/at.allow if list is empty
