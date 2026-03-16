@@ -31,6 +31,8 @@
   when:
     - item.0.state | d('present') not in ['absent', 'ignore']
     - item.1.split(":") | first is match("/")
+    - item.1.split(":") | first not in
+      (item.0.config_files | d([]) | map(attribute="dest") | list)
   tags: [ 'role::docker_service:config' ]
 
 - name: Create directories for config files

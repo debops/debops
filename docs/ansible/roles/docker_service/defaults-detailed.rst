@@ -192,7 +192,10 @@ parameters:
 ``volumes``
   Optional, list of strings. Volume mounts in standard Docker format:
   ``host_path:container_path[:options]``. The role automatically creates host
-  directories for bind mounts (paths starting with ``/``).
+  directories for bind mounts (paths starting with ``/``). When a volume
+  source path matches a ``config_files`` destination, the directory creation
+  is skipped -- the ``config_files`` tasks create the parent directory and
+  the file itself.
 
 ``tmpfs``
   Optional, list of strings. Tmpfs mounts inside the container.
