@@ -94,6 +94,16 @@
     - docker_service__config_dir_service.config_dir.src | d()
   tags: [ 'role::docker_service:config' ]
 
+- name: Create Docker networks referenced by services
+  community.docker.docker_network:
+    name: '{{ item }}'
+    state: 'present'
+  loop: '{{ docker_service__combined_services | d([])
+            | selectattr("networks", "defined")
+            | map(attribute="networks") | flatten
+            | map(attribute="name") | unique | list }}'
+  tags: [ 'role::docker_service:containers' ]
+
 - name: Pull Docker images
   community.docker.docker_image:
     name: '{{ item.image }}'

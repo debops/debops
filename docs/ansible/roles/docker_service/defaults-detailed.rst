@@ -81,14 +81,26 @@ Service with environment variables, secrets and resource limits:
          proxy_options: |
            proxy_buffering off;
 
-Service with inline config file (``content`` mode):
+Service with inline config file (``content`` mode) and inter-container
+networking. Both ``vmauth`` and ``victoriametrics`` share a user-defined
+Docker network so that ``vmauth`` can reach the backend by container name:
 
 .. code-block:: yaml
 
    docker_service__host_services:
 
+     - name: 'victoriametrics'
+       image: 'victoriametrics/victoria-metrics:v1.93.0'
+       networks:
+         - name: 'victoriametrics'
+       volumes:
+         - '/srv/docker/victoriametrics/data:/victoria-metrics-data'
+       command: '-retentionPeriod=12 -selfScrapeInterval=10s'
+
      - name: 'vmauth'
        image: 'victoriametrics/vmauth:latest'
+       networks:
+         - name: 'victoriametrics'
        config_files:
          - dest: '/srv/docker/vmauth/auth.yml'
            content: |
@@ -96,7 +108,7 @@ Service with inline config file (``content`` mode):
                - username: admin
                  password: "{{ lookup('password', secret
                                + '/docker_service/vmauth/admin_password') }}"
-                 url_prefix: "http://127.0.0.1:8428/"
+                 url_prefix: "http://victoriametrics:8428/"
            mode: '0640'
        volumes:
          - '/srv/docker/vmauth/auth.yml:/etc/vmauth/auth.yml:ro'
@@ -181,7 +193,10 @@ parameters:
 
 ``networks``
   Optional, list of dictionaries. Docker networks to connect the container to.
-  Each entry must have a ``name`` key with the network name.
+  Each entry must have a ``name`` key with the network name. Referenced
+  networks are automatically created by the role if they do not exist.
+  Containers on the same user-defined network can communicate using container
+  names as hostnames (DNS-based service discovery).
 
 ``dns``
   Optional, list of strings. Custom DNS servers for the container.
