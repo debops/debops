@@ -8,8 +8,10 @@
 {%     if svc.postgresql is defined %}
 {%       set pg = svc.postgresql %}
 - name: '{{ pg.user }}'
+{% if pg.user != pg.database %}
 - name: '{{ pg.database }}'
   flags: [ 'NOLOGIN' ]
+{% endif %}
 {%     endif %}
 {%   endif %}
 {% endfor %}

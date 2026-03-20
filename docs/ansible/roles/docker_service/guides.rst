@@ -30,15 +30,29 @@ Bugsink
 
 `Bugsink <https://www.bugsink.com/>`_ is a Sentry-compatible error tracking
 server. This example deploys Bugsink with a PostgreSQL database managed by the
-:ref:`debops.postgresql_server` role on the same host.
+:ref:`debops.postgresql_server` role on the same host, connecting through a
+UNIX socket.
 
 Prerequisites
 ~~~~~~~~~~~~~
 
-The host must be a member of the ``[debops_service_postgresql_server]``
-inventory group so that PostgreSQL is installed and configured before the
-``docker_service`` playbook runs. The ``postgresql`` block in the service
-definition will automatically create the database and user.
+The host must be a member of the following inventory groups:
+
+.. code-block:: none
+
+   [debops_service_postgresql_server]
+   bugsink.example.com
+
+   [debops_service_docker_server]
+   bugsink.example.com
+
+   [debops_service_docker_service]
+   bugsink.example.com
+
+The ``[debops_service_postgresql_server]`` group ensures that PostgreSQL is
+installed before the ``docker_service`` playbook runs. The ``postgresql`` block
+in the service definition will automatically create the database and user
+through the :ref:`debops.postgresql` role.
 
 Service definition
 ~~~~~~~~~~~~~~~~~~
@@ -46,44 +60,69 @@ Service definition
 .. code-block:: yaml
 
    # ansible/inventory/host_vars/bugsink.example.com/docker_service.yml
+   ---
+
+   bugsink_secret_key: "{{ lookup('password', secret
+                            + '/bugsink/secret_key
+                               length=50 chars=ascii_letters,digits') }}"
+
+   bugsink__postgresql_password: "{{ lookup('password', secret
+                                     + '/postgresql/'
+                                     + postgresql__password_hostname + '/'
+                                     + postgresql__port
+                                     + '/credentials/bugsink/password
+                                        length=' + postgresql__password_length
+                                     + ' chars=' + postgresql__password_characters) }}"
+
    docker_service__host_services:
 
      - name: 'bugsink'
        image: 'bugsink/bugsink:latest'
+       restart_policy: 'unless-stopped'
        ports:
          - '127.0.0.1:8000:8000'
        volumes:
          - '/srv/docker/bugsink/data:/data'
-       env:
-         SECRET_KEY: '{{ lookup("password", secret
-                         + "/docker_service/bugsink/secret_key
-                            chars=ascii_letters,digits length=50") }}'
-         DATABASE_URL: 'postgresql:///bugsink?host=/var/run/postgresql'
-         PORT: '8000'
-         CREATE_SUPERUSER: 'admin:{{ lookup("password", secret
-                                     + "/docker_service/bugsink/admin_password") }}'
+         - '/var/run/postgresql:/var/run/postgresql:ro'
        postgresql:
          database: 'bugsink'
          user: 'bugsink'
+       env:
+         SECRET_KEY: '{{ bugsink_secret_key }}'
+         DATABASE_URL: 'postgresql://bugsink:{{ bugsink__postgresql_password }}@/bugsink?host=/var/run/postgresql'
+         PORT: '8000'
+         BEHIND_HTTPS_PROXY: 'True'
        nginx:
          enabled: true
          fqdn: 'bugsink.example.com'
          port: '8000'
+
+The ``SECRET_KEY`` and PostgreSQL password are auto-generated and stored in the
+DebOps :file:`secret/` directory. The ``bugsink__postgresql_password`` lookup
+uses the same path as the :ref:`debops.postgresql` role, ensuring the password
+in ``DATABASE_URL`` matches the one set in the database.
+
+The PostgreSQL UNIX socket directory is mounted read-only into the container.
+The ``DATABASE_URL`` uses the ``host=/var/run/postgresql`` query parameter to
+connect through the socket instead of TCP.
+
+Creating the initial superuser
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+After the first deployment, create an admin account by running:
+
+.. code-block:: console
+
+   $ docker exec -it bugsink bugsink-manage createsuperuser
+
+The ``DATABASE_URL`` environment variable is already set in the container, so
+the management command will connect to the correct database automatically.
 
 .. note::
 
    Bugsink does not currently provide an official health check endpoint
    (`issue #98 <https://github.com/bugsink/bugsink/issues/98>`_). A basic
    HTTP check can be used as a workaround once the endpoint is available.
-
-If the container connects to PostgreSQL over a UNIX socket, mount the socket
-directory as a volume:
-
-.. code-block:: yaml
-
-       volumes:
-         - '/srv/docker/bugsink/data:/data'
-         - '/var/run/postgresql:/var/run/postgresql:ro'
 
 
 .. _docker_service__guide_grafana:

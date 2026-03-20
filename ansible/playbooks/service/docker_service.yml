@@ -15,6 +15,11 @@
 
   pre_tasks:
 
+    - name: Define variables used by Ansible roles
+      ansible.builtin.import_role:
+        name: 'secret'
+      tags: [ 'role::secret', 'role::docker_service' ]
+
     - name: Build docker_service nginx configuration
       ansible.builtin.import_role:
         name: 'docker_service'
