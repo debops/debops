@@ -15,7 +15,7 @@
   ansible.builtin.apt:
     name: '{{ docker_service__python__dependent_packages3 | flatten }}'
     state: 'present'
-    install_recommends: False
+    install_recommends: false
   register: docker_service__register_packages
   until: docker_service__register_packages is succeeded
 
@@ -33,7 +33,7 @@
     - item.1.split(":") | first is match("/")
     - item.1.split(":") | first not in
       (item.0.config_files | d([]) | map(attribute="dest") | list)
-  tags: [ 'role::docker_service:config' ]
+  tags: ['role::docker_service:config']
 
 - name: Create directories for config files
   ansible.builtin.file:
@@ -45,7 +45,7 @@
   loop_control:
     label: '{{ item.0.name }}: {{ item.1.dest }}'
   when: item.0.state | d('present') not in ['absent', 'ignore']
-  tags: [ 'role::docker_service:config' ]
+  tags: ['role::docker_service:config']
 
 - name: Generate config files with inline content
   ansible.builtin.copy:
@@ -62,7 +62,7 @@
     - item.0.state | d('present') not in ['absent', 'ignore']
     - item.1.content is defined
   register: docker_service__register_config_content
-  tags: [ 'role::docker_service:config' ]
+  tags: ['role::docker_service:config']
 
 - name: Generate config files from templates
   ansible.builtin.template:
@@ -79,7 +79,7 @@
     - item.0.state | d('present') not in ['absent', 'ignore']
     - item.1.src is defined
   register: docker_service__register_config_template
-  tags: [ 'role::docker_service:config' ]
+  tags: ['role::docker_service:config']
 
 - name: Manage config directory trees
   ansible.builtin.include_tasks:
@@ -92,7 +92,7 @@
   when:
     - docker_service__config_dir_service.state | d('present') not in ['absent', 'ignore']
     - docker_service__config_dir_service.config_dir.src | d()
-  tags: [ 'role::docker_service:config' ]
+  tags: ['role::docker_service:config']
 
 - name: Create Docker networks referenced by services
   community.docker.docker_network:
@@ -102,7 +102,7 @@
             | selectattr("networks", "defined")
             | map(attribute="networks") | flatten
             | map(attribute="name") | unique | list }}'
-  tags: [ 'role::docker_service:containers' ]
+  tags: ['role::docker_service:containers']
 
 - name: Pull Docker images
   community.docker.docker_image:
@@ -115,7 +115,7 @@
   when:
     - item.state | d('present') not in ['absent', 'ignore']
     - item.pull | d(docker_service__pull) | bool
-  tags: [ 'role::docker_service:containers' ]
+  tags: ['role::docker_service:containers']
 
 - name: Manage Docker containers
   community.docker.docker_container:
@@ -149,9 +149,9 @@
   loop_control:
     label: '{{ item.name }}'
   when: item.state | d('present') != 'ignore'
-  tags: [ 'role::docker_service:containers' ]
+  tags: ['role::docker_service:containers']
 
-- name: Restart containers with changed config files (content/template)
+- name: Restart containers with changed config files (content/template)  # noqa: no-handler
   community.docker.docker_container:
     name: '{{ item.item.0.name }}'
     state: 'started'
@@ -161,7 +161,7 @@
   loop_control:
     label: '{{ item.item.0.name | d("unknown") }}'
   when: item is changed
-  tags: [ 'role::docker_service:config' ]
+  tags: ['role::docker_service:config']
 
 - name: Restart containers with changed config directory files
   community.docker.docker_container:
@@ -169,7 +169,7 @@
     state: 'started'
     restart: true
   loop: '{{ docker_service__restart_containers | d([]) | unique }}'
-  tags: [ 'role::docker_service:config' ]
+  tags: ['role::docker_service:config']
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
@@ -182,5 +182,5 @@
     src: 'etc/ansible/facts.d/docker_service.fact.j2'
     dest: '/etc/ansible/facts.d/docker_service.fact'
     mode: '0755'
-  notify: [ 'Refresh host facts' ]
-  tags: [ 'meta::facts' ]
+  notify: ['Refresh host facts']
+  tags: ['meta::facts']
