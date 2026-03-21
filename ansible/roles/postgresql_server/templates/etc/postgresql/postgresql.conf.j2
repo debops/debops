@@ -76,7 +76,9 @@ password_encryption = {{ item.password_encryption | d('scram-sha-256') }}
 {% else %}
 password_encryption = {{ item.password_encryption | d('on') }}
 {% endif %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('17','<') %}
 db_user_namespace = {{ item.db_user_namespace | d('off') }}
+{% endif %}
 
 
 # - Kerberos and GSSAPI -
