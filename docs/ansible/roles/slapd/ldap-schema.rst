@@ -33,22 +33,13 @@ additive. You can define different sets of schemas on different Ansible
 inventory levels.
 
 The schema files need to already be present on the remote host to be imported
-by the role. The default schemas included by the role are installed via APT
-packages, you can see the available set of schemas by running the command:
-
-.. code-block:: console
-
-   apt-cache search fusiondirectory plugin schema
-
-The Debian/Ubuntu archive also contains a smaller set of APT packages for the
-GOsa² application which contain LDAP schemas, however the ``gosa-*`` and
-``fusiondirectory-*`` packages conflict with each other.
+by the role.
 
 You can use the :ref:`debops.resources` role to copy custom ``*.schema`` or
 ``*.ldif`` files to the remote host before importing them. The ``*.ldif`` files
 can be imported automatically, but the ``*.schema`` import relies on the
-:command:`fusiondirectory-insert-schema` command which is available in the
-``fusiondirectory-schema`` APT package.
+:command:`schema2ldif` tool which is available from the APT package with the
+same name.
 
 If you are using clustered OpenLDAP, for example in N-Way Multi Master
 replication mode, you should import the schemas only on one node at a time.
@@ -96,30 +87,15 @@ the :command:`slapd` package installation and removing it from the already
 initialized directory can be difficult.
 
 Fortunately, there's a clean way to avoid this issue and enable the
-``rfc2307bis`` schema on :command:`slapd` installation. The Debian Archive
-contains two packages that provide it: `fusiondirectory-schema`__ and
-`gosa-schema`__. Both packages conflict with each other, therefore only one can
-be installed at a time. In the ``debops.slapd`` role, the
-``fusiondirectory-schema`` has been selected because FusionDirectory project
-seems to be an actively maintained fork of GOsa² and will be more likely to be
-selected for installation; another reason is more
-``fusiondirectory-plugin-*-schema`` APT packages available in Debian.
-
-The role still works fine with ``gosa-schema`` APT package installed, however
-this will not be detected automatically; the user should redefine the
-:envvar:`slapd__rfc2307bis_packages` list the Ansible inventory to select this
-APT package.
-
-.. __: https://packages.debian.org/stable/fusiondirectory-schema
-.. __: https://packages.debian.org/stable/gosa-schema
-
+``rfc2307bis`` schema on :command:`slapd` installation.
 Before the installation of the :command:`slapd` APT package, the
-``debops.slapd`` role will install the ``fusiondirectory-schema`` package,
-divert the :file:`/etc/ldap/schema/nis.(ldif,schema)` files aside using the
-:command:`dpkg-divert` tool and create a symlink to the
-:file:`/etc/ldap/fusiondirectory/rfc2307bis.(ldif,schema)` files in their
-place. With this modification, when the :command:`slapd` APT package is
-installed, it will automatically include the modified ``rfc2307bis`` schema.
+``debops.slapd`` role will divert the
+:file:`/etc/ldap/schema/nis.(ldif,schema)` files using the
+:command:`dpkg-divert` tool, install the ``rfc2307bis`` files to the
+:envvar:`slapd__debops_schema_path` directory and create symlinks where the
+original ``nis`` schema used to be. With this modification, when the
+:command:`slapd` APT package is installed, it will automatically include the
+modified ``rfc2307bis`` schema.
 
 The automatic installation of the ``rfc2307bis`` schema can be disabled by
 setting the :envvar:`slapd__rfc2307bis_enabled` boolean variable to ``False``.
@@ -318,12 +294,6 @@ in higher education. The schema were developed `by the Internet2 project`__ and
 are commonly used in academic institutions.
 
 .. __: https://www.internet2.edu/products-services/trust-identity/eduperson-eduorg/
-
-The schema is available in Debian in the
-``fusiondirectory-plugin-supann-schema`` APT package, however that version is
-slightly outdated and does not include object and attribute descriptions.
-Because of that, DebOps contains its own copy of the schema, cleaned up and
-updated, which will be imported by default to OpenLDAP directory server.
 
 The version of the schema included in DebOps has been extended with additional
 attributes for the ``eduPerson`` and ``eduOrg`` Object Classes not present in
