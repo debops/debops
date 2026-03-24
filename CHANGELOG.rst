@@ -23,6 +23,15 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v3.2.0...master
 
+Added
+~~~~~
+
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- Add support for post-quantum key exchange algorithms in OpenSSH v9.0+. The
+  role will enable a specific set of key exchange algorithms where available.
+
 Changed
 ~~~~~~~
 
