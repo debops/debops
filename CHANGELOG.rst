@@ -23,6 +23,16 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v3.2.0...master
 
+Changed
+~~~~~~~
+
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The role should now support OpenLDAP v2.6 available on Debian Trixie. Upgrade
+  path of existing OpenLDAP servers managed by DebOps is not tested yet, check
+  the changes in a test environment.
+
 
 `debops v3.3.0`_ - 2026-03-13
 -----------------------------
