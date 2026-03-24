@@ -51,6 +51,12 @@ General
 - The :file:`lxc_ssh.py` Ansible connection plugin included in DebOps should
   now work correctly on Python v3.13.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- Fixed deprecation warning that converted a ``NoneType`` result to ``False``
+  in the raw APT update and installation task.
+
 
 `debops v3.1.7`_ - 2026-03-13
 -----------------------------
