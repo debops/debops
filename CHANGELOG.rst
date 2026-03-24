@@ -57,6 +57,13 @@ General
 - Fixed deprecation warning that converted a ``NoneType`` result to ``False``
   in the raw APT update and installation task.
 
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- Fixed the code used to detect the installed OpenSSH version that selected the
+  preferred key exchange, cipher and MAC algorithms. OpenSSH v10.x+ versions
+  should now be detected correctly.
+
 
 `debops v3.1.7`_ - 2026-03-13
 -----------------------------
