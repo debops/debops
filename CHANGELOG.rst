@@ -42,6 +42,15 @@ Changed
   path of existing OpenLDAP servers managed by DebOps is not tested yet, check
   the changes in a test environment.
 
+Fixed
+~~~~~
+
+General
+'''''''
+
+- The :file:`lxc_ssh.py` Ansible connection plugin included in DebOps should
+  now work correctly on Python v3.13.
+
 
 `debops v3.2.6`_ - 2026-03-13
 -----------------------------
