@@ -1,0 +1,15 @@
+#!/bin/sh
+# Copyright (C) 2026 seven-beep <ebn@entreparentheses.xyz>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+#
+# {{ ansible_managed }}
+#
+# See: https://github.com/liske/needrestart/issues/236
+
+# If nagios check for needrestart is not OK and
+# /var/run/reboot-required is not already set,
+# create /var/run/reboot-required
+if [ ! -f /var/run/reboot-required ]; then
+    needrestart -p 2>&1 || exec touch /var/run/reboot-required
+fi

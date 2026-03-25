@@ -1,0 +1,203 @@
+---
+# .. Copyright (C) 2026 seven-beep <ebn@entreparentheses.xyz>
+# .. Copyright (C) 2026 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. needrestart__ref_defaults:
+
+# needresart default variables
+# ============================
+
+# .. contents:: Sections
+#    :local:
+
+# General configuration, installation
+# -----------------------------------
+
+# .. envvar:: needrestart__enabled
+#
+# Enable or disable support for automatic restarts programs and
+# notifications. Disabling this options remove all configurations done by this
+# role, it does not uninstall existing :program:`needrestart`.
+needrestart__enabled: true
+
+# .. envvar:: needrestart__base_packages
+#
+# List of base APT packages which will be installed by the role.
+needrestart__base_packages: [ 'needrestart' ]
+
+# .. envvar:: needrestart__packages
+#
+# List of additional APT packages which will be installed by the role.
+needrestart__packages: []
+
+# Main :program:`needrestart` configuration
+# -----------------------------------------
+
+# These variables define the contents of the
+# :file:`/etc/needrestart/conf.d/*.conf` which controls the
+# :program:``needrestart`` operation.
+#
+# See :ref:`needrestart__ref_configuration` for more details.
+
+# .. envvar:: needrestart__automatic
+#
+# Enable or disable automatic service restart on package upgrades.
+needrestart__automatic: false
+
+# .. envvar:: needrestart__default_configuration
+#
+# The :program:`needrestart` configuration defined by the role.
+needrestart__default_configuration:
+  # Keeping legacy name deployed from debops.apt_install
+  50-no-kernel-hints.conf:
+    by_role: 'debops.needrestart'
+    comment: |
+      Kernel upgrade hints are disabled to allow for non-interactive APT package
+      installs. Without this, non-interactive APT operations, for example performed
+      by Ansible, will hang indefinitely - waiting for user interaction.
+
+      See:
+        https://github.com/liske/needrestart/issues/67
+        https://github.com/liske/needrestart/issues/241
+    content: '$nrconf{kernelhints} = 0;'
+
+  50-needrestart-automatic-restart.conf:
+    by_role: 'debops.needrestart'
+    comment: |
+      Enable automatic daemon restarts on non-interactive upgrades.
+    content: '$nrconf{restart} = "a";'
+    state: >-
+      {{ "present" if needrestart__automatic is true else "absent" }}
+
+# .. envvar:: needrestart__configuration
+#
+# Dict for specifying the :program:`needrestart` configuration defined on all
+# hosts in the Ansible inventory.
+needrestart__configuration: []
+
+# .. envvar:: needrestart__group_configuration
+#
+# Dict for specifying the :program:`needrestart` configuration defined on hosts
+# in a specific Ansible inventory group.
+needrestart__group_configuration: []
+
+# .. envvar:: needrestart__host_configuration
+#
+# Dict for specifying the :program:`needrestart` configuration defined on
+# specific hosts in the Ansible inventory.
+needrestart__host_configuration: []
+
+# .. envvar:: needrestart__dependent_configuration
+#
+# Dict for specifying the :program:`needrestart` configuration used from a role
+# dependency in :file:`role/meta/main.yml` or in a playbook.
+needrestart__dependent_configuration: []
+
+# .. envvar:: needrestart__combined_configuration
+#
+# The variable which combines all other :program:`needrestart` configuration
+# variables and is used in the role tasks and templates.
+needrestart__combined_configuration: >-
+  {{ needrestart__default_configuration
+   | combine(needrestart__configuration)
+   | combine(needrestart__host_configuration)
+   | combine(needrestart__group_configuration)
+   | combine(needrestart__dependent_configuration) }}
+
+# Apt configurations
+# ------------------
+#
+# These variables control the apt configurations installed by this role.
+#
+# .. envvar:: needrestart__no_ubuntu_mode
+#
+# Starting from `Ubuntu 24.04`__, the :program:``needrestart`` deviates from
+# Debian by implementing a new flag, pushed in
+# :file:``/etc/apt/apt.conf.d/99needrestart``, enabling automatic daemon
+# restarts only when unattended.
+#
+#  .. __:  https://discourse.ubuntu.com/t/needrestart-changes-in-ubuntu-24-04-service-restarts/44671
+#
+# This variable divert this Ubuntu apt configuration to reinstall the same as
+# the Debian one.
+needrestart__no_ubuntu_mode: false
+
+# .. envvar:: needrestart__require_reboot
+#
+# This variable install an APT hook to require reboot via
+# :file:`/var/run/reboot-required` if a daemon needs restart.
+needrestart__require_reboot: false
+
+# Unattended-upgrades plugin
+# --------------------------
+#
+# Support for plugins starts at `unattended-upgrades v2.12`, starting at Ubuntu
+# 24.04 and Debian 13.
+#
+# .. envvar:: needrestart__uu_plugin_enabled
+#
+# This variable control the installation of an unattended-upgrades plugin to
+# limit the number of times :program:`needrestart` is called while performing
+# unattended atomic upgrades.
+#
+# For more information, see `Debian#1100685`__.
+#
+# .. __: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1100685
+#
+# Notice also that timing errors may happen when restarting a lot of services,
+# for more information see `Ubuntu#2051766`__.
+#
+# .. __: https://bugs.launchpad.net/ubuntu/+source/needrestart/+bug/2051766
+needrestart__uu_plugin_enabled: >-
+  {{ true if ( ( ansible_facts.distribution == "Debian"
+                 and ansible_facts.distribution_major_version is version_compare('13', '>=') )
+            or ( ansible_facts.distribution == "Ubuntu"
+                 and ansible_facts.distribution_major_version is version_compare('24', '>=') ) )
+          and ansible_local.unattended_upgrades.enabled is defined
+          and ansible_local.unattended_upgrades.enabled is truthy
+          else false }}
+
+# Restart scripts
+# ---------------
+#
+# These variables control the restart scripts which are used for services
+# requiring a special procedure for restarting instead of systemctl/service
+# command.
+#
+# See :ref:`needrestart__ref_restart_scripts` for more details.
+
+# .. envvar:: needrestart__restart_scripts
+#
+# The list of the restart scripts which should be present on all hosts in the
+# Ansible inventory.
+needrestart__restart_scripts: []
+
+# .. envvar:: needrestart__restart_group_scripts
+#
+# The list of the restart scripts which should be present on hosts in a specific
+# Ansible inventory group.
+needrestart__group_restart_scripts: []
+
+# .. envvar:: needrestart__restart_host_scripts
+#
+# The list of the restart scripts which should be present on specific hosts in the
+# Ansible inventory.
+needrestart__host_restart_scripts: []
+
+# .. envvar:: needrestart__dependent_restart_scripts [[[
+#
+# The list of the restart scripts which should be present on specific hosts in
+# the Ansible inventory.  This variable is meant to be used from a role
+# dependency in :file:`role/meta/main.yml` or in a playbook.
+needrestart__dependent_restart_scripts: []
+
+# .. envvar:: needrestart__restart_combined_scripts
+#
+# The list which combines configuration of the restart scripts which is passed
+# to the Ansible tasks.
+needrestart__combined_restart_scripts: >-
+  {{ needrestart__restart_scripts
+   + needrestart__group_restart_scripts
+   + needrestart__host_restart_scripts
+   + needrestart__dependent_restart_scripts }}
