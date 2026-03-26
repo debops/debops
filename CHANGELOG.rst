@@ -64,6 +64,13 @@ General
   preferred key exchange, cipher and MAC algorithms. OpenSSH v10.x+ versions
   should now be detected correctly.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Don't include the content of the Subject field in the list of domains in
+  a certificate request. This fixes potential issues with the
+  :command:`certbot` command setting wrong certificate name and signature.
+
 
 `debops v3.2.6`_ - 2026-03-13
 -----------------------------
