@@ -71,6 +71,10 @@ General
   a certificate request. This fixes potential issues with the
   :command:`certbot` command setting wrong certificate name and signature.
 
+- In the :command:`pki-realm` script, ensure that certain :command:`certbot`
+  command options and their arguments are separated with a spaca. This fixes an
+  issue with ACME DNS-01 challenge not being processed correctly.
+
 
 `debops v3.1.7`_ - 2026-03-13
 -----------------------------
