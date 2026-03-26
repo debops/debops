@@ -1202,21 +1202,14 @@ request_acme_dns_certificate() {
         email="-m${config['acme_contacts']}"
     fi
 
-    local all_dns
-    local req_subjects=${config['subject']:-${config['pki_default_subject']:-}}
-    # shellcheck disable=SC2001
-    req_subjects=$(echo "${req_subjects}" | sed 's/^[Cc][Nn]=//')
-
     local req_domains="${config['domains']:-${config['pki_default_domain']}}"
     local req_subdomains="${config['subdomains']:-${config['pki_default_subdomains']:-}}"
-
-    read -r -a all_dns <<< "$(echo "${req_subjects}" | tr "/" " ")"
 
     local domains
     read -r -a domains <<< "$(echo "${req_domains}" | tr "/" " ")"
 
     # shellcheck disable=SC2206
-    all_dns+=( ${domains[*]:-} )
+    local all_dns=( ${domains[*]:-} )
 
     local subdomains
     read -r -a subdomains <<< "$(echo "${req_subdomains}" | tr "/" " ")"
@@ -1281,21 +1274,15 @@ request_acme_manual_certificate() {
         email="-m${config['acme_contacts']}"
     fi
 
-    local all_dns
-    local req_subjects=${config['subject']:-${config['pki_default_subject']:-}}
-    # shellcheck disable=SC2001
-    req_subjects=$(echo "${req_subjects}" | sed 's/^[Cc][Nn]=//')
 
     local req_domains="${config['domains']:-${config['pki_default_domain']}}"
     local req_subdomains="${config['subdomains']:-${config['pki_default_subdomains']:-}}"
-
-    read -r -a all_dns <<< "$(echo "${req_subjects}" | tr "/" " ")"
 
     local domains
     read -r -a domains <<< "$(echo "${req_domains}" | tr "/" " ")"
 
     # shellcheck disable=SC2206
-    all_dns+=( ${domains[*]:-} )
+    local all_dns=( ${domains[*]:-} )
 
     local subdomains
     read -r -a subdomains <<< "$(echo "${req_subdomains}" | tr "/" " ")"
