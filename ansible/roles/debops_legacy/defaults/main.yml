@@ -202,6 +202,12 @@ debops_legacy__remove_default_files:
                if (ansible_local | d() and ansible_local.ferm is defined)
                else "ignore" }}'
 
+  # Old needrestart configuration defined by 'debops.apt_install' role
+  - name: '/etc/needrestart/conf.d/no-kernel-hints.conf'
+    state: '{{ "absent"
+               if (ansible_local | d() and ansible_local.needrestart is defined)
+               else "ignore" }}'
+
                                                                    # ]]]
 # .. envvar:: debops_legacy__remove_files [[[
 #
