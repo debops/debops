@@ -214,6 +214,14 @@ General interface parameters
   network interfaces other than physical Ethernet interfaces, which will use
   the ``hotplug`` value by default.
 
+``no_auto_down``
+  Optional, boolean. If set to ``True``, the interface will be configured to
+  not be brought down by ``ifdown -a``. Its main use is  to  prevent  an
+  interface  from being  brought  down  during system shutdown time, for
+  example if the root filesystem is a network filesystem and the interface
+  should stay up until the very end. Note that you  can still bring down the
+  interface by specifying the interface name explicitly.
+
 IPv4 and IPv6 configuration parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
