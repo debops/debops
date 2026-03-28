@@ -108,7 +108,7 @@
                        | intersect(getent_group.keys()))
                       if (item.groups is defined or (item.chroot | d()) | bool)
                       else omit }}'
-    append:       '{{ item.append | d(True) }}'
+    append:       '{{ item.append | d(users__groups_append) }}'
     state:        '{{ item.state | d("present") }}'
     create_home:  '{{ item.create_home | d(omit) }}'
   loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
