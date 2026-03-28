@@ -1,0 +1,186 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  ansible.builtin.import_role:
+    name: 'secret'
+
+- name: Install required packages
+  ansible.builtin.apt:
+    name: '{{ docker_service__python__dependent_packages3 | flatten }}'
+    state: 'present'
+    install_recommends: false
+  register: docker_service__register_packages
+  until: docker_service__register_packages is succeeded
+
+- name: Create persistent data directories for bind mounts
+  ansible.builtin.file:
+    path: '{{ item.1.split(":") | first }}'
+    state: 'directory'
+    mode: '0755'
+  loop: '{{ docker_service__combined_services | d([])
+            | subelements("volumes", skip_missing=True) }}'
+  loop_control:
+    label: '{{ item.0.name }}: {{ item.1.split(":") | first }}'
+  when:
+    - item.0.state | d('present') not in ['absent', 'ignore']
+    - item.1.split(":") | first is match("/")
+    - item.1.split(":") | first not in
+      (item.0.config_files | d([]) | map(attribute="dest") | list)
+  tags: ['role::docker_service:config']
+
+- name: Create directories for config files
+  ansible.builtin.file:
+    path: '{{ item.1.dest | dirname }}'
+    state: 'directory'
+    mode: '0755'
+  loop: '{{ docker_service__combined_services | d([])
+            | subelements("config_files", skip_missing=True) }}'
+  loop_control:
+    label: '{{ item.0.name }}: {{ item.1.dest }}'
+  when: item.0.state | d('present') not in ['absent', 'ignore']
+  tags: ['role::docker_service:config']
+
+- name: Generate config files with inline content
+  ansible.builtin.copy:
+    content: '{{ item.1.content }}'
+    dest: '{{ item.1.dest }}'
+    owner: '{{ item.1.owner | d("root") }}'
+    group: '{{ item.1.group | d("root") }}'
+    mode: '{{ item.1.mode | d("0644") }}'
+  loop: '{{ docker_service__combined_services | d([])
+            | subelements("config_files", skip_missing=True) }}'
+  loop_control:
+    label: '{{ item.0.name }}: {{ item.1.dest }}'
+  when:
+    - item.0.state | d('present') not in ['absent', 'ignore']
+    - item.1.content is defined
+  register: docker_service__register_config_content
+  tags: ['role::docker_service:config']
+
+- name: Generate config files from templates
+  ansible.builtin.template:
+    src: '{{ item.1.src }}'
+    dest: '{{ item.1.dest }}'
+    owner: '{{ item.1.owner | d("root") }}'
+    group: '{{ item.1.group | d("root") }}'
+    mode: '{{ item.1.mode | d("0644") }}'
+  loop: '{{ docker_service__combined_services | d([])
+            | subelements("config_files", skip_missing=True) }}'
+  loop_control:
+    label: '{{ item.0.name }}: {{ item.1.dest }}'
+  when:
+    - item.0.state | d('present') not in ['absent', 'ignore']
+    - item.1.src is defined
+  register: docker_service__register_config_template
+  tags: ['role::docker_service:config']
+
+- name: Manage config directory trees
+  ansible.builtin.include_tasks:
+    file: 'manage_config_dir.yml'
+  loop: '{{ docker_service__combined_services | d([])
+            | selectattr("config_dir", "defined") | list }}'
+  loop_control:
+    loop_var: 'docker_service__config_dir_service'
+    label: '{{ docker_service__config_dir_service.name }}'
+  when:
+    - docker_service__config_dir_service.state | d('present') not in ['absent', 'ignore']
+    - docker_service__config_dir_service.config_dir.src | d()
+  tags: ['role::docker_service:config']
+
+- name: Create Docker networks referenced by services
+  community.docker.docker_network:
+    name: '{{ item }}'
+    state: 'present'
+  loop: '{{ docker_service__combined_services | d([])
+            | selectattr("networks", "defined")
+            | map(attribute="networks") | flatten
+            | map(attribute="name") | unique | list }}'
+  tags: ['role::docker_service:containers']
+
+- name: Pull Docker images
+  community.docker.docker_image:
+    name: '{{ item.image }}'
+    source: 'pull'
+    force_source: '{{ item.pull | d(docker_service__pull) | bool }}'
+  loop: '{{ docker_service__combined_services | d([]) }}'
+  loop_control:
+    label: '{{ item.name }}: {{ item.image }}'
+  when:
+    - item.state | d('present') not in ['absent', 'ignore']
+    - item.pull | d(docker_service__pull) | bool
+  tags: ['role::docker_service:containers']
+
+- name: Manage Docker containers
+  community.docker.docker_container:
+    name: '{{ item.name }}'
+    image: '{{ item.image | d(omit) }}'
+    state: '{{ {"present": "started",
+                "stopped": "stopped",
+                "absent": "absent"}[item.state | d("present")] }}'
+    restart_policy: '{{ item.restart_policy
+                        | d(docker_service__restart_policy) }}'
+    command: '{{ item.command | d(omit) }}'
+    entrypoint: '{{ item.entrypoint | d(omit) }}'
+    user: '{{ item.user | d(omit) }}'
+    ports: '{{ item.ports | d(omit) }}'
+    networks: '{{ item.networks | d(omit) }}'
+    dns_servers: '{{ item.dns | d(omit) }}'
+    hostname: '{{ item.hostname | d(omit) }}'
+    volumes: '{{ item.volumes | d(omit) }}'
+    tmpfs: '{{ item.tmpfs | d(omit) }}'
+    env: '{{ item.env | d(omit) }}'
+    memory: '{{ item.memory | d(omit) }}'
+    memory_reservation: '{{ item.memory_reservation | d(omit) }}'
+    cpus: '{{ item.cpus | d(omit) }}'
+    capabilities: '{{ item.capabilities | d(omit) }}'
+    sysctls: '{{ item.sysctls | d(omit) }}'
+    read_only: '{{ item.read_only | d(omit) }}'
+    labels: '{{ item.labels | d(omit) }}'
+    healthcheck: '{{ item.healthcheck | d(omit) }}'
+    pull: false
+  loop: '{{ docker_service__combined_services | d([]) }}'
+  loop_control:
+    label: '{{ item.name }}'
+  when: item.state | d('present') != 'ignore'
+  tags: ['role::docker_service:containers']
+
+- name: Restart containers with changed config files (content/template)  # noqa: no-handler
+  community.docker.docker_container:
+    name: '{{ item.item.0.name }}'
+    state: 'started'
+    restart: true
+  loop: '{{ (docker_service__register_config_content.results | d([])
+             + docker_service__register_config_template.results | d([])) }}'
+  loop_control:
+    label: '{{ item.item.0.name | d("unknown") }}'
+  when: item is changed
+  tags: ['role::docker_service:config']
+
+- name: Restart containers with changed config directory files
+  community.docker.docker_container:
+    name: '{{ item }}'
+    state: 'started'
+    restart: true
+  loop: '{{ docker_service__restart_containers | d([]) | unique }}'
+  tags: ['role::docker_service:config']
+
+- name: Make sure that Ansible local facts directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save docker_service local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/docker_service.fact.j2'
+    dest: '/etc/ansible/facts.d/docker_service.fact'
+    mode: '0755'
+  notify: ['Refresh host facts']
+  tags: ['meta::facts']

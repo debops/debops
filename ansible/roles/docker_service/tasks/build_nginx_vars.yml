@@ -1,0 +1,18 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# This task file is included via pre_tasks in the playbook to build
+# nginx dependent variables before the nginx role runs. The template
+# lookup must execute in the docker_service role context to find
+# the templates in this role's templates/ directory.
+
+- name: Build nginx dependent variables from service definitions
+  ansible.builtin.set_fact:
+    docker_service__nginx__dependent_upstreams: '{{ lookup("template",
+                                                    "lookup/docker_service__nginx_upstreams.j2")
+                                                    | from_yaml }}'
+    docker_service__nginx__dependent_servers: '{{ lookup("template",
+                                                  "lookup/docker_service__nginx_servers.j2")
+                                                  | from_yaml }}'
