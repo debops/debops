@@ -1,0 +1,36 @@
+---
+# Copyright (C) 2025 Marcin Sciborski <marcin@sciborski.com>
+# Copyright (C) 2025 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage Cloudflare Tunnel (cloudflared)
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_service_cloudflared' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  pre_tasks:
+
+    - name: Prepare cloudflared environment
+      ansible.builtin.import_role:
+        name: 'cloudflared'
+        tasks_from: 'main_env'
+      tags: [ 'role::cloudflared', 'role::secret' ]
+
+  roles:
+
+    - role: secret
+      tags: [ 'role::secret', 'role::cloudflared' ]
+      secret_directories:
+        - '{{ cloudflared__secret_directories }}'
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring' ]
+      keyring__dependent_apt_keys:
+        - '{{ cloudflared__keyring__dependent_apt_keys }}'
+
+    - role: cloudflared
+      tags: [ 'role::cloudflared', 'skip::cloudflared' ]
