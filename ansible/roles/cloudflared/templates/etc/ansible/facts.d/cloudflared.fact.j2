@@ -1,0 +1,74 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2025 Marcin Sciborski <marcin@sciborski.com>
+# Copyright (C) 2025 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps
+import subprocess
+import os
+import re
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {}
+output['installed'] = cmd_exists('cloudflared')
+
+try:
+    version_stdout = subprocess.check_output(
+            ["cloudflared", "--version"],
+            stderr=subprocess.STDOUT
+            ).decode('utf-8').strip()
+
+    version_match = re.search(r'(\d+\.\d+\.\d+)', version_stdout)
+    if version_match:
+        output['version'] = version_match.group(1)
+
+except Exception:
+    pass
+
+tunnels = []
+try:
+    units_stdout = subprocess.check_output(
+            ["systemctl", "list-units", "cloudflared@*.service",
+             "--no-legend", "--plain"],
+            stderr=subprocess.STDOUT
+            ).decode('utf-8').strip()
+
+    for line in units_stdout.split('\n'):
+        if line.strip():
+            unit_name = line.split()[0]
+            match = re.search(r'cloudflared@(.+)\.service', unit_name)
+            if match:
+                tunnel_name = match.group(1)
+                active_state = 'unknown'
+                try:
+                    active_state = subprocess.check_output(
+                            ["systemctl", "is-active",
+                             "cloudflared@{}.service".format(tunnel_name)],
+                            stderr=subprocess.STDOUT
+                            ).decode('utf-8').strip()
+                except subprocess.CalledProcessError as e:
+                    active_state = e.output.decode('utf-8').strip()
+
+                tunnels.append({
+                    'name': tunnel_name,
+                    'active': active_state
+                })
+
+except Exception:
+    pass
+
+output['tunnels'] = tunnels
+
+print(dumps(output, sort_keys=True, indent=4))
