@@ -1,0 +1,131 @@
+---
+# Copyright (C) 2025 Marcin Sciborski <marcin@sciborski.com>
+# Copyright (C) 2025 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  ansible.builtin.import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  ansible.builtin.import_role:
+    name: 'secret'
+
+- name: Pre hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "cloudflared/pre_main.yml") }}'
+
+- name: Make sure that Ansible local fact directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save cloudflared local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/cloudflared.fact.j2'
+    dest: '/etc/ansible/facts.d/cloudflared.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Reload Ansible local facts
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Create cloudflared system group
+  ansible.builtin.group:
+    name: '{{ cloudflared__group }}'
+    state: 'present'
+    system: True
+  when: cloudflared__enabled | bool and
+        cloudflared__deploy_state != 'absent'
+
+- name: Create cloudflared system user
+  ansible.builtin.user:
+    name: '{{ cloudflared__user }}'
+    group: '{{ cloudflared__group }}'
+    home: '{{ cloudflared__home }}'
+    shell: '{{ cloudflared__shell }}'
+    system: True
+    create_home: True
+    state: 'present'
+  when: cloudflared__enabled | bool and
+        cloudflared__deploy_state != 'absent'
+
+- name: Install cloudflared packages
+  ansible.builtin.apt:
+    name: '{{ (cloudflared__base_packages + cloudflared__packages) | flatten }}'
+    state: '{{ "present"
+               if (cloudflared__deploy_state != "absent")
+               else "absent" }}'
+    install_recommends: False
+  register: cloudflared__register_packages
+  until: cloudflared__register_packages is succeeded
+  when: cloudflared__enabled | bool
+
+- name: Create cloudflared configuration directory
+  ansible.builtin.file:
+    path: '{{ cloudflared__config_dir }}'
+    state: 'directory'
+    owner: 'root'
+    group: '{{ cloudflared__group }}'
+    mode: '0750'
+  when: cloudflared__enabled | bool and
+        cloudflared__deploy_state != 'absent'
+
+- name: Create cloudflared credentials directory
+  ansible.builtin.file:
+    path: '{{ cloudflared__credentials_dir }}'
+    state: 'directory'
+    owner: '{{ cloudflared__user }}'
+    group: '{{ cloudflared__group }}'
+    mode: '0700'
+  when: cloudflared__enabled | bool and
+        cloudflared__deploy_state != 'absent'
+
+- name: Create cloudflared log directory
+  ansible.builtin.file:
+    path: '{{ cloudflared__log_dir }}'
+    state: 'directory'
+    owner: '{{ cloudflared__user }}'
+    group: '{{ cloudflared__group }}'
+    mode: '0750'
+  when: cloudflared__enabled | bool and
+        cloudflared__deploy_state != 'absent'
+
+- name: Install cloudflared systemd template unit
+  ansible.builtin.template:
+    src: 'etc/systemd/system/cloudflared@.service.j2'
+    dest: '/etc/systemd/system/cloudflared@.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify:
+    - 'Reload service manager'
+    - 'Restart cloudflared tunnels'
+  when: cloudflared__enabled | bool and
+        cloudflared__deploy_state != 'absent'
+
+- name: Remove cloudflared systemd template unit
+  ansible.builtin.file:
+    path: '/etc/systemd/system/cloudflared@.service'
+    state: 'absent'
+  notify: [ 'Reload service manager' ]
+  when: cloudflared__deploy_state == 'absent'
+
+- name: Flush handlers before managing tunnels
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Manage cloudflared tunnel instances
+  ansible.builtin.include_tasks: 'manage_tunnel.yml'
+  loop: '{{ cloudflared__combined_tunnels }}'
+  loop_control:
+    loop_var: 'tunnel'
+    label: '{{ tunnel.name }}'
+  when: cloudflared__enabled | bool
+
+- name: Post hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "cloudflared/post_main.yml") }}'

@@ -269,6 +269,7 @@ Networking
 ----------
 
 - :ref:`debops.avahi`
+- ``debops.cloudflared``
 - :ref:`debops.dhcp_probe`
 - :ref:`debops.dhcpd`
 - :ref:`debops.dhcrelay`
