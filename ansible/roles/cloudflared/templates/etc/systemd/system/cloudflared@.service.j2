@@ -1,0 +1,29 @@
+{# Copyright (C) 2025 Marcin Sciborski <marcin@sciborski.com>
+ # Copyright (C) 2025 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+[Unit]
+Description=Cloudflare Tunnel - %i
+After={{ cloudflared__systemd_after }}
+Wants=network-online.target
+
+[Service]
+Type=notify
+User={{ cloudflared__user }}
+Group={{ cloudflared__group }}
+EnvironmentFile=-{{ cloudflared__config_dir }}/%i.env
+ExecStart=/usr/bin/cloudflared --config {{ cloudflared__config_dir }}/%i.yml tunnel run
+Restart={{ cloudflared__systemd_restart_policy }}
+RestartSec={{ cloudflared__systemd_restart_sec }}
+TimeoutStartSec=0
+LimitNOFILE=65536
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=full
+ReadWritePaths={{ cloudflared__log_dir }}
+
+[Install]
+WantedBy=multi-user.target

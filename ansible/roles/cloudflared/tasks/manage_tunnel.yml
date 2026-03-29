@@ -1,0 +1,92 @@
+---
+# Copyright (C) 2025 Marcin Sciborski <marcin@sciborski.com>
+# Copyright (C) 2025 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Manage a single cloudflared tunnel instance. This file is included from
+# main.yml in a loop over cloudflared__combined_tunnels.
+
+- name: Deploy tunnel '{{ tunnel.name }}' configuration
+  when: tunnel.state | d('present') == 'present'
+  block:
+
+    - name: Deploy tunnel '{{ tunnel.name }}' credentials file
+      ansible.builtin.copy:
+        content: '{{ lookup("file", secret + "/" + cloudflared__secret_base_path
+                     + "/" + tunnel.name + "/credentials.json") }}'
+        dest: '{{ cloudflared__credentials_dir }}/{{ tunnel.name }}.json'
+        owner: '{{ cloudflared__user }}'
+        group: '{{ cloudflared__group }}'
+        mode: '0600'
+      register: cloudflared__register_credentials
+      when: tunnel.mode | d('token') == 'local'
+
+    - name: Deploy tunnel '{{ tunnel.name }}' configuration file
+      ansible.builtin.template:
+        src: 'etc/cloudflared/config.yml.j2'
+        dest: '{{ cloudflared__config_dir }}/{{ tunnel.name }}.yml'
+        owner: 'root'
+        group: '{{ cloudflared__group }}'
+        mode: '0640'
+      register: cloudflared__register_config
+
+    - name: Deploy tunnel '{{ tunnel.name }}' environment file
+      ansible.builtin.template:
+        src: 'etc/cloudflared/tunnel.env.j2'
+        dest: '{{ cloudflared__config_dir }}/{{ tunnel.name }}.env'
+        owner: 'root'
+        group: '{{ cloudflared__group }}'
+        mode: '0640'
+      register: cloudflared__register_env
+      when: tunnel.mode | d('token') == 'token'
+
+    - name: Remove tunnel '{{ tunnel.name }}' environment file when not needed
+      ansible.builtin.file:
+        path: '{{ cloudflared__config_dir }}/{{ tunnel.name }}.env'
+        state: 'absent'
+      when: tunnel.mode | d('token') != 'token'
+
+    - name: Enable tunnel '{{ tunnel.name }}'
+      ansible.builtin.systemd:
+        name: 'cloudflared@{{ tunnel.name }}.service'
+        enabled: True
+        daemon_reload: True
+
+    - name: Restart tunnel '{{ tunnel.name }}' if configuration changed
+      ansible.builtin.systemd:  # noqa no-handler
+        name: 'cloudflared@{{ tunnel.name }}.service'
+        state: 'restarted'
+      when: (cloudflared__register_credentials is changed) or
+            (cloudflared__register_config is changed) or
+            (cloudflared__register_env is changed)
+
+    - name: Ensure tunnel '{{ tunnel.name }}' is started
+      ansible.builtin.systemd:
+        name: 'cloudflared@{{ tunnel.name }}.service'
+        state: 'started'
+
+- name: Remove tunnel '{{ tunnel.name }}' configuration
+  when: tunnel.state | d('present') == 'absent'
+  block:
+
+    - name: Stop and disable tunnel '{{ tunnel.name }}'
+      ansible.builtin.systemd:
+        name: 'cloudflared@{{ tunnel.name }}.service'
+        enabled: False
+        state: 'stopped'
+      failed_when: False
+
+    - name: Remove tunnel '{{ tunnel.name }}' configuration file
+      ansible.builtin.file:
+        path: '{{ cloudflared__config_dir }}/{{ tunnel.name }}.yml'
+        state: 'absent'
+
+    - name: Remove tunnel '{{ tunnel.name }}' environment file
+      ansible.builtin.file:
+        path: '{{ cloudflared__config_dir }}/{{ tunnel.name }}.env'
+        state: 'absent'
+
+    - name: Remove tunnel '{{ tunnel.name }}' credentials file
+      ansible.builtin.file:
+        path: '{{ cloudflared__credentials_dir }}/{{ tunnel.name }}.json'
+        state: 'absent'
