@@ -37,6 +37,15 @@
     delete: True
   when: machine__enabled | bool
 
+- name: Add/remove diversion of /etc/issue.net
+  debops.debops.dpkg_divert:
+    path: '/etc/issue.net'
+    state: '{{ "present"
+               if machine__etc_issue_net_state | d("present") != "absent"
+               else "absent" }}'
+    delete: True
+  when: machine__enabled | bool
+
 - name: Configure /etc/issue file
   ansible.builtin.template:
     src: '{{ machine__etc_issue_template }}'
@@ -45,6 +54,15 @@
     group: 'root'
     mode: '0644'
   when: machine__enabled | bool and machine__etc_issue_state | d('present') != 'absent'
+
+- name: Configure /etc/issue.net file
+  ansible.builtin.template:
+    src: '{{ machine__etc_issue_net_template | default(machine__etc_issue_template) }}'
+    dest: '/etc/issue'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: machine__enabled | bool and machine__etc_issue_net_state | d('present') != 'absent'
 
 - name: Remove static /etc/motd file if requested
   ansible.builtin.file:
