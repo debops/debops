@@ -4,9 +4,13 @@
  #}
 # {{ ansible_managed }}
 
+{% macro quote_path(path) -%}
+{% if ' ' in path %}"{{ path }}"{% else %}{{ path }}{% endif %}
+{% endmacro %}
+
 {% macro print_export(export) %}
 {%   if export is mapping and export.state | d('present') != 'absent' and export.path | d() and export.acl | d() %}
-{%     set nfs_server__tpl_export_path = export.path %}
+{%     set nfs_server__tpl_export_path = quote_path(export.path) | trim %}
 {%     set nfs_server__tpl_export_options = [] %}
 {%     set nfs_server__tpl_export_acl = [] %}
 {%     if export.options | d() %}
