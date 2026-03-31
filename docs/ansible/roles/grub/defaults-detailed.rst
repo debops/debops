@@ -43,15 +43,20 @@ Configure unattended filesystem check and repair on boot:
        value:
          - 'fsck.mode=force'
 
-Remove the ``quiet`` parameter from the default kernel command line:
+The ``quiet`` parameter for the default kernel command line is usually defined
+in :file:`/etc/default/grub` and imported into
+:file:`/etc/default/grub.d/ansible.cfg` via the ``original`` parameter (see
+below). If you want to remove the ``quiet`` default parameter, you therefore
+need to *not* import the original value(s):
 
 .. code-block:: yaml
 
    grub__configuration:
      - name: 'cmdline_linux_default'
-       value:
-         - name: 'quiet'
-           state: 'absent'
+       original: False
+
+If you do so, make sure that you're not unintentionally excluding any other
+parameters already set in :file:`/etc/default/grub`.
 
 
 Syntax
@@ -108,10 +113,10 @@ a configuration file option using specific parameters:
   ``False``, the value will not be quoted.
 
 ``original``
-  Optional, boolean. If ``True``, the role will add ``$GRUB_<NAME>`` string to
-  the given configuration option, based on the entry name. This allows to
-  preserve existing GRUB options from the :file:`/etc/default/grub`; this is
-  useful only for specific options like kernel parameters.
+  Optional, boolean. If ``True``, the role will add a ``$GRUB_<NAME>`` string
+  to the given configuration option, based on the entry name. This allows
+  existing GRUB options from the :file:`/etc/default/grub` to be preserved
+  and is generally only useful for specific options like kernel parameters.
 
 ``export``
   Optional, boolean. if ``True``, the option will be exported in the GRUB
