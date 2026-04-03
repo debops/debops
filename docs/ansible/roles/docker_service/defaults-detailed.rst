@@ -251,6 +251,13 @@ parameters:
   following keys: ``test`` (list), ``interval`` (string), ``timeout``
   (string), ``retries`` (integer), ``start_period`` (string).
 
+``init``
+  Optional, boolean. If ``True``, run an init process (``tini``) inside the
+  container that forwards signals and reaps zombie processes. This is useful
+  for containers whose main process does not handle ``SIGCHLD``, which can
+  lead to zombie process accumulation (e.g. from healthcheck commands).
+  Corresponds to Docker's ``--init`` flag.
+
 ``config_files``
   Optional, list of dictionaries. Configuration files to create on the host
   before starting the container. Each entry creates a file that can then be
