@@ -537,6 +537,7 @@ the DebOps PKI certificates into the container:
 
      - name: 'vmauth'
        image: 'victoriametrics/vmauth:latest'
+       init: true
        ports:
          - '0.0.0.0:443:443'
        config_files:
@@ -555,11 +556,26 @@ the DebOps PKI certificates into the container:
        command: >-
          -auth.config=/etc/vmauth/auth.yml
          -tls -tlsCertFile=/etc/vmauth/cert.pem -tlsKeyFile=/etc/vmauth/key.pem
-         -httpListenAddr=:443
+         -httpListenAddr=:443 -httpInternalListenAddr=:8427
+       healthcheck:
+         test: [ 'CMD-SHELL',
+                 'wget --no-check-certificate --no-verbose --tries=1 --spider https://127.0.0.1:8427/health || exit 1' ]
+         interval: '15s'
+         timeout: '5s'
+         retries: 3
+         start_period: '10s'
 
 The certificate paths (``/etc/pki/realms/domain/``) are managed by the
 :ref:`debops.pki` role. vmauth automatically reloads certificates when they
 change on disk, so no container restart is needed for certificate renewal.
+
+.. important::
+
+   The ``init: true`` parameter is required when running vmauth with TLS
+   healthchecks. BusyBox ``wget`` (used in Alpine-based VictoriaMetrics
+   images) spawns a helper ``ssl_client`` process for each HTTPS request.
+   Without an init process to reap these children, they accumulate as zombie
+   processes because vmauth (PID 1) does not handle ``SIGCHLD``.
 
 ..
  Local Variables:
