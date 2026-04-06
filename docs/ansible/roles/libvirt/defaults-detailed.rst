@@ -61,6 +61,9 @@ List of parameters supported by all network types:
     configuration is done on the host (outside of ``libvirt``). You need to
     specify ``item.bridge`` parameter as name of the host bridge to use.
 
+  - ``direct``: The network will be configured as a MACVTAP interface. You need
+    to specify the ``item.bridge`` parameter as the underlying host NIC to use.
+
   - ``dnsmasq``: Network will be configured as a bridge with ``dnsmasq`` used
     as internal DNS and DHCP server.
 
@@ -84,6 +87,10 @@ List of parameters supported by all network types:
     Network will be defined if not present and automatically started at
     creation time, or if it's inactive.
 
+``uuid``
+  String, optional, if not set, a random UUID will automatically be generated
+  for this network.
+
 ``autostart``
   Boolean, optional, defaults to ``True``. Specify if a network should start
   (``True``) or not (``False``) at boot time.
@@ -99,7 +106,14 @@ List of parameters supported by all network types:
   only when a specified interface exists. This only works in the "local mode",
   not on remote ``libvirt`` connections.
 
-List of parameters supported by ``dnsmasq`` network type:
+List of parameters supported by the ``direct`` network type:
+
+``trust``
+  Boolean, optional, defaults to ``True``. Whether the guest VM should be
+  trusted to manage its own MAC address and multicast group memberships.
+  Necessary for IPv6 support.
+
+List of parameters supported by the ``dnsmasq`` network type:
 
 ``addresses``
   List of IPv4 or IPv6 addresses in ``host/prefix`` format. These IP addresses
