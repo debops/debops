@@ -1,17 +1,17 @@
 {# Copyright (C) 2016-2017 Maciej Delmanowski <drybjed@gmail.com>
  # Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
- # Copyright (C) 2016-2017 DebOps <https://debops.org/>
+ # Copyright (C) 2016-2026 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
-{% macro get_yaml_list_from_string_or_list(package_map, item) %}{# ((( #}
+{% macro get_yaml_list_from_string_or_list(package_map, item) %}
 {{ ([ package_map[item] ]
    if (package_map[item] is string)
    else (package_map[item] | list)) | to_yaml }}
-{% endmacro %}{# ))) #}
-{% macro process_packages(packages, apt_install__tpl_package_list) %}{# ((( #}
+{% endmacro %}
+{% macro process_packages(packages) %}
 {%   for element in packages %}
 {%     if element is string %}
-{%       set _ = apt_install__tpl_package_list.append(element) %}
+{%       set _ = global.package_list.append(element) %}
 {%     elif element is mapping %}
 {%       if element.state | d('present') == 'present' and element.name | d() %}
 {%         set apt_install__tpl_to_meet_condition_list = apt_install__condition_map.keys() %}
@@ -28,20 +28,21 @@
 {%           endif %}
 {%         endfor %}
 {%         if (apt_install__tpl_met_condition_list | unique | length) == (apt_install__tpl_to_meet_condition_list | unique | length) %}
-{%           set _ = apt_install__tpl_package_list.append(get_yaml_list_from_string_or_list(element, 'name') | from_yaml
+{%           set _ = global.package_list.append(get_yaml_list_from_string_or_list(element, 'name') | from_yaml
                        | intersect(element.whitelist | d(get_yaml_list_from_string_or_list(element, 'name') | from_yaml)) | list) %}
 {%         endif %}
 {%       endif %}
 {%     else %}
 {%       for things in element %}
-{%         set _ = process_packages(things, apt_install__tpl_package_list) %}
+{{         process_packages(things) }}
 {%       endfor %}
 {%     endif %}
 {%   endfor %}
-{% endmacro %}{# ))) #}
+{% endmacro %}
 
-{% set apt_install__tpl_package_list = [] %}
+{% set global = namespace() %}
+{% set global.package_list = [] %}
 {% for elements in apt_install__all_packages %}
-{%   set _ = process_packages(elements, apt_install__tpl_package_list) %}
+{{   process_packages(elements) }}
 {% endfor %}
-{{ [ apt_install__tpl_package_list ] | to_nice_yaml }}
+{{ global.package_list | flatten | to_nice_yaml }}
