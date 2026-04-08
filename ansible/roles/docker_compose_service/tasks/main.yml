@@ -59,7 +59,7 @@
     label: '{{ item.name }}'
   when:
     - item.state | d('present') not in ['absent', 'ignore']
-    - item.compose_src | d()
+    - item.compose_src is defined and item.compose_src is truthy
   register: docker_compose_service__register_compose_template
   tags: [ 'role::docker_compose_service:config' ]
 
@@ -75,8 +75,8 @@
     label: '{{ item.name }}'
   when:
     - item.state | d('present') not in ['absent', 'ignore']
-    - item.compose_content | d()
-    - not (item.compose_src | d())
+    - item.compose_content is defined and item.compose_content is truthy
+    - not (item.compose_src is defined and item.compose_src is truthy)
   register: docker_compose_service__register_compose_content
   tags: [ 'role::docker_compose_service:config' ]
 
@@ -96,7 +96,7 @@
     label: '{{ item.0.name }}: {{ item.1.dest | d(item.1.src | basename) }}'
   when:
     - item.0.state | d('present') not in ['absent', 'ignore']
-    - item.1.src | d()
+    - item.1.src is defined and item.1.src is truthy
   register: docker_compose_service__register_compose_files
   tags: [ 'role::docker_compose_service:config' ]
 
@@ -115,7 +115,7 @@
     label: '{{ item.name }}'
   when:
     - item.state | d('present') not in ['absent', 'ignore']
-    - item.env_file_src | d()
+    - item.env_file_src is defined and item.env_file_src is truthy
   register: docker_compose_service__register_env_template
   tags: [ 'role::docker_compose_service:config' ]
 
@@ -136,7 +136,7 @@
   when:
     - item.state | d('present') not in ['absent', 'ignore']
     - item.env | d({}) | length > 0
-    - not (item.env_file_src | d())
+    - not (item.env_file_src is defined and item.env_file_src is truthy)
   register: docker_compose_service__register_env_dict
   tags: [ 'role::docker_compose_service:config' ]
 
@@ -199,7 +199,7 @@
     label: '{{ docker_compose_service__config_dir_service.name }}'
   when:
     - docker_compose_service__config_dir_service.state | d('present') not in ['absent', 'ignore']
-    - docker_compose_service__config_dir_service.config_dir.src | d()
+    - docker_compose_service__config_dir_service.config_dir.src is defined and docker_compose_service__config_dir_service.config_dir.src is truthy
   tags: [ 'role::docker_compose_service:config' ]
 
 - name: Build list of services needing recreation
