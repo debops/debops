@@ -1,8 +1,8 @@
 ---
 # Copyright (C) 2015      Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
 # Copyright (C) 2017-2020 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2021      David Härdeman <david@hardeman.nu>
-# Copyright (C) 2015-2021 DebOps <https://debops.org/>
+# Copyright (C) 2021-2026 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2015-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
@@ -48,7 +48,12 @@
                                  else [])
                               + (["dovecot-managesieved"]
                                  if "sieve" in dovecot__features
-                                 else []))) }}'
+                                 else [])
+                              + (["zstd"]
+                                 if dovecot__snapshot_deploy_state
+                                    | d("absent") == "present"
+                                 else [])
+                             )) }}'
     state: 'present'
   register: dovecot__register_packages
   until: dovecot__register_packages is succeeded
@@ -66,30 +71,6 @@
     mode: '0755'
   notify: [ 'Refresh host facts' ]
   tags: [ 'meta::facts' ]
-
-- name: Remove old diversions
-  debops.debops.dpkg_divert:
-    path: '/etc/dovecot/conf.d/{{ item }}'
-    state: 'absent'
-    delete: True
-  loop:
-    - '10-auth.conf'
-    - '10-master.conf'
-    - '10-mail.conf'
-    - '10-ssl.conf'
-    - '15-lda.conf'
-    - '20-pop3.conf'
-    - '20-imap.conf'
-    - '20-lmtp.conf'
-    - '20-managesieve.conf'
-    - '90-sieve.conf'
-    - '90-sieve-extprograms.conf'
-    - 'auth-deny.conf.ext'
-    - 'auth-system.conf.ext'
-    - 'auth-sql.conf.ext'
-    - 'auth-ldap.conf.ext'
-    - 'auth-passwdfile.conf.ext'
-    - 'auth-checkpassword.conf.ext'
 
 - name: Uninstall disabled Dovecot protocols
   ansible.builtin.package:
@@ -122,14 +103,18 @@
     state: 'absent'
   notify: [ 'Restart dovecot' ]
 
-- name: Remove old local configuration
+- name: Remove old configuration files
   ansible.builtin.file:
-    path: '/etc/dovecot/local.conf'
+    path: '/etc/dovecot/{{ item }}'
     state: 'absent'
+  loop:
+    - 'local.conf'
+    - 'dovecot-ldap-passdb.conf'
+    - 'dovecot-ldap-userdb.conf'
   notify: [ 'Restart dovecot' ]
   tags: [ "role::dovecot:conf" ]
 
-- name: Generate Dovecot sql configuration
+- name: Generate separate Dovecot SQL configuration
   ansible.builtin.template:
     src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/dovecot-sql.conf.ext.j2') }}"
     dest: '/etc/dovecot/dovecot-sql.conf.ext'
@@ -137,21 +122,34 @@
     group: 'root'
     mode: '0600'
   notify: [ 'Restart dovecot' ]
-  when: "dovecot__user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite'])"
+  when: "dovecot__version is version('2.4.0', '<') and dovecot__user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite']) | length > 0"
   tags: [ "role::dovecot:conf", "role::dovecot:conf:sql" ]
 
-- name: Generate Dovecot ldap configuration
+- name: Remove separate Dovecot SQL configuration
+  ansible.builtin.file:
+    path: '/etc/dovecot/dovecot-sql.conf.ext'
+    state: 'absent'
+  notify: [ 'Restart dovecot' ]
+  when: "dovecot__version is version('2.4.0', '>=') or dovecot__user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite']) | length == 0"
+  tags: [ "role::dovecot:conf", "role::dovecot:conf:ldap" ]
+
+- name: Generate separate Dovecot LDAP configuration
   ansible.builtin.template:
-    src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/' + item + '.j2') }}"
-    dest: '/etc/dovecot/{{ item }}'
+    src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/dovecot-ldap-combined.conf.j2') }}"
+    dest: '/etc/dovecot/dovecot-ldap-combined.conf'
     owner: 'root'
     group: 'root'
     mode: '0600'
   notify: [ 'Restart dovecot' ]
-  loop:
-    - 'dovecot-ldap-userdb.conf'
-    - 'dovecot-ldap-passdb.conf'
-  when: "'ldap' in dovecot__user_accounts"
+  when: "dovecot__version is version('2.4.0', '<') and 'ldap' in dovecot__user_accounts"
+  tags: [ "role::dovecot:conf", "role::dovecot:conf:ldap" ]
+
+- name: Remove separate Dovecot LDAP configuration
+  ansible.builtin.file:
+    path: '/etc/dovecot/dovecot-ldap-combined.conf'
+    state: 'absent'
+  notify: [ 'Restart dovecot' ]
+  when: "dovecot__version is version('2.4.0', '>=') or 'ldap' not in dovecot__user_accounts"
   tags: [ "role::dovecot:conf", "role::dovecot:conf:ldap" ]
 
 - name: Generate Dovecot deny user list
@@ -244,6 +242,38 @@
     mode: '0640'
   notify: [ 'Restart dovecot' ]
   tags: [ "role::dovecot:conf" ]
+
+- name: Install helper scripts
+  ansible.builtin.copy:
+    src: 'usr/local/sbin/'
+    dest: '/usr/local/sbin/'
+    mode: '0755'
+  tags: [ 'role::dovecot:backup' ]
+
+- name: Generate backup configuration file
+  ansible.builtin.template:
+    src: 'etc/default/debops-dovecot-snapshot.j2'
+    dest: '/etc/default/debops-dovecot-snapshot'
+    mode: '0644'
+  tags: [ 'role::dovecot:backup' ]
+
+- name: Configure backup cron jobs
+  ansible.builtin.cron:
+    name: 'Create {{ item }} backup snapshots of Dovecot mailboxes'
+    special_time: '{{ item }}'
+    cron_file: 'debops-dovecot-snapshot'
+    user: 'root'
+    state: '{{ dovecot__snapshot_deploy_state
+               if (item in dovecot__snapshot_cron_jobs)
+               else "absent" }}'
+    job: '/usr/local/sbin/debops-dovecot-snapshot {{ item }}'
+  loop: [ 'daily', 'weekly', 'monthly' ]
+  loop_control:
+    label: '{{ {"state": (dovecot__snapshot_deploy_state
+                          if (item in dovecot__snapshot_cron_jobs)
+                          else "absent"),
+                "cron_job": item} }}'
+  tags: [ 'role::dovecot:backup' ]
 
 - name: Update Ansible facts and restart dovecot, if necessary
   ansible.builtin.meta: 'flush_handlers'
