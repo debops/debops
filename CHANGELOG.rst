@@ -42,6 +42,12 @@ Changed
   path of existing OpenLDAP servers managed by DebOps is not tested yet, check
   the changes in a test environment.
 
+:ref:`debops.telegraf` role
+'''''''''''''''''''''''''''
+
+- Configuration options mentioned in Telegraf warnings have been set explicitly
+  to ensure the correct behaviour in future Telegraf versions.
+
 Fixed
 ~~~~~
 
