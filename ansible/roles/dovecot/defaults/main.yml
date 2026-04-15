@@ -30,8 +30,9 @@ dovecot__features: [ 'imap', 'imaps', 'lmtp', 'sieve', 'quota' ]
                                                                    # ]]]
 # .. envvar:: dovecot__auth_mechanisms [[[
 #
-# List of enabled authentication mechanisms. Currently ``plain`` and ``login``
-# are supported.
+# List of enabled authentication mechanisms. Currently ``plain``, ``login``,
+# ``external`` (TLS client certs) and, partially, ``gssapi`` (Kerberos) are
+# supported.
 dovecot__auth_mechanisms: [ 'plain', 'login' ]
 
                                                                    # ]]]
@@ -697,6 +698,19 @@ dovecot__default_configuration:
         value: '{{ dovecot__vmail_posix_user }}'
         state: '{{ "present" if dovecot__vmail_enabled | d(False) else "absent" }}'
 
+      - name: 'auth_gssapi_hostname'
+        value: '"$ALL"'
+        state: '{{ "present" if "gssapi" in dovecot__auth_mechanisms else "absent" }}'
+
+      - name: 'auth_krb5_keytab'
+        value: '/etc/krb5.keytab.d/dovecot.keytab'
+        state: '{{ "present" if "gssapi" in dovecot__auth_mechanisms else "absent" }}'
+
+      - name: 'auth_ssl_username_from_cert'
+        value: 'yes'
+        state: '{{ "present" if (dovecot__version is version("2.4.0", ">=") and
+                                 "external" in dovecot__auth_mechanisms) else "absent" }}'
+
       - name: 'passdb_deny'
         option: '{{ "passdb" if dovecot__version is version("2.4.0", "<") else "passdb deny" }}'
         state: '{{ "present" if "deny" in dovecot__user_accounts else "absent" }}'
@@ -825,6 +839,119 @@ dovecot__default_configuration:
             value: '/etc/dovecot/dovecot-sql.conf.ext'
             state: '{{ "present" if dovecot__version is version("2.4.0", "<") else "absent" }}'
 
+      - name: 'passdb_ldap_gssapi'
+        option: 'passdb ldap_gssapi'
+        state: '{{ "present" if (dovecot__version is version("2.4.0", ">=") and
+                                 "ldap" in dovecot__user_accounts and
+                                 "gssapi" in dovecot__auth_mechanisms)
+                   else "absent" }}'
+        options:
+
+          - name: 'driver'
+            value: 'ldap'
+
+          - name: 'mechanisms_filter'
+            value: 'gssapi'
+
+          - name: 'ldap_bind'
+            value: 'no'
+
+          - name: 'ldap_filter'
+            value: '{{ dovecot__ldap_user_filter_gssapi }}'
+
+          - name: 'fields'
+            options:
+
+              - name: 'user'
+                value: '%{ldap:mailAddress}'
+
+              - name: 'k5principals'
+                value: '%{ldap_multi:krbPrincipalName | list}'
+
+              - name: 'nopassword'
+                value: 'yes'
+
+              - name: 'userdb_user'
+                value: '%{ldap:mailAddress}'
+
+              - name: 'userdb_home'
+                value: '{{ dovecot__vmail_base }}/%{user | domain}/%{user | username}'
+
+              - name: 'userdb_home_alt'
+                option: 'userdb_home'
+                value: '{{ dovecot__vmail_base }}/%{ldap:mailHomeDirectory}'
+                comment: 'Alternative if the mailHomeDirectory attribute has been set for all users'
+                state: 'comment'
+
+              - name: 'userdb_mail_path'
+                value: '%{ldap:mailMessageStore | default("{{ dovecot__mail_path }}")}'
+
+              - name: 'userdb_quota_storage_size'
+                value: '%{ldap:{{ dovecot__ldap_quota_attribute }} | default({{ dovecot__quota_default }})}B'
+                state: '{{ "present" if "quota" in dovecot__features else "absent" }}'
+
+              - name: 'userdb_acl_groups'
+                value: '%{ldap:mailGroupACL | default("")}'
+
+              - name: 'userdb_trash'
+                option: 'userdb_{{ dovecot__ldap_trash_field }}'
+                value: '%{ldap:mailExpungeTrash | default("infinite")}'
+
+      - name: 'passdb_ldap_external'
+        option: 'passdb ldap_external'
+        state: '{{ "present" if (dovecot__version is version("2.4.0", ">=") and
+                                 "ldap" in dovecot__user_accounts and
+                                 "external" in dovecot__auth_mechanisms)
+                   else "absent" }}'
+        options:
+
+          - name: 'driver'
+            value: 'ldap'
+
+          - name: 'mechanisms_filter'
+            value: 'external'
+
+          - name: 'ldap_bind'
+            value: 'no'
+
+          - name: 'ldap_filter'
+            value: '{{ dovecot__ldap_user_filter_external }}'
+
+          - name: 'fields'
+            options:
+
+              - name: 'user'
+                value: '%{ldap:mailAddress}'
+
+              - name: 'nopassword'
+                value: 'yes'
+
+              - name: 'userdb_user'
+                value: '%{ldap:mailAddress}'
+
+              - name: 'userdb_home'
+                value: '{{ dovecot__vmail_base }}/%{user | domain}/%{user | username}'
+
+              - name: 'userdb_home_alt'
+                option: 'userdb_home'
+                value: '{{ dovecot__vmail_base }}/%{ldap:mailHomeDirectory}'
+                comment: 'Alternative if the mailHomeDirectory attribute has been set for all users'
+                state: 'comment'
+
+              - name: 'userdb_mail_path'
+                value: '%{ldap:mailMessageStore | default("{{ dovecot__mail_path }}")}'
+
+              - name: 'userdb_quota_storage_size'
+                value: '%{ldap:{{ dovecot__ldap_quota_attribute }} | default({{ dovecot__quota_default }})}B'
+                state: '{{ "present" if "quota" in dovecot__features else "absent" }}'
+
+              - name: 'userdb_acl_groups'
+                value: '%{ldap:mailGroupACL | default("")}'
+
+              - name: 'userdb_trash'
+                option: 'userdb_{{ dovecot__ldap_trash_field }}'
+                value: '%{ldap:mailExpungeTrash | default("infinite")}'
+
       - name: 'passdb_ldap'
         option: '{{ "passdb" if dovecot__version is version("2.4.0", "<") else "passdb ldap" }}'
         state: '{{ "present" if "ldap" in dovecot__user_accounts else "absent" }}'
@@ -832,6 +959,11 @@ dovecot__default_configuration:
 
           - name: 'driver'
             value: 'ldap'
+
+          - name: 'mechanisms_filter'
+            value: '{{ (dovecot__auth_mechanisms + [ "lookup" ])
+                       | difference(["gssapi", "external"]) | unique | sort | join(" ") }}'
+            state: '{{ "present" if dovecot__version is version("2.4.0", ">=") else "absent" }}'
 
           - name: 'ldap_bind'
             value: 'yes'
@@ -1087,6 +1219,23 @@ dovecot__default_configuration:
 
           - name: 'dh_file'
             value: '{{ dovecot__ssl_dh_file }}'
+
+          - name: 'ca_file'
+            value: '{{ dovecot__pki_path ~ "/" ~ dovecot__pki_realm ~ "/" ~ dovecot__pki_crt }}'
+            comment: 'Note: this is the CA used to validate *client* certs'
+            state: '{{ "present" if "external" in dovecot__auth_mechanisms else "absent" }}'
+
+          - name: 'request_client_cert'
+            value: 'yes'
+            state: '{{ "present" if "external" in dovecot__auth_mechanisms else "absent" }}'
+
+          - name: 'cert_username_field'
+            value: 'commonName'
+            state: '{{ "present" if "external" in dovecot__auth_mechanisms else "absent" }}'
+
+          - name: 'require_crl'
+            value: 'yes'
+            state: '{{ "present" if "external" in dovecot__auth_mechanisms else "absent" }}'
 
       - name: 'ssl_cert'
         value: '<{{ dovecot__pki_path ~ "/" ~ dovecot__pki_realm ~ "/" ~ dovecot__pki_crt }}'
@@ -1788,8 +1937,9 @@ dovecot__ldap_start_tls: '{{ ansible_local.ldap.start_tls | d(True) | bool }}'
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_user_filter [[[
 #
-# The LDAP filter used to look up user accounts in the directory.
-# See :ref:`ldap__ref_admin` for more information.
+# The LDAP filter used to look up user accounts in the directory for
+# password-style authentication (``login`` and ``plain``).  See
+# :ref:`ldap__ref_admin` for more information.
 dovecot__ldap_user_filter: '(&
                               (objectClass=mailRecipient)
                               (mail={{ "%{user}" if dovecot__version is version("2.4.0", ">=") else "%u" }})
@@ -1798,6 +1948,28 @@ dovecot__ldap_user_filter: '(&
                                 (authorizedService=mail:access)
                               )
                             )'
+
+                                                                   # ]]]
+# .. envvar:: dovecot__ldap_user_filter_external [[[
+#
+# The LDAP filter used to look up user accounts in the directory for
+# ``external`` (TLS client certificate) authentication.  See
+# :ref:`ldap__ref_admin` for more information.
+dovecot__ldap_user_filter_external: '{{ dovecot__ldap_user_filter }}'
+
+                                                                   # ]]]
+# .. envvar:: dovecot__ldap_user_filter_gssapi [[[
+#
+# The LDAP filter used to look up user accounts in the directory for ``gssapi``
+# (Kerberos) authentication. See :ref:`ldap__ref_admin` for more information.
+dovecot__ldap_user_filter_gssapi: '(&
+                                     (objectClass=mailRecipient)
+                                     (krbPrincipalName=%{original_user})
+                                     (|
+                                       (authorizedService=all)
+                                       (authorizedService=mail:access)
+                                     )
+                                   )'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_iterate_filter [[[
