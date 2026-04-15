@@ -201,8 +201,9 @@ dovecot__snapshot_cron_jobs: [ 'daily', 'weekly', 'monthly' ]
 
 # Dovecot supported master/master replication using ``dsync`` in versions
 # prior to 2.4 (Trixie/Questing), after which the functionality was moved
-# to the commercial version of :command:`dovecot`.  For more
-# information, see :ref:`dovecot__ref_dsync`.
+# to the commercial version of :command:`dovecot`. A poor man's version of
+# the replication feature is implemented using a script in version 2.4+.
+# For more information, see :ref:`dovecot__ref_dsync`.
 
 # .. envvar:: dovecot__dsync_port [[[
 #
@@ -216,10 +217,16 @@ dovecot__dsync_port: '12345'
 dovecot__dsync_host: ''
 
                                                                    # ]]]
+# .. envvar:: dovecot__dsync_protocol [[[
+#
+# Protocol to use for ``dsync``, either ``tcp`` or ``tcps``.
+dovecot__dsync_protocol: '{{ ("tcps" if (dovecot__pki | d(True)) else "tcp") }}'
+
+                                                                   # ]]]
 # .. envvar:: dovecot__dsync_replica [[[
 #
 # Remote host to sync with, specified in the form ``tcp[s]:host[:port]``.
-dovecot__dsync_replica: '{{ ("tcps" if (dovecot__pki | d(True)) else "tcp") ~ ":" ~
+dovecot__dsync_replica: '{{ dovecot__dsync_protocol ~ ":" ~
                             dovecot__dsync_host ~ ":" ~
                             dovecot__dsync_port }}'
 
@@ -239,6 +246,61 @@ dovecot__dsync_password_path: '{{ "dovecot/credentials/dsync.password" }}'
 dovecot__dsync_password: '{{ lookup("password", secret + "/"
                                     + dovecot__dsync_password_path
                                     + " length=32") }}'
+
+                                                                   # ]]]
+# .. envvar:: dovecot__dsync_script_enabled [[
+#
+# Whether the ``debops-dovecot-sync`` script (which acts as a basic replacement
+# for the ``replicator`` functionality removed in Dovecot 2.4+) should be
+# enabled or not.
+dovecot__dsync_script_enabled: '{{ True if (dovecot__version is version("2.4", ">=") and
+                                            "dsync" in dovecot__features and
+                                            dovecot__dsync_host | d("") | length > 0)
+                                   else False }}'
+
+                                                                   # ]]]
+# .. envvar:: dovecot__dsync_script_action [[
+#
+# Action to take, either ``backup`` or ``sync``.
+#
+# ``backup`` performs one-way synchronization. If there are any changes in the
+# destination they will be reverted, so the destination will look exactly like
+# the source.
+#
+# ``sync`` performs two-way synchronization. It merges all changes without
+# losing anything. Both the mailboxes will end up looking identical after the
+# synchronization is finished.
+dovecot__dsync_script_action: 'backup'
+
+                                                                   # ]]]
+# .. envvar:: dovecot__dsync_script_reverse [[
+#
+# Whether to do a reverse backup/sync (i.e. pull instead of push)
+dovecot__dsync_script_reverse: False
+
+                                                                   # ]]]
+# .. envvar:: dovecot__dsync_script_interval [[
+#
+# Seconds to sleep between sync runs.
+dovecot__dsync_script_interval: 300
+
+                                                                   # ]]]
+# .. envvar:: dovecot__dsync_script_timeout [[
+#
+# Timeout per user sync in seconds.
+dovecot__dsync_script_timeout: 300
+
+                                                                   # ]]]
+# .. envvar:: dovecot__dsync_script_full_interval [[
+#
+# Full sync interval in seconds.
+dovecot__dsync_script_full_interval: '{{ 60 * 60 * 6 }}'
+
+                                                                   # ]]]
+# .. envvar:: dovecot__dsync_script_exclude_mailboxes [[
+#
+# List of mailboxes to exclude.
+dovecot__dsync_script_exclude_mailboxes: []
 
                                                                    # ]]]
                                                                    # ]]]
@@ -1199,7 +1261,7 @@ dovecot__default_configuration:
                 value: 'vmail'
 
       - name: 'service doveadm'
-        state: '{{ "present" if ("dsync" in dovecot__features and dovecot__version is version("2.4.0", "<")) else "absent" }}'
+        state: '{{ "present" if "dsync" in dovecot__features else "absent" }}'
         options:
 
           - name: 'inet_listener doveadm'
@@ -1218,11 +1280,11 @@ dovecot__default_configuration:
 
       - name: 'doveadm_port'
         value: '{{ dovecot__dsync_port }}'
-        state: '{{ "present" if ("dsync" in dovecot__features and dovecot__version is version("2.4.0", "<")) else "absent" }}'
+        state: '{{ "present" if "dsync" in dovecot__features else "absent" }}'
 
       - name: 'doveadm_password'
         value: '{{ dovecot__dsync_password }}'
-        state: '{{ "present" if ("dsync" in dovecot__features and dovecot__version is version("2.4.0", "<")) else "absent" }}'
+        state: '{{ "present" if "dsync" in dovecot__features else "absent" }}'
 
       - name: 'service auth'
         options:
@@ -1618,8 +1680,12 @@ dovecot__allow_pop3s: []
 #
 # List of hosts/networks that can access the ``doveadm`` port (12345, used for
 # dsync).
-dovecot__allow_doveadm:
-  - '{{ dovecot__dsync_host }}'
+dovecot__allow_doveadm: '{{ [ dovecot__dsync_host ]
+                            if (dovecot__dsync_host | d("") | length > 0 and
+                                "dsync" in dovecot__features and
+                                not dovecot__dsync_script_reverse)
+                            else [] }}'
+
                                                                    # ]]]
 # .. envvar:: dovecot__allow_sieve [[[
 #
@@ -1896,8 +1962,8 @@ dovecot__ferm__dependent_rules:
     dport: [ 'doveadm' ]
     saddr: '{{ dovecot__allow_doveadm }}'
     accept_any: '{{ dovecot__accept_any }}'
-    rule_state: '{{ "present"
-                    if ("dsync" in dovecot__features and dovecot__version is version("2.4.0", "<"))
+    rule_state: '{{ "present" if ("dsync" in dovecot__features and
+                                  not dovecot__dsync_script_reverse)
                     else "absent" }}'
 
   - name: 'dovecot_sieve'

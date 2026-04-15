@@ -277,5 +277,45 @@
 - name: Update Ansible facts and restart dovecot, if necessary
   ansible.builtin.meta: 'flush_handlers'
 
+- name: Generate sync script configuration file
+  ansible.builtin.template:
+    src: 'etc/default/debops-dovecot-sync.j2'
+    dest: '/etc/default/debops-dovecot-sync'
+    mode: '0644'
+  when: ("dsync" in dovecot__features and dovecot__version is version("2.4.0", ">="))
+  tags: [ 'role::dovecot:sync' ]
+
+- name: Remove sync script configuration file
+  ansible.builtin.file:
+    dest: '/etc/default/debops-dovecot-sync'
+    state: 'absent'
+  when: ("dsync" not in dovecot__features or dovecot__version is version("2.4.0", "<"))
+  tags: [ 'role::dovecot:sync' ]
+
+- name: Generate sync script systemd unit file
+  ansible.builtin.template:
+    src: 'etc/systemd/system/debops-dovecot-sync.service.j2'
+    dest: '/etc/systemd/system/debops-dovecot-sync.service'
+    mode: '0644'
+  when: (dovecot__version is version("2.4.0", ">="))
+  register: dovecot__register_systemd_unit_file
+  tags: [ 'role::dovecot:sync' ]
+
+- name: Ensure that the sync script systemd service has the right state
+  ansible.builtin.systemd:
+    name: 'debops-dovecot-sync'
+    state: '{{ "started" if ("dsync" in dovecot__features and
+                             dovecot__version is version("2.4.0", ">=") and
+                             dovecot__dsync_script_enabled)
+               else "stopped" }}'
+    enabled: '{{ True if ("dsync" in dovecot__features and
+                          dovecot__version is version("2.4.0", ">=") and
+                          dovecot__dsync_script_enabled)
+                 else False }}'
+    masked: False
+    daemon_reload: '{{ dovecot__register_systemd_unit_file is changed }}'
+  when: (dovecot__version is version("2.4.0", ">="))
+  tags: [ 'role::dovecot:sync' ]
+
 - name: Post hooks
   ansible.builtin.include_tasks: "{{ lookup('debops.debops.task_src', 'dovecot/post_main.yml') }}"
