@@ -57,6 +57,12 @@ General
 - The :file:`lxc_ssh.py` Ansible connection plugin included in DebOps should
   now work correctly on Python v3.13.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Fix the issue with the ``X-Robots-Tag`` Jinja condition check on Ansible
+  v2.20.
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
