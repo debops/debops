@@ -63,6 +63,12 @@ General
 - Fixed deprecation warning that converted a ``NoneType`` result to ``False``
   in the raw APT update and installation task.
 
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- Fixed an issue with variables that define IMAP,SMTP,Sieve ports being defined
+  as integers instead of strings.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
