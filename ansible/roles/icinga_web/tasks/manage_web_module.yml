@@ -1,0 +1,86 @@
+---
+# Copyright (C) 2018 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020 Gabriel Lewertowski <gabriel.lewertowski@trust-in-soft.com>
+# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2018-2023 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Determine if a .deb package exists for module {{ item.name }}
+  ansible.builtin.command: apt-cache show {{ item.package | quote }}
+  register: icinga_web__register_package
+  when: item.state | d('present') == 'present' and
+        item.package | d() and item.source | d('any') != 'git'
+  failed_when: item.source | d('any') == 'package' and
+               icinga_web__register_package.rc == 0
+  changed_when: False
+
+- name: Note the installation method for module {{ item.name }}
+  ansible.builtin.set_fact:
+    icinga_web__fact_module_state: '{{
+      "absent" if (item.state | d("present") != "present")
+      else ("package" if ((item.source | d("any") == "package") or
+                          (item.source | d("any") == "any" and
+                           icinga_web__register_package.rc | d(1) == 0))
+            else "git") }}'
+
+- name: Remove .deb package for module {{ item.name }}
+  ansible.builtin.package:
+    name: '{{ item.package }}'
+    state: 'absent'
+  when: icinga_web__fact_module_state != 'package' and item.package | d()
+
+- name: Remove git repo for module {{ item.name }}
+  ansible.builtin.file:
+    path: '{{ icinga_web__src + "/" + item.git_repo.split("://")[1] }}'
+    state: 'absent'
+  when: icinga_web__fact_module_state != 'git' and item.git_repo | d()
+
+- name: Remove git repo symlink for module {{ item.name }}
+  ansible.builtin.file:
+    path: '{{ "/usr/share/icingaweb2/modules/" + item.name }}'
+    state: 'absent'
+  # Note: we can't just check if state != "git" here, since the path is used by
+  #       the packaged web modules as well...
+  when: icinga_web__fact_module_state == 'absent' and item.git_repo | d()
+
+- name: Install .deb package for module {{ item.name }}
+  ansible.builtin.package:
+    name: '{{ item.package }}'
+    state: 'present'
+  register: icinga_web__register_module_package
+  until: icinga_web__register_module_package is succeeded
+  when: icinga_web__fact_module_state == 'package'
+
+- name: Clone git repo for module {{ item.name }}
+  ansible.builtin.git:
+    repo: '{{ item.git_repo }}'
+    dest: '{{ icinga_web__src + "/" + item.git_repo.split("://")[1] }}'
+    version: '{{ item.git_version }}'
+  when: icinga_web__fact_module_state == 'git'
+
+- name: Symlink git repo for module {{ item.name }}
+  ansible.builtin.file:
+    path: '{{ "/usr/share/icingaweb2/modules/" + item.name }}'
+    src: '{{ icinga_web__src + "/" + item.git_repo.split("://")[1] }}'
+    state: 'link'
+    force: '{{ True if ansible_check_mode | bool else omit }}'
+    mode: '0755'
+  when: icinga_web__fact_module_state == 'git'
+
+- name: Enable module {{ item.name }}
+  ansible.builtin.file:
+    path: '/etc/icingaweb2/enabledModules/{{ item.name }}'
+    src: '{{ item.path | d("/usr/share/icingaweb2/modules/" + item.name) }}'
+    state: 'link'
+    force: '{{ True if ansible_check_mode | bool else omit }}'
+    mode: '0755'
+  when: icinga_web__fact_module_state in ['package', 'git'] and
+        item.enabled | d(True) | bool
+
+- name: Disable module {{ item.name }}
+  ansible.builtin.file:
+    path: '/etc/icingaweb2/enabledModules/{{ item.name }}'
+    state: 'absent'
+    force: '{{ True if ansible_check_mode | bool else omit }}'
+  when: icinga_web__fact_module_state in ['package', 'git'] and
+        not item.enabled | d(True) | bool
