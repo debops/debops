@@ -149,6 +149,17 @@
   tags: [ 'role::rabbitmq_server:vhost', 'role::rabbitmq_server:parameter',
           'role::rabbitmq_server:policy', 'role::rabbitmq_server:user' ]
 
+- name: Set RabbitMQ virtual host default queue type
+  ansible.builtin.command:
+    cmd: >-
+      rabbitmqctl update_vhost_metadata {{ item.name | d(item) }}
+      --default-queue-type {{ item.default_queue_type }}
+  when: item.default_queue_type | d()
+  loop: '{{ q("flattened", rabbitmq_server__combined_vhosts) }}'
+  register: rabbitmq_server__register_vhost_dqt
+  changed_when: rabbitmq_server__register_vhost_dqt.rc == 0
+  tags: [ 'role::rabbitmq_server:vhost' ]
+
 - name: Manage RabbitMQ virtual host limits
   community.rabbitmq.rabbitmq_vhost_limits:
     vhost: '{{ item.vhost }}'
