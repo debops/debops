@@ -1,0 +1,58 @@
+---
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Get RabbitMQ cluster status for auto-join
+  ansible.builtin.command:
+    cmd: 'rabbitmqctl -q --formatter json cluster_status'
+  register: rabbitmq_server__register_autojoin_status
+  changed_when: false
+  check_mode: false
+
+- name: Join RabbitMQ cluster against seed node
+  when:
+    - rabbitmq_server__cluster_autojoin | bool
+    - _hostname_short != _seed_short
+    - _seed_short not in _running_short
+  vars:
+    _status: "{{ rabbitmq_server__register_autojoin_status.stdout | from_json }}"
+    _running: "{{ _status.running_nodes | default([]) }}"
+    _disk: "{{ _status.disk_nodes | default([]) }}"
+    _running_short: "{{ _running
+                       | map('regex_replace', '^rabbit@', '')
+                       | map('regex_replace', '\\..*$', '')
+                       | list }}"
+    _disk_short: "{{ _disk
+                    | map('regex_replace', '^rabbit@', '')
+                    | map('regex_replace', '\\..*$', '')
+                    | list }}"
+    _hostname_short: "{{ ansible_hostname | regex_replace('\\..*$', '') }}"
+    _seed_short: "{{ rabbitmq_server__cluster_seed_node | regex_replace('\\..*$', '') }}"
+  block:
+
+    - name: Sanity check - node is standalone before reset
+      ansible.builtin.assert:
+        that:
+          - _disk_short == [_hostname_short]
+        fail_msg: |
+          Refusing to reset rabbit@{{ ansible_hostname }} because its disk_nodes
+          ({{ _disk }}) is not exactly [self]. The node appears to be part of a
+          different cluster. Resolve the cluster membership manually (rabbitmqctl
+          forget_cluster_node / reset) before re-running the playbook, or set
+          rabbitmq_server__cluster_autojoin=False to opt out.
+
+    - name: Stop RabbitMQ app before cluster join
+      ansible.builtin.command:
+        cmd: 'rabbitmqctl -q stop_app'
+
+    - name: Reset RabbitMQ node before cluster join
+      ansible.builtin.command:
+        cmd: 'rabbitmqctl -q reset'
+
+    - name: Join RabbitMQ cluster
+      ansible.builtin.command:
+        cmd: "rabbitmqctl -q join_cluster rabbit@{{ rabbitmq_server__cluster_seed_node }}"
+
+    - name: Start RabbitMQ app after cluster join
+      ansible.builtin.command:
+        cmd: 'rabbitmqctl -q start_app'
