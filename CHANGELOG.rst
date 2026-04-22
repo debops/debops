@@ -32,6 +32,15 @@ Added
 - Add support for post-quantum key exchange algorithms in OpenSSH v9.0+. The
   role will enable a specific set of key exchange algorithms where available.
 
+:ref:`debops.rabbitmq_server` role
+''''''''''''''''''''''''''''''''''
+
+- Support for setting per-vhost default queue type via the
+  ``default_queue_type`` key in ``rabbitmq_server__*_vhosts`` list variables.
+  When defined, the role runs ``rabbitmqctl update_vhost_metadata
+  --default-queue-type`` for the vhost. Useful on RabbitMQ 3.13+/4.x where
+  ``quorum`` queues can be made the default without resorting to policies.
+
 Changed
 ~~~~~~~
 

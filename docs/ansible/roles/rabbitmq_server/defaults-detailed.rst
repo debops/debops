@@ -344,6 +344,14 @@ module. Some more common parameters:
 ``tracing``
   Optional. Enable message tracing in a given virtual host.
 
+``default_queue_type``
+  Optional. Sets the default queue type for the virtual host using
+  ``rabbitmqctl update_vhost_metadata --default-queue-type``. Supported values
+  on RabbitMQ 3.13+: ``classic``, ``quorum``, ``stream``. When unset, RabbitMQ
+  uses its built-in default (``classic`` unless overridden on the cluster).
+  Useful on RabbitMQ 4.x where ``quorum`` queues can be made the default
+  without resorting to policies.
+
 Examples
 ~~~~~~~~
 
@@ -359,6 +367,9 @@ Create a set of virtual hosts:
 
      - name: 'vhost3'
        state: 'absent'
+
+     - name: 'vhost4'
+       default_queue_type: 'quorum'
 
 
 .. _rabbitmq_server__ref_vhost_limits:
