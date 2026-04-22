@@ -56,10 +56,10 @@ below in the Ansible inventory:
 
 After that, re-run the role to apply changes to the firewall configuration.
 
-At the moment role does not create clusters automatically. To create a cluster
-manually using three hosts (``host1``, ``host2``, ``host3``) with ``host1``
-being the main cluster node, login to the other hosts and using the ``root``
-account, run the commands:
+The role composes the RabbitMQ cluster automatically, see the
+`Automatic cluster formation`_ section below. Opt out with
+``rabbitmq_server__cluster_autojoin: False`` to fall back to the legacy
+workflow where cluster membership is managed manually:
 
 .. code-block:: console
 
@@ -118,6 +118,46 @@ Both invocation modes are supported out of the box:
 The post-task assertion only checks that the current node itself rejoined
 the cluster, so it does not trip up either scenario; peer availability is
 guaranteed by the sequential execution model.
+
+
+Automatic cluster formation
+---------------------------
+
+When ``rabbitmq_server__cluster_autojoin`` is ``True`` (default), the role
+joins every non-seed node to the cluster after its configuration has been
+applied and the ``Restart rabbitmq-server`` handler has fired. The seed node
+is the first entry of ``rabbitmq_server__cluster_hosts``, which defaults to
+the ``debops_service_rabbitmq_server`` inventory group sorted alphabetically.
+Override the seed explicitly by setting
+``rabbitmq_server__cluster_seed_node`` (or by reordering
+``rabbitmq_server__cluster_hosts``) in the inventory.
+
+On every host the role runs ``rabbitmqctl cluster_status`` and checks whether
+the seed node is already visible in ``running_nodes``. If it is, the task is
+a no-op. Otherwise the role performs:
+
+.. code-block:: console
+
+   rabbitmqctl stop_app
+   rabbitmqctl reset
+   rabbitmqctl join_cluster rabbit@<seed>
+   rabbitmqctl start_app
+
+The reset step is guarded by an ``assert`` that the current node's
+``disk_nodes`` list contains only itself. This prevents the role from
+destroying state on a node that is already part of a different cluster; in
+that case the play stops with a clear error message and requires manual
+intervention (``rabbitmqctl forget_cluster_node`` / ``reset``) or an opt-out
+via ``rabbitmq_server__cluster_autojoin: False``.
+
+Combined with ``serial: 1`` in the ``service/rabbitmq_server.yml`` playbook,
+this makes both invocation modes fully automatic:
+
+- ``debops run service/rabbitmq_server`` against the whole group: the seed
+  is configured first, then each subsequent host joins the now-running seed.
+- ``debops run service/rabbitmq_server --limit hostN``: the role still
+  identifies the seed via the inventory group and joins against it, provided
+  the seed is already reachable.
 
 
 Inter-node communication is not encrypted

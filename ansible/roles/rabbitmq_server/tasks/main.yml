@@ -177,6 +177,20 @@
   changed_when: False
   when: rabbitmq_server__combined_feature_flags | length > 0
 
+- name: Manage RabbitMQ feature flags (opt-in)
+  ansible.builtin.command:
+    cmd: "rabbitmqctl -q enable_feature_flag --opt-in {{ item.name }}"
+  loop: '{{ q("flattened", rabbitmq_server__combined_feature_flags) }}'
+  loop_control:
+    label: '{{ item.name | d(item) }}'
+  when:
+    - item.name | d()
+    - item.opt_in | d(False) | bool
+  register: rabbitmq_server__register_feature_flag_optin
+  changed_when:
+    - rabbitmq_server__register_feature_flag_optin.rc | d(0) == 0
+    - "'already enabled' not in (rabbitmq_server__register_feature_flag_optin.stdout | d(''))"
+
 # Required feature flags (e.g. 'detailed_queues_endpoint' in RabbitMQ 4.x) are
 # not returned by 'rabbitmqctl list_feature_flags' - they are auto-enabled in
 # the running version and only had to be enabled before upgrading to the major
@@ -189,7 +203,8 @@
     node: '{{ item.node | d(omit) }}'
   loop: '{{ q("flattened", rabbitmq_server__combined_feature_flags) }}'
   when:
-    - rabbitmq_server__combined_feature_flags | length > 0
+    - item.name | d()
+    - not (item.opt_in | d(False) | bool)
     - item.name in (rabbitmq_server__register_feature_flags_list.stdout_lines
                     | default([]) | map('split', '\t') | map('first') | list)
 
@@ -337,3 +352,10 @@
   become: False
   delegate_to: 'localhost'
   tags: [ 'role::rabbitmq_server:config' ]
+
+- name: Flush handlers before cluster auto-join
+  ansible.builtin.meta: flush_handlers
+
+- name: Bootstrap RabbitMQ cluster membership
+  ansible.builtin.import_tasks: 'cluster_autojoin.yml'
+  tags: [ 'role::rabbitmq_server', 'role::rabbitmq_server:cluster' ]
