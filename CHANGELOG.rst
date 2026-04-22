@@ -41,6 +41,23 @@ Added
   --default-queue-type`` for the vhost. Useful on RabbitMQ 3.13+/4.x where
   ``quorum`` queues can be made the default without resorting to policies.
 
+- The role can now form a RabbitMQ cluster automatically. Non-seed nodes
+  run ``rabbitmqctl reset`` and ``rabbitmqctl join_cluster`` against the
+  seed node (first host of the ``debops_service_rabbitmq_server`` group,
+  sortable override via ``rabbitmq_server__cluster_hosts``) once RabbitMQ
+  has been configured and restarted. The join is guarded by a sanity
+  check that the current node's ``disk_nodes`` contains only itself, so
+  an existing cluster member is never reset. Controlled by
+  ``rabbitmq_server__cluster_autojoin`` (default ``True``); flip to
+  ``False`` for the classic manual workflow.
+
+- The ``rabbitmq_server__*_feature_flags`` list variables now accept an
+  ``opt_in: True`` key per entry. When set, the role enables the feature
+  flag via ``rabbitmqctl -q enable_feature_flag --opt-in`` instead of the
+  standard ``community.rabbitmq.rabbitmq_feature_flag`` module. This lets
+  operators switch on flags that require explicit opt-in, such as
+  ``khepri_db`` on RabbitMQ 4.0/4.1.
+
 Changed
 ~~~~~~~
 

@@ -654,6 +654,13 @@ Supported parameters:
 ``node``
   Optional. The name of a RabbitMQ node to which a given feature flag applies.
 
+``opt_in``
+  Optional. Boolean. If ``True``, the role enables the feature flag via
+  ``rabbitmqctl -q enable_feature_flag --opt-in`` instead of the
+  ``community.rabbitmq.rabbitmq_feature_flag`` module. Required for flags
+  that can only be activated explicitly by the operator, for example
+  ``khepri_db`` on RabbitMQ 4.0/4.1. Default: ``False``.
+
 Entries referencing feature flags that have been promoted to "required"
 status in the running RabbitMQ version (and therefore no longer appear in
 ``rabbitmqctl list_feature_flags``) are silently skipped so inventories
@@ -672,6 +679,15 @@ Enable the ``maintenance_mode_status`` feature flag on a specific Erlang node:
 
      - name: 'maintenance_mode_status'
        node: 'rabbit@node1'
+
+Enable the ``khepri_db`` opt-in feature flag cluster-wide:
+
+.. code-block:: yaml
+
+   rabbitmq_server__feature_flags:
+
+     - name: 'khepri_db'
+       opt_in: True
 
 
 .. _rabbitmq_server__ref_global_parameters:
@@ -810,3 +826,52 @@ Create a set of RabbitMQ policies:
        pattern: '.*'
        tags:
          'ha-mode': 'all'
+
+
+.. _rabbitmq_server__ref_cluster_autojoin:
+
+rabbitmq_server__cluster_autojoin
+---------------------------------
+
+The role can form the RabbitMQ cluster automatically. When
+``rabbitmq_server__cluster_autojoin`` is ``True`` (default), each non-seed
+node runs ``rabbitmqctl reset`` and ``rabbitmqctl join_cluster`` against the
+seed node after the role has applied its configuration and the
+``Restart rabbitmq-server`` handler has fired. Nodes that are already
+clustered with the seed are left alone.
+
+``rabbitmq_server__cluster_hosts``
+  Ordered list of cluster members. Defaults to the
+  ``debops_service_rabbitmq_server`` inventory group, sorted alphabetically.
+  The first entry is used as the seed. Override in the inventory when you
+  need an explicit order.
+
+``rabbitmq_server__cluster_seed_node``
+  Hostname (without the ``rabbit@`` prefix) of the seed node. Defaults to
+  the first entry of ``rabbitmq_server__cluster_hosts``. Non-seed members
+  always join this node.
+
+``rabbitmq_server__cluster_autojoin``
+  Master switch for automatic cluster formation. Set to ``False`` to keep
+  the legacy manual workflow (``rabbitmqctl join_cluster`` executed
+  outside of Ansible). Default: ``True``.
+
+The ``reset + join_cluster`` sequence is guarded by an ``assert`` that the
+current node's ``disk_nodes`` list contains only itself. A node which is
+already a member of a different cluster is never reset; instead the play
+fails with a clear error and requires manual intervention or an opt-out.
+
+Examples
+~~~~~~~~
+
+Pick an explicit seed (without changing alphabetical order of the group):
+
+.. code-block:: yaml
+
+   rabbitmq_server__cluster_seed_node: 'rabbitmq-primary.example.org'
+
+Disable the feature on a host that should not join the cluster:
+
+.. code-block:: yaml
+
+   rabbitmq_server__cluster_autojoin: False
