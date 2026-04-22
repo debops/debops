@@ -7,6 +7,9 @@
   collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_rabbitmq_server' ]
   become: True
+  serial: 1
+  max_fail_percentage: 0
+  any_errors_fatal: true
 
   environment: '{{ inventory__environment | d({})
                    | combine(inventory__group_environment | d({}))
@@ -39,3 +42,29 @@
 
     - role: rabbitmq_server
       tags: [ 'role::rabbitmq_server', 'skip::rabbitmq_server' ]
+
+  post_tasks:
+
+    - name: Wait for RabbitMQ node to become available
+      ansible.builtin.command:
+        cmd: 'rabbitmqctl -q await_startup --timeout 120'
+      changed_when: false
+      check_mode: false
+
+    - name: Get RabbitMQ cluster status
+      ansible.builtin.command:
+        cmd: 'rabbitmqctl -q --formatter json cluster_status'
+      register: rabbitmq_server__register_cluster_status
+      changed_when: false
+      check_mode: false
+
+    - name: Assert this node rejoined the cluster
+      ansible.builtin.assert:
+        that:
+          - "'rabbit@' + ansible_hostname in _running"
+        fail_msg: |
+          Node rabbit@{{ ansible_hostname }} did not rejoin the cluster
+          cleanly. running_nodes={{ _running }}.
+      vars:
+        _running: "{{ (rabbitmq_server__register_cluster_status.stdout
+                     | from_json).running_nodes | default([]) }}"

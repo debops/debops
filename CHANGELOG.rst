@@ -42,6 +42,28 @@ Changed
   path of existing OpenLDAP servers managed by DebOps is not tested yet, check
   the changes in a test environment.
 
+:ref:`debops.rabbitmq_server` role
+''''''''''''''''''''''''''''''''''
+
+- The ``service/rabbitmq_server.yml`` playbook now restarts cluster nodes
+  one at a time (``serial: 1``, ``any_errors_fatal: true``,
+  ``max_fail_percentage: 0``) and verifies cluster health in
+  ``post_tasks`` via ``rabbitmqctl await_startup`` +
+  ``rabbitmqctl cluster_status``. This prevents the
+  ``timeout_waiting_for_leader`` boot deadlock observed with RabbitMQ 4.x
+  / Khepri when multiple nodes restart simultaneously.
+
+- The ``Restart rabbitmq-server`` handler now performs a graceful
+  ``rabbitmqctl stop_app`` before ``systemctl restart`` (avoids
+  ``duplicate_node_name`` races against EPMD) and waits for
+  ``rabbitmqctl await_startup`` to succeed. ``throttle: 1`` is applied as
+  a second-line guarantee that the handler does not fire in parallel on
+  multiple hosts.
+
+- The ``Manage RabbitMQ plugins`` task no longer triggers a server
+  restart; the ``community.rabbitmq.rabbitmq_plugin`` module already
+  enables/disables plugins online.
+
 Fixed
 ~~~~~
 
