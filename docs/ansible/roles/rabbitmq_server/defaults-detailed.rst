@@ -654,6 +654,13 @@ Supported parameters:
 ``node``
   Optional. The name of a RabbitMQ node to which a given feature flag applies.
 
+Entries referencing feature flags that have been promoted to "required"
+status in the running RabbitMQ version (and therefore no longer appear in
+``rabbitmqctl list_feature_flags``) are silently skipped so inventories
+written for older RabbitMQ versions stay idempotent after a major upgrade.
+Unknown flag names (typos in still-toggleable flags) continue to fail the
+play.
+
 Examples
 ~~~~~~~~
 

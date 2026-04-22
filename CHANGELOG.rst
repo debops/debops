@@ -185,6 +185,16 @@ General
   will no longer restart the :command:`systemd-logind` service automatically
   (file changes are handled automatically since Debian Bookworm).
 
+:ref:`debops.rabbitmq_server` role
+''''''''''''''''''''''''''''''''''
+
+- The ``Manage RabbitMQ feature flags`` task no longer fails when the
+  inventory references feature flags that have become ``required`` in the
+  running RabbitMQ version. Required flags are auto-enabled and no longer
+  appear in ``rabbitmqctl list_feature_flags`` output; they are now detected
+  and skipped. Fixes a hard failure observed with RabbitMQ 4.x on Debian
+  Trixie where ``detailed_queues_endpoint`` was required.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
