@@ -57,6 +57,13 @@ General
 - The role should now correctly process the list of APT packages to install on
   Ansible v2.19+ instead of creating an empty list.
 
+:ref:`debops.libvirt` role
+''''''''''''''''''''''''''
+
+- Fixed issues with IPv6 multicast support for neighbour discovery in guest VMs
+  by allowing guests to modify their own MAC addresses by default. This can be
+  controlled per-guest if needed.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
