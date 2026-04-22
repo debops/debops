@@ -4,6 +4,13 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Restart rabbitmq-server
-  ansible.builtin.service:
-    name: 'rabbitmq-server'
-    state: 'restarted'
+  ansible.builtin.shell:
+    cmd: |
+      set -e
+      if rabbitmqctl -q ping > /dev/null 2>&1; then
+        rabbitmqctl -q stop_app || true
+      fi
+      systemctl restart rabbitmq-server
+      rabbitmqctl -q await_startup --timeout 120
+  throttle: 1
+  changed_when: true
