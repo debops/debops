@@ -51,6 +51,12 @@ General
 - The :file:`lxc_ssh.py` Ansible connection plugin included in DebOps should
   now work correctly on Python v3.13.
 
+:ref:`debops.apt_install` role
+''''''''''''''''''''''''''''''
+
+- The role should now correctly process the list of APT packages to install on
+  Ansible v2.19+ instead of creating an empty list.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
