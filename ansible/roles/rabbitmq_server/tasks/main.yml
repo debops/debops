@@ -169,11 +169,29 @@
   loop: '{{ q("flattened", rabbitmq_server__combined_vhost_limits) }}'
   tags: [ 'role::rabbitmq_server:vhost' ]
 
+- name: Get list of toggleable RabbitMQ feature flags
+  ansible.builtin.command:
+    cmd: 'rabbitmqctl -q list_feature_flags name state'
+  register: rabbitmq_server__register_feature_flags_list
+  check_mode: False
+  changed_when: False
+  when: rabbitmq_server__combined_feature_flags | length > 0
+
+# Required feature flags (e.g. 'detailed_queues_endpoint' in RabbitMQ 4.x) are
+# not returned by 'rabbitmqctl list_feature_flags' - they are auto-enabled in
+# the running version and only had to be enabled before upgrading to the major
+# that made them required. Skip those silently so that inventories written for
+# older versions stay idempotent after a RabbitMQ major upgrade.
+# Genuinely unknown flag names (typos) still fail inside the module.
 - name: Manage RabbitMQ feature flags
   community.rabbitmq.rabbitmq_feature_flag:
     name: '{{ item.name }}'
     node: '{{ item.node | d(omit) }}'
   loop: '{{ q("flattened", rabbitmq_server__combined_feature_flags) }}'
+  when:
+    - rabbitmq_server__combined_feature_flags | length > 0
+    - item.name in (rabbitmq_server__register_feature_flags_list.stdout_lines
+                    | default([]) | map('split', '\t') | map('first') | list)
 
 - name: Manage RabbitMQ global parameters
   community.rabbitmq.rabbitmq_global_parameter:
