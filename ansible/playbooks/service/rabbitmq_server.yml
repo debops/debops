@@ -61,10 +61,15 @@
     - name: Assert this node rejoined the cluster
       ansible.builtin.assert:
         that:
-          - "'rabbit@' + ansible_hostname in _running"
+          - _my_short in _running_short
         fail_msg: |
           Node rabbit@{{ ansible_hostname }} did not rejoin the cluster
           cleanly. running_nodes={{ _running }}.
       vars:
         _running: "{{ (rabbitmq_server__register_cluster_status.stdout
                      | from_json).running_nodes | default([]) }}"
+        _running_short: "{{ _running
+                          | map('regex_replace', '^rabbit@', '')
+                          | map('regex_replace', '\\..*$', '')
+                          | list }}"
+        _my_short: "{{ ansible_hostname | regex_replace('\\..*$', '') }}"
