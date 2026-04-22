@@ -113,6 +113,16 @@ General
   command options and their arguments are separated with a spaca. This fixes an
   issue with ACME DNS-01 challenge not being processed correctly.
 
+:ref:`debops.rabbitmq_server` role
+''''''''''''''''''''''''''''''''''
+
+- The ``Manage RabbitMQ feature flags`` task no longer fails when the
+  inventory references feature flags that have become ``required`` in the
+  running RabbitMQ version. Required flags are auto-enabled and no longer
+  appear in ``rabbitmqctl list_feature_flags`` output; they are now detected
+  and skipped. Fixes a hard failure observed with RabbitMQ 4.x on Debian
+  Trixie where ``detailed_queues_endpoint`` was required.
+
 
 `debops v3.3.0`_ - 2026-03-13
 -----------------------------
