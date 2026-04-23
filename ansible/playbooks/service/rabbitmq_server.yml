@@ -7,6 +7,14 @@
   collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_rabbitmq_server' ]
   become: True
+  # RabbitMQ 4.x with Khepri (Raft) metadata store deadlocks with
+  # 'timeout_waiting_for_leader' when a majority of cluster nodes restart
+  # in parallel. The three play-level options below force strictly
+  # sequential, one-node-at-a-time execution and abort on the first
+  # failure so that the cluster stays healthy.
+  # DO NOT REMOVE without reading the "Rolling restart and cluster
+  # bootstrap" section in
+  # docs/ansible/roles/rabbitmq_server/getting-started.rst
   serial: 1
   max_fail_percentage: 0
   any_errors_fatal: true
