@@ -183,13 +183,20 @@
   loop: '{{ q("flattened", rabbitmq_server__combined_feature_flags) }}'
   loop_control:
     label: '{{ item.name | d(item) }}'
+  vars:
+    # Idempotency is derived from the already-registered feature flag list
+    # because 'rabbitmqctl enable_feature_flag' produces no distinguishable
+    # output for no-op runs (both stdout and stderr stay empty for an
+    # already-enabled flag, verified at runtime on RabbitMQ 4.x).
+    _rabbitmq_server__enabled_feature_flags: '{{ rabbitmq_server__register_feature_flags_list.stdout_lines
+                                                 | default([])
+                                                 | select("search", "\tenabled$")
+                                                 | map("regex_replace", "\t.*$", "")
+                                                 | list }}'
   when:
     - item.name | d()
     - item.opt_in | d(False) | bool
-  register: rabbitmq_server__register_feature_flag_optin
-  changed_when:
-    - rabbitmq_server__register_feature_flag_optin.rc | d(0) == 0
-    - "'already enabled' not in (rabbitmq_server__register_feature_flag_optin.stdout | d(''))"
+    - item.name not in _rabbitmq_server__enabled_feature_flags
 
 # Required feature flags (e.g. 'detailed_queues_endpoint' in RabbitMQ 4.x) are
 # not returned by 'rabbitmqctl list_feature_flags' - they are auto-enabled in
