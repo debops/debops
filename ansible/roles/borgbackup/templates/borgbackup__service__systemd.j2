@@ -1,0 +1,92 @@
+{# Copyright (C) 2024 Tasos Alvas <tasos.alvas@qwertyuiopia.com>
+ # Copyright (C) 2024 DebOps https://debops.org/
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+[Unit]
+Description=Perform a backup using borgmatic/BorgBackup
+Documentation=https://docs.debops.org/en/master/ansible/roles/debops.borgbackup/
+
+Wants=network-online.target
+After=network-online.target
+{% if borgbackup__condition_ac_power | d(True) %}
+# Prevent borgmatic from running unless the machine is plugged into power.
+ConditionACPower=true
+{% endif %}
+
+[Service]
+Type=oneshot
+
+{# Recommended security settings #}
+{# systemd manual: https://www.freedesktop.org/software/systemd/man/systemd.exec.html #}
+LockPersonality=true
+# Certain borgmatic features like Healthchecks integration need MemoryDenyWriteExecute to be off.
+# But you can try setting it to "yes" for improved security if you don't use those features.
+MemoryDenyWriteExecute=no
+NoNewPrivileges=yes
+PrivateDevices=yes
+PrivateTmp=yes
+ProtectClock=yes
+ProtectControlGroups=yes
+ProtectHostname=yes
+ProtectKernelLogs=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+{% if borgbackup__service_protect_system | d("full") == "strict" %}
+{# strict leaves most of the filesystem read-only to borgmatic #}
+ProtectSystem=strict
+
+{%   if borgbackup__service_rw_directories | d([]) | flatten | length > 0 %}
+# Local repositories
+ReadWritePaths={{ borgbackup__service_rw_directories | flatten | map("regex_replace", "^", "-") | join(" ") }}
+
+{%   endif %}
+{%   if borgbackup__service_protect_root | d(True) %}
+# Mount a tmpfs on top of /root and pass through a subset of directories
+TemporaryFileSystem=/root:ro
+BindPaths=-/root/.cache/borg -/root/.config/borg -/root/.borgmatic
+BindReadOnlyPaths=-/root/.ssh
+
+{%   endif %}
+CapabilityBoundingSet={{ borgbackup__service_capabilities }}
+
+{% else %}
+{# full only disallows write access to /etc #}
+ProtectSystem=full
+
+{% endif %}
+# Lower CPU and I/O priority.
+Nice=19
+CPUSchedulingPolicy=batch
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+IOWeight=100
+
+Restart=no
+LogRateLimitIntervalSec=0
+
+{# The default service includes a 1m sleep here to make sure there's a delay
+ # at boot. There is, however, already a delay because of the combination
+ # of "Persistent=true" and "RandomizedDelaySec", so skip this or a manual
+ # or controller-initiated backup will also hang for 1m.
+#}
+ExecStartPre=
+{# Delay start to prevent backups running during boot. Note that systemd-inhibit requires dbus and
+ # dbus-user-session to be installed.
+ #ExecStartPre=sleep 1m
+#}
+{# Build the correct borgmatic invocation #}
+{# Verbosity has a -2 setting after 1.7.14, -1 outputs errors to stdout #}
+{% set borgmatic_verbosity = "-1"
+    if ansible_local.borgbackup.borgmatic_version is version("1.7.14", "<")
+    else "-2"
+%}
+{% set borgmatic_cmd = borgbackup__borgmatic_binary + " --verbosity " + borgmatic_verbosity + " --syslog-verbosity 1" %}
+ExecStart=systemd-inhibit --who="borgmatic" --what="sleep:shutdown" --why="Prevent interrupting scheduled backup" {{ borgmatic_cmd }}
