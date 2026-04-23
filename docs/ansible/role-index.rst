@@ -305,6 +305,7 @@ packages.
 - :ref:`debops.debops_legacy`
 - :ref:`debops.extrepo`
 - :ref:`debops.keyring`
+- :ref:`debops.needrestart`
 - :ref:`debops.unattended_upgrades`
 - :ref:`debops.reprepro`
 

@@ -90,17 +90,6 @@ apt_install__state: '{{ "present"
                         else "latest" }}'
 
                                                                    # ]]]
-# .. envvar:: apt_install__no_kernel_hints [[[
-#
-# Enable or disable configuration of the hints about upgraded kernel requiring
-# a reboot of the host, created by the :command:`needrestart` package.  By
-# default these hints will be disabled, which helps with non-interactive APT
-# package installation done by Ansible.
-apt_install__no_kernel_hints: '{{ True
-                                  if ("needrestart" in apt_install__conditional_whitelist_packages)
-                                  else False }}'
-
-                                                                   # ]]]
 # .. envvar:: apt_install__recommends [[[
 #
 # Boolean variable that controls installation of recommended packages.
@@ -238,7 +227,6 @@ apt_install__conditional_whitelist_packages:
   - 'libpam-systemd'
   - 'haveged'
   - 'gnupg-curl'
-  - 'needrestart'
   - 'open-vm-tools'
 
                                                                    # ]]]
@@ -285,10 +273,6 @@ apt_install__conditional_packages:
                if ansible_distribution_release in
                   ["trusty", "xenial"]
                else "absent" }}'
-
-  - name: 'needrestart'
-    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
-    state: 'present'
 
   - name: 'open-vm-tools'
     whitelist: '{{ apt_install__conditional_whitelist_packages }}'
@@ -424,12 +408,7 @@ apt_install__host_alternatives: []
 # .. envvar:: apt_install__apt_preferences__dependent_list [[[
 #
 # Configuration for the :ref:`debops.apt_preferences` role.
-apt_install__apt_preferences__dependent_list:
-
-  - package: 'needrestart needrestart-*'
-    backports: [ 'trusty' ]
-    reason: 'Better support for container technologies'
-    by_role: 'debops.apt_install'
+apt_install__apt_preferences__dependent_list: []
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

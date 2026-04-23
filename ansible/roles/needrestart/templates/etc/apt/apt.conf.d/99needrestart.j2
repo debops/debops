@@ -1,0 +1,18 @@
+{# Copyright (C) 2026 seven-beep <ebn@entreparentheses.xyz>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+#
+# By-role: debops.needrestart
+#
+# Reason: Revert Ubuntu modifications pushing automatic restarts on unattended upgrades.
+#
+# needrestart - Restart daemons after library updates.
+#
+# Call needrestart after package upgrades/installations and check
+# for pending service restarts. Should only be triggered if there
+# was no error during installation.
+#
+
+DPkg::Post-Invoke {"test -x /usr/lib/needrestart/apt-pinvoke && /usr/lib/needrestart/apt-pinvoke || true"; };

@@ -1,0 +1,12 @@
+{# Copyright (C) 2026 seven-beep <ebn@entreparentheses.xyz>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+{% if item.value.by_role | d() %}
+# Managed by role: {{ item.value.by_role }}
+{% endif %}
+{% if item.value.comment | d() %}
+{{   item.value.comment | comment }}
+{% endif %}
+{{ item.value.content }}

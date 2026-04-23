@@ -26,6 +26,13 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.needrestart` role with its corresponding playbook can be used
+  to manage :program:``needrestart`` configurations and scripts. It is included
+  in the :file:`common.yml` playbook.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
@@ -50,6 +57,13 @@ Changed
 - The role should now support OpenLDAP v2.6 available on Debian Trixie. Upgrade
   path of existing OpenLDAP servers managed by DebOps is not tested yet, check
   the changes in a test environment.
+
+:ref:`debops.apt_install` role
+''''''''''''''''''''''''''''''
+
+- The role does not install or alter :program:`needrestart` configurations as
+  they are managed by their own role.
+
 
 Fixed
 ~~~~~

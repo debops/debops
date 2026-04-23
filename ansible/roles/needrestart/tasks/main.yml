@@ -1,0 +1,185 @@
+---
+# Copyright (C) 2026 seven-beep <ebn@entreparentheses.xyz>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  ansible.builtin.import_role:
+    name: 'ansible_plugins'
+
+- name: Install required packages
+  ansible.builtin.package:
+    name: '{{ q("flattened", (needrestart__base_packages
+                              + needrestart__packages)) }}'
+    state: 'present'
+  register: needrestart__register_packages
+  until: needrestart__register_packages is succeeded
+  when: needrestart__enabled is truthy
+
+- name: Delete needrestart configurations
+  ansible.builtin.file:
+    dest: '{{ "/etc/needrestart/conf.d/" + item.key + ".conf" }}'
+    state: 'absent'
+  with_dict: '{{ needrestart__combined_configuration }}'
+  loop_control:
+    label: '{{ item.key }}'
+  when:
+    - item.value.state | d("present") == "absent" or needrestart__enabled is falsy
+
+- name: Create needrestart configurations
+  ansible.builtin.template:
+    src: 'etc/needrestart/conf.d/ansible.conf.j2'
+    dest: '{{ "/etc/needrestart/conf.d/" + item.key + ".conf" }}'
+    owner: '{{ item.owner | d("root") }}'
+    group: '{{ item.group | d("root") }}'
+    mode: '{{ item.mode | d("0644") }}'
+    validate: 'needrestart -r l -c %s'
+  with_dict: '{{ needrestart__combined_configuration }}'
+  loop_control:
+    label: '{{ item.key }}'
+  when:
+    - needrestart__enabled is truthy
+    - item.value.state | d("present") == "present"
+
+- name: Divert /etc/apt/apt.conf.d/99needrestart on Ubuntu
+  debops.debops.dpkg_divert:
+    path: '/etc/apt/apt.conf.d/99needrestart'
+    state: >-
+      {{ "present" if needrestart__enabled is truthy
+                   and needrestart__no_ubuntu_mode is truthy
+                   and ansible_facts.distribution == "Ubuntu"
+                   else "absent" }}
+    delete: true
+
+- name: No Ubuntu mode in /etc/apt/apt.conf.d/99needrestart
+  ansible.builtin.template:
+    src: 'etc/apt/apt.conf.d/99needrestart.j2'
+    dest: '/etc/apt/apt.conf.d/99needrestart'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when:
+    - needrestart__enabled is truthy
+    - ansible_facts.distribution == "Ubuntu"
+    - needrestart__no_ubuntu_mode is truthy
+
+- name: Require reboot when daemons need restart
+  ansible.builtin.template:
+    src: '{{ item }}'
+    dest: '{{ "/" + item | replace(".j2", "") }}'
+    owner: 'root'
+    group: 'root'
+    mode: >-
+      {{ "0755" if item == "usr/libexec/needrestart-reboot-required.j2"
+         else "0644" }}
+  loop:
+    - 'etc/apt/apt.conf.d/99needrestart-reboot-required.j2'
+    - 'usr/libexec/needrestart-reboot-required.j2'
+  when:
+    - needrestart__enabled is truthy
+    - needrestart__require_reboot is truthy
+
+- name: Remove APT reboot hook
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: 'absent'
+  loop:
+    - 'etc/apt/apt.conf.d/99needrestart-reboot-required'
+    - 'usr/libexec/needrestart-reboot-required'
+  when:
+    - needrestart__enabled is falsy or needrestart__require_reboot is falsy
+
+- name: Add/remove diversion of packaged restart scripts
+  vars:
+    needrestart__var_divert_path: '{{ "/etc/needrestart/restart.d/" + item.filename | d(item.name) }}'
+  debops.debops.dpkg_divert:
+    path: '{{ needrestart__var_divert_path }}'
+    divert: '{{ needrestart__var_divert_path + ".disabled" }}'
+    state: >-
+      {{ "present"
+               if (needrestart__enabled is truthy and
+                   item.state | d("present") not in ["absent", "revert"])
+               else "absent" }}
+    package: 'needrestart'
+    delete: true
+  loop: '{{ needrestart__combined_restart_scripts | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ item.filename | d(item.name) }}'
+  when:
+    - item.filename | d(item.name) is truthy
+    - item.divert | d(False) is truthy
+
+- name: Remove restart scripts
+  ansible.builtin.file:
+    path: '{{ "/etc/needrestart/restart.d/" + item.filename | d(item.name) }}'
+    state: "absent"
+  loop: '{{ q("flattened", needrestart__combined_restart_scripts) | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ item.filename | d(item.name) }}'
+  when:
+    - item.filename | d(item.name) is truthy
+    - not item.divert | d(False) is truthy
+    - item.state | d('present') == 'absent' or needrestart__enabled is falsy
+
+- name: Install restart scripts
+  ansible.builtin.copy:
+    src: '{{ item.src | d(omit) }}'
+    content: '{{ item.content | d(omit) }}'
+    dest: '{{ "/etc/needrestart/restart.d/" + item.filename | d(item.name) }}'
+    owner: '{{ item.owner | d("root") }}'
+    group: '{{ item.owner | d("group") }}'
+    mode: '{{ item.owner | d("0755") }}'
+  loop: '{{ needrestart__combined_restart_scripts | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ item.filename | d(item.name) }}'
+  when:
+    - needrestart__enabled is truthy
+    - item.filename | d(item.name) is truthy
+    - item.src | d(item.content) is defined
+    - item.state | d('present') not in ['init', 'absent', 'ignore', 'revert']
+
+- name: Make sure that unattended-upgrades plugin directory exists
+  ansible.builtin.file:
+    path: '/etc/unattended-upgrades/plugins'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when:
+    - needrestart__enabled is truthy
+    - needrestart__uu_plugin_enabled is truthy
+
+- name: Install unattended-upgrades plugin
+  ansible.builtin.copy:
+    src: 'etc/unattended-upgrades/plugins/needrestart.py'
+    dest: '/etc/unattended-upgrades/plugins/needrestart.py'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when:
+    - needrestart__enabled is truthy
+    - needrestart__uu_plugin_enabled is truthy
+
+- name: Remove unattended-upgrades plugin
+  ansible.builtin.file:
+    path: '/etc/unattended-upgrades/plugins/needrestart.py'
+    state: "absent"
+  when:
+    - needrestart__enabled is falsy or needrestart__uu_plugin_enabled is falsy
+
+- name: Make sure that Ansible local fact directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Ansible local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/needrestart.fact.j2'
+    dest: '/etc/ansible/facts.d/needrestart.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  tags: [ 'meta::facts' ]

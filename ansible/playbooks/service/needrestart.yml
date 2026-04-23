@@ -1,0 +1,18 @@
+---
+# Copyright (C) 2026 seven-beep <ebn@entreparentheses.xyz>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Check which daemons to restart after library upgrades # noqa: fqcn[keyword]
+  collections: [ 'debops.debops' ]                            # noqa: fqcn[keyword]
+  hosts: ['debops_all_hosts', 'debops_service_needrestart' ]
+  become: true
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: needrestart
+      tags: [ 'role::needrestart', 'skip::needrestart' ]

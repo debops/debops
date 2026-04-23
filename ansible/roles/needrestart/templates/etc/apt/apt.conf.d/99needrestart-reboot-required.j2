@@ -1,0 +1,13 @@
+{# Copyright (C) 2026 seven-beep <ebn@entreparentheses.xyz>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+#
+# By-role: debops.needrestart
+#
+# Reason: To fully update a system, services must be restarted, however it
+# is not always possible to restart them individually. This hook ask for a reboot
+# if services need to restart.
+
+DPkg::Post-Invoke {"/usr/libexec/needrestart-reboot-required";};
