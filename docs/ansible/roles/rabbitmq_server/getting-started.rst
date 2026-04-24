@@ -174,7 +174,7 @@ this makes both invocation modes fully automatic:
   the seed is already reachable.
 
 Multiple independent clusters in one environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When a single inventory manages several RabbitMQ clusters, split them
 into dedicated inventory groups and point
