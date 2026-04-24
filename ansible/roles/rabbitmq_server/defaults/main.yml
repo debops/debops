@@ -824,20 +824,28 @@ rabbitmq_server__cluster_allow: []
                                                                    # ]]]
 # .. envvar:: rabbitmq_server__cluster_autojoin [[[
 #
-# Enable automatic cluster formation. When ``True`` (default), non-seed nodes
-# run ``rabbitmqctl reset`` and ``rabbitmqctl join_cluster`` against the seed
-# node after the role has applied its configuration and handlers fired. Set to
-# ``False`` to keep the classic DebOps behaviour where cluster membership is
-# managed manually via ``rabbitmqctl join_cluster``.
-rabbitmq_server__cluster_autojoin: True
+# Enable automatic cluster formation. Defaults to ``False`` (opt-in) so that
+# upgrading the role on existing deployments never changes cluster membership
+# on its own - in particular, several independent single-node RabbitMQ
+# instances that happen to share the ``debops_service_rabbitmq_server``
+# inventory group will not be merged into one cluster. Set to ``True`` on
+# groups that should form or maintain a real cluster; non-seed nodes then run
+# ``rabbitmqctl reset`` and ``rabbitmqctl join_cluster`` against the seed
+# after the role has applied its configuration and handlers fired. The role
+# refuses to reset a node that is already part of a different cluster, so
+# flipping this to ``True`` on existing clusters is safe.
+rabbitmq_server__cluster_autojoin: False
                                                                    # ]]]
 # .. envvar:: rabbitmq_server__cluster_hosts [[[
 #
 # Ordered list of cluster members. Defaults to the
 # ``debops_service_rabbitmq_server`` inventory group, sorted alphabetically.
 # The first entry is used as the seed node (see
-# ``rabbitmq_server__cluster_seed_node``). Override in the inventory when you
-# want to pick the seed explicitly.
+# ``rabbitmq_server__cluster_seed_node``). When the inventory hosts more than
+# one independent RabbitMQ cluster under that group, narrow this variable to
+# the members of the individual cluster in the matching ``group_vars`` (e.g.
+# ``groups["rabbitmq_cluster_a"]`` / ``groups["rabbitmq_cluster_b"]``) so the
+# seed election and optional auto-join do not mix clusters together.
 rabbitmq_server__cluster_hosts: '{{ groups["debops_service_rabbitmq_server"]
                                     | default(ansible_play_hosts_all) | sort }}'
                                                                    # ]]]
