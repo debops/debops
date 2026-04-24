@@ -123,11 +123,25 @@ guaranteed by the sequential execution model.
 Automatic cluster formation
 ---------------------------
 
-When ``rabbitmq_server__cluster_autojoin`` is ``True`` (default), the role
-joins every non-seed node to the cluster after its configuration has been
-applied and the ``Restart rabbitmq-server`` handler has fired. The seed node
-is the first entry of ``rabbitmq_server__cluster_hosts``, which defaults to
-the ``debops_service_rabbitmq_server`` inventory group sorted alphabetically.
+The role can form and maintain a RabbitMQ cluster on its own, but the
+feature is **opt-in** - ``rabbitmq_server__cluster_autojoin`` defaults to
+``False`` so that upgrading the role on an existing deployment never
+alters cluster membership on its own. In particular, several independent
+single-node RabbitMQ instances that happen to share the
+``debops_service_rabbitmq_server`` inventory group stay independent.
+Enable auto-join explicitly on the inventory groups that should form a
+cluster:
+
+.. code-block:: yaml
+
+   # group_vars/debops_service_rabbitmq_server/rabbitmq_server.yml
+   rabbitmq_server__cluster_autojoin: True
+
+When enabled, the role joins every non-seed node to the cluster after its
+configuration has been applied and the ``Restart rabbitmq-server`` handler
+has fired. The seed node is the first entry of
+``rabbitmq_server__cluster_hosts``, which defaults to the
+``debops_service_rabbitmq_server`` inventory group sorted alphabetically.
 Override the seed explicitly by setting
 ``rabbitmq_server__cluster_seed_node`` (or by reordering
 ``rabbitmq_server__cluster_hosts``) in the inventory.
@@ -158,6 +172,16 @@ this makes both invocation modes fully automatic:
 - ``debops run service/rabbitmq_server --limit hostN``: the role still
   identifies the seed via the inventory group and joins against it, provided
   the seed is already reachable.
+
+Multiple independent clusters in one environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When a single inventory manages several RabbitMQ clusters, split them
+into dedicated inventory groups and point
+``rabbitmq_server__cluster_hosts`` at the matching group in each
+``group_vars`` subtree. See
+:ref:`rabbitmq_server__ref_cluster_autojoin` in the defaults reference
+for a full inventory layout example with two independent clusters.
 
 
 Inter-node communication is not encrypted

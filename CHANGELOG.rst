@@ -43,13 +43,19 @@ Added
 
 - The role can now form a RabbitMQ cluster automatically. Non-seed nodes
   run ``rabbitmqctl reset`` and ``rabbitmqctl join_cluster`` against the
-  seed node (first host of the ``debops_service_rabbitmq_server`` group,
-  sortable override via ``rabbitmq_server__cluster_hosts``) once RabbitMQ
-  has been configured and restarted. The join is guarded by a sanity
-  check that the current node's ``disk_nodes`` contains only itself, so
-  an existing cluster member is never reset. Controlled by
-  ``rabbitmq_server__cluster_autojoin`` (default ``True``); flip to
-  ``False`` for the classic manual workflow.
+  seed node (first host of ``rabbitmq_server__cluster_hosts``, which
+  defaults to the ``debops_service_rabbitmq_server`` inventory group
+  sorted alphabetically) once RabbitMQ has been configured and restarted.
+  The join is guarded by a sanity check that the current node's
+  ``disk_nodes`` contains only itself, so an existing cluster member is
+  never reset. Controlled by ``rabbitmq_server__cluster_autojoin``
+  (default ``False``, opt-in) so that upgrading the role on existing
+  deployments never alters cluster membership on its own; in particular,
+  several independent single-node RabbitMQ instances that happen to share
+  the ``debops_service_rabbitmq_server`` group stay independent until
+  auto-join is explicitly enabled on the groups that should form a
+  cluster. See the role documentation for a multi-cluster inventory
+  layout example.
 
 - The ``rabbitmq_server__*_feature_flags`` list variables now accept an
   ``opt_in: True`` key per entry. When set, the role enables the feature
