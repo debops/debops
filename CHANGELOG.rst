@@ -41,6 +41,29 @@ Added
   --default-queue-type`` for the vhost. Useful on RabbitMQ 3.13+/4.x where
   ``quorum`` queues can be made the default without resorting to policies.
 
+- The role can now form a RabbitMQ cluster automatically. Non-seed nodes
+  run ``rabbitmqctl reset`` and ``rabbitmqctl join_cluster`` against the
+  seed node (first host of ``rabbitmq_server__cluster_hosts``, which
+  defaults to the ``debops_service_rabbitmq_server`` inventory group
+  sorted alphabetically) once RabbitMQ has been configured and restarted.
+  The join is guarded by a sanity check that the current node's
+  ``disk_nodes`` contains only itself, so an existing cluster member is
+  never reset. Controlled by ``rabbitmq_server__cluster_autojoin``
+  (default ``False``, opt-in) so that upgrading the role on existing
+  deployments never alters cluster membership on its own; in particular,
+  several independent single-node RabbitMQ instances that happen to share
+  the ``debops_service_rabbitmq_server`` group stay independent until
+  auto-join is explicitly enabled on the groups that should form a
+  cluster. See the role documentation for a multi-cluster inventory
+  layout example.
+
+- The ``rabbitmq_server__*_feature_flags`` list variables now accept an
+  ``opt_in: True`` key per entry. When set, the role enables the feature
+  flag via ``rabbitmqctl -q enable_feature_flag --opt-in`` instead of the
+  standard ``community.rabbitmq.rabbitmq_feature_flag`` module. This lets
+  operators switch on flags that require explicit opt-in, such as
+  ``khepri_db`` on RabbitMQ 4.0/4.1.
+
 Changed
 ~~~~~~~
 
@@ -112,6 +135,16 @@ General
 - In the :command:`pki-realm` script, ensure that certain :command:`certbot`
   command options and their arguments are separated with a spaca. This fixes an
   issue with ACME DNS-01 challenge not being processed correctly.
+
+:ref:`debops.rabbitmq_server` role
+''''''''''''''''''''''''''''''''''
+
+- The ``Manage RabbitMQ feature flags`` task no longer fails when the
+  inventory references feature flags that have become ``required`` in the
+  running RabbitMQ version. Required flags are auto-enabled and no longer
+  appear in ``rabbitmqctl list_feature_flags`` output; they are now detected
+  and skipped. Fixes a hard failure observed with RabbitMQ 4.x on Debian
+  Trixie where ``detailed_queues_endpoint`` was required.
 
 
 `debops v3.3.0`_ - 2026-03-13
