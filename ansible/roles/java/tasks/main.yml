@@ -24,7 +24,7 @@
   ansible.builtin.command: 'update-java-alternatives -s {{ java__alternatives }}'
   register: java__register_update_alternatives
   changed_when: java__register_update_alternatives.changed | bool
-  when: java__alternatives | d()
+  when: java__alternatives | d() | length > 0
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
