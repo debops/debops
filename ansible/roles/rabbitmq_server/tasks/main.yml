@@ -81,7 +81,7 @@
   register: rabbitmq_server__register_dependent_config_file
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local | d() and ansible_local.rabbitmq_server | d() and
+  when: (ansible_local | d() | length > 0 and ansible_local.rabbitmq_server | d() | length > 0 and
          ansible_local.rabbitmq_server.installed is defined and
          ansible_local.rabbitmq_server.installed | bool)
   tags: [ 'role::rabbitmq_server:config' ]
@@ -92,7 +92,7 @@
   register: rabbitmq_server__register_dependent_config
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local | d() and ansible_local.rabbitmq_server | d() and
+  when: (ansible_local | d() | length > 0 and ansible_local.rabbitmq_server | d() | length > 0 and
          ansible_local.rabbitmq_server.installed is defined and
          ansible_local.rabbitmq_server.installed | bool and
          rabbitmq_server__register_dependent_config_file.stat.exists | bool)
@@ -193,7 +193,7 @@
     value:     '{{ item.value | d(omit) }}'
     vhost:     '{{ item.vhost | d(omit) }}'
   loop: '{{ q("flattened", rabbitmq_server__combined_parameters) }}'
-  when: (item.name | d() and item.component | d())
+  when: (item.name | d() | length > 0 and item.component | d() | length > 0)
   tags: [ 'role::rabbitmq_server:parameter' ]
 
 - name: Manage RabbitMQ policies
@@ -207,7 +207,7 @@
     state:    '{{ item.state | d("present") }}'
     vhost:    '{{ item.vhost | d(omit) }}'
   loop: '{{ q("flattened", rabbitmq_server__combined_policies) }}'
-  when: (item.name | d() and item.pattern | d() and item.tags | d())
+  when: (item.name | d() | length > 0 and item.pattern | d() | length > 0 and item.tags | d() | length > 0)
   tags: [ 'role::rabbitmq_server:policy' ]
 
 - name: Manage RabbitMQ user accounts
