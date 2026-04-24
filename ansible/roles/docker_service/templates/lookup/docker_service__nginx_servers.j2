@@ -1,0 +1,39 @@
+{# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+---
+{% for svc in docker_service__combined_services | d([]) %}
+{%   if svc.state | d('present') not in ['absent', 'ignore'] %}
+{%     if svc.nginx is defined and (svc.nginx.enabled | d(False) | bool) %}
+{%       set nginx = svc.nginx %}
+- name: '{{ nginx.fqdn | d(svc.name + "." + docker_service__domain) }}'
+  by_role: 'debops.docker_service'
+  filename: 'debops.docker_service_{{ svc.name }}'
+  type: '{{ nginx.type | d("proxy") }}'
+  proxy_pass: 'http://{{ svc.name }}-upstream'
+  proxy_location: '/'
+  proxy_headers: {{ nginx.proxy_headers | d(True) | bool }}
+{%       if nginx.proxy_options | d() %}
+  proxy_options: |
+{{ nginx.proxy_options | indent(4, true) }}
+{%       endif %}
+{%       if nginx.options | d() %}
+  options: |
+{{ nginx.options | indent(4, true) }}
+{%       endif %}
+{%       if nginx.allow | d([]) %}
+  allow: {{ nginx.allow | to_json }}
+{%       endif %}
+{%       if nginx.deny_all | d(False) | bool %}
+  location_allow: {{ nginx.allow | d([]) | to_json }}
+{%       endif %}
+{%       if nginx.auth_basic | d(False) | bool %}
+  auth_basic: True
+{%         if nginx.auth_basic_realm | d() %}
+  auth_basic_realm: '{{ nginx.auth_basic_realm }}'
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
