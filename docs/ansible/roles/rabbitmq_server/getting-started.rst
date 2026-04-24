@@ -77,6 +77,49 @@ See the `RabbitMQ Clustering Guide <https://www.rabbitmq.com/clustering.html>`_
 for more details.
 
 
+Rolling restart and cluster bootstrap
+-------------------------------------
+
+Starting with RabbitMQ 4.2 the broker uses Khepri (Raft) for metadata
+storage by default (in 4.0 and 4.1 it is available as an opt-in feature
+flag), which means that restarting a majority of cluster nodes
+simultaneously causes a ``timeout_waiting_for_leader`` boot deadlock. To
+prevent this, the service playbook uses ``serial: 1`` together with
+``any_errors_fatal: true`` and ``max_fail_percentage: 0``, and runs a
+post-task health check (``rabbitmqctl await_startup`` +
+``cluster_status`` + ``assert`` that the current node is visible in
+``running_nodes``). Nodes are restarted one at a time and the play stops
+on the first failure.
+
+On top of that, the ``Restart rabbitmq-server`` handler first calls
+``rabbitmqctl stop_app`` (to avoid ``duplicate_node_name`` races with EPMD),
+restarts the systemd unit and waits for ``rabbitmqctl await_startup`` to
+return. The handler also carries ``throttle: 1`` as a second line of
+defense in case the role is used outside of the service playbook.
+
+Both invocation modes are supported out of the box:
+
+- Running the playbook against the whole group at once::
+
+      debops run service/rabbitmq_server
+
+  ``serial: 1`` forces sequential processing, so nodes are configured and
+  restarted one after another even if the inventory targets the whole
+  cluster.
+
+- Running the playbook per host via ``--limit`` (useful when the role is
+  not configured to form the cluster automatically and each node needs
+  a manual ``rabbitmqctl join_cluster`` in between)::
+
+      debops run service/rabbitmq_server --limit host1
+      debops run service/rabbitmq_server --limit host2
+      debops run service/rabbitmq_server --limit host3
+
+The post-task assertion only checks that the current node itself rejoined
+the cluster, so it does not trip up either scenario; peer availability is
+guaranteed by the sequential execution model.
+
+
 Inter-node communication is not encrypted
 -----------------------------------------
 
