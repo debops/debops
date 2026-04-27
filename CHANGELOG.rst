@@ -148,8 +148,8 @@ New DebOps roles
 
 - The role now supports `iterate_filter` for its LDAP configuration, allowing
   :command:`doveadm` commands to iterate over all users. Note that you might
-  have to adjust the defaults for the :envvar:`dovecot__ldap_user_list_filter`
-  variable if you use the :envvar:`dovecot__ldap_user_filter` variable.
+  have to adjust the defaults for the ``dovecot__ldap_user_list_filter``
+  variable if you use the ``dovecot__ldap_user_filter`` variable.
 
 :ref:`debops.ipxe` role
 '''''''''''''''''''''''
