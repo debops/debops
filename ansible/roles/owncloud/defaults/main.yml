@@ -320,6 +320,7 @@ owncloud__variant_name_map:
 # Upcoming:
 #
 # * Nextcloud ``25.0`` (Implemented based on documentation changes but untested).
+# * Nextcloud ``26.0`` (Implemented based on documentation changes, no changes from ``25.0``).
 #
 # Unsupported:
 #
@@ -2094,7 +2095,7 @@ owncloud__nginx__dependent_maps:
   - name: 'asset_immutable'
     map: '$arg_v $asset_immutable'
     mapping: '"" "";'
-    default: 'immutable'
+    default: '", immutable"'
 
 
 # .. envvar:: owncloud__nginx_options
@@ -2106,6 +2107,16 @@ owncloud__nginx_options: |-
   # Remove X-Powered-By, which is an information leak
   fastcgi_hide_header X-Powered-By;
 
+  # Set .mjs and .wasm MIME types
+  # Either include it in the default mime.types list
+  # and include that list explicitly or add the file extension
+  # only for Nextcloud like below:
+  include mime.types;
+  types {
+      text/javascript js mjs;
+      application/wasm wasm;
+  }
+
   # Specify how to handle directories -- specifying `/index.php$request_uri`
   # here as the fallback means that Nginx always exhibits the desired behaviour
   # when a client requests a path that corresponds to a directory that exists
@@ -2113,7 +2124,7 @@ owncloud__nginx_options: |-
   # that file is correctly served; if it doesn't, then the request is passed to
   # the front-end controller. This consistent behaviour means that we don't need
   # to specify custom rules for certain paths (e.g. images and other assets,
-  # `/updater`, `/ocm-provider`, `/ocs-provider`), and thus
+  # `/updater`, `/ocs-provider`), and thus
   # `try_files $uri $uri/ /index.php$request_uri`
   # always provides the desired behaviour.
   index index.php index.html /index.php$request_uri;
@@ -2138,7 +2149,7 @@ owncloud__nginx_options: |-
   gzip_comp_level 4;
   gzip_min_length 256;
   gzip_proxied expired no-cache no-store private no_last_modified no_etag auth;
-  gzip_types application/atom+xml application/javascript application/json application/ld+json application/manifest+json application/rss+xml application/vnd.geo+json application/vnd.ms-fontobject application/wasm application/x-font-ttf application/x-web-app-manifest+json application/xhtml+xml application/xml font/opentype image/bmp image/svg+xml image/x-icon text/cache-manifest text/css text/plain text/vcard text/vnd.rim.location.xloc text/vtt text/x-component text/x-cross-domain-policy;
+  gzip_types application/atom+xml text/javascript application/javascript application/json application/ld+json application/manifest+json application/rss+xml application/vnd.geo+json application/vnd.ms-fontobject application/wasm application/x-font-ttf application/x-web-app-manifest+json application/xhtml+xml application/xml font/opentype image/bmp image/svg+xml image/x-icon text/cache-manifest text/css text/plain text/vcard text/vnd.rim.location.xloc text/vtt text/x-component text/x-cross-domain-policy;
   {% else %}
   # Disable gzip to avoid the removal of the ETag header
   gzip off;
@@ -2194,6 +2205,9 @@ owncloud__nginx__dependent_servers:
     ## https://docs.nextcloud.com/server/17/admin_manual/issues/general_troubleshooting.html#common-problems-error-messages
     ## DebOps default should be fine.
     # keepalive: '3600'
+
+    # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection
+    xss_protection: '{{ omit }}'
 
     robots_tag: [ 'none' ]
     permitted_cross_domain_policies: 'none'
@@ -2261,7 +2275,7 @@ owncloud__nginx__dependent_servers:
 
           # Required for legacy support
           # https://github.com/nextcloud/documentation/pull/2197#issuecomment-721432337
-          rewrite ^/{{ owncloud__http_psk_subpath_end_slash }}(?!index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|oc[ms]-provider\/.+|.+\/richdocumentscode\/proxy) /{{ owncloud__http_psk_subpath_end_slash }}index.php$request_uri;
+          rewrite ^/{{ owncloud__http_psk_subpath_end_slash }}(?!index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|ocs-provider\/.+|.+\/richdocumentscode(_arm64)?\/proxy) /{{ owncloud__http_psk_subpath_end_slash }}index.php$request_uri;
 
           # (/.*|): The "or empty" regex alternative is needed for custom
           # subpath because otherwise the whole regex would not match and would
@@ -2288,25 +2302,31 @@ owncloud__nginx__dependent_servers:
 
           fastcgi_intercept_errors on;
           {% if (ansible_local.nginx.version | d("0.0")) is version_compare("1.7.11", '>=') %}
-          fastcgi_request_buffering off;
+          fastcgi_request_buffering on;                   # Required as PHP-FPM does not support chunked transfer encoding and requires a valid ContentLength header.
           {% endif %}
+
+          fastcgi_max_temp_file_size 0;
 
           fastcgi_read_timeout {{ owncloud__timeout }};
 
-      - pattern: '~ {{ owncloud__http_psk_subpath_begin_slash }}(/.*\.(?:css|js|svg|gif|png|jpg|ico|wasm|tflite))$'
+      - pattern: '~ {{ owncloud__http_psk_subpath_begin_slash }}(/.*\.(?:css|js|mjs|svg|gif|png|jpg|ico|wasm|tflite|map|ogg|flac|mp4|webm))$'
         options: |
+          # Serve static files
           try_files {{ "$1" if (owncloud__http_psk_subpath_enabled | bool) else "$uri" }} /{{ owncloud__http_psk_subpath_end_slash }}index.php$request_uri;
-          add_header Cache-Control "public, max-age=15778463, $asset_immutable";
+
+          # HTTP response headers borrowed from Nextcloud `.htaccess`
+          add_header Cache-Control                     "public, max-age=15778463$asset_immutable";
+          add_header Referrer-Policy                   "no-referrer"       always;
+          add_header X-Content-Type-Options            "nosniff"           always;
+          add_header X-Frame-Options                   "SAMEORIGIN"        always;
+          add_header X-Permitted-Cross-Domain-Policies "none"              always;
+          add_header X-Robots-Tag                      "noindex, nofollow" always;
 
           {% if not (owncloud__nginx_access_log_assets | bool) %}
           access_log off;
           {% endif %}
 
-          location ~ \.wasm$ {
-              default_type application/wasm;
-          }
-
-      - pattern: '~ {{ owncloud__http_psk_subpath_begin_slash }}(/.*\.woff2?)$'
+      - pattern: '~ {{ owncloud__http_psk_subpath_begin_slash }}(/.*\.(otf|woff2?))$'
         options: |
           try_files {{ "$1" if (owncloud__http_psk_subpath_enabled | bool) else "$uri" }} /{{ owncloud__http_psk_subpath_end_slash }}index.php$request_uri;
           expires 7d;         # Cache-Control policy borrowed from `.htaccess`
