@@ -98,6 +98,12 @@ Each list entry is a YAML dictionary with specific parameters:
   - ``revert``: if a given entry has the ``divert: True`` parameter, the
     specified script will be reverted to its original state.
 
+``mode``
+  Optional. Define the permissions of a particula script. Default to ``0755``.
+  If the script is not executable, it will not be included directly in the
+  dynamic MOTD but could be referenced as a source or resource in others
+  scripts.
+
 Examples
 ~~~~~~~~
 
