@@ -1,5 +1,5 @@
 .. Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. Copyright (C) 2017-2026 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
@@ -24,23 +24,12 @@ used in and if they should be used in a particular NSS database lookup.
 The default role configuration shouldn't affect the :file:`/etc/nsswitch.conf`
 configuration file provided by the OS distribution, apart from changing the
 mDNS service from IPv4 to both IPv6 and IPv4 (see :ref:`nsswitch__ref_mdns` for
-more details). The convention on Debian is that different packages which
+more details). The convention in Debian is that different packages which
 provide NSS services modify the :file:`/etc/nsswitch.conf` configuration file
 themselves, therefore the role tries to respect local modifications. A set of
 various NSS services (LDAP, SSS, Winbind) should be detected and enabled
 accordingly, however the order of the services comes from the role itself and
 might change from the one created by the Debian packages.
-
-According to the :man:`nsswitch.conf(5)`, processes that use the NSS
-configuration file read the :file:`/etc/nsswitch.conf` only once, therefore
-a restart of these processes (for example :command:`nscd` or :command:`sssd`)
-might be needed.
-
-At the moment the role restarts the :command:`systemd-logind` service on the
-configuration changes, but only when the playbook is executed against a remote
-host, to avoid breaking local user session. Changes on ``localhost`` might need
-the system to be restarted for :command:`systemd-logind` to reload the new
-configuration correctly.
 
 
 .. _nsswitch__ref_mdns:
