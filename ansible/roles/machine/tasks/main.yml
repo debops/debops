@@ -110,7 +110,7 @@
               + (item.filename | d(("%02d" | format(item.weight | int)) | string + "-" + item.name)) }}'
     owner: 'root'
     group: 'root'
-    mode: '0755'
+    mode: '{{ item.mode | d("0755") }}'
   loop: '{{ machine__motd_combined_scripts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ item.filename | d() or item.name }}'
