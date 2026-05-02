@@ -53,6 +53,13 @@ General
   installations should update their Ansible Collections to get the updated
   Community collection.
 
+:ref:`debops.machine` role
+''''''''''''''''''''''''''
+
+- The mode of the generated/installed MOTD scripts can be set by the
+  administrator in the role configuration, allowing for non-executable
+  files related to the MOTD message.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
