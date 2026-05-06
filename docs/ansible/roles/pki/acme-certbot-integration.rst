@@ -215,4 +215,18 @@ certificates themselves were registered successfully, but take care otherwise.
 To avoid rate limiting, you might want to consider enabling the staging CA for
 testing purposes.
 
+The DNS propagation wait time can be a common issue when using the DNS-01 challenge, 
+especially if your DNS provider has a long propagation time or the default wait time
+is overly conservative.
+You can adjust the wait time by adding the appropriate configuration variable 
+(e.g. dns-cloudflare_propagation_seconds) to :envvar:`pki_certbot_configuration`.
+
+Additional ACME Authority providers may be supported by the role.  
+To enable additional ACME providers, you can update 
+the :envvar:`pki_acme_ca_api_map` variable to the appropriate map entry. The name must
+contain 'live' for the production CA and 'staging' for the staging CA.  The value must be the API URL for the ACME provider.
+The --test-cert option will be passed to :command:`certbot` when the CA name contains 'staging'; 
+ACME providers may not honor the option and still issue a valid certificate, 
+so be sure to check the documentation for your ACME provider.
+
 .. __: https://letsencrypt.org/docs/rate-limits/
