@@ -1,0 +1,154 @@
+{# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+---
+name: debops-manage-inventory
+description: Understand and manage the DebOps Ansible inventory structure.
+license: GPL-3.0-or-later
+---
+
+## Inventory Structure
+
+DebOps uses Ansible inventory files organized as a directory tree. The layout
+shown below is a common convention created by the ``debops project init``
+command, but inventory can also be defined in ``.yml`` / ``.yaml`` files or be
+entirely dynamic. Always check the actual project layout rather than assuming
+a fixed structure.
+
+Load the ``debops-add-host`` skill for the full workflow to add a new host.
+Load the ``debops-enable-service`` skill to enable a service role.
+
+### Project layout
+
+**Legacy project**::
+
+    ansible/inventory/
+    ├── hosts
+    ├── group_vars/
+    │   └── all/
+    │       └── keyring.yml
+    └── host_vars/
+
+**Modern project** (with views)::
+
+    ansible/views/<view>/inventory/
+    ├── hosts
+    ├── group_vars/
+    │   └── all/
+    │       └── keyring.yml
+    └── host_vars/
+
+In modern projects, each "view" has its own inventory. Find the view
+name by checking ``.debops/conf.d/view-*.yml``.
+
+### Host groups
+
+**``[debops_all_hosts]``** - Required base group. Every managed host must
+be listed here (or be a child of this group):
+
+```ini
+[debops_all_hosts]
+hostname    ansible_host=hostname.example.com
+```
+
+**``[debops_service_<name>]``** - Enable a DebOps service role on a host:
+
+```ini
+[debops_service_nginx]
+hostname
+```
+
+**``[debops_service_<name>:children]``** - Apply a service role to all
+hosts in another group without listing them individually:
+
+```ini
+[debops_service_sssd:children]
+debops_all_hosts
+```
+
+**Custom groups** - Define your own group names for organizational
+purposes, then attach them to ``[debops_all_hosts:children]``:
+
+```ini
+[debops_all_hosts:children]
+webservers
+databases
+
+[webservers]
+web01
+
+[databases]
+db01
+```
+
+Hosts in a ``:children`` group inherit all service roles from the parent.
+
+### Host naming
+
+Hostnames should match the Ansible hostname used in playbooks. Use
+``ansible_host=`` to set the connection address separately:
+
+```ini
+hostname    ansible_host=fqdn.example.com
+```
+
+For the Ansible Controller itself, use ``ansible_connection=local``.
+
+Range patterns are supported for bulk additions:
+
+```ini
+[debops_all_hosts]
+web[01:50]    ansible_host=web<01:50>.example.com
+```
+
+### Variables
+
+Variables are stored in YAML files under ``group_vars/`` and
+``host_vars/``. Global variables that apply to all hosts go in
+``group_vars/all/``, organized by role prefix:
+
+```
+group_vars/all/
+├── nginx.yml
+├── postfix.yml
+├── sshd.yml
+└── ...
+```
+
+Variables use the role name as a prefix:
+
+```yaml
+# group_vars/all/nginx.yml
+nginx_flavor: 'full'
+nginx__deploy_state: 'present'
+```
+
+Per-host overrides go in ``host_vars/<hostname>/``:
+
+```yaml
+# host_vars/web01/nginx.yml
+nginx_flavor: 'passenger'
+```
+
+Load the ``debops-find-documentation`` skill to look up available
+role variables and their defaults.
+
+### Inspecting the current inventory
+
+Read the ``hosts`` file directly to see all groups and members. Read
+``group_vars/`` and ``host_vars/`` to see current variable
+configuration. Use ``debops run tools/debug -l <hostname>`` to dump
+all collected variables for a specific host.
+
+### Removing entries
+
+To decommission a host, remove it from all sections in the ``hosts``
+file. To disable a service for a host, remove it from the
+``[debops_service_<name>]`` section.
+
+### Safety
+
+Always use ``debops check`` (dry-run with diff) before applying
+inventory changes. Only use ``debops run`` when the user explicitly
+confirms.

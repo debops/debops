@@ -1,0 +1,117 @@
+{# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+---
+name: debops-find-documentation
+description: Find and read DebOps documentation from the right source.
+license: GPL-3.0-or-later
+---
+
+## Documentation Sources
+
+DebOps documentation lives in several places. Use the right source for the
+information you need.
+
+### 1. Role default variables
+
+The authoritative source for default variable names, types, and values is the
+role's ``defaults/`` directory inside the DebOps monorepo. These files are
+**not** duplicated in ``docs/`` - they are included into the Sphinx-built
+documentation at runtime.
+
+Load the ``debops-find-source`` skill to locate the monorepo, then read:
+
+```
+ansible/roles/<role>/defaults/main.yml
+```
+
+Some roles define defaults across multiple files in that directory.
+
+### 2. Role documentation (with examples)
+
+ReadTheDocs at ``https://docs.debops.org/`` includes the full role documentation
+with default variables expanded. Useful when the monorepo is not available.
+
+Available documentation versions on ReadTheDocs:
+
+| URL slug | Content |
+|---|---|
+| ``latest`` | Latest development build (git default branch) |
+| ``master`` | Alias for ``latest`` |
+| ``v<X.Y.Z>`` | Specific release (e.g. ``v3.2.0``) |
+| ``stable-<X>.<Y>`` | Stable release branch (e.g. ``stable-3.2``) |
+
+Determine the installed DebOps version to pick the closest match:
+
+```sh
+debops --version
+# or
+python3 -c "import debops; print(debops.__version__)"
+```
+
+Then construct the URL (append ``index.html`` for the role overview):
+
+```
+https://docs.debops.org/en/latest/ansible/roles/<role>/index.html
+https://docs.debops.org/en/v<X.Y.Z>/ansible/roles/<role>/index.html
+https://docs.debops.org/en/stable-<X>.<Y>/ansible/roles/<role>/index.html
+```
+
+For detailed variable examples, use ``defaults-detailed.html``:
+
+```
+https://docs.debops.org/en/latest/ansible/roles/<role>/defaults-detailed.html
+```
+
+### 3. Role manpage
+
+When DebOps is installed as a Python package, manpages are available:
+
+```sh
+man debops.<role> 5
+```
+
+Role manpages describe the role's purpose and structure but do **not** include
+default variable documentation. Fall back to the monorepo or ReadTheDocs for
+variable details.
+
+### 4. Subcommand documentation
+
+For ``debops run``, ``debops check``, and other subcommands:
+
+```sh
+man debops-run 5
+man debops-check 5
+man debops-exec 5
+man debops-project 5
+```
+
+Without manpages, use ReadTheDocs:
+
+```
+https://docs.debops.org/en/latest/user-guide/scripts/debops-run/debops-run.html
+https://docs.debops.org/en/latest/user-guide/scripts/debops-check/debops-check.html
+```
+
+### 5. Agent conventions
+
+The project's agent usage conventions are documented in
+``docs/user-guide/ai-agent-integration.rst`` in the monorepo (or on
+ReadTheDocs).
+
+### 6. General / changelog
+
+- Monorepo ``docs/`` directory - raw RST source for Sphinx
+- ReadTheDocs ``https://docs.debops.org/en/latest/index.html`` - rendered HTML
+- ``docs/news/`` - changelog
+
+## Source selection summary
+
+| You need... | Use... |
+|---|---|
+| Variable names and values | ``ansible/roles/<role>/defaults/main.yml`` in the monorepo |
+| Variable docs with examples | ReadTheDocs ``/en/latest/ansible/roles/<role>/index.html`` |
+| Role synopsis / structure | ``man debops.<role> 5`` |
+| Subcommand usage | ``man debops-<subcommand> 5`` or ReadTheDocs |
+| General browsing | ReadTheDocs ``/en/latest/index.html`` |

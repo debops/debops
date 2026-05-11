@@ -1,0 +1,68 @@
+{# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+---
+name: debops-add-host
+description: Add a new host to the DebOps Ansible inventory with host variables.
+license: GPL-3.0-or-later
+---
+
+## Adding a Host
+
+Load the ``debops-find-source`` skill before inspecting role defaults.
+Load the ``debops-find-documentation`` skill to look up role variables.
+Load the ``debops-manage-inventory`` skill for the full inventory model.
+Load the ``debops-run-playbook`` skill when you need to run playbooks.
+
+### 1. Determine project layout
+
+Check for `.debops.cfg` (legacy) or `.debops/conf.d/` (modern):
+
+- **Legacy**: inventory is at `ansible/inventory/` directory, with `hosts` or similar files
+- **Modern**: inventory is at `ansible/views/<view>/inventory/` directory with
+              `hosts` or similar files (views are defined in `.debops/conf.d/view-*.yml`)
+
+### 2. Add host to inventory
+
+Append to the `hosts` file under `[debops_all_hosts]`:
+
+```ini
+[debops_all_hosts]
+hostname    ansible_host=hostname.example.com
+```
+
+For the Ansible Controller itself, use `ansible_connection=local`.
+
+### 3. Create host variables
+
+Create a directory `host_vars/<hostname>/` (under the inventory path) with YAML files named by role prefix:
+
+```
+host_vars/<hostname>/
+├── sshd.yml
+└── nginx.yml
+```
+
+Each file contains role-prefixed variables:
+
+```yaml
+# host_vars/<hostname>/sshd.yml
+sshd__whitelist: [ '192.0.2.0/24' ]
+```
+
+### 4. Assign services (optional)
+
+Add the host to `[debops_service_<name>]` groups in the `hosts` file:
+
+```ini
+[debops_service_dokuwiki]
+hostname
+```
+
+### 5. Run DebOps
+
+Load the ``debops-run-playbook`` skill for full details on running
+playbooks and targeting specific services. Always use ``debops check``
+(dry-run with diff) by default and only use ``debops run`` when the
+user explicitly confirms.

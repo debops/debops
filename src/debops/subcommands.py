@@ -73,6 +73,7 @@ Commands:
     mkview  create a new infrastructure view
     commit  commit current changes in git repository
     refresh refresh existing project directory
+    skills  initialize AI agent skills in project directory
     unlock  decrypt secrets in project directory
     lock    encrypt secrets in project directory''')
         parser.add_argument('command', help='project command to run')
@@ -126,6 +127,17 @@ Commands:
         parser.add_argument('-v', '--verbose', action="count",
                             help='increase output verbosity '
                                  '(e.g., -vv is more than -v)')
+        parser.add_argument('project_dir', type=str, nargs='?',
+                            default=os.getcwd(),
+                            help='path to the project directory')
+        self.args = parser.parse_args(self.args[3:])
+
+    def do_project_skills(self):
+        parser = argparse.ArgumentParser(
+                description='initialize AI agent skills in project directory',
+                usage='debops project skills [<args>] <project_dir>')
+        parser.add_argument('-v', '--verbose', action="count",
+                            help='increase output verbosity')
         parser.add_argument('project_dir', type=str, nargs='?',
                             default=os.getcwd(),
                             help='path to the project directory')

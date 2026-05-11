@@ -1,0 +1,143 @@
+{# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+---
+name: debops-debug
+description: Diagnose and recover from Ansible and DebOps playbook failures.
+license: GPL-3.0-or-later
+---
+
+## Debugging
+
+Load the ``debops-run-playbook`` skill for playbook targeting
+and execution basics.
+
+### 1. Interpreting playbook output
+
+Each task in a playbook run reports a state:
+
+- **ok** - Task ran and made no changes.
+- **changed** - Task ran and modified the system.
+- **failed** - Task encountered an error. Look at the ``msg`` field for
+  the reason.
+- **unreachable** - The host could not be reached over the connection.
+- **skipped** - Task was skipped due to a ``when`` condition.
+- **ignored** - Task failed but ``ignore_errors`` was set.
+
+In ``debops check`` (dry-run) mode, ``changed`` means "would change"
+and is expected.
+
+### 2. Common Ansible failures
+
+**Host unreachable**::
+
+    fatal: [hostname]: UNREACHABLE!
+
+Check that the host is reachable via SSH and that the inventory
+``ansible_host`` setting is correct. Test manually:
+
+```sh
+debops exec hostname -m ansible.builtin.ping
+```
+
+**Syntax error in variable file**::
+
+    ERROR! Syntax Error while loading YAML.
+
+YAML files in ``group_vars/`` and ``host_vars/`` must be valid YAML.
+Common mistakes: incorrect indentation, missing colons after keys, or
+unquoted values containing special characters.
+
+Check the file with:
+
+```sh
+python3 -c "import yaml; yaml.safe_load(open('path/to/file.yml'))"
+```
+
+**Undefined variable**::
+
+    FAILED! => {"msg": "The task includes an option with an undefined variable."
+
+The variable is referenced but not defined in the inventory or role
+defaults. Use ``debops run tools/debug -l hostname`` to dump all
+variables available on the host and check for typos.
+
+**Privilege escalation failure**::
+
+    fatal: [hostname]: FAILED! => {"msg": "Missing sudo password"
+
+The agent cannot handle interactive password prompts. Direct the user
+to run the command manually outside of the agent.
+
+### 3. DebOps-specific failures
+
+**Secret directory locked**::
+
+If a playbook fails with errors about missing files under ``secret/``,
+the project secrets may be locked. Direct the user to run:
+
+```sh
+debops project unlock
+```
+
+**Role or collection not found**::
+
+    ERROR! the role '<name>' was not found
+
+DebOps roles are provided by the ``debops.debops`` Ansible Collection.
+Check that the collection is installed:
+
+```sh
+ansible-galaxy collection list debops.debops
+```
+
+If missing, direct the user to reinstall DebOps or run
+``debops project refresh``.
+
+**debops command not found**::
+
+DebOps must be installed as a Python package. Direct the user to
+install it via pip or their system package manager.
+
+### 4. Common recovery strategies
+
+- **Run in isolation** - Target a single role with tags to narrow down
+  the issue:
+
+  ```sh
+  debops check service/<name> --tags role::<name> -l hostname
+  ```
+
+- **Increase verbosity** - Add ``-v``, ``-vv``, or ``-vvv`` to the
+  ``debops check`` command for more detail.
+
+- **Dump host variables** - Confirm what values Ansible sees for a host:
+
+  ```sh
+  debops run tools/debug -l hostname
+  ```
+
+- **Check a specific variable**:
+
+  ```sh
+  debops exec hostname -m ansible.builtin.debug -a var=nginx__servers
+  ```
+
+- **Verify syntax** - Check variable files for YAML validity before
+  running playbooks.
+
+### 5. When to escalate to the user
+
+Direct the user to handle these situations manually:
+
+- Interactive password prompts (``--ask-pass``, ``--ask-become-pass``)
+- ``debops project unlock`` (requires GPG/git-crypt passphrase)
+- Installing or reinstalling DebOps itself
+- Issues that require access to encrypted ``secret/`` files
+- Connection problems that need firewall or SSH configuration changes
+
+### 6. Safety
+
+Always use ``debops check`` (dry-run with diff) by default. Only use
+``debops run`` when the user explicitly confirms.

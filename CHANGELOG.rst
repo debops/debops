@@ -26,6 +26,15 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+General
+'''''''
+
+- DebOps project directories can now be managed using AI coding agents with
+  custom `Agent Skills`__. Integration is opt-in, not enabled by default.
+  See the :ref:`ai_agent_integration` user guide for details.
+
+  .. __: https://agentskills.io
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 

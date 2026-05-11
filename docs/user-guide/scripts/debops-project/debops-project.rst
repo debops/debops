@@ -184,6 +184,51 @@ Options
   Path to the project directory to refresh.
 
 
+:command:`debops project skills`
+--------------------------------
+
+This command initializes AI agent skills in a DebOps project directory. It
+creates the :file:`.agents/skills/` directory structure with ``SKILL.md`` files
+that provide reusable instructions for AI coding agents compatible with the
+`Agent Skills open standard <https://agentskills.io>`_.
+
+The skills guide agents to perform common DebOps tasks like adding hosts to the
+inventory or enabling service roles. By default agents use :command:`debops
+check` (dry-run with diff) and only use :command:`debops run` when the user
+explicitly confirms.
+
+The skills are refreshed automatically by re-running this command, as long as
+the :file:`.agents/skills/` directory exists.
+
+Options
+~~~~~~~
+
+``-h, --help``
+  Display the help and usage information
+
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
+``<project_dir>``
+  Path to the DebOps project directory. If not specified, the current
+  directory is used.
+
+Examples
+~~~~~~~~
+
+Initialize agent skills in the current project directory:
+
+.. code-block:: shell
+
+   debops project skills
+
+Initialize agent skills in a specific project:
+
+.. code-block:: shell
+
+   debops project skills ~/src/projects/myproject
+
+
 :command:`debops project refresh`
 ---------------------------------
 
@@ -194,6 +239,10 @@ file. This allows the user to test new configuration if needed. When the
 :file:`ansible.cfg` configuration file based on the contents of its own
 internal configuration. The script will also ensure that the basic directory
 structure of a project exists.
+
+If the project directory contains the :file:`.agents/skills/` directory
+(initialized via :command:`debops project skills`), the agent skills will be
+updated as well.
 
 Options
 ~~~~~~~

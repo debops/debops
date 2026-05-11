@@ -39,6 +39,8 @@ class Interpreter(object):
                 self.do_project_mkview(self.parsed_args.args)
             elif self.parsed_args.command == 'commit':
                 self.do_project_commit(self.parsed_args.args)
+            elif self.parsed_args.command == 'skills':
+                self.do_project_skills(self.parsed_args.args)
 
         elif self.parsed_args.section == 'exec':
             self.do_exec(self.parsed_args.args)
@@ -115,6 +117,15 @@ class Interpreter(object):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config)
             project.commit(interactive=True)
+        except (IsADirectoryError, NotADirectoryError,
+                PermissionError) as errmsg:
+            print('Error:', errmsg)
+            sys.exit(1)
+
+    def do_project_skills(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config)
+            project.skills()
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
             print('Error:', errmsg)

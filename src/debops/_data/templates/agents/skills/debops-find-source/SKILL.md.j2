@@ -1,0 +1,49 @@
+{# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+---
+name: debops-find-source
+description: Locate the DebOps source code to read role defaults, playbooks, and tasks.
+license: GPL-3.0-or-later
+---
+
+## Finding the DebOps Source
+
+When you need to read role defaults or playbooks, use one of these:
+
+- **Development monorepo**: ``ansible/roles/<name>/defaults/`` at the
+  root of the cloned repository
+
+- **Ansible Collection**:
+  ```sh
+  ansible-galaxy collection list debops.debops
+  ```
+  Then ``debops/debops/roles/<name>/defaults/`` inside the path.
+
+- **Python package**:
+  ```sh
+  python3 -c "import debops; print(debops.__file__)"
+  ```
+  Then ``roles/`` adjacent to that path.
+
+## Read-Only Policy
+
+Do NOT modify any files inside the DebOps source code — roles,
+playbooks, or other code. All customization must be done through
+inventory variables in the project directory.
+
+If you find bugs or improvement opportunities, note them for the
+user to report upstream. Do not apply fixes directly.
+
+## Secret Data
+
+The ``ansible/secret/`` directory (legacy) or
+``ansible/views/<view>/secret/`` (modern) contains encrypted
+passwords, keys, and PKI material. Do NOT read, edit, or reference
+any files inside ``secret/`` directories. Exposure of secret data
+to the LLM or logs is a security risk.
+
+If a task requires access to secrets (e.g., unlocking with
+``debops project unlock``), direct the user to run the necessary
+commands manually.

@@ -1,0 +1,122 @@
+{# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+---
+name: debops-run-playbook
+description: Run DebOps playbooks, target specific roles with tags, and execute ad-hoc Ansible commands.
+license: GPL-3.0-or-later
+---
+
+## Running DebOps
+
+Load the ``debops-find-source`` skill if you need to inspect role
+defaults or playbook code. Load the ``debops-find-documentation``
+skill to look up subcommand or role documentation. Load the
+``debops-debug`` skill when diagnosing playbook failures.
+
+### 1. Playbook hierarchy
+
+Playbooks are organized in layers executed sequentially:
+
+```
+debops run site
+  ├── layer/net       (network infra)
+  ├── layer/sys       (system plumbing)
+  ├── layer/common    (all hosts: ~50 roles)
+  ├── layer/env       (programming languages)
+  ├── layer/srv       (databases, webservers, mail, etc.)
+  ├── layer/app       (user-facing applications)
+  ├── layer/virt      (virtualization)
+  ├── layer/hw        (hardware)
+  └── layer/agent     (monitoring agents)
+```
+
+Target a single service via its inventory group:
+
+```sh
+debops check service/nginx -l webserver1
+```
+
+### 2. Targeting specific roles with --tags
+
+Every role has an inclusion tag ``role::<name>`` and an exclusion tag
+``skip::<name>``. Finer-grained sub-tags exist per role:
+
+```sh
+# Run only the nginx role
+debops check service/nginx --tags role::nginx
+
+# Run only sshd config (skip known_hosts)
+debops check service/sshd --tags role::sshd:config
+
+# Run everything except ferm
+debops check site --skip-tags skip::ferm
+
+# Run a specific role across the full site
+debops check site --tags role::pam_access
+```
+
+Common sub-tags: ``role::<name>:config``, ``meta::facts``,
+``meta::provision``.
+
+### 3. Ad-hoc Ansible commands
+
+Use ``debops exec`` to run single Ansible modules within the project
+environment:
+
+```sh
+debops exec host -m setup
+debops exec host -m ansible.builtin.ping
+```
+
+This is equivalent to ``ansible host -m setup`` but with the project's
+inventory, collection paths, and configuration pre-loaded.
+
+### 4. Fully-qualified playbook names
+
+```sh
+debops check debops.debops.site
+debops check debops.debops.service.nginx
+```
+
+### 5. Playbook sets (modern projects)
+
+If the project defines playbook sets in its configuration, use them as
+shorthand:
+
+```sh
+debops run webservice -l webserver1
+```
+
+Check ``.debops/conf.d/`` for definitions.
+
+### 6. Utility playbooks
+
+Special-purpose playbooks for host lifecycle:
+
+```sh
+# Bootstrap a fresh minimal Debian host
+# NOTE: might require the root password via --ask-pass.
+# The agent cannot handle interactive prompts.
+# Direct the user to run this command manually.
+debops run bootstrap -l newhost --user root --ask-pass
+
+# Reboot hosts (optionally after upgrade)
+debops run reboot -l hostname
+
+# Dump all host variables for debugging
+debops run tools/debug -l hostname
+```
+
+### 7. Safety
+
+Always use ``debops check`` (dry-run with diff) by default. Only use
+``debops run`` when the user explicitly confirms.
+
+### 8. Passwords and secrets
+
+The agent cannot handle interactive password prompts. If a command requires
+``--ask-pass``, ``--become`` with a password, or any other interactive
+authentication, stop and direct the user to run that specific command manually
+outside of the session. Never prompt the user for a password within the chat.
