@@ -11,6 +11,8 @@ Synopsis
 
 ``debops project mkview`` [-h|--help] [--project-dir <project_dir>] [--encrypt encfs|git-crypt --keys <recipient>,[<recipient>]] [-v|--verbose] <new_view>
 
+``debops project skills`` [-h|--help] [-v|--verbose] [<project_dir>]
+
 ``debops project refresh`` [-h|--help] [-v|--verbose] [<project_dir>]
 
 ``debops project unlock`` [-h|--help] [-V|--view <view>] [-v|--verbose] [<project_dir>]

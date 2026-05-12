@@ -231,6 +231,46 @@ class ProjectDir(object):
             with open(filename, "w") as fh:
                 fh.writelines(content)
 
+    def _render_skills(self, path):
+        skill_names = ['debops-find-source', 'debops-add-host',
+                       'debops-enable-service', 'debops-run-playbook',
+                       'debops-find-documentation',
+                       'debops-manage-inventory', 'debops-debug']
+        for skill_name in skill_names:
+            skill_dir = os.path.join(path, '.agents', 'skills', skill_name)
+            os.makedirs(skill_dir, exist_ok=True)
+            skill_template = jinja2.Template(
+                    pkgutil.get_data('debops',
+                                     os.path.join('_data', 'templates',
+                                                  'agents', 'skills',
+                                                  skill_name,
+                                                  'SKILL.md.j2'))
+                    .decode('utf-8'), trim_blocks=True)
+            with open(os.path.join(skill_dir, 'SKILL.md'), 'w') as fh:
+                fh.write(skill_template.render(env=os.environ) + '\n')
+        agents_md_path = os.path.join(path, 'AGENTS.md')
+        if not os.path.exists(agents_md_path):
+            agents_md = jinja2.Template(
+                    pkgutil.get_data('debops',
+                                     os.path.join('_data', 'templates',
+                                                  'AGENTS.md.j2'))
+                    .decode('utf-8'), trim_blocks=True)
+            with open(agents_md_path, 'w') as fh:
+                fh.write(agents_md.render(
+                    project_name=self.name, project_type=self.project_type) + '\n')
+
+    def skills(self):
+        skills_dir = os.path.join(self.path, '.agents', 'skills')
+        is_new = not os.path.exists(skills_dir)
+        os.makedirs(skills_dir, exist_ok=True)
+        self._render_skills(self.path)
+        action = 'initialized' if is_new else 'updated'
+        skill_list = sorted(os.listdir(skills_dir))
+        print(f'Agent skills {action} in {self.path}')
+        for name in skill_list:
+            print(f'  - {name}')
+        self.commit()
+
     def _create_modern_project(self, path):
         logger.debug('Initializing new "modern" project directory')
         self.project_type = 'modern'
@@ -784,6 +824,10 @@ class ProjectDir(object):
                         project_type=self.project_type)
                 self.ansible_cfg.merge_config(debops_cfg)
                 self.ansible_cfg.write_config()
+
+        if os.path.isdir(os.path.join(self.path, '.agents', 'skills')):
+            self._render_skills(self.path)
+
         print('Refreshed DebOps project in', self.path)
 
     def unlock(self):

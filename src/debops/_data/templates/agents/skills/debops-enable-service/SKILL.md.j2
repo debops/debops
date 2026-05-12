@@ -1,0 +1,54 @@
+{# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+---
+name: debops-enable-service
+description: Enable a DebOps service role for a host or Ansible group and configure its variables.
+license: GPL-3.0-or-later
+---
+
+## Enabling a Service
+
+Load the ``debops-find-source`` skill before inspecting role defaults.
+Load the ``debops-find-documentation`` skill to look up role variables.
+Load the ``debops-manage-inventory`` skill for the full inventory model.
+Load the ``debops-run-playbook`` skill when you need to run playbooks.
+
+### 1. Find the role name
+
+DebOps service roles are named `debops.<name>`. The service is enabled by
+adding a host to `[debops_service_<name>]` in the inventory `hosts` or similar
+file.
+
+### 2. Add host to service group
+
+In `ansible/inventory/hosts` (legacy) or `ansible/views/<view>/inventory/hosts` (modern):
+
+```ini
+[debops_service_nginx]
+webserver1
+```
+
+Multiple hosts can be listed one per line.
+
+### 3. Configure role variables
+
+Create a YAML file in `group_vars/` or `host_vars/` named after the role prefix:
+
+```yaml
+# ansible/inventory/group_vars/all/nginx.yml
+nginx_flavor: 'full'
+nginx__deploy_state: 'present'
+```
+
+Variables use the role name as a prefix (e.g., `nginx__*`, `postfix__*`,
+`sshd__*`). Load the ``debops-find-documentation`` skill to look up role
+default variables. Some older roles might still use a single underscore as
+a variable prefix.
+
+### 4. Verify
+
+Load the ``debops-run-playbook`` skill for full details. Always use
+``debops check`` (dry-run with diff) by default and only use
+``debops run`` when the user explicitly confirms.
