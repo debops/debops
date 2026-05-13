@@ -26,6 +26,13 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.docker_service` role can be used to create and manage
+  services using Docker containers, and can integrate with the
+  :ref:`debops.nginx` role to manage the :command:`nginx` reverse proxy.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 

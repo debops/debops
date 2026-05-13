@@ -1,0 +1,155 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# .. Copyright (C) 2026 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _docker_service__ref_defaults:
+
+# debops.docker_service default variables
+# =======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: docker_service__domain [[[
+#
+# The DNS domain used for generating default FQDNs for container services
+# when a custom :command:`nginx` FQDN is not specified.
+docker_service__domain: '{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_service__data_path [[[
+#
+# Base directory path on the host for persistent container data. Each service
+# should create its own subdirectory under this path.
+docker_service__data_path: '/srv/docker'
+
+                                                                   # ]]]
+# .. envvar:: docker_service__restart_policy [[[
+#
+# Default restart policy applied to all containers managed by this role.
+# Can be overridden per service. Supported values: ``no``, ``always``,
+# ``on-failure``, ``unless-stopped``.
+docker_service__restart_policy: 'unless-stopped'
+
+                                                                   # ]]]
+# .. envvar:: docker_service__pull [[[
+#
+# If ``True``, the role will pull Docker images before creating or updating
+# containers. Can be overridden per service.
+docker_service__pull: true
+
+                                                                   # ]]]
+# .. envvar:: docker_service__templates_path [[[
+#
+# Absolute path to the ``resources/templates`` directory on the Ansible
+# Controller. Used by the ``config_dir`` feature to locate template
+# directories. By default the path is derived from the inventory location,
+# following the same convention as :ref:`debops.resources`.
+docker_service__templates_path: '{{ inventory_dir | realpath + "/../resources/templates" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Service definitions [[[
+# -----------------------
+
+# These variables define Docker container services managed by this role.
+# See :ref:`docker_service__ref_services` for more details.
+
+# .. envvar:: docker_service__default_services [[[
+#
+# List of Docker container services defined by default in the role.
+docker_service__default_services: []
+
+                                                                   # ]]]
+# .. envvar:: docker_service__services [[[
+#
+# List of Docker container services defined on all hosts in the Ansible
+# inventory.
+docker_service__services: []
+
+                                                                   # ]]]
+# .. envvar:: docker_service__group_services [[[
+#
+# List of Docker container services defined on hosts in a specific Ansible
+# inventory group.
+docker_service__group_services: []
+
+                                                                   # ]]]
+# .. envvar:: docker_service__host_services [[[
+#
+# List of Docker container services defined on specific hosts in the Ansible
+# inventory.
+docker_service__host_services: []
+
+                                                                   # ]]]
+# .. envvar:: docker_service__combined_services [[[
+#
+# Variable which combines all Docker container service lists and is used in
+# role tasks and templates.
+docker_service__combined_services: '{{ docker_service__default_services
+                                       + docker_service__services
+                                       + docker_service__group_services
+                                       + docker_service__host_services }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: docker_service__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+# The ``python3-docker`` package is required by the ``community.docker``
+# Ansible collection used to manage containers.
+docker_service__python__dependent_packages3:
+  - 'python3-docker'
+
+                                                                   # ]]]
+# .. envvar:: docker_service__postgresql__dependent_roles [[[
+#
+# Role configuration for the :ref:`debops.postgresql` Ansible role.
+# Populated dynamically by the ``build_postgresql_vars`` task file which is
+# included as a ``pre_task`` in the playbook.
+docker_service__postgresql__dependent_roles: []
+
+                                                                   # ]]]
+# .. envvar:: docker_service__postgresql__dependent_databases [[[
+#
+# Database configuration for the :ref:`debops.postgresql` Ansible role.
+# Populated dynamically by the ``build_postgresql_vars`` task file which is
+# included as a ``pre_task`` in the playbook.
+docker_service__postgresql__dependent_databases: []
+
+                                                                   # ]]]
+# .. envvar:: docker_service__postgresql__dependent_pgpass [[[
+#
+# The ``~/.pgpass`` configuration for the :ref:`debops.postgresql` Ansible
+# role. Populated dynamically by the ``build_postgresql_vars`` task file
+# which is included as a ``pre_task`` in the playbook.
+docker_service__postgresql__dependent_pgpass: []
+
+                                                                   # ]]]
+# .. envvar:: docker_service__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+# Populated dynamically by the ``build_nginx_vars`` task file which is
+# included as a ``pre_task`` in the playbook. The template lookup must
+# run in the ``docker_service`` role context to find the templates.
+docker_service__nginx__dependent_upstreams: []
+
+                                                                   # ]]]
+# .. envvar:: docker_service__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+# Populated dynamically by the ``build_nginx_vars`` task file which is
+# included as a ``pre_task`` in the playbook. The template lookup must
+# run in the ``docker_service`` role context to find the templates.
+docker_service__nginx__dependent_servers: []
+                                                                   # ]]]
+                                                                   # ]]]
