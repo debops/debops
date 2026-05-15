@@ -24,7 +24,7 @@
 
 - name: Configure periodic APT updates
   ansible.builtin.template:
-    src: 'etc/apt/apt.conf.d/20periodic.j2'
+    src: '{{ lookup("debops.debops.template_src", "etc/apt/apt.conf.d/20periodic.j2" }}'
     dest: '/etc/apt/apt.conf.d/20periodic'
     owner: 'root'
     group: 'root'
@@ -35,7 +35,7 @@
 
 - name: Configure periodic APT upgrades
   ansible.builtin.template:
-    src: 'etc/apt/apt.conf.d/20auto-upgrades.j2'
+    src: '{{ lookup("debops.debops.template_src", "etc/apt/apt.conf.d/20auto-upgrades.j2" }}'
     dest: '/etc/apt/apt.conf.d/20auto-upgrades'
     owner: 'root'
     group: 'root'
@@ -52,7 +52,7 @@
 
 - name: Configure unattended-upgrades
   ansible.builtin.template:
-    src: 'etc/apt/apt.conf.d/50unattended-upgrades.j2'
+    src: '{{ lookup("debops.debops.template_src", "etc/apt/apt.conf.d/50unattended-upgrades.j2" }}'
     dest: '/etc/apt/apt.conf.d/50unattended-upgrades'
     owner: 'root'
     group: 'root'
@@ -69,7 +69,7 @@
 
 - name: Save Ansible local facts
   ansible.builtin.template:
-    src: 'etc/ansible/facts.d/unattended_upgrades.fact.j2'
+    src: '{{ lookup("debops.debops.template_src", "etc/ansible/facts.d/unattended_upgrades.fact.j2" }}'
     dest: '/etc/ansible/facts.d/unattended_upgrades.fact'
     owner: 'root'
     group: 'root'
