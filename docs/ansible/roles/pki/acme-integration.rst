@@ -16,10 +16,10 @@ certificate renewal. It was designed to enable easy deployment of X.509
 certificates from `Let's Encrypt`_.
 
 The ``debops.pki`` Ansible role provides support for the ACMEv2 protocol which
-is used by default with the Let's Encrypt (there is a possibility to integrate
-other similar services in the future). Interaction with the ACME Certificate
-Authority is performed using the acme-tiny_ alternative client written in
-Python.
+is used by default with the Let's Encrypt.  Many Certificate Authorities have added
+support for the ACMEv2 protocol; therefore, the role may work with them as well.
+Interaction with the ACME Certificate Authority is performed using the Python-based 
+acme-tiny_ client for HTTP challenges and the certbot client for DNS challenges.
 
 Let's Encrypt rate limits
 -------------------------
