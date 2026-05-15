@@ -15,7 +15,7 @@
   loop: '{{ q("flattened", dotfile.git) }}'
   loop_control:
     loop_var: 'item_git'
-  when: dotfile.git | d() and dotfile.state | d('present') not in ['absent', 'ignore'] and
+  when: dotfile.git | d() | length > 0 and dotfile.state | d('present') not in ['absent', 'ignore'] and
         not ansible_check_mode
 
 - name: Remove dotfiles repo {{ dotfile.name }}
@@ -27,7 +27,7 @@
   loop: '{{ q("flattened", dotfile.git) }}'
   loop_control:
     loop_var: 'item_git'
-  when: dotfile.git | d() and dotfile.state | d('present') == 'absent'
+  when: dotfile.git | d() | length > 0 and dotfile.state | d('present') == 'absent'
 
 - name: Manage the cloned dotfiles repo in system-wide /etc/gitconfig
   community.general.git_config:
