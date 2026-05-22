@@ -123,6 +123,13 @@ General
 - Fix the issue with the ``X-Robots-Tag`` Jinja condition check on Ansible
   v2.20.
 
+:ref:`debops.nsswitch` role
+'''''''''''''''''''''''''''
+
+- A change in the :file:`/etc/nsswitch.conf` configuration file by the role
+  will no longer restart the :command:`systemd-logind` service automatically
+  (file changes are handled automatically since Debian Bookworm).
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
