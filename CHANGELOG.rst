@@ -130,6 +130,17 @@ General
   will no longer restart the :command:`systemd-logind` service automatically
   (file changes are handled automatically since Debian Bookworm).
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Don't include the content of the Subject field in the list of domains in
+  a certificate request. This fixes potential issues with the
+  :command:`certbot` command setting wrong certificate name and signature.
+
+- In the :command:`pki-realm` script, ensure that certain :command:`certbot`
+  command options and their arguments are separated with a spaca. This fixes an
+  issue with ACME DNS-01 challenge not being processed correctly.
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
@@ -148,17 +159,6 @@ General
 - Fixed the code used to detect the installed OpenSSH version that selected the
   preferred key exchange, cipher and MAC algorithms. OpenSSH v10.x+ versions
   should now be detected correctly.
-
-:ref:`debops.pki` role
-''''''''''''''''''''''
-
-- Don't include the content of the Subject field in the list of domains in
-  a certificate request. This fixes potential issues with the
-  :command:`certbot` command setting wrong certificate name and signature.
-
-- In the :command:`pki-realm` script, ensure that certain :command:`certbot`
-  command options and their arguments are separated with a spaca. This fixes an
-  issue with ACME DNS-01 challenge not being processed correctly.
 
 
 `debops v3.1.7`_ - 2026-03-13
