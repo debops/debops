@@ -60,6 +60,13 @@ General
   installations should update their Ansible Collections to get the updated
   Community collection.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- The :command:`certbot` DNS-01 ACME challenge and X.509 certificate requests
+  can now be handled by other PKI providers than Let's Encrypt by providing the
+  relevant API URL endpoints. Check the role documentation for details.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
