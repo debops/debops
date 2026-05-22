@@ -125,13 +125,6 @@ General
   will no longer restart the :command:`systemd-logind` service automatically
   (file changes are handled automatically since Debian Bookworm).
 
-:ref:`debops.sshd` role
-'''''''''''''''''''''''
-
-- Fixed the code used to detect the installed OpenSSH version that selected the
-  preferred key exchange, cipher and MAC algorithms. OpenSSH v10.x+ versions
-  should now be detected correctly.
-
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
@@ -142,6 +135,13 @@ General
 - In the :command:`pki-realm` script, ensure that certain :command:`certbot`
   command options and their arguments are separated with a spaca. This fixes an
   issue with ACME DNS-01 challenge not being processed correctly.
+
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- Fixed the code used to detect the installed OpenSSH version that selected the
+  preferred key exchange, cipher and MAC algorithms. OpenSSH v10.x+ versions
+  should now be detected correctly.
 
 
 `debops v3.3.0`_ - 2026-03-13
