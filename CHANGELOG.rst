@@ -51,6 +51,15 @@ New DebOps roles
 Changed
 ~~~~~~~
 
+General
+'''''''
+
+- The ``community.mysql.mysql_*`` Ansible modules have been renamed to
+  ``ansible.mysql.mysql_*`` due to their move to the Ansible Community
+  collection. The roles which use them have been updated, existing
+  installations should update their Ansible Collections to get the updated
+  Community collection.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
