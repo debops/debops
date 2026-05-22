@@ -1244,13 +1244,23 @@ request_acme_dns_certificate() {
     # shellcheck disable=SC2086
     all_dns_str=$(echo " "${all_dns_str} | sed 's/ / -d /g')
 
-    if test "${config['acme_ca']}" == 'le-live-v2'; then
-      # shellcheck disable=SC2086
-      certbot certonly -n --authenticator ${config['acme_type']} --expand --agree-tos "${email}" --${config['acme_type']}-credentials ${credentials} ${all_dns_str}
-    elif test "${config['acme_ca']}" == 'le-staging-v2'; then
-      # shellcheck disable=SC2086
-      certbot certonly --test-cert -n --authenticator ${config['acme_type']} --expand --agree-tos "${email}" --${config['acme_type']}-credentials ${credentials} ${all_dns_str}
-    fi
+    local acme_extra
+
+    case "${config['acme_ca']}" in
+        *"live"*)
+            acme_extra=""
+            ;;
+        *"staging"*)
+            acme_extra="--test-cert"
+            ;;
+        *)
+            log_message "Invalid 'acme_ca' value: $acme_ca"
+            return
+            ;;
+    esac
+
+    # shellcheck disable=SC2086
+    certbot certonly $acme_extra -n --authenticator ${config['acme_type']} --expand --agree-tos "${email}" --${config['acme_type']}-credentials ${credentials} --server "${config['acme_ca_api']}" ${all_dns_str}
 
     local folder
     local letsencrypt
