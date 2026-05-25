@@ -69,13 +69,13 @@ cloudflared__upstream: True
 # .. envvar:: cloudflared__apt_key_url [[[
 #
 # The URL of the GPG key used to sign the Cloudflare APT repository.
-cloudflared__apt_key_url: 'https://pkg.cloudflare.com/cloudflare-main.gpg'
+cloudflared__apt_key_url: 'https://pkg.cloudflare.com/cloudflare-public-v2.gpg'
 
                                                                    # ]]]
 # .. envvar:: cloudflared__apt_key_id [[[
 #
 # The fingerprint of the GPG key used to sign the Cloudflare APT repository.
-cloudflared__apt_key_id: 'A5FC51C517C0B6E8F34C2A1ADE3FC5F131D0C383'
+cloudflared__apt_key_id: 'CC94B39C77AE7342A68B89628A682D308D4E5E73'
 
                                                                    # ]]]
 # .. envvar:: cloudflared__apt_repo_distribution [[[
@@ -83,13 +83,13 @@ cloudflared__apt_key_id: 'A5FC51C517C0B6E8F34C2A1ADE3FC5F131D0C383'
 # The distribution component used in the APT repository URL.
 # Set to ``any`` for universal packages or a specific codename like
 # ``bookworm``, ``jammy``, etc.
-cloudflared__apt_repo_distribution: '{{ ansible_distribution_release }}'
+cloudflared__apt_repo_distribution: 'any'
 
                                                                    # ]]]
 # .. envvar:: cloudflared__apt_repo_url [[[
 #
 # The APT repository URL for cloudflared packages.
-cloudflared__apt_repo_url: 'deb [signed-by=/etc/apt/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared {{ cloudflared__apt_repo_distribution }} main'
+cloudflared__apt_repo_url: 'deb [signed-by=/etc/apt/keyrings/cloudflare-public-v2.gpg] https://pkg.cloudflare.com/cloudflared {{ cloudflared__apt_repo_distribution }} main'
                                                                    # ]]]
                                                                    # ]]]
 # System user and group [[[
@@ -297,7 +297,7 @@ cloudflared__secret_directories: []
 cloudflared__keyring__dependent_apt_keys:
 
   - url: '{{ cloudflared__apt_key_url }}'
-    keyring: 'cloudflare-main.gpg'
+    keyring: 'cloudflare-public-v2.gpg'
     repo: '{{ cloudflared__apt_repo_url }}'
     state: '{{ "present"
                if (cloudflared__upstream | bool and
