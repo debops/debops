@@ -162,7 +162,7 @@ Service definition
    docker_compose_service__host_services:
 
      - name: 'immich'
-       compose_src: 'docker_compose_service/immich/docker-compose.yml'
+       compose_src: 'immich/docker-compose.yml'
        env:
          UPLOAD_LOCATION: '/mnt/photo'
          DB_DATA_LOCATION: '/srv/docker/immich/postgres'
@@ -209,8 +209,8 @@ Place the Compose file template in the DebOps resources directory:
 
 .. code-block:: none
 
-   ansible/resources/templates/by-host/immich.example.com/
-     docker_compose_service/immich/docker-compose.yml
+   ansible/docker_compose_service/by-host/immich.example.com/
+     immich/docker-compose.yml
 
 The template is based on the official Immich ``docker-compose.yml`` with
 modifications for the DebOps environment (no external port mapping, GPU
