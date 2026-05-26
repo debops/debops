@@ -123,7 +123,7 @@ reverse proxy:
    docker_compose_service__host_services:
 
      - name: 'myapp'
-       compose_src: 'docker_compose_service/myapp/docker-compose.yml'
+       compose_src: 'myapp/docker-compose.yml'
        env:
          APP_VERSION: 'latest'
          APP_SECRET: '{{ lookup("password", secret
@@ -138,8 +138,8 @@ The Compose file template would be placed at:
 
 .. code-block:: none
 
-   ansible/resources/templates/by-host/hostname/
-     docker_compose_service/myapp/docker-compose.yml
+   ansible/docker_compose_service/by-host/hostname/
+     myapp/docker-compose.yml
 
 
 Example playbook
