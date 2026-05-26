@@ -36,7 +36,7 @@ Minimal service definition (``name`` and ``compose_src`` are required):
    docker_compose_service__host_services:
 
      - name: 'myapp'
-       compose_src: 'docker_compose_service/myapp/docker-compose.yml'
+       compose_src: 'myapp/docker-compose.yml'
 
 Service with environment variables and :command:`nginx` reverse proxy:
 
@@ -45,7 +45,7 @@ Service with environment variables and :command:`nginx` reverse proxy:
    docker_compose_service__host_services:
 
      - name: 'immich'
-       compose_src: 'docker_compose_service/immich/docker-compose.yml'
+       compose_src: 'immich/docker-compose.yml'
        env:
          UPLOAD_LOCATION: '/mnt/photo'
          DB_PASSWORD: '{{ lookup("password", secret
@@ -89,9 +89,9 @@ Service with additional Compose files (e.g. hardware acceleration overlay):
    docker_compose_service__host_services:
 
      - name: 'immich'
-       compose_src: 'docker_compose_service/immich/docker-compose.yml'
+       compose_src: 'immich/docker-compose.yml'
        compose_files:
-         - src: 'docker_compose_service/immich/hwaccel.ml.yml'
+         - src: 'immich/hwaccel.ml.yml'
            dest: 'hwaccel.ml.yml'
        env:
          IMMICH_VERSION: 'release'
@@ -140,8 +140,8 @@ parameters:
 
   Template files are typically placed in the DebOps resources directory::
 
-      ansible/resources/templates/by-host/<hostname>/
-        docker_compose_service/<name>/docker-compose.yml
+      ansible/docker_compose_service/by-host/<hostname>/
+        <name>/docker-compose.yml
 
 ``compose_content``
   Optional, string. Inline content for the ``docker-compose.yml`` file.

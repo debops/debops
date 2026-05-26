@@ -41,11 +41,11 @@ docker_compose_service__pull: True
                                                                    # ]]]
 # .. envvar:: docker_compose_service__templates_path [[[
 #
-# Absolute path to the ``resources/templates`` directory on the Ansible
-# Controller. Used by the ``config_dir`` feature and for locating Compose
-# file templates. By default the path is derived from the inventory
-# location, following the same convention as :ref:`debops.resources`.
-docker_compose_service__templates_path: '{{ inventory_dir | realpath + "/../resources/templates" }}'
+# Absolute path to the role-private template tree on the Ansible Controller,
+# used to locate Jinja templates referenced by ``compose_src``,
+# ``compose_files.src``, ``config_files.src`` and ``config_dir.src``.
+# Layout: ``<path>/by-host/<inventory_hostname>/<service>/``.
+docker_compose_service__templates_path: '{{ inventory_dir | realpath + "/../docker_compose_service" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Service definitions [[[
