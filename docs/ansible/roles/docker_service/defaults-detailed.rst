@@ -125,7 +125,7 @@ Service with a config directory (``config_dir`` mode):
      - name: 'homepage'
        image: 'ghcr.io/gethomepage/homepage:latest'
        config_dir:
-         src: 'docker_service/homepage/config'
+         src: 'homepage/config'
          dest: '/srv/docker/homepage/config'
        volumes:
          - '/srv/docker/homepage/config:/app/config:ro'
