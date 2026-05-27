@@ -180,14 +180,14 @@ template:
        image: 'grafana/grafana:11.0.0'
        config_files:
          - dest: '/srv/docker/grafana/provisioning/datasources/victoria.yml'
-           src: 'docker_service/grafana/datasources.yml.j2'
+           src: 'grafana/datasources.yml.j2'
        volumes:
          - '/srv/docker/grafana/data:/var/lib/grafana'
          - '/srv/docker/grafana/provisioning:/etc/grafana/provisioning:ro'
        # ... remaining parameters ...
 
 The template file (e.g.
-``ansible/resources/templates/by-host/hostname/docker_service/grafana/datasources.yml.j2``)
+``ansible/docker_service/by-host/hostname/grafana/datasources.yml.j2``)
 might look like:
 
 .. code-block:: yaml
@@ -223,7 +223,7 @@ Service definition
        ports:
          - '127.0.0.1:3000:3000'
        config_dir:
-         src: 'docker_service/homepage/config'
+         src: 'homepage/config'
          dest: '/srv/docker/homepage/config'
        volumes:
          - '/srv/docker/homepage/config:/app/config:ro'
@@ -250,8 +250,8 @@ Create the configuration templates in your Ansible resources directory. The
 
 .. code-block:: none
 
-   ansible/resources/templates/by-host/dashboard.example.com/
-     docker_service/homepage/config/
+   ansible/docker_service/by-host/dashboard.example.com/
+     homepage/config/
        settings.yaml
        services.yaml
        bookmarks.yaml

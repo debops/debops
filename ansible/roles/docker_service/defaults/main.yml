@@ -49,11 +49,10 @@ docker_service__pull: true
                                                                    # ]]]
 # .. envvar:: docker_service__templates_path [[[
 #
-# Absolute path to the ``resources/templates`` directory on the Ansible
-# Controller. Used by the ``config_dir`` feature to locate template
-# directories. By default the path is derived from the inventory location,
-# following the same convention as :ref:`debops.resources`.
-docker_service__templates_path: '{{ inventory_dir | realpath + "/../resources/templates" }}'
+# Absolute path to the role-private template tree on the Ansible Controller,
+# used to locate Jinja templates referenced by ``config_files.src`` and
+# ``config_dir.src``. Layout: ``<path>/by-host/<inventory_hostname>/<service>/``.
+docker_service__templates_path: '{{ inventory_dir | realpath + "/../docker_service" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Service definitions [[[
