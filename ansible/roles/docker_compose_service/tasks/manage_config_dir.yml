@@ -43,7 +43,7 @@
   register: docker_compose_service__register_config_dir
 
 - name: Track services needing restart due to config_dir changes
-  ansible.builtin.set_fact:
+  ansible.builtin.set_fact:  # noqa no-handler
     docker_compose_service__restart_services: >-
       {{ docker_compose_service__restart_services | d([])
          + [docker_compose_service__config_dir_service.name] }}
