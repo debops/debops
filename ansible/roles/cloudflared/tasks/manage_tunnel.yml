@@ -6,11 +6,11 @@
 # Manage a single cloudflared tunnel instance. This file is included from
 # main.yml in a loop over cloudflared__combined_tunnels.
 
-- name: Deploy tunnel '{{ tunnel.name }}' configuration
+- name: Deploy tunnel configuration for cloudflared tunnel {{ tunnel.name }}
   when: tunnel.state | d('present') == 'present'
   block:
 
-    - name: Deploy tunnel '{{ tunnel.name }}' credentials file
+    - name: Deploy tunnel credentials file for cloudflared tunnel {{ tunnel.name }}
       ansible.builtin.copy:
         content: '{{ lookup("file", secret + "/" + cloudflared__secret_base_path
                      + "/" + tunnel.name + "/credentials.json") }}'
@@ -21,7 +21,7 @@
       register: cloudflared__register_credentials
       when: tunnel.mode | d('token') == 'local'
 
-    - name: Deploy tunnel '{{ tunnel.name }}' configuration file
+    - name: Deploy tunnel configuration file for cloudflared tunnel {{ tunnel.name }}
       ansible.builtin.template:
         src: 'etc/cloudflared/config.yml.j2'
         dest: '{{ cloudflared__config_dir }}/{{ tunnel.name }}.yml'
@@ -30,7 +30,7 @@
         mode: '0640'
       register: cloudflared__register_config
 
-    - name: Deploy tunnel '{{ tunnel.name }}' environment file
+    - name: Deploy tunnel environment file for cloudflared tunnel {{ tunnel.name }}
       ansible.builtin.template:
         src: 'etc/cloudflared/tunnel.env.j2'
         dest: '{{ cloudflared__config_dir }}/{{ tunnel.name }}.env'
@@ -40,19 +40,19 @@
       register: cloudflared__register_env
       when: tunnel.mode | d('token') == 'token'
 
-    - name: Remove tunnel '{{ tunnel.name }}' environment file when not needed
+    - name: Remove unneeded tunnel environment file for cloudflared tunnel {{ tunnel.name }}
       ansible.builtin.file:
         path: '{{ cloudflared__config_dir }}/{{ tunnel.name }}.env'
         state: 'absent'
       when: tunnel.mode | d('token') != 'token'
 
-    - name: Enable tunnel '{{ tunnel.name }}'
+    - name: Enable cloudflared tunnel {{ tunnel.name }}
       ansible.builtin.systemd:
         name: 'cloudflared@{{ tunnel.name }}.service'
         enabled: True
         daemon_reload: True
 
-    - name: Restart tunnel '{{ tunnel.name }}' if configuration changed
+    - name: Restart on configuration change for cloudflared tunnel {{ tunnel.name }}
       ansible.builtin.systemd:  # noqa no-handler
         name: 'cloudflared@{{ tunnel.name }}.service'
         state: 'restarted'
@@ -60,33 +60,33 @@
             (cloudflared__register_config is changed) or
             (cloudflared__register_env is changed)
 
-    - name: Ensure tunnel '{{ tunnel.name }}' is started
+    - name: Ensure started for cloudflared tunnel {{ tunnel.name }}
       ansible.builtin.systemd:
         name: 'cloudflared@{{ tunnel.name }}.service'
         state: 'started'
 
-- name: Remove tunnel '{{ tunnel.name }}' configuration
+- name: Remove tunnel configuration for cloudflared tunnel {{ tunnel.name }}
   when: tunnel.state | d('present') == 'absent'
   block:
 
-    - name: Stop and disable tunnel '{{ tunnel.name }}'
+    - name: Stop and disable cloudflared tunnel {{ tunnel.name }}
       ansible.builtin.systemd:
         name: 'cloudflared@{{ tunnel.name }}.service'
         enabled: False
         state: 'stopped'
       failed_when: False
 
-    - name: Remove tunnel '{{ tunnel.name }}' configuration file
+    - name: Remove tunnel configuration file for cloudflared tunnel {{ tunnel.name }}
       ansible.builtin.file:
         path: '{{ cloudflared__config_dir }}/{{ tunnel.name }}.yml'
         state: 'absent'
 
-    - name: Remove tunnel '{{ tunnel.name }}' environment file
+    - name: Remove tunnel environment file for cloudflared tunnel {{ tunnel.name }}
       ansible.builtin.file:
         path: '{{ cloudflared__config_dir }}/{{ tunnel.name }}.env'
         state: 'absent'
 
-    - name: Remove tunnel '{{ tunnel.name }}' credentials file
+    - name: Remove tunnel credentials file for cloudflared tunnel {{ tunnel.name }}
       ansible.builtin.file:
         path: '{{ cloudflared__credentials_dir }}/{{ tunnel.name }}.json'
         state: 'absent'
