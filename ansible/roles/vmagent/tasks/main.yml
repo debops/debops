@@ -1,0 +1,137 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  ansible.builtin.import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  ansible.builtin.import_role:
+    name: 'secret'
+
+- name: Pre hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "vmagent/pre_main.yml") }}'
+
+- name: Make sure that Ansible local fact directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Create vmagent system group
+  ansible.builtin.group:
+    name: '{{ vmagent__group }}'
+    state: 'present'
+    system: True
+  when: vmagent__enabled | bool and
+        vmagent__deploy_state != 'absent'
+
+- name: Create vmagent system user
+  ansible.builtin.user:
+    name: '{{ vmagent__user }}'
+    group: '{{ vmagent__group }}'
+    home: '{{ vmagent__home }}'
+    shell: '{{ vmagent__shell }}'
+    system: True
+    create_home: True
+    state: 'present'
+  when: vmagent__enabled | bool and
+        vmagent__deploy_state != 'absent'
+
+- name: Create vmagent configuration directory
+  ansible.builtin.file:
+    path: '{{ vmagent__config_dir }}'
+    state: 'directory'
+    owner: 'root'
+    group: '{{ vmagent__group }}'
+    mode: '0750'
+  when: vmagent__enabled | bool and
+        vmagent__deploy_state != 'absent'
+
+- name: Create vmagent state directory
+  ansible.builtin.file:
+    path: '{{ vmagent__home }}'
+    state: 'directory'
+    owner: '{{ vmagent__user }}'
+    group: '{{ vmagent__group }}'
+    mode: '0750'
+  when: vmagent__enabled | bool and
+        vmagent__deploy_state != 'absent'
+
+- name: Create vmagent download cache directory
+  ansible.builtin.file:
+    path: '{{ vmagent__cache_dir }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: vmagent__enabled | bool and
+        vmagent__deploy_state != 'absent' and
+        not (vmagent__skip_install | bool)
+
+- name: Install vmagent binary
+  ansible.builtin.include_tasks: 'install_binary.yml'
+  when: vmagent__enabled | bool and
+        vmagent__deploy_state != 'absent' and
+        not (vmagent__skip_install | bool)
+
+- name: Save vmagent local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/vmagent.fact.j2'
+    dest: '/etc/ansible/facts.d/vmagent.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Reload Ansible local facts
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Install vmagent systemd template unit
+  ansible.builtin.template:
+    src: 'etc/systemd/system/vmagent@.service.j2'
+    dest: '/etc/systemd/system/vmagent@.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Reload service manager' ]
+  when: vmagent__enabled | bool and
+        vmagent__deploy_state != 'absent'
+
+- name: Remove vmagent systemd template unit
+  ansible.builtin.file:
+    path: '/etc/systemd/system/vmagent@.service'
+    state: 'absent'
+  notify: [ 'Reload service manager' ]
+  when: vmagent__deploy_state == 'absent'
+
+- name: Flush handlers before managing instances
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Manage vmagent instances
+  ansible.builtin.include_tasks: 'manage_instance.yml'
+  loop: '{{ vmagent__combined_instances }}'
+  loop_control:
+    loop_var: 'instance'
+    label: '{{ instance.name }}'
+  when: vmagent__enabled | bool
+
+- name: Remove vmagent binary when deploy state is absent
+  ansible.builtin.file:
+    path: '{{ vmagent__bin_path }}'
+    state: 'absent'
+  when: vmagent__deploy_state == 'absent'
+
+- name: Remove vmagent configuration directory when deploy state is absent
+  ansible.builtin.file:
+    path: '{{ vmagent__config_dir }}'
+    state: 'absent'
+  when: vmagent__deploy_state == 'absent'
+
+- name: Post hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "vmagent/post_main.yml") }}'
