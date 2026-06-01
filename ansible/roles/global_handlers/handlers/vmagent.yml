@@ -1,0 +1,14 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Restart vmagent instances
+  ansible.builtin.systemd:
+    name: 'vmagent@{{ item.name }}.service'
+    state: 'restarted'
+  loop: '{{ vmagent__combined_instances }}'
+  loop_control:
+    label: '{{ item.name }}'
+  when: vmagent__enabled | d(False) | bool and
+        item.state | d('present') == 'present'
