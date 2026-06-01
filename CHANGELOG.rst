@@ -37,6 +37,12 @@ New DebOps roles
   for PXE network booting of Debian and Ubuntu installers, enabling easy
   installation of new hosts and virtual machines over the network.
 
+- The :ref:`debops.vmagent` role can be used to install and configure
+  VictoriaMetrics :command:`vmagent` on Debian-family hosts. The role
+  manages one or more named instances via hardened systemd template units,
+  with SHA256-verified binary installs from upstream release archives and
+  DebOps secret integration for remote-write bearer tokens.
+
 General
 '''''''
 
