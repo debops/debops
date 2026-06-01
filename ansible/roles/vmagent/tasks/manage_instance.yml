@@ -1,0 +1,109 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Manage a single vmagent instance. This file is included from main.yml in
+# a loop over vmagent__combined_instances.
+
+- name: Validate vmagent instance {{ instance.name | d("<unnamed>") }} definition
+  ansible.builtin.assert:
+    that:
+      - instance.name is defined
+      - instance.name | length > 0
+      - instance.state | d('present') in ['present', 'absent']
+      - (instance.state | d('present') == 'absent')
+        or (instance.remote_write_urls | d([]) | length > 0)
+    quiet: True
+    fail_msg: >-
+      vmagent instance must define a non-empty 'name', a 'state' of either
+      'present' or 'absent' (default 'present'), and for present instances
+      at least one 'remote_write_urls' entry.
+
+- name: Deploy vmagent instance {{ instance.name }}
+  when: instance.state | d('present') == 'present'
+  block:
+
+    - name: Create persistent queue directory for vmagent instance {{ instance.name }}
+      ansible.builtin.file:
+        path: '{{ vmagent__home }}/{{ instance.name }}'
+        state: 'directory'
+        owner: '{{ vmagent__user }}'
+        group: '{{ vmagent__group }}'
+        mode: '0750'
+
+    - name: Deploy secret bearer token for vmagent instance {{ instance.name }}
+      ansible.builtin.copy:
+        content: '{{ lookup("file", secret + "/" + vmagent__secret_base_path
+                     + "/" + instance.name + "/bearer_token") }}'
+        dest: '{{ vmagent__home }}/{{ instance.name }}/bearer_token'
+        owner: '{{ vmagent__user }}'
+        group: '{{ vmagent__group }}'
+        mode: '0400'
+      register: vmagent__register_secret
+      when: instance.bearer_token | d(False) | bool
+
+    - name: Deploy scrape configuration for vmagent instance {{ instance.name }}
+      ansible.builtin.template:
+        src: 'etc/vmagent/instance.yml.j2'
+        dest: '{{ vmagent__config_dir }}/{{ instance.name }}.yml'
+        owner: 'root'
+        group: '{{ vmagent__group }}'
+        mode: '0640'
+      register: vmagent__register_config
+
+    - name: Deploy environment file for vmagent instance {{ instance.name }}
+      ansible.builtin.template:
+        src: 'etc/vmagent/instance.env.j2'
+        dest: '{{ vmagent__config_dir }}/{{ instance.name }}.env'
+        owner: 'root'
+        group: '{{ vmagent__group }}'
+        mode: '0640'
+      register: vmagent__register_env
+
+    - name: Enable vmagent instance {{ instance.name }}
+      ansible.builtin.systemd:
+        name: 'vmagent@{{ instance.name }}.service'
+        enabled: True
+        daemon_reload: True
+
+    - name: Restart on configuration change for vmagent instance {{ instance.name }}
+      ansible.builtin.systemd:  # noqa no-handler
+        name: 'vmagent@{{ instance.name }}.service'
+        state: 'restarted'
+      when: (vmagent__register_config is changed) or
+            (vmagent__register_env is changed) or
+            (vmagent__register_secret is changed) or
+            (vmagent__register_binary is defined and
+             vmagent__register_binary is changed)
+
+    - name: Ensure started for vmagent instance {{ instance.name }}
+      ansible.builtin.systemd:
+        name: 'vmagent@{{ instance.name }}.service'
+        state: 'started'
+
+- name: Remove vmagent instance {{ instance.name }}
+  when: instance.state | d('present') == 'absent'
+  block:
+
+    - name: Stop and disable vmagent instance {{ instance.name }}
+      ansible.builtin.systemd:
+        name: 'vmagent@{{ instance.name }}.service'
+        enabled: False
+        state: 'stopped'
+      failed_when: False
+
+    - name: Remove scrape configuration for vmagent instance {{ instance.name }}
+      ansible.builtin.file:
+        path: '{{ vmagent__config_dir }}/{{ instance.name }}.yml'
+        state: 'absent'
+
+    - name: Remove environment file for vmagent instance {{ instance.name }}
+      ansible.builtin.file:
+        path: '{{ vmagent__config_dir }}/{{ instance.name }}.env'
+        state: 'absent'
+
+    - name: Remove persistent queue directory for vmagent instance {{ instance.name }}
+      ansible.builtin.file:
+        path: '{{ vmagent__home }}/{{ instance.name }}'
+        state: 'absent'
