@@ -137,6 +137,15 @@ General
   will no longer restart the :command:`systemd-logind` service automatically
   (file changes are handled automatically since Debian Bookworm).
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''
+
+- The ``postgresql.conf`` template no longer emits the ``db_user_namespace``
+  parameter on PostgreSQL 14 and newer, where it was removed and causes the
+  server to refuse to start (e.g. Debian 13 / Trixie packages). The setting
+  is still rendered for older major versions so existing inventories can
+  override it via ``item.db_user_namespace``.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
