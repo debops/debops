@@ -1,0 +1,133 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Install or upgrade the vmagent binary using a waterfall of sources:
+#
+#   1. vmagent__skip_install                -> noop (handled by caller)
+#   2. already-installed correct version    -> noop (this file: short-circuit)
+#   3. vmagent__local_archive_path          -> use archive already on host
+#   4. vmagent__controller_archive_path     -> copy archive from Controller
+#   5. vmagent__release_url (default URL)   -> get_url from base URL
+#
+# All sources end in identical SHA256 verification and unarchive steps.
+
+- name: Detect currently installed vmagent binary
+  ansible.builtin.stat:
+    path: '{{ vmagent__bin_path }}'
+  register: vmagent__register_bin_stat
+
+- name: Read currently installed vmagent version
+  ansible.builtin.command:
+    cmd: '{{ vmagent__bin_path }} -version'
+  register: vmagent__register_bin_version
+  changed_when: False
+  failed_when: False
+  check_mode: False
+  when: vmagent__register_bin_stat.stat.exists | bool
+
+- name: Set installed-version fact
+  ansible.builtin.set_fact:
+    vmagent__current_version: '{{ vmagent__register_bin_version.stdout
+                                  | d("")
+                                  | regex_search("v?([0-9]+\.[0-9]+\.[0-9]+)", "\1")
+                                  | d("", true) }}'
+
+- name: Plan binary install action
+  ansible.builtin.set_fact:
+    vmagent__install_needed: '{{ vmagent__current_version != vmagent__version }}'
+
+- name: Determine archive source path on the remote host
+  ansible.builtin.set_fact:
+    vmagent__archive_remote_path: '{{
+      vmagent__local_archive_path
+      if (vmagent__local_archive_path | length > 0)
+      else (vmagent__cache_dir + "/" + vmagent__release_archive_name)
+    }}'
+  when: vmagent__install_needed | bool
+
+- name: Stage release archive from Ansible Controller
+  ansible.builtin.copy:
+    src: '{{ vmagent__controller_archive_path }}'
+    dest: '{{ vmagent__archive_remote_path }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when:
+    - vmagent__install_needed | bool
+    - vmagent__local_archive_path | length == 0
+    - vmagent__controller_archive_path | length > 0
+
+- name: Download release archive from vmagent__release_url
+  ansible.builtin.get_url:
+    url: '{{ vmagent__release_url }}'
+    dest: '{{ vmagent__archive_remote_path }}'
+    checksum: 'sha256:{{ vmagent__archive_sha256 }}'
+    validate_certs: '{{ vmagent__release_url_validate_certs | bool }}'
+    headers: '{{ vmagent__release_url_headers }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+    force: False
+  environment:
+    http_proxy: '{{ vmagent__http_proxy }}'
+    https_proxy: '{{ vmagent__https_proxy }}'
+    HTTP_PROXY: '{{ vmagent__http_proxy }}'
+    HTTPS_PROXY: '{{ vmagent__https_proxy }}'
+    no_proxy: '{{ vmagent__no_proxy }}'
+    NO_PROXY: '{{ vmagent__no_proxy }}'
+  when:
+    - vmagent__install_needed | bool
+    - vmagent__local_archive_path | length == 0
+    - vmagent__controller_archive_path | length == 0
+
+- name: Verify archive checksum on the remote host
+  ansible.builtin.stat:
+    path: '{{ vmagent__archive_remote_path }}'
+    checksum_algorithm: 'sha256'
+    get_checksum: True
+  register: vmagent__register_archive_stat
+  when: vmagent__install_needed | bool
+
+- name: Assert archive checksum matches the expected SHA256
+  ansible.builtin.assert:
+    that:
+      - vmagent__register_archive_stat.stat.exists | bool
+      - vmagent__register_archive_stat.stat.checksum == vmagent__archive_sha256
+    quiet: True
+    fail_msg: >-
+      SHA256 of {{ vmagent__archive_remote_path }} does not match the
+      expected value for vmagent {{ vmagent__version }}
+      ({{ vmagent__arch }}). Got
+      '{{ vmagent__register_archive_stat.stat.checksum | d("missing") }}',
+      expected '{{ vmagent__archive_sha256 }}'.
+  when: vmagent__install_needed | bool
+
+- name: Extract vmagent binary into a staging path
+  ansible.builtin.unarchive:
+    src: '{{ vmagent__archive_remote_path }}'
+    dest: '{{ vmagent__cache_dir }}'
+    remote_src: True
+    include: [ 'vmagent-prod' ]
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: vmagent__install_needed | bool
+
+- name: Install vmagent binary to its final location
+  ansible.builtin.copy:
+    src: '{{ vmagent__cache_dir }}/vmagent-prod'
+    dest: '{{ vmagent__bin_path }}'
+    remote_src: True
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: vmagent__register_binary
+  when: vmagent__install_needed | bool
+
+- name: Remove staging copy of vmagent-prod
+  ansible.builtin.file:
+    path: '{{ vmagent__cache_dir }}/vmagent-prod'
+    state: 'absent'
+  when: vmagent__install_needed | bool
