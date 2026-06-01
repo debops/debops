@@ -1,0 +1,31 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage VictoriaMetrics vmagent
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_service_vmagent' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  pre_tasks:
+
+    - name: Prepare vmagent environment
+      ansible.builtin.import_role:
+        name: 'vmagent'
+        tasks_from: 'main_env'
+      tags: [ 'role::vmagent', 'role::secret' ]
+
+  roles:
+
+    - role: secret
+      tags: [ 'role::secret', 'role::vmagent' ]
+      secret_directories:
+        - '{{ vmagent__secret_directories }}'
+
+    - role: vmagent
+      tags: [ 'role::vmagent', 'skip::vmagent' ]
