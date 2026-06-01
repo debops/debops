@@ -33,6 +33,12 @@ New DebOps roles
   services using Docker containers, and can integrate with the
   :ref:`debops.nginx` role to manage the :command:`nginx` reverse proxy.
 
+- The :ref:`debops.vmagent` role can be used to install and configure
+  VictoriaMetrics :command:`vmagent` on Debian-family hosts. The role
+  manages one or more named instances via hardened systemd template units,
+  with SHA256-verified binary installs from upstream release archives and
+  DebOps secret integration for remote-write bearer tokens.
+
 :ref:`debops.java` role
 '''''''''''''''''''''''
 
