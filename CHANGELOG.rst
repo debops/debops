@@ -126,7 +126,7 @@ General
   (file changes are handled automatically since Debian Bookworm).
 
 :ref:`debops.postgresql_server` role
-''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''
 
 - The ``postgresql.conf`` template no longer emits the ``db_user_namespace``
   parameter on PostgreSQL 14 and newer, where it was removed and causes the
