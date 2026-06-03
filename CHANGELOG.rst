@@ -195,6 +195,13 @@ General
   be explicitly present in the configuration when any related SSL options are
   configured.
 
+:ref:`debops.ifupdown` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue with the :command:`systemd --version` command not being
+  available in Debian Trixie by switching to :command:`systemctl --version`
+  instead.
+
 :ref:`debops.libvirt` role
 ''''''''''''''''''''''''''
 
