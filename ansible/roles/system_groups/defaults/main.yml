@@ -107,8 +107,11 @@ system_groups__default_list:
   - name: '{{ system_groups__prefix }}admins'
     sudoers_filename: 'system_groups-admins'
     sudoers: |
+      {% if not (ansible_distribution == "Ubuntu"
+                 and ansible_facts.distribution_major_version is version_compare('26', '>=')) %}
       # This might be required to allow Ansible pipelining connections
       Defaults: %{{ system_groups__prefix }}admins !requiretty
+      {% endif %}
 
       # This variable is used to configure access by Ansible Controller hosts
       Defaults: %{{ system_groups__prefix }}admins env_check += "SSH_CLIENT"
