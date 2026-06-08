@@ -1,0 +1,38 @@
+{# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+---
+{% for svc in docker_compose_service__combined_services | d([]) %}
+{%   if svc.state | d('present') not in ['absent', 'ignore'] %}
+{%     for p in svc.published_ports | d([]) %}
+{%       if p.allow | d([]) | length > 0 %}
+{%         set port    = p.port | string %}
+{%         set proto   = p.protocol | d(docker_compose_service__ferm__default_protocol) %}
+{%         set chain   = p.chain | d(docker_compose_service__ferm__default_chain) %}
+{%         set action  = p.action_default | d(docker_compose_service__ferm__default_action) %}
+{%         set target  = 'REJECT' if action == 'reject' else 'DROP' %}
+{%         set rule_name = 'docker_compose_service_' + svc.name + '_' + port + '_' + proto %}
+{%         set comment = p.comment | d(svc.name + ' port ' + port + '/' + proto + ' (DOCKER-USER)') %}
+- name: '{{ rule_name }}'
+  by_role: 'debops.docker_compose_service'
+  comment: '{{ comment }}'
+  rules:
+
+    - chain: '{{ chain }}'
+      type: 'accept'
+      protocol: '{{ proto }}'
+      dport: [ '{{ port }}' ]
+      saddr: {{ p.allow | to_json }}
+
+    - chain: '{{ chain }}'
+      type: 'accept'
+      target: '{{ target }}'
+      accept_any: True
+      protocol: '{{ proto }}'
+      dport: [ '{{ port }}' ]
+
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% endfor %}

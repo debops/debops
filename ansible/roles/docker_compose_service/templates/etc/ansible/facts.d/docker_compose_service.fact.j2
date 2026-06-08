@@ -23,6 +23,16 @@ def cmd_exists(cmd):
 output = {
     'installed': cmd_exists('docker'),
     'projects': {},
+    'firewall': {
+{% for svc in docker_compose_service__combined_services | d([]) %}
+{%   if svc.state | d('present') not in ['absent', 'ignore']
+        and svc.published_ports | d([]) | selectattr('allow', 'defined') | list | length > 0 %}
+        '{{ svc.name }}': {{ svc.published_ports
+                              | selectattr('allow', 'defined')
+                              | list | to_json }},
+{%   endif %}
+{% endfor %}
+    },
 }
 
 if output['installed']:
