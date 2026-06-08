@@ -25,7 +25,7 @@
     creates: '/etc/postgresql/{{ item.version | d(postgresql_server__version) }}/{{ item.name }}/postgresql.conf'
   register: postgresql_server__register_createcluster
   loop: '{{ q("flattened", postgresql_server__clusters) }}'
-  when: item.name | d() and item.port | d()
+  when: item.name | d() | length > 0 and item.port | d() | length > 0
 
 - name: Remove data directory for PostgreSQL replication standby clusters
   ansible.builtin.file:
@@ -77,7 +77,7 @@
     state: directory
     recurse: yes
   loop: '{{ q("flattened", postgresql_server__clusters) }}'
-  when: item.log_directory | d() and item.log_directory is abs
+  when: item.log_directory | d() | length > 0 and item.log_directory is abs
   tags: [ 'role::postgresql_server:config' ]
 
 - name: Ensure that conf.d directories exist
@@ -88,7 +88,7 @@
     group: '{{ item.group | d(postgresql_server__group) }}'
     mode: '0755'
   loop: '{{ q("flattened", postgresql_server__clusters) }}'
-  when: item.name | d()
+  when: item.name | d() | length > 0
   tags: [ 'role::postgresql_server:config' ]
 
 - name: Configure PostgreSQL clusters
@@ -99,7 +99,7 @@
     group: '{{ item.group | d(postgresql_server__group) }}'
     mode: '0644'
   loop: '{{ q("flattened", postgresql_server__clusters) }}'
-  when: item.name | d()
+  when: item.name | d() | length > 0
   register: postgresql_server__register_config
   tags: [ 'role::postgresql_server:config' ]
 
@@ -111,7 +111,7 @@
     group: '{{ item.group | d(postgresql_server__group) }}'
     mode: '0644'
   loop: '{{ q("flattened", postgresql_server__clusters) }}'
-  when: item.name | d()
+  when: item.name | d() | length > 0
   register: postgresql_server__register_config_environment
   tags: [ 'role::postgresql_server:config' ]
 
@@ -123,7 +123,7 @@
     group: '{{ item.group | d(postgresql_server__group) }}'
     mode: '0640'
   loop: '{{ q("flattened", postgresql_server__clusters) }}'
-  when: item.name | d()
+  when: item.name | d() | length > 0
   register: postgresql_server__register_config_ident
   tags: [ 'role::postgresql_server:config' ]
 
@@ -135,7 +135,7 @@
     group: '{{ item.group | d(postgresql_server__group) }}'
     mode: '0640'
   loop: '{{ q("flattened", postgresql_server__clusters) }}'
-  when: item.name | d()
+  when: item.name | d() | length > 0
   register: postgresql_server__register_config_hba
   tags: [ 'role::postgresql_server:config' ]
 
@@ -147,7 +147,7 @@
     group: '{{ item.group | d(postgresql_server__group) }}'
     mode: '0640'
   loop: '{{ q("flattened", postgresql_server__clusters) }}'
-  when: item.name | d()
+  when: item.name | d() | length > 0
   register: postgresql_server__register_trusted
   tags: [ 'role::postgresql_server:config' ]
 
@@ -159,7 +159,7 @@
     group: '{{ item.group | d(postgresql_server__group) }}'
     mode: '0644'
   loop: '{{ q("flattened", postgresql_server__clusters) }}'
-  when: item.name | d()
+  when: item.name | d() | length > 0
   register: postgresql_server__register_config_start
   tags: [ 'role::postgresql_server:config' ]
 
@@ -173,10 +173,10 @@
     state: 'link'
     mode: '0644'
   loop: '{{ q("flattened", postgresql_server__clusters) }}'
-  when: ((postgresql_server__pki | d() and postgresql_server__pki | bool) and
-         (item.name | d()) and
-         ((item.version | d() and item.version == '9.1') or
-          (postgresql_server__version | d() and postgresql_server__version == '9.1')))
+  when: ((postgresql_server__pki | d() | length > 0 and postgresql_server__pki | bool) and
+         (item.name | d() | length > 0) and
+         ((item.version | d() | length > 0 and item.version == '9.1') or
+          (postgresql_server__version | d() | length > 0 and postgresql_server__version == '9.1')))
 
 - name: Symlink SSL certificate
   ansible.builtin.file:
@@ -188,10 +188,10 @@
     state: 'link'
     mode: '0644'
   loop: '{{ q("flattened", postgresql_server__clusters) }}'
-  when: ((postgresql_server__pki | d() and postgresql_server__pki | bool) and
-         (item.name | d()) and
-         ((item.version | d() and item.version == '9.1') or
-          (postgresql_server__version | d() and postgresql_server__version == '9.1')))
+  when: ((postgresql_server__pki | d() | length > 0 and postgresql_server__pki | bool) and
+         (item.name | d() | length > 0) and
+         ((item.version | d() | length > 0 and item.version == '9.1') or
+          (postgresql_server__version | d() | length > 0 and postgresql_server__version == '9.1')))
 
 - name: Symlink SSL key
   ansible.builtin.file:
@@ -203,10 +203,10 @@
     state: 'link'
     mode: '0640'
   loop: '{{ q("flattened", postgresql_server__clusters) }}'
-  when: ((postgresql_server__pki | d() and postgresql_server__pki | bool) and
-         (item.name | d()) and
-         ((item.version | d() and item.version == '9.1') or
-          (postgresql_server__version | d() and postgresql_server__version == '9.1')))
+  when: ((postgresql_server__pki | d() | length > 0 and postgresql_server__pki | bool) and
+         (item.name | d() | length > 0) and
+         ((item.version | d() | length > 0 and item.version == '9.1') or
+          (postgresql_server__version | d() | length > 0 and postgresql_server__version == '9.1')))
 
 - name: Start PostgreSQL clusters when not started
   ansible.builtin.command: pg_ctlcluster {{ item.version | d(postgresql_server__version) }} {{ item.name }} start
@@ -215,7 +215,7 @@
                                             + "-" + item.name + ".pid") }}'
   loop: '{{ q("flattened", postgresql_server__clusters) }}'
   when: (ansible_service_mgr != 'systemd' and
-         ((item.name | d()) and
+         ((item.name | d() | length > 0) and
           (item.start_conf is undefined or item.start_conf == 'auto')))
 
 - name: Start PostgreSQL clusters when not started (systemd)
@@ -224,7 +224,7 @@
     state: 'started'
   loop: '{{ q("flattened", postgresql_server__clusters) }}'
   when: (ansible_service_mgr == 'systemd' and
-         ((item.name | d()) and
+         ((item.name | d() | length > 0) and
           (item.start_conf is undefined or item.start_conf == 'auto')))
 
 - name: Reload PostgreSQL clusters when needed

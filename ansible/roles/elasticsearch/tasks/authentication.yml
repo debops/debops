@@ -37,7 +37,7 @@
   loop: '{{ elasticsearch__register_builtin_users.stdout_lines }}'
   become: False
   delegate_to: 'localhost'
-  when: elasticsearch__register_builtin_users.stdout_lines | d()
+  when: elasticsearch__register_builtin_users.stdout_lines | d() | length > 0
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Save generated user passwords on Ansible Controller
@@ -48,5 +48,5 @@
   loop: '{{ elasticsearch__register_builtin_users.stdout_lines }}'
   become: False
   delegate_to: 'localhost'
-  when: elasticsearch__register_builtin_users.stdout_lines | d()
+  when: elasticsearch__register_builtin_users.stdout_lines | d() | length > 0
   no_log: '{{ debops__no_log | d(True) }}'
