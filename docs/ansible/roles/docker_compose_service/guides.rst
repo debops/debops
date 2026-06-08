@@ -383,6 +383,164 @@ After the first deployment, open ``https://immich.example.com`` in a browser
 to create the initial admin account. No additional command-line steps are
 required -- Immich handles database migrations automatically on first start.
 
+.. _docker_compose_service__guide_ollama:
+
+Ollama API with LAN firewall (DOCKER-USER)
+------------------------------------------
+
+`Ollama <https://ollama.com/>`_ is a local LLM inference server. It publishes
+a REST API on port ``11434`` that other hosts on the same network can consume.
+Rather than exposing the port openly, this example restricts access to the SRV
+VLAN and explains why ``DOCKER-USER`` — not ``INPUT`` — is the correct chain.
+
+
+Why ``INPUT`` does not work
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Docker-published ports use DNAT: incoming packets are rewritten in
+``nat/PREROUTING`` and then travel through the ``FORWARD`` chain, where
+Docker's own rules accept them. They **never reach the** ``INPUT`` **chain**.
+An ``iptables`` rule in ``INPUT`` such as::
+
+    -A INPUT -p tcp --dport 11434 -j REJECT
+
+appears correct and passes review, but has zero effect on published container
+traffic. The correct location is ``DOCKER-USER``, which is inserted at the
+**top** of the ``FORWARD`` chain by Docker specifically for user-defined rules.
+
+
+Inventory
+~~~~~~~~~
+
+.. code-block:: none
+
+   [debops_service_docker_server]
+   srv.example.com
+
+   [debops_service_docker_compose_service]
+   srv.example.com
+
+
+Service definition
+~~~~~~~~~~~~~~~~~~
+
+.. code-block:: yaml
+
+   # ansible/inventory/host_vars/srv.example.com/docker_compose_service.yml
+   ---
+
+   docker_compose_service__host_services:
+
+     - name: 'ollama'
+       compose_src: 'ollama/docker-compose.yml'
+       published_ports:
+         - port: 11434
+           protocol: 'tcp'
+           allow: [ '10.254.250.0/24' ]
+           comment: 'Ollama API - SRV VLAN only'
+
+The role will emit two :command:`ferm` rules into ``DOCKER-USER`` for port
+``11434/tcp``:
+
+1. ``ACCEPT`` for source ``10.254.250.0/24``
+2. ``REJECT`` (default) for all other sources
+
+Both rules are placed in a single rule file ordered before Docker's own
+``RETURN`` terminator in ``DOCKER-USER``.
+
+
+Compose file
+~~~~~~~~~~~~
+
+Place the template at:
+
+.. code-block:: none
+
+   ansible/docker_compose_service/by-host/srv.example.com/
+     ollama/docker-compose.yml
+
+.. code-block:: yaml
+
+   # {{ ansible_managed }}
+   name: ollama
+
+   services:
+     ollama:
+       image: ollama/ollama:latest
+       ports:
+         - '11434:11434'
+       volumes:
+         - ollama_data:/root/.ollama
+       restart: unless-stopped
+
+   volumes:
+     ollama_data:
+
+Note that the port is bound to ``0.0.0.0`` (all interfaces), so it is
+reachable from the LAN. The ``published_ports`` firewall entry restricts
+access to the SRV VLAN only.
+
+
+Verification
+~~~~~~~~~~~~
+
+After running the playbook, verify the rules are in place:
+
+.. code-block:: console
+
+   $ iptables -L DOCKER-USER -n -v --line-numbers
+
+The output should include:
+
+.. code-block:: none
+
+   Chain DOCKER-USER (1 references)
+   num  target  prot opt source            destination
+   1    ACCEPT  tcp  --  10.254.250.0/24   0.0.0.0/0    tcp dpt:11434
+   2    REJECT  tcp  --  0.0.0.0/0         0.0.0.0/0    tcp dpt:11434 reject-with icmp-admin-prohibited
+   3    RETURN  all  --  0.0.0.0/0         0.0.0.0/0
+
+.. important::
+
+   Rules **1** and **2** must appear **above** the ``RETURN`` terminator (rule
+   **3**). If they appear after ``RETURN``, they are dead rules that will never
+   be evaluated. The role's generated rules are applied via :command:`ferm`
+   which manages the complete ``DOCKER-USER`` chain, so ordering is correct by
+   default.
+
+Test from a host inside the allowed VLAN:
+
+.. code-block:: console
+
+   $ curl http://srv.example.com:11434/
+
+Test from a host **outside** the allowed VLAN (should be rejected):
+
+.. code-block:: console
+
+   $ curl --connect-timeout 5 http://srv.example.com:11434/
+   # Expected: connection refused (REJECT) or timeout (DROP)
+
+
+Rule persistence after Docker restart
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The :ref:`debops.docker_server` role installs a :command:`ferm` post-hook
+(``/etc/ferm/hooks/post.d/restart-docker``, controlled by
+:envvar:`docker_server__ferm_post_hook`) that restarts Docker after every
+:command:`ferm` reload. This ensures Docker's ``FORWARD`` jumps are always
+present after :command:`ferm` rebuilds the ``filter`` table.
+
+In the other direction: when Docker itself restarts (package upgrade,
+``daemon.json`` change, manual ``systemctl restart docker``), it only
+**ensures the existence** of the ``DOCKER-USER`` chain — it does **not** flush
+its contents. Rules placed there by :command:`ferm` therefore survive a Docker
+restart.
+
+If rules ever disappear (e.g. after a kernel module reload that drops all
+iptables state), re-running ``debops run service/docker_compose_service`` will
+restore them.
+
 ..
  Local Variables:
  mode: rst

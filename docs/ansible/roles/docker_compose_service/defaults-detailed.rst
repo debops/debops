@@ -261,6 +261,152 @@ parameters:
   :command:`nginx` reverse proxy virtual host for this service. See
   :ref:`docker_compose_service__ref_nginx` for details.
 
+``published_ports``
+  Optional, list of dictionaries. Firewall rules to apply for ports published
+  directly to the network (not via ``127.0.0.1`` behind :command:`nginx`).
+  See :ref:`docker_compose_service__ref_published_ports` for details.
+
+
+.. _docker_compose_service__ref_published_ports:
+
+docker_compose_service__services published_ports parameters
+------------------------------------------------------------
+
+The ``published_ports`` list within a service entry declares the ports that
+the Compose project publishes directly to the network (i.e. bound to
+``0.0.0.0`` or a specific LAN address rather than ``127.0.0.1``). For each
+entry with a non-empty ``allow`` list the role generates:
+
+- An ``ACCEPT`` rule in the ``DOCKER-USER`` chain for each source CIDR.
+- A trailing default-deny rule (``REJECT`` or ``DROP``) for all remaining
+  sources on that port.
+
+Entries with an empty or absent ``allow`` list are silently skipped (opt-in
+behaviour: no ``published_ports`` key → no change to existing behaviour).
+
+.. important::
+
+   Docker-published ports are processed in the ``FORWARD`` path, not
+   ``INPUT``. A rule placed in ``INPUT`` silently fails to filter a published
+   container port. This integration uses the ``DOCKER-USER`` chain, which is
+   the correct location for per-port filtering of container traffic.
+
+Examples
+~~~~~~~~
+
+Restrict a port to a single VLAN:
+
+.. code-block:: yaml
+
+   docker_compose_service__host_services:
+
+     - name: 'ollama'
+       compose_src: 'ollama/docker-compose.yml'
+       published_ports:
+         - port: 11434
+           protocol: 'tcp'
+           allow: [ '10.254.250.0/24' ]
+           comment: 'Ollama API - SRV VLAN only'
+
+Multiple ports, mixed protocols:
+
+.. code-block:: yaml
+
+   docker_compose_service__host_services:
+
+     - name: 'myapp'
+       compose_src: 'myapp/docker-compose.yml'
+       published_ports:
+         - port: 8080
+           allow: [ '10.0.0.0/8' ]
+           comment: 'myapp HTTP'
+         - port: 9090
+           allow: [ '10.254.250.0/24' ]
+           action_default: 'drop'
+           comment: 'myapp metrics - SRV VLAN only'
+
+A container with ``network_mode: host`` (traffic lands in ``INPUT``):
+
+.. code-block:: yaml
+
+       published_ports:
+         - port: 9100
+           chain: 'INPUT'
+           allow: [ '10.254.250.0/24' ]
+           comment: 'node-exporter - monitoring VLAN only'
+
+Syntax
+~~~~~~
+
+Each entry in the ``published_ports`` list is a YAML dictionary with the
+following parameters:
+
+``port``
+  Required, integer or string. The host-side port number. Used for both the
+  firewall ``dport`` match and as part of the generated rule name.
+
+``protocol``
+  Optional, string. IP protocol: ``tcp`` or ``udp``. Defaults to
+  :envvar:`docker_compose_service__ferm__default_protocol` (``tcp``).
+
+``allow``
+  Optional, list of strings. Source IP addresses or CIDR networks that are
+  permitted to reach the port. When absent or empty, no rules are emitted.
+  When non-empty, one ``ACCEPT`` rule per entry is generated, followed by a
+  single default-deny rule.
+
+``action_default``
+  Optional, string. Action for traffic not matching any ``allow`` source.
+  Supported values: ``reject`` (default, sends ICMP/TCP-reset reply) and
+  ``drop`` (silently discards). Defaults to
+  :envvar:`docker_compose_service__ferm__default_action`.
+
+``chain``
+  Optional, string. :command:`iptables` chain where the rules are placed.
+  Defaults to :envvar:`docker_compose_service__ferm__default_chain`
+  (``DOCKER-USER``). Override to ``INPUT`` only for containers using
+  ``network_mode: host``, where traffic genuinely traverses ``INPUT`` instead
+  of ``FORWARD``.
+
+``comment``
+  Optional, string. Human-readable comment embedded in the generated
+  :command:`ferm` rule file. Defaults to
+  ``<service-name> port <port>/<protocol> (DOCKER-USER)``.
+
+
+.. _docker_compose_service__ref_ferm_defaults:
+
+docker_compose_service ferm defaults
+-------------------------------------
+
+The following variables control the default behaviour of the ``published_ports``
+firewall integration. They apply to any port entry that does not override the
+corresponding parameter explicitly.
+
+.. envvar:: docker_compose_service__ferm__default_chain
+
+Default value: ``DOCKER-USER``
+
+The :command:`iptables` chain used when a ``published_ports`` entry does not
+specify ``chain``. See the note in
+:ref:`docker_compose_service__ref_published_ports` for why ``DOCKER-USER`` is
+the correct default.
+
+.. envvar:: docker_compose_service__ferm__default_protocol
+
+Default value: ``tcp``
+
+IP protocol assumed when a ``published_ports`` entry omits ``protocol``.
+
+.. envvar:: docker_compose_service__ferm__default_action
+
+Default value: ``reject``
+
+Default-deny action applied to sources not in ``allow``. ``reject`` sends a
+TCP reset or ICMP ``admin-prohibited`` reply; ``drop`` silently discards the
+packet. ``reject`` is preferred as it gives the client an explicit signal
+rather than a timeout.
+
 
 .. _docker_compose_service__ref_nginx:
 

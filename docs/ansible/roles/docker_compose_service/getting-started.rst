@@ -93,6 +93,58 @@ configure the service to listen on localhost). The :command:`nginx` reverse
 proxy then handles external access with SSL termination.
 
 
+Exposing a service to the LAN
+-----------------------------
+
+When a Compose service publishes a port directly to the network (rather than
+binding to ``127.0.0.1`` behind :command:`nginx`), it is important to place
+firewall rules in the correct :command:`iptables` chain.
+
+Docker-published ports are processed in the ``FORWARD`` path: Docker performs
+a DNAT in ``nat/PREROUTING`` and the resulting traffic enters the ``FORWARD``
+chain, where the ``DOCKER-USER`` chain is consulted **before** Docker's own
+``DOCKER`` chain. Traffic that reaches a published container port **never
+traverses the** ``INPUT`` **chain**. A rule placed in ``INPUT`` — the default
+for :envvar:`ferm__host_rules` — silently fails to filter a published port.
+
+The ``published_ports`` integration in this role places rules in
+``DOCKER-USER`` automatically, so the correct chain is used without requiring
+per-host :file:`ferm.yml` files:
+
+.. code-block:: yaml
+
+   docker_compose_service__host_services:
+
+     - name: 'ollama'
+       compose_src: 'ollama/docker-compose.yml'
+       published_ports:
+         - port: 11434
+           protocol: 'tcp'
+           allow: [ '10.254.250.0/24' ]
+           comment: 'Ollama API - SRV VLAN only'
+
+For each port entry with a non-empty ``allow`` list the role generates:
+
+- An ``ACCEPT`` rule in ``DOCKER-USER`` for each source CIDR in ``allow``.
+- A trailing default-deny rule (``REJECT`` or ``DROP``) for all other sources
+  on that port.
+
+If ``allow`` is absent or empty, no rules are emitted (the port is assumed to
+be on loopback behind :command:`nginx`, or intentionally open).
+
+See :ref:`docker_compose_service__ref_published_ports` for the full parameter
+reference and :ref:`docker_compose_service__guide_ollama` for a worked example.
+
+.. note::
+
+   The ``DOCKER-USER`` chain is managed by the :command:`ferm` role. On each
+   Ansible run :command:`ferm` rebuilds the chain with the current rules and
+   the ``docker_server__ferm_post_hook`` (installed by the
+   :ref:`debops.docker_server` role) then restarts Docker so that it
+   re-injects its own ``FORWARD`` jumps. Rules therefore survive a Docker
+   restart without any additional configuration.
+
+
 Example inventory
 -----------------
 
