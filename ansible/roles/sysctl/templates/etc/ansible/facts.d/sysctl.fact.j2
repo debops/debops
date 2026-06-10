@@ -44,4 +44,15 @@ if not output['writable'] and proc_sys_rw:
     for element in os.listdir('/proc/sys'):
         output['writable'].append(element)
 
+# Determine the maximum system GID, needed for unprivileged ping(8)
+try:
+    with open('/proc/self/gid_map', 'r') as f:
+        for line in f:
+            parts = line.strip().split()
+            if len(parts) == 3 and parts[0] == '0':
+                output['ping_group_max'] = int(parts[2]) - 1
+                break
+except Exception:
+    pass
+
 print(dumps(output, sort_keys=True, indent=4))
