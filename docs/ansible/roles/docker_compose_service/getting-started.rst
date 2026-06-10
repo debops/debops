@@ -205,6 +205,43 @@ that uses the ``debops.docker_compose_service`` role:
    :lines: 1,5-
 
 
+Custom Ansible tasks
+--------------------
+
+The role exposes two custom tasklists which let you execute additional Ansible
+tasks before and after the role's own tasks, without modifying the role itself.
+They are sourced through the :ref:`debops.debops.task_src <debops.ansible_plugins>`
+lookup plugin, so you can override them at the project level by creating a file
+with the same relative path under the directory configured by
+``override_paths.tasks_path`` (by default
+:file:`ansible/overrides/tasks/docker_compose_service/`).
+
+``docker_compose_service/pre_main.yml``
+  Tasks executed **before** the main role tasks, right after the
+  :ref:`debops.secret` role is imported and **before** the first task that
+  consumes :envvar:`docker_compose_service__combined_services`. This is the
+  place to prepare anything the combined service list depends on -- for example
+  to pre-create a secret file referenced by a ``lookup("file", ...)`` inside a
+  service ``env`` entry, so that the lookup does not fail on a fresh install
+  before the value has been generated.
+
+``docker_compose_service/post_main.yml``
+  Tasks executed **after** all main role tasks, once the Compose projects have
+  been brought up. This is the place to act on the running containers -- for
+  example to provision an application account or generate an API token by
+  running a management command inside a freshly started container.
+
+The role ships empty stub files for both tasklists, so the lookup always
+resolves and the role behaves identically when no project override is present.
+
+.. note::
+
+   The custom tasklists are included for **every** host that runs the role.
+   When a tasklist applies only to specific hosts, guard its tasks with an
+   appropriate condition (for example ``when: inventory_hostname == '...'``),
+   exactly like the custom tasklists of other DebOps roles.
+
+
 Ansible tags
 ------------
 
