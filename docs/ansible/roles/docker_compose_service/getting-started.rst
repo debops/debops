@@ -205,6 +205,8 @@ that uses the ``debops.docker_compose_service`` role:
    :lines: 1,5-
 
 
+.. _docker_compose_service__ref_custom_tasks:
+
 Custom Ansible tasks
 --------------------
 
