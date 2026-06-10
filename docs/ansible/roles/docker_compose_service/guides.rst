@@ -451,18 +451,61 @@ Prerequisites
    [debops_service_postgresql_server]
    paperless.example.com
 
+   [debops_service_postgresql]
+   paperless.example.com
+
    [debops_service_redis_server]
    paperless.example.com
 
    [debops_service_nginx]
    paperless.example.com
 
-The host PostgreSQL role and database are configured separately, for example in
-:file:`host_vars/paperless.example.com/postgresql.yml`
-(``postgresql__roles`` + ``postgresql__databases``). The generated password is
-read back in the service definition through a ``lookup("password", ...)`` that
-points at the **same** secret path the :ref:`debops.postgresql_server` role
-uses, so both sides agree without extra wiring.
+Two PostgreSQL roles are involved, and both are required:
+
+- :ref:`debops.postgresql_server` (group ``[debops_service_postgresql_server]``)
+  installs and manages the PostgreSQL **server** on the host.
+- :ref:`debops.postgresql` (group ``[debops_service_postgresql]``) manages the
+  application **role and database** -- see `PostgreSQL role and database`_
+  below.
+
+The ``service/docker_compose_service`` playbook does not apply either
+PostgreSQL role, so make sure their playbooks run before (or together with) the
+Compose deployment, for example via ``debops run site`` or by running
+``service/postgresql_server`` and ``service/postgresql`` first.
+
+
+PostgreSQL role and database
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The database role and database are created by the :ref:`debops.postgresql`
+role, **not** inside the Compose project (this is the main difference from the
+:ref:`Immich <docker_compose_service__guide_immich>` example, which keeps
+PostgreSQL as a Compose service):
+
+.. code-block:: yaml
+
+   # host_vars/paperless.example.com/postgresql.yml
+   ---
+
+   postgresql__roles:
+     - name: 'paperless'
+
+   postgresql__databases:
+     - name: 'paperless'
+       owner: 'paperless'
+
+The :ref:`debops.postgresql` role generates the role's password once and stores
+it in the DebOps secret directory at::
+
+   secret/postgresql/<inventory_hostname>/<port>/credentials/paperless/password
+
+The Compose service definition reads that **same** path back with a
+``lookup("password", ...)`` (the ``paperless__postgresql_password`` variable
+below), so the database owner and the application share a single password
+without copying it by hand. Because the ``service/docker_compose_service``
+playbook does not apply the ``postgresql`` role, the lookup hard-codes the path
+and the password parameters (``length``, ``chars``); keep them identical to the
+:ref:`debops.postgresql` role defaults so both sides derive the same value.
 
 
 Service definition
@@ -504,7 +547,8 @@ Service definition
        data_dirs:
          # data/ stays on local storage (Whoosh index + ML classifiers do not
          # tolerate NFS locking); media/export/consume are on an NFS mount.
-         # owner/group is the dedicated 'paperless' service account (uid/gid 800).
+         # owner/group is the local 'paperless' service account, uid/gid 800
+         # (an arbitrary local convention -- see the note after this example).
          - { path: '/srv/docker/paperless/data',    owner: '800', group: '800' }
          - { path: '/mnt/paperless/media',          owner: '800', group: '800' }
          - { path: '/mnt/paperless/export',         owner: '800', group: '800' }
@@ -552,12 +596,35 @@ Service definition
 
 .. note::
 
-   The ``PAPERLESS_DBPASS`` lookup uses the exact secret path and parameters
-   (``length=64``, ``chars=...``) of the :ref:`debops.postgresql_server` role
-   defaults. The ``service/docker_compose_service`` playbook does **not** apply
-   the ``postgresql`` role, so those values are hard-coded in the lookup; if
-   they drift from the role defaults the two sides will generate different
-   passwords.
+   ``800`` is **not** a special number. It is simply the uid/gid of a local
+   ``paperless`` service account created on the host with the
+   :ref:`debops.system_users` role (this homelab reserves the 800-849 range for
+   Docker service accounts):
+
+   .. code-block:: yaml
+
+      # host_vars/paperless.example.com/system_users.yml
+      system_users__host_accounts:
+        - name: 'paperless'
+          uid: '800'
+          group: 'paperless'
+          gid: '800'
+
+   The same value is reused for the ``data_dirs`` ``owner``/``group``, for
+   ``USERMAP_UID``/``USERMAP_GID`` (the paperless-ngx container drops to it) and
+   for the sidecars' ``PUID``/``PGID``, so every file the containers create on
+   the (possibly NFS-mounted) data directories is owned by one known, non-root
+   account. Pick whatever uid/gid your environment uses; only consistency
+   between the host account, the volume ownership and the in-container user
+   mapping matters.
+
+.. note::
+
+   ``paperless__postgresql_password`` must use the same secret path and password
+   parameters as the :ref:`debops.postgresql` role
+   (see `PostgreSQL role and database`_ above). If they drift, the role and the
+   application derive different passwords and Paperless cannot authenticate to
+   the database.
 
 
 Compose file template
