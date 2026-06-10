@@ -11,6 +11,9 @@
   ansible.builtin.import_role:
     name: 'secret'
 
+- name: Pre hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "docker_compose_service/pre_main.yml") }}'
+
 - name: Install required packages
   ansible.builtin.apt:
     name: '{{ docker_compose_service__python__dependent_packages3 | flatten }}'
@@ -269,3 +272,6 @@
     mode: '0755'
   notify: [ 'Refresh host facts' ]
   tags: [ 'meta::facts' ]
+
+- name: Post hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "docker_compose_service/post_main.yml") }}'
