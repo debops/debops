@@ -845,23 +845,60 @@ empty:
    ``when: inventory_hostname == '...'``.
 
 
-Two-pass convergence
-~~~~~~~~~~~~~~~~~~~~~
+Single-pass token injection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-On a **fresh install** the tokens do not exist yet, so the order of operations
-spans two role runs:
+On a fresh install (or after manually deleting a token file to force
+regeneration) the ``post_main`` hook performs all the work in a single role run:
 
-1. ``pre_main`` creates empty token files -> the ``lookup('file', ...)`` returns
-   an empty string -> the ``.env`` files render with empty tokens -> the
-   containers start (the sidecars cannot authenticate yet).
-2. ``post_main`` creates the Django accounts and writes the real tokens to the
-   secret directory.
-3. Re-running ``debops run service/docker_compose_service`` re-reads the now
-   populated token files, regenerates the ``.env`` files and recreates the
-   sidecars with valid tokens.
+1. ``pre_main`` creates empty token placeholder files so the
+   ``lookup('file', ...)`` in ``host_vars`` does not raise an error.
+2. The role's main tasks write the ``.env`` files with an empty token and start
+   the containers.
+3. ``post_main`` creates the Django accounts, calls ``drf_create_token``,
+   saves the token to the secret directory, and then **directly injects** the
+   token into the ``.env`` file(s) on the server using
+   :ref:`ansible.builtin.lineinfile <ansible_collections.ansible.builtin.lineinfile_module>`
+   and recreates only the affected sidecar.
 
-This second pass is expected; it is the same convergence pattern used for any
-value that is produced by the application itself rather than by Ansible.
+The final state after a single run is therefore correct: the sidecar container
+holds a valid token.  A subsequent idempotent run skips all token-related tasks
+(the token files are no longer empty) and does not restart any containers.
+
+To trigger regeneration, delete the token file(s) from the secret directory and
+re-run the role:
+
+.. code-block:: console
+
+   rm ~/.../secret/docker_compose_service/paperless/gpt_api_token
+   debops run service/docker_compose_service -l paperless.example.com
+
+The ``post_main.yml`` example above should be extended with the following tasks
+after each ``Save ... token to secret store`` step:
+
+.. code-block:: yaml
+
+       - name: Inject paperless-gpt token directly into compose .env
+         ansible.builtin.lineinfile:
+           path: /srv/docker/paperless/.env
+           regexp: '^PAPERLESS_GPT_API_TOKEN='
+           line: 'PAPERLESS_GPT_API_TOKEN={{ paperless__register_gpt_token.stdout.split()[2] }}'
+         when:
+           - paperless__stat_tokens.results[0].stat.size == 0
+           - paperless__register_gpt_token is not skipped
+           - paperless__register_gpt_token is succeeded
+         register: paperless__register_gpt_env_updated
+
+       - name: Restart paperless-gpt to pick up new token
+         community.docker.docker_compose_v2:
+           project_src: /srv/docker/paperless
+           services: [ paperless-gpt ]
+           state: present
+           recreate: always
+         when: paperless__register_gpt_env_updated is changed
+
+   # Repeat the same two tasks for paperless-ai, pointing at
+   # /srv/docker/paperless/paperless-ai/data/.env and PAPERLESS_API_TOKEN.
 
 
 LAN-only sidecar UIs
