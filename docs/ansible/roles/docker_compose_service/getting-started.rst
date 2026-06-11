@@ -243,6 +243,28 @@ resolves and the role behaves identically when no project override is present.
    appropriate condition (for example ``when: inventory_hostname == '...'``),
    exactly like the custom tasklists of other DebOps roles.
 
+.. note::
+
+   Both ``include_tasks`` directives carry ``tags: [ 'always' ]``, so they are
+   evaluated even when Ansible is invoked with ``--tags`` or ``--skip-tags``.
+   Tag filtering is then applied to the individual tasks **inside** the hook
+   file.  This means you can assign your own tags to blocks or tasks in
+   ``pre_main.yml`` / ``post_main.yml`` and target them directly with
+   ``--tags``.  For example, if the hook file contains:
+
+   .. code-block:: yaml
+
+      - name: Provision application accounts
+        tags: [ 'myapp::accounts' ]
+        block:
+          # ...
+
+   you can run only those tasks with:
+
+   .. code-block:: console
+
+      debops run service/docker_compose_service --tags myapp::accounts
+
 
 Ansible tags
 ------------
