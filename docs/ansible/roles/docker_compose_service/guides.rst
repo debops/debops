@@ -771,11 +771,18 @@ empty:
      when: inventory_hostname == 'paperless.example.com'
      block:
 
-       - name: Create paperless-gpt Django service account (idempotent)
+       - name: Ensure paperless-gpt Django service account (superuser, not staff)
          ansible.builtin.command:
            # 'docker exec' runs as root by default; --user paperless (uid 800)
            # is required so the in-container Django system check on the
            # NFS-owned media/consume dirs (owner 800) passes.
+           #
+           # is_superuser=True: the sidecar must see and edit *every* document
+           # regardless of its owner (Paperless-ngx scopes visibility per-owner).
+           # is_staff=False: the sidecar talks only to the REST API, never to the
+           # Django admin backend (/admin), so admin-site access is not needed.
+           # The attributes are set explicitly (not just via get_or_create
+           # defaults) so is_staff is also cleared on pre-existing accounts.
            argv:
              - docker
              - exec
@@ -788,8 +795,9 @@ empty:
              - -c
              - >-
                from django.contrib.auth.models import User;
-               User.objects.get_or_create(username='paperless-gpt',
-               defaults={'is_superuser': True, 'is_staff': True, 'email': ''})
+               u, _ = User.objects.get_or_create(username='paperless-gpt',
+               defaults={'email': ''});
+               u.is_superuser = True; u.is_staff = False; u.save()
          changed_when: false
 
        - name: Check paperless sidecar token secret files
