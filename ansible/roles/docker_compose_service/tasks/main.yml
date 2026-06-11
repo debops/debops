@@ -13,6 +13,7 @@
 
 - name: Pre hooks
   ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "docker_compose_service/pre_main.yml") }}'
+  tags: [ 'always' ]
 
 - name: Install required packages
   ansible.builtin.apt:
@@ -275,3 +276,4 @@
 
 - name: Post hooks
   ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "docker_compose_service/post_main.yml") }}'
+  tags: [ 'always' ]
