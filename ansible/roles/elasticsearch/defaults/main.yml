@@ -722,8 +722,8 @@ elasticsearch__default_configuration:
     state: '{{ "present" if elasticsearch__xpack_enabled | bool else "absent" }}'
 
   - name: 'xpack.security.http.ssl.enabled'
-    value: True
-    state: '{{ "present" if elasticsearch__xpack_enabled | bool else "absent" }}'
+    value: '{{ elasticsearch__xpack_enabled | bool }}'
+    state: 'present'
 
   - name: 'xpack.security.http.ssl.verification_mode'
     value: 'certificate'
@@ -749,8 +749,8 @@ elasticsearch__default_configuration:
     state: '{{ "present" if elasticsearch__xpack_enabled | bool else "absent" }}'
 
   - name: 'xpack.security.transport.ssl.enabled'
-    value: True
-    state: '{{ "present" if elasticsearch__xpack_enabled | bool else "absent" }}'
+    value: '{{ elasticsearch__xpack_enabled | bool }}'
+    state: 'present'
 
   - name: 'xpack.security.transport.ssl.verification_mode'
     value: 'certificate'
