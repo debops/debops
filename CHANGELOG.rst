@@ -132,6 +132,13 @@ General
 - The role should now correctly process the list of APT packages to install on
   Ansible v2.19+ instead of creating an empty list.
 
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- Elasticsearch v8.0+ now requires ``xpack.security.*.ssl.enabled`` settings to
+  be explicitly present in the configuration when any related SSL options are
+  configured.
+
 :ref:`debops.libvirt` role
 ''''''''''''''''''''''''''
 
