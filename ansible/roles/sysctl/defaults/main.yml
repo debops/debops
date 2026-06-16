@@ -323,7 +323,143 @@ sysctl__default_parameters:
           of 2^16), to make PID collisions less likely.
         value: 4194304
 
-                                                                   # ]]]
+  # The '/usr/lib/sysctl.d/50-default.conf' configuration file is provided
+  # by the 'linux-sysctl-defaults' APT package in Debian Trixie and newer.
+  # It replaces the previous '/etc/sysctl.conf' file used by 'sysctl' and
+  # provides several default kernel parameters. The file is masked by
+  # generating a new configuration file at '/etc/sysctl.d/50-default.conf',
+  # which overrides the same-named file in '/usr/lib/sysctl.d/'.
+  # The parameters in read-only namespaces will be automatically commented
+  # out in unprivileged LXC containers.
+  - name: 'default'
+    filename: '50-default.conf'
+    state: '{{ "absent"
+               if (ansible_distribution_release in ["wheezy", "jessie", "stretch",
+                                                     "buster", "bullseye", "bookworm"])
+               else "present" }}'
+    comment: |
+      This file originated from the linux-sysctl-defaults package,
+      originally from systemd.
+
+      This is free software; you can redistribute it and/or modify it
+      under the terms of the GNU Lesser General Public License as published by
+      the Free Software Foundation; either version 2.1 of the License, or
+      (at your option) any later version.
+
+      See sysctl.d(5) and core(5) for documentation.
+
+      To override settings in this file, create a local file in /etc
+      (e.g. /etc/sysctl.d/90-override.conf), and put any assignments
+      there.
+    options:
+
+      - name: 'kernel.sysrq'
+        comment: |
+          System Request functionality of the kernel (SYNC)
+
+          Use kernel.sysrq = 1 to allow all keys.
+          See https://docs.kernel.org/admin-guide/sysrq.html for a list
+          of values and keys.
+        value: '0x01b6'
+
+      - name: 'kernel.core_uses_pid'
+        comment: |
+          Append the PID to the core filename
+        value: 1
+
+      - name: 'net.ipv4.conf.default.rp_filter'
+        comment: |
+          Source route verification
+        value: 2
+
+      - name: 'net.ipv4.conf.*.rp_filter'
+        value: 2
+
+      - name: 'net.ipv4.conf.all.rp_filter'
+        softfail: True
+
+      - name: 'net.ipv4.conf.default.accept_source_route'
+        comment: |
+          Do not accept source routing
+        value: 0
+
+      - name: 'net.ipv4.conf.*.accept_source_route'
+        value: 0
+
+      - name: 'net.ipv4.conf.all.accept_source_route'
+        softfail: True
+
+      - name: 'net.ipv4.conf.default.promote_secondaries'
+        comment: |
+          Promote secondary addresses when the primary address is removed
+        value: 1
+
+      - name: 'net.ipv4.conf.*.promote_secondaries'
+        value: 1
+
+      - name: 'net.ipv4.conf.all.promote_secondaries'
+        softfail: True
+
+      - name: 'net.ipv4.ping_group_range'
+        comment: |
+          ping(8) without CAP_NET_ADMIN and CAP_NET_RAW
+          The upper limit is set to 2^31-1. Values greater than that get rejected by
+          the kernel because of this definition in linux/include/net/ping.h:
+            #define GID_T_MAX (((gid_t)~0U) >> 1)
+          That's not so bad because values between 2^31 and 2^32-1 are reserved on
+          systemd-based systems anyway: https://systemd.io/UIDS-GIDS#summary
+        value: '0 {{ ansible_local.sysctl.ping_group_max | d("2147483647") }}'
+        softfail: True
+
+      - name: 'net.core.default_qdisc'
+        comment: |
+          Fair Queue CoDel packet scheduler to fight bufferbloat
+        value: 'fq_codel'
+        softfail: True
+
+      - name: 'fs.protected_hardlinks'
+        comment: |
+          Enable hard and soft link protection
+        value: 1
+
+      - name: 'fs.protected_symlinks'
+        value: 1
+
+      - name: 'fs.protected_regular'
+        comment: |
+          Enable regular file and FIFO protection
+        value: 2
+
+      - name: 'fs.protected_fifos'
+        value: 1
+
+      - name: 'vm.max_map_count'
+        comment: |
+          Increase maximum number of memory mappings per process.   This is
+          needed by some memory allocators and for emulation of some Windows
+          games.  Core dumps with > 65530 mappings will use extended section
+          numbering.
+        value: 1048576
+
+  # The '/usr/lib/sysctl.d/10-coredump-debian.conf' configuration file is
+  # provided by the 'systemd' APT package in Debian Trixie and newer.
+  - name: 'coredump-debian'
+    filename: '10-coredump-debian.conf'
+    state: '{{ "absent"
+               if (ansible_distribution_release in ["wheezy", "jessie", "stretch",
+                                                     "buster", "bullseye", "bookworm"])
+               else "present" }}'
+    comment: |
+      Core dump settings
+    options:
+
+      - name: 'kernel.core_pattern'
+        comment: |
+          Write core dumps as 'core' file in the process's current directory.
+        value: 'core'
+        softfail: True
+
+                                                                     # ]]]
 # .. envvar:: sysctl__parameters [[[
 #
 # This variable is intended to be used in Ansible’s global inventory.

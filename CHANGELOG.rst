@@ -74,6 +74,21 @@ General
   path of existing OpenLDAP servers managed by DebOps is not tested yet, check
   the changes in a test environment.
 
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- Debian Trixie ships a new :file:`/usr/lib/sysctl.d/50-default.conf`
+  configuration file provided by the ``linux-sysctl-defaults`` APT package.
+  The role will mask this file on Debian Trixie with its own generated one, to
+  allow better control over kernel configuration parameters - some of the
+  parameters are enabled by default but cannot be set inside of the
+  unprivileged LXC containers.
+
+- The role now masks the :file:`/usr/lib/sysctl.d/10-coredump-debian.conf`
+  configuration file shipped by the ``systemd`` APT package on Debian Trixie
+  and newer, to handle the read-only ``kernel.core_pattern`` parameter in
+  unprivileged LXC containers.
+
 :ref:`debops.rabbitmq_server` role
 ''''''''''''''''''''''''''''''''''
 
