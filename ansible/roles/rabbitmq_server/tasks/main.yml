@@ -193,6 +193,7 @@
                                                  | select("search", "\tenabled$")
                                                  | map("regex_replace", "\t.*$", "")
                                                  | list }}'
+  changed_when: true
   when:
     - item.name | d()
     - item.opt_in | d(False) | bool
