@@ -146,6 +146,9 @@ General
   is still rendered for older major versions so existing inventories can
   override it via ``item.db_user_namespace``.
 
+- The ``postgresql-contrib`` APT package has been removed from Debian Trixie
+  and will not be installed on OS releases with PostgreSQL v16+.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
