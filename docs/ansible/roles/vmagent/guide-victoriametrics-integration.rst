@@ -23,7 +23,7 @@ VictoriaMetrics single-node instance. The same role can also be used as
 an aggregator scraping many remote targets, or as a fan-out point
 duplicating writes to multiple VictoriaMetrics clusters.
 
-::
+.. code-block:: text
 
     +---------------------+      +---------------------+
     | host: app01         |      | host: app02         |
