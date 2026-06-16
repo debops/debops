@@ -163,6 +163,13 @@ specific parameters:
                   generation.
     ============= ===========================================================
 
+  ``softfail``
+    Optional, boolean. Defaults to ``False``. If set to ``True``, the
+    kernel parameter name will be prefixed with a ``-`` character.
+    This tells :program:`sysctl` to silently ignore errors if the
+    parameter cannot be set, which is useful for keys that may not
+    be available in all environments (e.g. container runtimes).
+
   The ``options`` parameters from multiple configuration entries with the same
   ``name`` parameter are merged, you can use this to modify existing parameters
   defined in the role default variables via Ansible inventory, without copying
