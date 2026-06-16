@@ -858,7 +858,7 @@ regeneration) the ``post_main`` hook performs all the work in a single role run:
 3. ``post_main`` creates the Django accounts, calls ``drf_create_token``,
    saves the token to the secret directory, and then **directly injects** the
    token into the ``.env`` file(s) on the server using
-   :ref:`ansible.builtin.lineinfile <ansible_collections.ansible.builtin.lineinfile_module>`
+   `ansible.builtin.lineinfile <https://docs.ansible.com/ansible/latest/collections/ansible/builtin/lineinfile_module.html>`__
    and recreates only the affected sidecar.
 
 The final state after a single run is therefore correct: the sidecar container
