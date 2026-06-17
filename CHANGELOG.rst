@@ -136,6 +136,17 @@ General
 - The role should now correctly process the list of APT packages to install on
   Ansible v2.19+ instead of creating an empty list.
 
+- The ``when:`` condition in the debconf configuration task and the
+  ``changed_when:`` condition in the alternative selection task have been
+  updated to use Ansible v2.19-compatible boolean expressions.
+
+:ref:`debops.etckeeper` role
+''''''''''''''''''''''''''''
+
+- The ``changed_when:`` condition in the task that removes ignored files from
+  the Git cache has been updated to use an Ansible v2.19-compatible boolean
+  expression.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
@@ -143,12 +154,27 @@ General
   be explicitly present in the configuration when any related SSL options are
   configured.
 
+:ref:`debops.ferm` role
+''''''''''''''''''''''
+
+- A ``when:`` condition in the task that reloads the firewall rules after
+  changes has been updated to use an Ansible v2.19-compatible boolean
+  expression.
+
 :ref:`debops.libvirt` role
 ''''''''''''''''''''''''''
 
 - Fixed issues with IPv6 multicast support for neighbour discovery in guest VMs
   by allowing guests to modify their own MAC addresses by default. This can be
   controlled per-guest if needed.
+
+:ref:`debops.mariadb_server` role
+'''''''''''''''''''''''''''''''''
+
+- The role now uses the ``name:`` parameter instead of the removed ``user:``
+  parameter in the :command:`ansible.mysql.mysql_user` module, required since
+  the rename to the ``ansible.mysql`` collection.
+
 
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
@@ -158,6 +184,32 @@ General
   server to refuse to start (e.g. Debian 13 / Trixie packages). The setting
   is still rendered for older major versions so existing inventories can
   override it via ``item.db_user_namespace``.
+
+- Multiple ``when:`` conditions in the cluster management and secure
+  installation tasks have been updated to use Ansible v2.19-compatible boolean
+  expressions.
+
+:ref:`debops.resources` role
+''''''''''''''''''''''''''''
+
+- The ``when:`` condition in the shell commands task has been updated to use an
+  Ansible v2.19-compatible boolean expression.
+
+:ref:`debops.root_account` role
+''''''''''''''''''''''''''''''''
+
+- A ``when:`` condition in the task that checks if the configured shell exists
+  has been updated to use an Ansible v2.19-compatible boolean expression.
+
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- The :command:`rsyslog` service is now temporarily stopped and masked before
+  modifying the system user account to prevent :command:`usermod` conflicts
+  when the service is actively running.
+
+- The ``changed_when:`` condition in the file permissions task has been updated
+  to use an Ansible v2.19-compatible boolean expression.
 
 :ref:`debops.pki` role
 ''''''''''''''''''''''
@@ -183,6 +235,15 @@ General
 - Fixed the code used to detect the installed OpenSSH version that selected the
   preferred key exchange, cipher and MAC algorithms. OpenSSH v10.x+ versions
   should now be detected correctly.
+
+- The role now detects the KEX algorithms actually supported by the installed
+  OpenSSH binary via :command:`ssh -Q kex` and filters the configured list
+  accordingly. This fixes configuration failures on systems where OpenSSH is
+  compiled without support for post-quantum algorithms (e.g. ``sntrup761x25519-sha512``
+  on Ubuntu 24.04 Noble).
+
+- Several ``when:`` conditions have been updated to use Ansible v2.19-compatible
+  boolean expressions.
 
 
 `debops v3.3.0`_ - 2026-03-13
