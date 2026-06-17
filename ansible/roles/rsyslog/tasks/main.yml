@@ -49,6 +49,15 @@
   when: rsyslog__enabled | bool and rsyslog__deploy_state != 'absent' and
         rsyslog__unprivileged | bool and rsyslog__group != 'root'
 
+- name: Stop rsyslog before user modification to avoid usermod conflicts
+  ansible.builtin.service:
+    name: 'rsyslog'
+    state: 'stopped'
+  when: rsyslog__enabled | bool and rsyslog__deploy_state != 'absent' and
+        rsyslog__unprivileged | bool and rsyslog__user != 'root'
+  failed_when: False
+  register: rsyslog__register_stopped_for_user
+
 - name: Create required system user
   ansible.builtin.user:
     name: '{{ rsyslog__user }}'
@@ -62,6 +71,15 @@
     system: True
   when: rsyslog__enabled | bool and rsyslog__deploy_state != 'absent' and
         rsyslog__unprivileged | bool and rsyslog__user != 'root'
+
+- name: Start rsyslog after user modification
+  ansible.builtin.service:
+    name: 'rsyslog'
+    state: 'started'
+  when: rsyslog__enabled | bool and rsyslog__deploy_state != 'absent' and
+        rsyslog__unprivileged | bool and rsyslog__user != 'root' and
+        rsyslog__register_stopped_for_user is changed
+  failed_when: False
 
 - name: Fix directory permissions if needed
   ansible.builtin.file:
