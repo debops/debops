@@ -33,6 +33,16 @@ New DebOps roles
   services using Docker containers, and can integrate with the
   :ref:`debops.nginx` role to manage the :command:`nginx` reverse proxy.
 
+:ref:`debops.java` role
+'''''''''''''''''''''''
+
+- The role can now install `Eclipse Temurin`_ (Adoptium) via the new
+  :envvar:`java__flavor` variable, which can be set to ``openjdk`` (default)
+  or ``temurin``. The :ref:`debops.extrepo` role is used to enable the
+  official Adoptium APT repository when the Temurin flavor is selected.
+
+.. _Eclipse Temurin: https://adoptium.net/
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
