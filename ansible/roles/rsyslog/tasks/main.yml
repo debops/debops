@@ -49,6 +49,15 @@
   when: rsyslog__enabled | bool and rsyslog__deploy_state != 'absent' and
         rsyslog__unprivileged | bool and rsyslog__group != 'root'
 
+- name: Mask rsyslog to prevent auto-restart during user modification
+  ansible.builtin.systemd:
+    name: 'rsyslog'
+    masked: true
+  when: rsyslog__enabled | bool and rsyslog__deploy_state != 'absent' and
+        rsyslog__unprivileged | bool and rsyslog__user != 'root'
+  failed_when: False
+  register: rsyslog__register_masked_for_user
+
 - name: Stop rsyslog before user modification to avoid usermod conflicts
   ansible.builtin.service:
     name: 'rsyslog'
@@ -56,7 +65,6 @@
   when: rsyslog__enabled | bool and rsyslog__deploy_state != 'absent' and
         rsyslog__unprivileged | bool and rsyslog__user != 'root'
   failed_when: False
-  register: rsyslog__register_stopped_for_user
 
 - name: Create required system user
   ansible.builtin.user:
@@ -72,13 +80,13 @@
   when: rsyslog__enabled | bool and rsyslog__deploy_state != 'absent' and
         rsyslog__unprivileged | bool and rsyslog__user != 'root'
 
-- name: Start rsyslog after user modification
-  ansible.builtin.service:
+- name: Unmask rsyslog after user modification
+  ansible.builtin.systemd:
     name: 'rsyslog'
-    state: 'started'
+    masked: false
   when: rsyslog__enabled | bool and rsyslog__deploy_state != 'absent' and
         rsyslog__unprivileged | bool and rsyslog__user != 'root' and
-        rsyslog__register_stopped_for_user is changed
+        rsyslog__register_masked_for_user is changed
   failed_when: False
 
 - name: Fix directory permissions if needed
