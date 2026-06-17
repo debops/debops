@@ -149,6 +149,14 @@
         sshd__trusted_user_ca_keys_file is defined
   tags: [ 'role::sshd:config' ]
 
+- name: Detect supported KEX algorithms
+  ansible.builtin.command: ssh -Q kex
+  register: sshd__register_supported_kex
+  changed_when: False
+  failed_when: False
+  check_mode: False
+  tags: [ 'role::sshd:config' ]
+
 - name: Setup /etc/ssh/sshd_config
   ansible.builtin.template:
     src:    '{{ lookup("debops.debops.template_src", "etc/ssh/sshd_config.j2") }}'
