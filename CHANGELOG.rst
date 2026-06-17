@@ -43,12 +43,6 @@ New DebOps roles
 
 .. _Eclipse Temurin: https://adoptium.net/
 
-:ref:`debops.sshd` role
-'''''''''''''''''''''''
-
-- Add support for post-quantum key exchange algorithms in OpenSSH v9.0+. The
-  role will enable a specific set of key exchange algorithms where available.
-
 :ref:`debops.rabbitmq_server` role
 ''''''''''''''''''''''''''''''''''
 
@@ -57,6 +51,12 @@ New DebOps roles
   When defined, the role runs ``rabbitmqctl update_vhost_metadata
   --default-queue-type`` for the vhost. Useful on RabbitMQ 3.13+/4.x where
   ``quorum`` queues can be made the default without resorting to policies.
+
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- Add support for post-quantum key exchange algorithms in OpenSSH v9.0+. The
+  role will enable a specific set of key exchange algorithms where available.
 
 Changed
 ~~~~~~~
@@ -76,28 +76,6 @@ General
 - The :command:`certbot` DNS-01 ACME challenge and X.509 certificate requests
   can now be handled by other PKI providers than Let's Encrypt by providing the
   relevant API URL endpoints. Check the role documentation for details.
-
-:ref:`debops.slapd` role
-''''''''''''''''''''''''
-
-- The role should now support OpenLDAP v2.6 available on Debian Trixie. Upgrade
-  path of existing OpenLDAP servers managed by DebOps is not tested yet, check
-  the changes in a test environment.
-
-:ref:`debops.sysctl` role
-'''''''''''''''''''''''''
-
-- Debian Trixie ships a new :file:`/usr/lib/sysctl.d/50-default.conf`
-  configuration file provided by the ``linux-sysctl-defaults`` APT package.
-  The role will mask this file on Debian Trixie with its own generated one, to
-  allow better control over kernel configuration parameters - some of the
-  parameters are enabled by default but cannot be set inside of the
-  unprivileged LXC containers.
-
-- The role now masks the :file:`/usr/lib/sysctl.d/10-coredump-debian.conf`
-  configuration file shipped by the ``systemd`` APT package on Debian Trixie
-  and newer, to handle the read-only ``kernel.core_pattern`` parameter in
-  unprivileged LXC containers.
 
 :ref:`debops.rabbitmq_server` role
 ''''''''''''''''''''''''''''''''''
@@ -120,6 +98,28 @@ General
 - The ``Manage RabbitMQ plugins`` task no longer triggers a server
   restart; the ``community.rabbitmq.rabbitmq_plugin`` module already
   enables/disables plugins online.
+
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The role should now support OpenLDAP v2.6 available on Debian Trixie. Upgrade
+  path of existing OpenLDAP servers managed by DebOps is not tested yet, check
+  the changes in a test environment.
+
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- Debian Trixie ships a new :file:`/usr/lib/sysctl.d/50-default.conf`
+  configuration file provided by the ``linux-sysctl-defaults`` APT package.
+  The role will mask this file on Debian Trixie with its own generated one, to
+  allow better control over kernel configuration parameters - some of the
+  parameters are enabled by default but cannot be set inside of the
+  unprivileged LXC containers.
+
+- The role now masks the :file:`/usr/lib/sysctl.d/10-coredump-debian.conf`
+  configuration file shipped by the ``systemd`` APT package on Debian Trixie
+  and newer, to handle the read-only ``kernel.core_pattern`` parameter in
+  unprivileged LXC containers.
 
 Fixed
 ~~~~~
@@ -150,13 +150,6 @@ General
   by allowing guests to modify their own MAC addresses by default. This can be
   controlled per-guest if needed.
 
-:ref:`debops.nsswitch` role
-'''''''''''''''''''''''''''
-
-- A change in the :file:`/etc/nsswitch.conf` configuration file by the role
-  will no longer restart the :command:`systemd-logind` service automatically
-  (file changes are handled automatically since Debian Bookworm).
-
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
@@ -176,6 +169,13 @@ General
 - In the :command:`pki-realm` script, ensure that certain :command:`certbot`
   command options and their arguments are separated with a spaca. This fixes an
   issue with ACME DNS-01 challenge not being processed correctly.
+
+:ref:`debops.nsswitch` role
+'''''''''''''''''''''''''''
+
+- A change in the :file:`/etc/nsswitch.conf` configuration file by the role
+  will no longer restart the :command:`systemd-logind` service automatically
+  (file changes are handled automatically since Debian Bookworm).
 
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
