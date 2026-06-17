@@ -155,7 +155,7 @@ General
   configured.
 
 :ref:`debops.ferm` role
-''''''''''''''''''''''
+'''''''''''''''''''''''
 
 - A ``when:`` condition in the task that reloads the firewall rules after
   changes has been updated to use an Ansible v2.19-compatible boolean
