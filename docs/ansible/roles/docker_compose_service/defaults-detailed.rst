@@ -383,29 +383,29 @@ The following variables control the default behaviour of the ``published_ports``
 firewall integration. They apply to any port entry that does not override the
 corresponding parameter explicitly.
 
-.. envvar:: docker_compose_service__ferm__default_chain
+:envvar:`docker_compose_service__ferm__default_chain`
 
-Default value: ``DOCKER-USER``
+  Default value: ``DOCKER-USER``
 
-The :command:`iptables` chain used when a ``published_ports`` entry does not
-specify ``chain``. See the note in
-:ref:`docker_compose_service__ref_published_ports` for why ``DOCKER-USER`` is
-the correct default.
+  The :command:`iptables` chain used when a ``published_ports`` entry does not
+  specify ``chain``. See the note in
+  :ref:`docker_compose_service__ref_published_ports` for why ``DOCKER-USER`` is
+  the correct default.
 
-.. envvar:: docker_compose_service__ferm__default_protocol
+:envvar:`docker_compose_service__ferm__default_protocol`
 
-Default value: ``tcp``
+  Default value: ``tcp``
 
-IP protocol assumed when a ``published_ports`` entry omits ``protocol``.
+  IP protocol assumed when a ``published_ports`` entry omits ``protocol``.
 
-.. envvar:: docker_compose_service__ferm__default_action
+:envvar:`docker_compose_service__ferm__default_action`
 
-Default value: ``reject``
+  Default value: ``reject``
 
-Default-deny action applied to sources not in ``allow``. ``reject`` sends a
-TCP reset or ICMP ``admin-prohibited`` reply; ``drop`` silently discards the
-packet. ``reject`` is preferred as it gives the client an explicit signal
-rather than a timeout.
+  Default-deny action applied to sources not in ``allow``. ``reject`` sends a
+  TCP reset or ICMP ``admin-prohibited`` reply; ``drop`` silently discards the
+  packet. ``reject`` is preferred as it gives the client an explicit signal
+  rather than a timeout.
 
 
 .. _docker_compose_service__ref_nginx:
