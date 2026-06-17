@@ -180,12 +180,17 @@ java__security_policy_path: '{{ ("/etc/java-" + java__major_version
                                        + java__major_version
                                        + "-" + java__temurin_package_type
                                        + "-" + java__architecture
-                                       + ("/jre"
-                                          if (java__install_jdk | bool)
-                                             and (java__major_version | int > 0)
-                                             and (java__major_version | int <= 8)
-                                          else "")
-                                       + "/lib/security/java.policy") }}'
+                                        + ("/jre"
+                                           if (java__install_jdk | bool)
+                                              and (java__major_version | int > 0)
+                                              and (java__major_version | int <= 8)
+                                           else "")
+                                        + ("/lib"
+                                           if (java__major_version | int > 0)
+                                              and (java__major_version | int <= 8)
+                                           else "/conf")
+                                        + "/security/java.policy") }}'
+
 
                                                                    # ]]]
 # .. envvar:: java__default_security_policy [[[
