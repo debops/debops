@@ -88,7 +88,7 @@
   register: rsyslog__register_file_permissions
   when: rsyslog__enabled | bool and rsyslog__deploy_state != 'absent' and
         rsyslog__unprivileged | bool
-  changed_when: rsyslog__register_file_permissions.stdout | d()
+  changed_when: rsyslog__register_file_permissions.stdout is truthy
   notify: [ 'Check and restart rsyslogd' ]
 
 - name: Create systemd-tmpfiles override
