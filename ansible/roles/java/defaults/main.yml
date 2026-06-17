@@ -53,8 +53,8 @@ java__architecture: '{{ java__architecture_map[ansible_architecture] | d("amd64"
 # .. envvar:: java__temurin_version_map [[[
 #
 # Default Temurin major version per Debian release. When
-# :ref:`java__flavor` is set to ``temurin`` and
-# :ref:`java__temurin_version` is not overridden, the version appropriate for
+# :envvar:`java__flavor` is set to ``temurin`` and
+# :envvar:`java__temurin_version` is not overridden, the version appropriate for
 # the host's Debian release is used automatically.
 java__temurin_version_map:
   buster: '11'
@@ -86,8 +86,8 @@ java__install_jdk: False
 # .. envvar:: java__temurin_package_type [[[
 #
 # Package type suffix used in Temurin package names and installation paths.
-# Resolves to ``jdk`` when :ref:`java__install_jdk` is enabled, ``jre``
-# otherwise. Only applies when :ref:`java__flavor` is ``temurin``.
+# Resolves to ``jdk`` when :envvar:`java__install_jdk` is enabled, ``jre``
+# otherwise. Only applies when :envvar:`java__flavor` is ``temurin``.
 java__temurin_package_type: '{{ "jdk" if (java__install_jdk | bool) else "jre" }}'
 
                                                                     # ]]]
@@ -191,7 +191,6 @@ java__security_policy_path: '{{ ("/etc/java-" + java__major_version
                                            else "/conf")
                                         + "/security/java.policy") }}'
 
-
                                                                    # ]]]
 # .. envvar:: java__default_security_policy [[[
 #
@@ -243,7 +242,7 @@ java__default_security_policy: |
 
 # .. envvar:: java__extrepo__dependent_sources [[[
 #
-# Configuration for the :ref:`debops.extrepo` role. When :ref:`java__flavor`
+# Configuration for the :ref:`debops.extrepo` role. When :envvar:`java__flavor`
 # is set to ``temurin``, the Adoptium APT repository is enabled to provide
 # the Eclipse Temurin packages. The repository is disabled when the flavor is
 # not ``temurin``.
