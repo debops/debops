@@ -77,8 +77,8 @@
       This file disables the ssh server.  It was created by debops.sshd.
       This file will be removed when configuration is successfully completed.
     mode: '0644'
-  when: (ansible_local | d() and ansible_local.sshd | d() and
-         not (ansible_local.sshd.installed | d()) | bool)
+  when: ansible_local is defined and ansible_local.sshd is defined and
+        not (ansible_local.sshd.installed | d()) | bool
 
   # In a case where the OpenSSH server is installed by the role but not started
   # due to conditions specified above, this task will ensure that the runtime

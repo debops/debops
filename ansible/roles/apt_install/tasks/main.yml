@@ -65,7 +65,7 @@
   loop: '{{ q("flattened", apt_install__debconf
                            + apt_install__group_debconf
                            + apt_install__host_debconf) }}'
-  when: item.name | d()
+  when: item.name is defined and item.name is truthy
 
 - name: Install requested APT packages
   ansible.builtin.apt:
@@ -99,7 +99,7 @@
                            + apt_install__host_alternatives) }}'
   when: item.name is defined and item.name is truthy and
         not (item.path is defined and item.path is truthy)
-  changed_when: apt_install__register_alternatives.stdout | d()
+  changed_when: apt_install__register_alternatives.stdout is truthy
 
 - name: Disable kernel hints about pending upgrades
   ansible.builtin.template:
