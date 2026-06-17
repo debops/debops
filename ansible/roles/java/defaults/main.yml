@@ -82,7 +82,15 @@ java__temurin_version: '{{ java__temurin_version_map[ansible_distribution_releas
 # Development Kit (JDK) by enabling this variable.
 java__install_jdk: False
 
-                                                                   # ]]]
+                                                                    # ]]]
+# .. envvar:: java__temurin_package_type [[[
+#
+# Package type suffix used in Temurin package names and installation paths.
+# Resolves to ``jdk`` when :ref:`java__install_jdk` is enabled, ``jre``
+# otherwise. Only applies when :ref:`java__flavor` is ``temurin``.
+java__temurin_package_type: '{{ "jdk" if (java__install_jdk | bool) else "jre" }}'
+
+                                                                    # ]]]
 # .. envvar:: java__base_packages [[[
 #
 # List of default APT packages which should be installed for Java Runtime
@@ -170,9 +178,11 @@ java__security_policy_path: '{{ ("/etc/java-" + java__major_version
                                 if (java__flavor == "openjdk")
                                 else ("/usr/lib/jvm/temurin-"
                                        + java__major_version
-                                       + "-jdk-" + java__architecture
+                                       + "-" + java__temurin_package_type
+                                       + "-" + java__architecture
                                        + ("/jre"
-                                          if (java__major_version | int > 0)
+                                          if (java__install_jdk | bool)
+                                             and (java__major_version | int > 0)
                                              and (java__major_version | int <= 8)
                                           else "")
                                        + "/lib/security/java.policy") }}'
