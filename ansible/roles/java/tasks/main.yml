@@ -54,6 +54,8 @@
 
 - name: Generate default Java security policy configuration
   ansible.builtin.template:
-    src: 'etc/java-x-openjdk/security/java.policy.j2'
+    src: '{{ "etc/java-x-openjdk/security/java.policy.j2"
+             if (java__flavor == "openjdk")
+             else "etc/java-x-temurin/security/java.policy.j2" }}'
     dest: '{{ java__security_policy_path }}'
     mode: '0644'
