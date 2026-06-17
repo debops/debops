@@ -27,5 +27,9 @@ if java_version_output:
         if 'version' in line:
             output['version'] = line.split()[2].strip('"').split('_')[0]
             output['major_version'] = output['version'].split('.')[0]
+            # Java <= 8 reports version as "1.x.y"; remap "1" to the actual
+            # major number (e.g. "1.8.0" -> "8") for path logic.
+            if output['major_version'] == '1':
+                output['major_version'] = output['version'].split('.')[1]
 
 print(dumps(output, sort_keys=True, indent=4))
