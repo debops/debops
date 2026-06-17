@@ -51,6 +51,11 @@
       nginx__dependent_servers:
         - '{{ rstudio_server__nginx__dependent_servers }}'
 
+    - role: extrepo
+      tags: [ 'role::extrepo', 'skip::extrepo', 'role::rstudio_server' ]
+      extrepo__dependent_sources:
+        - '{{ java__extrepo__dependent_sources }}'
+
     - role: java
       tags: [ 'role::java', 'skip::java' ]
       java__install_jdk: True
