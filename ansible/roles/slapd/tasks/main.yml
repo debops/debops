@@ -163,7 +163,7 @@
     label: '{{ {"state": item.state,
                 "dn": item.dn,
                 "attributes": item.attributes | d({})} }}'
-  when: item.name | d() and item.dn | d() and
+  when: item.name is defined and item.name is truthy and item.dn is defined and item.dn is truthy and
         item.state | d('present') not in [ 'init', 'ignore' ]
   tags: [ 'role::slapd:tasks' ]
   no_log: '{{ debops__no_log | d(item.no_log)
@@ -187,7 +187,7 @@
                 "dn": item.dn,
                 "attributes": item.attributes | d({})} }}'
   when: slapd__slapacl_deploy_state == 'present' and
-        item.name | d() and item.dn | d() and
+        item.name is defined and item.name is truthy and item.dn is defined and item.dn is truthy and
         item.state | d('present') not in [ 'init', 'ignore' ]
   tags: [ 'role::slapd:slapacl', 'role::slapd:tasks' ]
   no_log: '{{ debops__no_log | d(item.no_log)
