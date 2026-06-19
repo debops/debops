@@ -77,8 +77,8 @@
       This file disables the ssh server.  It was created by debops.sshd.
       This file will be removed when configuration is successfully completed.
     mode: '0644'
-  when: (ansible_local | d() and ansible_local.sshd | d() and
-         not (ansible_local.sshd.installed | d()) | bool)
+  when: ansible_local is defined and ansible_local.sshd is defined and
+        not (ansible_local.sshd.installed | d()) | bool
 
   # In a case where the OpenSSH server is installed by the role but not started
   # due to conditions specified above, this task will ensure that the runtime
@@ -147,6 +147,14 @@
     mode:     '0644'
   when: sshd__trusted_user_ca_keys | d() | length > 0 and
         sshd__trusted_user_ca_keys_file is defined
+  tags: [ 'role::sshd:config' ]
+
+- name: Detect supported KEX algorithms
+  ansible.builtin.command: ssh -Q kex
+  register: sshd__register_supported_kex
+  changed_when: False
+  failed_when: False
+  check_mode: False
   tags: [ 'role::sshd:config' ]
 
 - name: Setup /etc/ssh/sshd_config

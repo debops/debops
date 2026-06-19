@@ -158,7 +158,7 @@
     - etckeeper__enabled | bool
     - etckeeper__vcs == "git"
     - etckeeper__register_gitignore is changed  # noqa no-handler
-  changed_when: etckeeper__register_git_rm_cached_ignored_files.stdout
+  changed_when: etckeeper__register_git_rm_cached_ignored_files.stdout is truthy
 
 - name: Commit changes in configuration
   ansible.builtin.command: etckeeper commit '{{ etckeeper__commit_message_update

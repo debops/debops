@@ -150,6 +150,14 @@ General
   by allowing guests to modify their own MAC addresses by default. This can be
   controlled per-guest if needed.
 
+:ref:`debops.mariadb_server` role
+'''''''''''''''''''''''''''''''''
+
+- The role now uses the ``name:`` parameter instead of the removed ``user:``
+  parameter in the :command:`ansible.mysql.mysql_user` module, required since
+  the rename to the ``ansible.mysql`` collection.
+
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
@@ -183,6 +191,12 @@ General
 - Fixed the code used to detect the installed OpenSSH version that selected the
   preferred key exchange, cipher and MAC algorithms. OpenSSH v10.x+ versions
   should now be detected correctly.
+
+- The role now detects the KEX algorithms actually supported by the installed
+  OpenSSH binary via :command:`ssh -Q kex` and filters the configured list
+  accordingly. This fixes configuration failures on systems where OpenSSH is
+  compiled without support for post-quantum algorithms (e.g. ``sntrup761x25519-sha512``
+  on Ubuntu 24.04 Noble).
 
 
 `debops v3.3.0`_ - 2026-03-13

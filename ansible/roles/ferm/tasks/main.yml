@@ -143,7 +143,7 @@
     label: '{{ item.item.key }}'
   register: ferm__register_unknown_rules
   changed_when: ferm__register_unknown_rules.changed | bool
-  when: (item.item.key | d() and item is changed)
+  when: item.item.key is defined and item.item.key is truthy and item is changed
   tags: [ 'role::ferm:rules' ]
 
 - name: Remove iptables INPUT rules if requested
