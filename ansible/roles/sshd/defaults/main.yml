@@ -689,7 +689,7 @@ sshd__default_configuration:
       {% set sshd__tpl_kex_algorithms_max_version = sshd__kex_algorithms_map.keys() | select('version_compare', sshd__version, '<=') | map("float") | max | string %}
       {% set sshd__tpl_kex_algorithms_base = sshd__kex_algorithms_map[sshd__tpl_kex_algorithms_max_version] %}
       {% set sshd__tpl_kex_supported = sshd__register_supported_kex.stdout_lines | d([]) %}
-      {% set sshd__tpl_kex_algorithms = ((sshd__tpl_kex_algorithms_base | select('in', sshd__tpl_kex_supported) | list) if sshd__tpl_kex_supported else sshd__tpl_kex_algorithms_base) %}
+      {% set sshd__tpl_kex_algorithms = (sshd__tpl_kex_algorithms_base | select('in', sshd__tpl_kex_supported) | list) if sshd__tpl_kex_supported else sshd__tpl_kex_algorithms_base %}
       {% set sshd__tpl_kex_algorithms = (sshd__tpl_kex_algorithms + sshd__kex_algorithms_additional) | unique %}
       {% if sshd__tpl_kex_algorithms and sshd__paranoid | bool %}
       {{ 'KexAlgorithms {}'.format(([sshd__tpl_kex_algorithms | first] + sshd__kex_algorithms_additional) | unique | join(",")) }}
