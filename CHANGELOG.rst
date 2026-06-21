@@ -70,6 +70,12 @@ General
   installations should update their Ansible Collections to get the updated
   Community collection.
 
+:ref:`debops.cryptsetup` role
+'''''''''''''''''''''''''''''
+
+- Make PBKDF configurable and already set Argon2id which is the new default of
+  cryptsetup 2.4.0. See :envvar:`cryptsetup__pbkdf` for details.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
