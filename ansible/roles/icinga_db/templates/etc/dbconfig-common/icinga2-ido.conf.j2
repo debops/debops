@@ -1,0 +1,25 @@
+{# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2023 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+
+#
+# dbconfig interferes with the database management carried out by the DebOps
+# icinga_db Ansible role, so we need to disable dbconfig.
+#
+# See https://github.com/debops/debops/pull/2295 for details.
+#
+# {{ ansible_managed }}
+#
+
+# dbc_install: configure database with dbconfig-common?
+#              set to anything but "true" to opt out of assistance
+dbc_install='false'
+
+# dbc_upgrade: upgrade database with dbconfig-common?
+#              set to anything but "true" to opt out of assistance
+dbc_upgrade='false'
+
+# dbc_remove: deconfigure database with dbconfig-common?
+#             set to anything but "true" to opt out of assistance
+dbc_remove='false'
