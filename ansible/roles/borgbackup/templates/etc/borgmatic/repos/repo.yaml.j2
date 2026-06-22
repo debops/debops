@@ -1,0 +1,39 @@
+{# Copyright (C) 2024 Tasos Alvas <tasos.alvas@qwertyuiopia.com>
+ # Copyright (C) 2024 DebOps https://debops.org/
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# Debops-generated repo configuration for {{ item.name }}
+# {{ ansible_managed }}
+
+{# Daisy chain the item's regular include if this version doesn't support multiple ones #}
+{% if item.include | d() and ansible_local.borgbackup.borgmatic_version is version("1.8.1", "<") %}
+<<: !include {{ item.include if item.include[0] == "/" else borgbackup__configuration_include_path + "/" + item.include + ".yaml" }}
+
+{% endif %}
+{# systemd or cron check #}
+{% set passcommand =
+     "systemd-creds decrypt --name=" + item.name + " " + borgbackup__passphrase_base_path + "/" + item.name + ".cred -"
+     if ansible_service_mgr == "systemd"
+     else "cat " + borgbackup__passphrase_base_path + "/" + item.name + ".txt"
+%}
+{# 1.7.10 version check, accept new syntax in repositories list #}
+{% if ansible_local.borgbackup.borgmatic_version is version("1.7.10", "<") %}
+{%   set repo_list = [] %}
+{%   for repo in item.repositories | d([]) %}
+{%     set repo_list = repo_list.append(repo.path | d(repo)) %}
+{%   endfor %}
+{% else %}
+{%   set repo_list = item.repositories %}
+{% endif %}
+{# 1.8.0 version check, syntax #}
+{% if ansible_local.borgbackup.borgmatic_version is version("1.8.0", "<") %}
+location:
+  repositories: {{ repo_list | to_yaml }}
+
+storage:
+  encryption_passcommand: {{ passcommand }}
+{% else%}
+repositories: {{ repo_list | to_yaml }}
+
+encryption_passcommand: {{ passcommand }}
+{% endif %}
