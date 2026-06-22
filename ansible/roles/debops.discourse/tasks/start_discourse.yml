@@ -1,0 +1,10 @@
+---
+
+- name: Start Discourse instance
+  service:
+    name: 'discourse.service'
+    state: 'started'
+  notify: [ 'Deactivate Discourse maintenance.html page' ]
+  when: ansible_local|d() and
+        ansible_local.discourse|d() and
+        ansible_local.discourse.installed|d()

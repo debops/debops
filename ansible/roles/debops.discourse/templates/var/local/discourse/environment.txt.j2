@@ -1,0 +1,38 @@
+# {{ ansible_managed }}
+
+RAILS_ENV=production
+#RUBY_ALLOCATOR=/usr/lib/libjemalloc.so.1  TODO
+#LD_PRELOAD=$RUBY_ALLOCATOR  TODO
+export RAILS_ENV RUBY_ALLOCATOR LD_PRELOAD
+
+DISCOURSE_HOSTNAME={{ discourse__fqdn }}
+export DISCOURSE_HOSTNAME
+
+{% if discourse_database_connection == 'port' %}
+DISCOURSE_DB_HOST={{ discourse_database_server }}
+DISCOURSE_DB_PORT={{ discourse_database_port }}
+export DISCOURSE_DB_HOST DISCOURSE_DB
+{% else %}
+DISCOURSE_DB_SOCKET=/var/run/postgresql
+export DISCOURSE_DB_SOCKET
+{% endif %}
+
+DISCOURSE_DEVELOPER_EMAILS={{ discourse_admin_emails | join(",") }}
+DISCOURSE_SMTP_ADDRESS={{ discourse__smtp_host }}
+DISCOURSE_SMTP_PORT={{ discourse__smtp_port }}
+DISCOURSE_SMTP_USER_NAME={{ discourse__smtp_user }}
+export DISCOURSE_DEVELOPER_EMAILS DISCOURSE_SMTP_ADDRESS
+export DISCOURSE_SMTP_PORT DISCOURSE_SMTP_USER_NAME
+
+# templates/web.template.yml
+RUBY_GC_HEAP_GROWTH_MAX_SLOTS=40000
+RUBY_GC_HEAP_INIT_SLOTS=400000
+RUBY_GC_HEAP_OLDOBJECT_LIMIT_FACTOR=1.5
+RUBY_GLOBAL_METHOD_CACHE_SIZE=131072
+UNICORN_SIDEKIQS=1
+UNICORN_WORKERS={{ discourse_unicorn_workers }}
+
+export RUBY_GC_HEAP_GROWTH_MAX_SLOTS RUBY_GC_HEAP_INIT_SLOTS
+export RUBY_GC_HEAP_OLDOBJECT_LIMIT_FACTOR
+export RUBY_GLOBAL_METHOD_CACHE_SIZE
+export UNICORN_SIDEKIQS UNICORN_WORKERS

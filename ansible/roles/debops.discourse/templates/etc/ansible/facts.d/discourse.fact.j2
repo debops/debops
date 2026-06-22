@@ -1,0 +1,7 @@
+{% set discourse__tpl_database = (ansible_local.discourse.database if (ansible_local|d() and ansible_local.discourse|d() and ansible_local.discourse.database|d()) else discourse__database) %}
+{
+"database": "{{ discourse__tpl_database }}",
+"fqdn": "{{ discourse__fqdn }}",
+"installed": true,
+"release": "{{ discourse_release }}"
+}
