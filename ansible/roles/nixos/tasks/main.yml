@@ -21,8 +21,8 @@
   ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "nixos/pre_main.yml") }}'
 
 - name: Convert NixOS directory to a git repository
-  when: nixos__repositories | d() or nixos__group_repositories | d() or
-        nixos__host_repositories | d()
+  when: nixos__repositories | d() | length > 0 or nixos__group_repositories | d() | length > 0 or
+        nixos__host_repositories | d() | length > 0
   block:
 
     - name: Check if NixOS configuration directory is a git repository
@@ -110,7 +110,7 @@
   loop: '{{ nixos__combined_configuration | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name | dirname, "state": item.state | d("present")} }}'
-  when: item.raw | d() and item.state | d("present") not in ['absent', 'ignore', 'init'] and
+  when: item.raw | d() | length > 0 and item.state | d("present") not in ['absent', 'ignore', 'init'] and
         item.name is search('/')
 
 - name: Generate NixOS configuration files
@@ -122,7 +122,7 @@
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   notify: [ 'Rebuild NixOS system' ]
-  when: item.raw | d() and item.state | d("present") not in ['absent', 'ignore', 'init']
+  when: item.raw | d() | length > 0 and item.state | d("present") not in ['absent', 'ignore', 'init']
 
 - name: Ensure that template directories exist
   ansible.builtin.file:
