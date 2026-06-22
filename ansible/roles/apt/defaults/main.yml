@@ -506,6 +506,7 @@ apt__ubuntu_sources:
     state: '{{ "present"
                if (apt__distribution == "Ubuntu" and
                    apt__distribution_version != "n/a" and
+                   ansible_distribution_version is version_compare("24.4", "<") and
                    apt__nonfree | bool)
                else "ignore" }}'
 
