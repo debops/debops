@@ -1,0 +1,17 @@
+{# Copyright (C) 2014-2025 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2014-2025 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+[Unit]
+Description=autopostgresqlbackup-{{ (item.version | d(postgresql_server__version)) | replace(".", "_") }}-{{ item.name }} daily service
+Documentation=man:autopostgresqlbackup(8)
+After=postgresql.target mysql.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/autopostgresqlbackup-{{ (item.version | d(postgresql_server__version)) | replace(".", "_") }}-{{ item.name }}
+ProtectHome=true
+ProtectSystem=full
+PrivateTmp=true
