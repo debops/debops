@@ -162,6 +162,10 @@ Custom Ansible lookup plugins
 The role contains a set of custom Ansible lookup plugins which can be used in
 Ansible roles:
 
+``debops.debops.dig_srv``
+  This lookup plugin simplifies the task of looking up ``SRV`` DNS records,
+  see :ref:`dns_configuration_plugin` for more details.
+
 ``debops.debops.file_src``
   This lookup plugin allows "sideloading" files to copy into roles without the
   need to modify the roles themselves. It requires the ``debops`` Python module
@@ -172,6 +176,21 @@ Ansible roles:
   its path will be returned to Ansible to use as a file source. If no custom
   files are found, the lookup plugin returns the original path which
   corresponds to the file included in the role itself.
+
+``debops.debops.ldap_password``
+  This lookup plugin handles the storage of credentials for LDAP users. Since
+  LDAP DNs can contain characters like whitespace, the credentials are instead
+  stored in UUID-encoded files under the :file:`secret/ldap/credentials/`
+  hierarchy (as explained in :ref:`ldap__ref_admin_pass`).
+
+  Instead of a single argument (path and options as one string), as used by
+  Ansible's `password` lookup plugin, this plugin takes three arguments: base
+  directory, DN and password options.
+
+  The plugin will automatically log the UUID <-> DN mapping in a file (named
+  :file:`debops_ldap_uuid.log`) in the base directory as part of the password
+  generation process to simplify the later task of correlating a given file to
+  a given LDAP entry.
 
 ``debops.debops.lists``
   This lookup plugin implements the ``with_lists`` lookup. Similar to
