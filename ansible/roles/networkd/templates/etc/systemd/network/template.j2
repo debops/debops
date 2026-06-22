@@ -4,7 +4,14 @@
  #}
 # {{ ansible_managed }}
 
+{% from 'macros.j2' import print_ini_section %}
 {% if item.comment | d() %}
 {{   item.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
 {% endif %}
-{{ item.raw | regex_replace('\n$', '') }}
+{% if item.raw | d() %}
+{{   item.raw | regex_replace('\n$', '') }}
+{% else %}
+{%   for section in item.sections | d([]) %}
+{{     print_ini_section(section) -}}
+{%   endfor %}
+{% endif %}
