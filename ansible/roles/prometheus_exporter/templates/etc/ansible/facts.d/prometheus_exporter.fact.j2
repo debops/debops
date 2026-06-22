@@ -1,0 +1,13 @@
+{# Copyright (C) 2026 Patryk Sciborek <patryk@sciborek.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+{{ {'managed_by': 'debops.prometheus_exporter',
+    'configured': prometheus_exporter__combined_exporters
+                  | selectattr('state', 'undefined')
+                  | map(attribute='name') | list
+                + prometheus_exporter__combined_exporters
+                  | selectattr('state', 'defined')
+                  | selectattr('state', 'equalto', 'present')
+                  | map(attribute='name') | list}
+   | to_nice_json }}
