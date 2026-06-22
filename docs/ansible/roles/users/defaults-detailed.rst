@@ -123,9 +123,10 @@ General account parameters
   Only existing groups will be added to the account.
 
 ``append``
-  Optional, boolean. If ``True`` (default), the specified groups will be added
+  Optional, boolean. If ``True``, the specified groups will be added
   to the list of existing groups the account belongs to. If ``False``, all
   other groups than those present on the group list will be removed stripped.
+  Defaults to the value of ``users__groups_append`` (``True``).
 
 ``comment``
   Optional. A comment, or GECOS field configured for a specified UNIX account.
