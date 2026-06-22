@@ -1,0 +1,26 @@
+{# Copyright (C) 2026 Patryk Sciborek <patryk@sciborek.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+{% set pe_args = [] %}
+{% set _ = pe_args.append((exporter.web_listen_flag | d('--web.listen-address')) ~ '=' ~ prometheus_exporter__fact_listen) %}
+{% if exporter.config is defined %}
+{%   set _ = pe_args.append((exporter.config_flag | d('--config.file')) ~ '=' ~ prometheus_exporter__fact_config_path) %}
+{% endif %}
+{% for a in exporter.args | d([]) %}
+{%   set _ = pe_args.append(a) %}
+{% endfor %}
+# {{ ansible_managed }}
+[Service]
+EnvironmentFile=
+{% if exporter.environment | d({}) | length > 0 %}
+Environment=
+{% for key, value in exporter.environment | dictsort %}
+Environment="{{ key }}={{ value }}"
+{% endfor %}
+{% endif %}
+ExecStart=
+ExecStart={{ prometheus_exporter__fact_bin }} {{ pe_args | join(' ') }}
+{% for line in exporter.systemd_overrides | d([]) %}
+{{ line }}
+{% endfor %}
