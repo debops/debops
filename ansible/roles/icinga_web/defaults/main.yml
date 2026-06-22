@@ -26,8 +26,6 @@
 # List of default APT packages to install for Icinga 2 Web support.
 icinga_web__base_packages:
   - 'icingaweb2'
-  - 'icingaweb2-module-doc'
-  - 'icingaweb2-module-monitoring'
   - 'icingacli'
 
                                                                    # ]]]
@@ -90,100 +88,304 @@ icinga_web__node_fqdn: '{{ ansible_fqdn }}'
 # enabled. External modules will be cloned using :command:`git` command.
 # See :ref:`icinga_web__ref_modules` for more details.
 
-# .. envvar:: icinga_web__default_modules [[[
+# .. envvar:: icinga_web__known_modules [[[
 #
-# List of Icinga 2 Web modules installed by default.
-icinga_web__default_modules:
+# List of known Icinga 2 Web modules. This simplifies the task of
+# enabling/disabling modules using the later variables.
+icinga_web__known_modules:
 
-  - name: 'toplevelview'
-    git_repo: 'https://github.com/Icinga/icingaweb2-module-toplevelview'
-    git_version: 'v0.3.3'
-    state: 'present'
+  #####################################
+  ### MODULES WITH DEBIAN PACKAGING ###
+  #####################################
+  - name: 'audit'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-audit'
+    git_version: 'v1.0.2'
+    package: 'icingaweb2-module-audit'
+    state: 'init'
 
-  - name: 'monitoring'
-    state: 'present'
+  - name: 'boxydash'
+    git_repo: 'https://github.com/morgajel/icingaweb2-module-boxydash'
+    git_version: 'master'
+    package: 'icingaweb2-module-boxydash'
+    state: 'init'
 
   - name: 'businessprocess'
     git_repo: 'https://github.com/Icinga/icingaweb2-module-businessprocess'
-    git_version: 'v2.3.1'
-    state: 'present'
+    git_version: 'v2.4.0'
+    package: 'icingaweb2-module-businessprocess'
+    state: 'init'
 
-  - name: 'graphite'
-    git_repo: 'https://github.com/Icinga/icingaweb2-module-graphite'
-    git_version: 'v1.1.0'
-    enabled: False
-    state: 'present'
+  - name: 'cube'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-cube'
+    git_version: 'v1.3.1'
+    package: 'icingaweb2-module-cube'
+    state: 'init'
 
   - name: 'director'
     git_repo: 'https://github.com/Icinga/icingaweb2-module-director'
-    git_version: 'v1.8.1'
-    state: '{{ "present" if icinga_web__director_enabled | bool else "ignore" }}'
+    git_version: 'v1.10.2'
+    package: 'icingaweb2-module-director'
+    state: 'init'
+
+  - name: 'doc'
+    package: 'icingaweb2-module-doc'
+    state: 'present'
+
+  - name: 'eventdb'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-eventdb'
+    git_version: 'v1.3.0'
+    package: 'icingaweb2-module-eventdb'
+    state: 'init'
+
+  - name: 'fileshipper'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-fileshipper'
+    git_version: 'v1.2.0'
+    package: 'icingaweb2-module-fileshipper'
+    state: 'init'
 
   - name: 'generictts'
     git_repo: 'https://github.com/Icinga/icingaweb2-module-generictts'
-    git_version: 'v2.0.0'
-    state: 'present'
+    git_version: 'v2.1.0'
+    package: 'icingaweb2-module-generictts'
+    state: 'init'
 
-  - name: 'grafana'
-    git_repo: 'https://github.com/Mikesch-mp/icingaweb2-module-grafana'
-    git_version: 'v1.4.2'
-    state: 'present'
+  - name: 'graphite'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-graphite'
+    git_version: 'v1.2.3'
+    package: 'icingaweb2-module-graphite'
+    state: 'init'
+
+  - name: 'idoreports'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-idoreports'
+    git_version: 'v0.10.1'
+    package: 'icingaweb2-module-idoreports'
+    state: 'init'
+
+  - name: 'incubator'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-incubator'
+    git_version: 'v0.20.0'
+    package: 'icingaweb2-module-incubator'
+    state: 'init'
 
   - name: 'map'
     git_repo: 'https://github.com/nbuchwitz/icingaweb2-module-map'
     git_version: 'v1.1.0'
+    package: 'icingaweb2-module-map'
+    state: 'init'
+
+  - name: 'monitoring'
+    package: 'icingaweb2-module-monitoring'
     state: 'present'
+
+  - name: 'nagvis'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-nagvis'
+    git_version: 'v1.1.1'
+    package: 'icingaweb2-module-nagvis'
+    state: 'init'
+
+  - name: 'pdfexport'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-pdfexport'
+    git_version: 'v0.10.2'
+    package: 'icingaweb2-module-pdfexport'
+    state: 'init'
 
   - name: 'pnp'
     git_repo: 'https://github.com/Icinga/icingaweb2-module-pnp'
     git_version: 'v1.1.0'
     enabled: False
-    state: 'present'
-
-  - name: 'elasticsearch'
-    git_repo: 'https://github.com/Icinga/icingaweb2-module-elasticsearch'
-    git_version: 'v0.9.0'
-    state: 'present'
-
-  - name: 'cube'
-    git_repo: 'https://github.com/Icinga/icingaweb2-module-cube'
-    git_version: 'v1.1.1'
-    state: 'present'
-
-  - name: 'netboximport'
-    git_repo: 'https://github.com/Uberspace/icingaweb2-module-netboximport'
-    git_version: 'master'
-    state: 'present'
-
-  - name: 'doc'
-    state: 'present'
-
-  - name: 'ipl'
-    git_repo: 'https://github.com/Icinga/icingaweb2-module-ipl'
-    git_version: 'v0.5.0'
-    state: 'present'
+    package: 'icingaweb2-module-pnp'
+    state: 'init'
 
   - name: 'reactbundle'
     git_repo: 'https://github.com/Icinga/icingaweb2-module-reactbundle'
     git_version: 'v0.9.0'
-    state: 'present'
+    package: 'icingaweb2-module-reactbundle'
+    state: 'init'
 
-  - name: 'incubator'
-    git_repo: 'https://github.com/Icinga/icingaweb2-module-incubator'
-    git_version: 'v0.6.0'
-    state: 'present'
+  - name: 'reporting'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-reporting'
+    git_version: 'v0.10.0'
+    package: 'icingaweb2-module-reactbundle'
+    state: 'init'
+
+  - name: 'statusmap'
+    git_repo: 'https://github.com/invliD/icingaweb2-module-statusmap'
+    git_version: 'master'
+    package: 'icingaweb2-module-statusmap'
+    state: 'init'
+
+  - name: 'toplevelview'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-toplevelview'
+    git_version: 'v0.3.3'
+    package: 'icingaweb2-module-toplevelview'
+    state: 'init'
 
   - name: 'x509'
     git_repo: 'https://github.com/icinga/icingaweb2-module-x509'
+    git_version: 'v1.2.1'
+    package: 'icingaweb2-module-x509'
+    state: 'init'
+
+  #################################################
+  ### UPSTREAM MODULES WITH NO DEBIAN PACKAGING ###
+  #################################################
+  - name: 'aws'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-aws'
+    git_version: 'v1.1.0'
+    state: 'init'
+
+  - name: 'elasticsearch'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-elasticsearch'
+    git_version: 'v0.9.0'
+    state: 'init'
+
+  - name: 'jira'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-jira'
+    git_version: 'v1.3.3'
+    state: 'init'
+
+  - name: 'lynxtechnik'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-lynxtechnik'
+    git_version: 'master'
+    state: 'init'
+
+  - name: 'puppetdb'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-puppetdb'
     git_version: 'v1.0.0'
+    state: 'init'
+
+  - name: 'vsphere'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-vsphere'
+    git_version: 'v1.1.1'
+    state: 'init'
+
+  - name: 'vspheredb'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-vspheredb'
+    git_version: 'v1.7.1'
+    state: 'init'
+
+  ####################################################
+  ### THIRD PARTY MODULES WITH NO DEBIAN PACKAGING ###
+  ####################################################
+  - name: 'grafana'
+    git_repo: 'https://github.com/Mikesch-mp/icingaweb2-module-grafana'
+    git_version: 'v2.0.3'
+    state: 'init'
+
+  - name: 'netboximport'
+    git_repo: 'https://github.com/Uberspace/icingaweb2-module-netboximport'
+    git_version: 'master'
+    state: 'init'
+
+  #################
+  ### LIBRARIES ###
+  #################
+  - name: 'old_ipl'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-ipl'
+    git_version: 'v0.5.0'
+    state: 'init'
+    comment: 'Deprecated, replaced by php-library/ipl'
+
+  - name: 'ipl'
+    git_repo: 'https://github.com/Icinga/icinga-php-library'
+    git_version: 'v0.12.0'
+    package: 'icinga-php-library'
+    state: 'init'
+
+  - name: 'reactbundle'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-reactbundle'
+    git_version: 'v0.9.0'
+    package: 'icingaweb2-module-reactbundle'
+    state: 'init'
+    comment: 'Deprecated, replaced by php-thirdparty/vendor'
+
+  - name: 'vendor'
+    git_repo: 'https://github.com/Icinga/icinga-php-thirdparty'
+    git_version: 'v0.11.0'
+    package: 'icinga-php-thirdparty'
+    state: 'init'
+
+  - name: 'ipl-orm'
+    git_repo: 'https://github.com/Icinga/ipl-orm'
+    git_version: 'v0.6.0'
+    state: 'init'
+    comment: 'Deprecated, integrated in php-library/ipl'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__default_modules [[[
+#
+# List of default Icinga 2 Web modules to install.
+icinga_web__default_modules:
+
+  - name: 'businessprocess'
+    state: 'present'
+
+  - name: 'cube'
+    state: 'present'
+
+  - name: 'director'
+    state: '{{ "present" if icinga_web__director_enabled | bool else "ignore" }}'
+
+  - name: 'generictts'
+    state: 'present'
+
+  - name: 'incubator'
+    state: 'present'
+
+  - name: 'map'
+    state: 'present'
+
+  - name: 'pnp'
+    state: 'present'
+
+  - name: 'toplevelview'
+    state: 'present'
+
+  - name: 'x509'
     state: '{{ "present" if icinga_web__x509_enabled | bool else "ignore" }}'
+
+  - name: 'elasticsearch'
+    state: 'present'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__modules [[[
 #
-# List of additional Icinga 2 Web modules that should be installed/managed by
-# the role.
+# List of Icinga 2 Web modules to install on all hosts in the Ansible
+# inventory.
 icinga_web__modules: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__group_modules [[[
+#
+# List of Icinga 2 Web modules to install on hosts in a given group in the
+# Ansible inventory.
+icinga_web__group_modules: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__host_modules [[[
+#
+# List of Icinga 2 Web modules to install on specific hosts in the Ansible
+# inventory.
+icinga_web__host_modules: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__dependent_modules [[[
+#
+# List of Icinga 2 Web modules configured by other Ansible roles using
+# role dependent variables.
+icinga_web__dependent_modules: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__combined_modules [[[
+#
+# Variable which combined all of the above lists for use in the role tasks.
+icinga_web__combined_modules: '{{ icinga_web__known_modules
+                                  + icinga_web__default_modules
+                                  + icinga_web__modules
+                                  + icinga_web__group_modules
+                                  + icinga_web__host_modules
+                                  + icinga_web__dependent_modules }}'
+
                                                                    # ]]]
                                                                    # ]]]
 # Icinga 2 Web database [[[
@@ -210,7 +412,9 @@ icinga_web__database_map:
     db_user: 'icingaweb2'
     db_host: '{{ ansible_local.postgresql.server | d("localhost") }}'
     db_port: '{{ ansible_local.postgresql.port | d(5432) }}'
-    db_schema: '/usr/share/icingaweb2/etc/schema/pgsql.schema.sql'
+    db_schema: '{{ "/usr/share/icingaweb2/etc/schema/pgsql.schema.sql"
+                   if ansible_distribution_release in ["buster", "bullseye", "focal", "jammy", "kinetic"]
+                   else "/usr/share/icingaweb2/schema/pgsql.schema.sql" }}'
     pw_path: '{{ secret + "/postgresql/"
                  + ansible_local.postgresql.delegate_to | d(inventory_hostname)
                  + "/" + ansible_local.postgresql.port | d("5432")
@@ -221,7 +425,9 @@ icinga_web__database_map:
     db_user: 'icingaweb2'
     db_host: '{{ ansible_local.mariadb.server | d("localhost") }}'
     db_port: '{{ ansible_local.mariadb.port | d(3306) }}'
-    db_schema: '/usr/share/icingaweb2/etc/schema/mysql.schema.sql'
+    db_schema: '{{ "/usr/share/icingaweb2/etc/schema/mysql.schema.sql"
+                   if ansible_distribution_release in ["buster", "bullseye", "focal", "jammy", "kinetic"]
+                   else "/usr/share/icingaweb2/schema/mysql.schema.sql" }}'
     pw_path: '{{ secret + "/mariadb/"
                  + ansible_local.mariadb.delegate_to | d(inventory_hostname)
                  + "/credentials/icingaweb2/password" }}'
@@ -587,8 +793,8 @@ icinga_web__director_combined_templates: '{{ icinga_web__director_default_templa
 
 # .. envvar:: icinga_web__x509_enabled [[[
 #
-# Enable or disable support for Icinga 2 Web x509 module. It currently only
-# supports MariaDB.
+# Enable or disable support for the Icinga 2 Web x509 module. It only supports
+# PostgreSQL from version 1.2.1 (post-Bookworm).
 # See https://github.com/icinga/icingaweb2-module-x509 for more details
 icinga_web__x509_enabled: '{{ icinga_web__director_database_type == "mariadb"
                               and ansible_local.mariadb is defined }}'
@@ -597,8 +803,8 @@ icinga_web__x509_enabled: '{{ icinga_web__director_database_type == "mariadb"
 # .. envvar:: icinga_web__x509_database_type [[[
 #
 # Specify the type of the Icinga 2 Web x509 module database. Either
-# ``postgresql`` (under development) or ``mariadb``. It's usually the same type
-# as the main Icinga 2 Web database.
+# ``postgresql`` or ``mariadb``. It's usually the same type as the main Icinga
+# 2 Web database.
 icinga_web__x509_database_type: '{{ icinga_web__database_type | d("invalid") }}'
 
                                                                    # ]]]
@@ -609,11 +815,11 @@ icinga_web__x509_database_type: '{{ icinga_web__database_type | d("invalid") }}'
 icinga_web__x509_database_map:
   postgresql:
     ido:     'pgsql'
-    db_name: 'icingaweb2_x509'
+    db_name: 'icingaweb2_x509_production'
     db_user: 'icingaweb2_x509'
     db_host: '{{ ansible_local.postgresql.server | d("localhost") }}'
     db_port: '{{ ansible_local.postgresql.port | d(5432) }}'
-    db_schema: '/usr/share/icingaweb2/modules/x509/etc/schema/pgsql.schema.sql'
+    db_schema: '/usr/share/icingaweb2/modules/x509/schema/pgsql.schema.sql'
     pw_path: '{{ secret + "/postgresql/"
                  + ansible_local.postgresql.delegate_to | d(inventory_hostname)
                  + "/" + ansible_local.postgresql.port | d("5432")
@@ -624,7 +830,7 @@ icinga_web__x509_database_map:
     db_user: 'icingaweb2_x509'
     db_host: '{{ ansible_local.mariadb.server | d("localhost") }}'
     db_port: '{{ ansible_local.mariadb.port | d(3306) }}'
-    db_schema: '/usr/share/icingaweb2/modules/x509/etc/schema/mysql.schema.sql'
+    db_schema: '/usr/share/icingaweb2/modules/x509/schema/mysql.schema.sql'
     pw_path: '{{ secret + "/mariadb/"
                  + ansible_local.mariadb.delegate_to | d(inventory_hostname)
                  + "/credentials/icingaweb2_x509/password" }}'
@@ -1689,6 +1895,16 @@ icinga_web__postgresql__dependent_roles:
     priv: [ 'ALL' ]
     state: '{{ "present" if icinga_web__director_enabled | bool else "ignore" }}'
 
+  - name: '{{ icinga_web__x509_database_name }}'
+    flags: [ 'NOLOGIN' ]
+    state: '{{ "present" if icinga_web__x509_enabled | bool else "ignore" }}'
+
+  - name: '{{ icinga_web__x509_database_user }}'
+    password: '{{ icinga_web__x509_database_password }}'
+    db: '{{ icinga_web__x509_database_name }}'
+    priv: [ 'ALL' ]
+    state: '{{ "present" if icinga_web__x509_enabled | bool else "ignore" }}'
+
                                                                    # ]]]
 # .. envvar:: icinga_web__postgresql__dependent_databases [[[
 #
@@ -1702,6 +1918,10 @@ icinga_web__postgresql__dependent_databases:
   - name:  '{{ icinga_web__director_database_name }}'
     owner: '{{ icinga_web__director_database_name }}'
     state: '{{ "present" if icinga_web__director_enabled | bool else "ignore" }}'
+
+  - name:  '{{ icinga_web__x509_database_name }}'
+    owner: '{{ icinga_web__x509_database_name }}'
+    state: '{{ "present" if icinga_web__x509_enabled | bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__postgresql__dependent_groups [[[
@@ -1717,6 +1937,11 @@ icinga_web__postgresql__dependent_groups:
     groups: [ '{{ icinga_web__director_database_name }}' ]
     database: '{{ icinga_web__director_database_name }}'
     state: '{{ "present" if icinga_web__director_enabled | bool else "ignore" }}'
+
+  - roles:  [ '{{ icinga_web__x509_database_user }}' ]
+    groups: [ '{{ icinga_web__x509_database_name }}' ]
+    database: '{{ icinga_web__x509_database_name }}'
+    state: '{{ "present" if icinga_web__x509_enabled | bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__postgresql__dependent_privileges [[[
@@ -1805,6 +2030,8 @@ icinga_web__php__dependent_pools:
   - name: 'icingaweb'
     user: 'www-data'
     group: 'www-data'
+    php_values:
+      error_reporting: 'E_ERROR'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__nginx__dependent_upstreams [[[

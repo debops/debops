@@ -48,8 +48,8 @@ specific parameters:
 
 ``state``
   Optional. Specify the desired state of the module. If ``present``, the module
-  will be installed and enabled. If ``absent``, existing modules will be
-  disabled but not removed entirely; non-installed modules won't be installed.
+  will be installed and enabled. If ``absent``, an existing module will be
+  removed entirely; non-installed modules won't be installed.
 
 Examples
 ~~~~~~~~
