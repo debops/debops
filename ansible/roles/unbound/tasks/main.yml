@@ -15,6 +15,12 @@
   ansible.builtin.set_fact:
     unbound__fact_ansible_connection: '{{ ansible_connection }}'
 
+- name: Make sure systemd-resolved is stopped and disabled
+  ansible.builtin.service:
+    name: systemd-resolved.service
+    state: stopped
+    enabled: false
+
 - name: Create Unbound configuration directory
   ansible.builtin.file:
     path: '/etc/unbound/unbound.conf.d'
