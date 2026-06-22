@@ -1,0 +1,16 @@
+{# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2022 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+# System account which doveadm will create the backups as.
+DOVEADM_USER="{{ dovecot__vmail_posix_user }}"
+
+# System group which doveadm will create the backups as.
+DOVEADM_GROUP="{{ dovecot__vmail_posix_group }}"
+
+# An array of login patterns (wildcards "*" and "?" are supported)
+# for which backups should be created.
+BACKUP_LOGIN_PATTERNS=({{ dovecot__snapshot_user_filter | d("*")
+                          | list | flatten | map("quote") | join(", ") }})
