@@ -1,0 +1,128 @@
+---
+# Copyright (C) 2026 Patryk Sciborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Manage one exporter. Included in a loop with loop_var 'exporter'.
+
+- name: Validate exporter {{ exporter.name | d("<unnamed>") }} definition
+  ansible.builtin.assert:
+    that:
+      - exporter.name is defined
+      - exporter.name | length > 0
+      - exporter.state | d('present') in ['present', 'absent']
+      - (exporter.state | d('present') == 'absent')
+        or (exporter.listen_address is defined)
+        or (exporter.name in prometheus_exporter__known_ports)
+    quiet: True
+    fail_msg: >-
+      Each exporter needs a non-empty 'name', 'state' present/absent, and
+      (for present) either 'listen_address' or a 'name' present in
+      prometheus_exporter__known_ports.
+
+- name: Resolve settings for exporter {{ exporter.name }}
+  ansible.builtin.set_fact:
+    prometheus_exporter__fact_service: "{{ exporter.service | d('prometheus-' ~ exporter.name ~ '-exporter') }}"
+    prometheus_exporter__fact_package: "{{ exporter.package | d('prometheus-' ~ exporter.name ~ '-exporter') }}"
+    prometheus_exporter__fact_bin: "{{ exporter.bin_path | d('/usr/bin/' ~ (exporter.service | d('prometheus-' ~ exporter.name ~ '-exporter'))) }}"
+    prometheus_exporter__fact_listen: "{{ exporter.listen_address | d(prometheus_exporter__default_listen_host ~ ':' ~ (prometheus_exporter__known_ports[exporter.name] | d('') | string)) }}"
+    prometheus_exporter__fact_config_path: "{{ exporter.config_path | d(prometheus_exporter__config_dir ~ '/' ~ exporter.name ~ '.yml') }}"
+    prometheus_exporter__fact_secret: "{{ (exporter.environment | d({}) | length > 0) | bool }}"
+
+- name: Deploy exporter {{ exporter.name }}
+  when: exporter.state | d('present') == 'present'
+  block:
+
+    - name: Install APT package for exporter {{ exporter.name }}
+      ansible.builtin.apt:
+        name: '{{ [prometheus_exporter__fact_package] + (exporter.packages | d([])) }}'
+        state: 'present'
+        update_cache: True
+        cache_valid_time: 3600
+
+    - name: Deploy config file for exporter {{ exporter.name }}
+      ansible.builtin.template:
+        src: 'etc/prometheus/exporter-config.yml.j2'
+        dest: '{{ prometheus_exporter__fact_config_path }}'
+        owner: 'root'
+        group: 'root'
+        mode: '{{ exporter.config_mode | d("0644") }}'
+      no_log: '{{ exporter.config_no_log | d(False) | bool }}'
+      register: prometheus_exporter__register_config
+      when: exporter.config is defined
+
+    - name: Deploy extra config files for exporter {{ exporter.name }}
+      ansible.builtin.copy:
+        content: '{{ item.content | d(omit) }}'
+        src: '{{ item.src | d(omit) }}'
+        dest: '{{ item.path }}'
+        owner: 'root'
+        group: 'root'
+        mode: '{{ item.mode | d("0644") }}'
+      loop: '{{ exporter.config_files | d([]) }}'
+      loop_control:
+        label: '{{ item.path }}'
+      no_log: '{{ exporter.config_no_log | d(False) | bool }}'
+      register: prometheus_exporter__register_configfiles
+
+    - name: Ensure systemd drop-in directory for exporter {{ exporter.name }}
+      ansible.builtin.file:
+        path: '{{ prometheus_exporter__dropin_dir }}/{{ prometheus_exporter__fact_service }}.service.d'
+        state: 'directory'
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
+
+    - name: Deploy systemd drop-in for exporter {{ exporter.name }}
+      ansible.builtin.template:
+        src: 'etc/systemd/system/exporter-override.conf.j2'
+        dest: '{{ prometheus_exporter__dropin_dir }}/{{ prometheus_exporter__fact_service }}.service.d/override.conf'
+        owner: 'root'
+        group: 'root'
+        mode: '{{ "0600" if prometheus_exporter__fact_secret else "0644" }}'
+      no_log: '{{ prometheus_exporter__fact_secret }}'
+      register: prometheus_exporter__register_dropin
+
+    - name: Enable and start exporter {{ exporter.name }}
+      ansible.builtin.systemd:
+        name: '{{ prometheus_exporter__fact_service }}'
+        enabled: True
+        state: 'started'
+        daemon_reload: True
+
+    - name: Restart exporter {{ exporter.name }} on configuration change
+      ansible.builtin.systemd:  # noqa no-handler
+        name: '{{ prometheus_exporter__fact_service }}'
+        state: 'restarted'
+      when: (prometheus_exporter__register_config is changed) or
+            (prometheus_exporter__register_configfiles is changed) or
+            (prometheus_exporter__register_dropin is changed)
+
+- name: Remove exporter {{ exporter.name }}
+  when: exporter.state | d('present') == 'absent'
+  block:
+
+    - name: Stop and disable exporter {{ exporter.name }}
+      ansible.builtin.systemd:
+        name: '{{ prometheus_exporter__fact_service }}'
+        enabled: False
+        state: 'stopped'
+      failed_when: False
+
+    - name: Remove drop-in for exporter {{ exporter.name }}
+      ansible.builtin.file:
+        path: '{{ prometheus_exporter__dropin_dir }}/{{ prometheus_exporter__fact_service }}.service.d/override.conf'
+        state: 'absent'
+      register: prometheus_exporter__register_absent_dropin
+
+    - name: Reload systemd after removing drop-in {{ exporter.name }}
+      ansible.builtin.systemd:
+        daemon_reload: True
+      when: prometheus_exporter__register_absent_dropin is changed
+
+    - name: Purge APT package for exporter {{ exporter.name }}
+      ansible.builtin.apt:
+        name: '{{ prometheus_exporter__fact_package }}'
+        state: 'absent'
+        purge: True
+      when: prometheus_exporter__purge_on_absent | bool
