@@ -166,7 +166,7 @@ interface_down () {
         systemd_escaped_interface="$(systemd-escape "${1}")"
 
         if [ ${#if_hotplug_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_hotplug_interfaces[@]}" ; then
-		systemctl stop "ifup@${systemd_escaped_interface}.service"
+            systemctl stop "ifup@${systemd_escaped_interface}.service"
         elif [ ${#if_boot_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_boot_interfaces[@]}" ; then
             if [ ${#if_hotplug_interfaces[@]} -gt 0 ] && [ ${#systemd_ifup_instances[@]} -gt 0 ] && containsElement "${1}" "${systemd_ifup_instances[@]}" ; then
                 systemctl stop "ifup@${systemd_escaped_interface}.service"
