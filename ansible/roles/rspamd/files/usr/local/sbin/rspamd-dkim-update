@@ -168,7 +168,9 @@ def read_config_file(path):
         if not config["netbox_token_file"]:
             die("netbox_token_file not configured")
             if not os.access(config["netbox_token_file"]):
-                die("netbox_token_file " + config["netbox_token_file"] + "is not readable")
+                die("netbox_token_file "
+                    + config["netbox_token_file"]
+                    + "is not readable")
 
     # Note: invalid methods are caught in main()
     return config
@@ -340,14 +342,17 @@ def netbox_api(config, method, path, data=None):
         except Exception:
             pass
         raise RuntimeError(
-            "NetBox {} {} failed: {} {}".format(method, url, getattr(resp, "status_code", "??"), body)
+            "NetBox {} {} failed: {} {}".format(method, url,
+                getattr(resp, "status_code", "??"), body)
         ) from e
     except requests.RequestException as e:
         raise RuntimeError("NetBox {} {} failed: {}".format(method, url, e)) from e
 
+
 def netbox_find_zone(config, fqdn):
-    zones = netbox_api(config, "GET", "/api/plugins/netbox-dns/zones/?name={}".format(
-        requests.utils.quote(fqdn)
+    zones = netbox_api(config, "GET",
+        "/api/plugins/netbox-dns/zones/?name={}".format(
+            requests.utils.quote(fqdn)
     ))
     results = zones.get("results", [])
     if results:
@@ -357,14 +362,16 @@ def netbox_find_zone(config, fqdn):
     labels = fqdn.rstrip(".").split(".")
     for i in range(0, len(labels) - 1):
         candidate = ".".join(labels[i:])
-        zones = netbox_api(config, "GET", "/api/plugins/netbox-dns/zones/?name={}".format(
-            requests.utils.quote(candidate)
+        zones = netbox_api(config, "GET",
+            "/api/plugins/netbox-dns/zones/?name={}".format(
+                requests.utils.quote(candidate)
         ))
         results = zones.get("results", [])
         if results:
             return results[0]
 
     return None
+
 
 # Split DKIM domain to isolate the zone found in NetBox.
 # For example, for two.one.example.com:
@@ -380,12 +387,16 @@ def split_zone(domain, zone_name):
         return domain[:-len(suffix)]
     return domain
 
+
 # Remove double-quotes from TXT value, so that this:
 #   "v=DKIM1; k=rsa;" "p=t6M" "VsY="
 # becomes this:
 #   v=DKIM1; k=rsa; p=t6MVsY=
 def strip_dkim_spaces(val):
-    return val.replace(';" "', '; ').replace('" ";', ' ;').replace('" "', '').replace('"', '')
+    val = val.replace(';" "', '; ').replace('" ";', ' ;')
+    val = val.replace('" "', '').replace('"', '')
+    return val
+
 
 def do_netbox(config, keys):
     zonenotfound = []
@@ -413,8 +424,8 @@ def do_netbox(config, keys):
         existing = None
         for r in records.get("results", []):
             if (r.get("name") == record_name
-            and r.get("type") == "TXT"
-            and strip_dkim_spaces(r.get("value")) == record_data):
+                and r.get("type") == "TXT"
+                and strip_dkim_spaces(r.get("value")) == record_data):
                 existing = r
                 break
 
@@ -434,20 +445,27 @@ def do_netbox(config, keys):
             payload["status"] = "active"
 
             if existing:
-                netbox_api(config, "PATCH", "/api/plugins/netbox-dns/records/{}/".format(existing["id"]), payload)
+                netbox_api(config, "PATCH",
+                    "/api/plugins/netbox-dns/records/{}/".format(existing["id"]),
+                    payload)
                 # Ping Healthchecks only for creations and updates
                 hc_ping(config, "Update " + hc_data)
             else:
-                netbox_api(config, "POST", "/api/plugins/netbox-dns/records/", payload)
+                netbox_api(config, "POST",
+                    "/api/plugins/netbox-dns/records/",
+                    payload)
                 hc_ping(config, "Create " + hc_data)
 
         elif key["action"] == "delete":
             if existing:
                 # Be conservative, don't delete but just mark as expired. (Also
                 # helps to reduce the permissions required to the API user)
-                # netbox_api(config, "DELETE", "/api/plugins/netbox-dns/records/{}/".format(existing["id"]))
+                # netbox_api(config, "DELETE",
+                #     "/api/plugins/netbox-dns/records/{}/".format(existing["id"]))
                 payload["status"] = "expired"
-                netbox_api(config, "PATCH", "/api/plugins/netbox-dns/records/{}/".format(existing["id"]), payload)
+                netbox_api(config, "PATCH",
+                    "/api/plugins/netbox-dns/records/{}/".format(existing["id"]),
+                    payload)
         else:
             die("Invalid action specified")
 
@@ -496,6 +514,7 @@ def do_email(config, keys):
     for key in keys:
         hc_list += key["selector"] + "." + key["domain"]
     hc_ping(config, "Email " + " ".join(hc_list))
+
 
 def do_log(config, keys):
     if not config["log_file"]:
