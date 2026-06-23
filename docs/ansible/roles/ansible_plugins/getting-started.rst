@@ -213,10 +213,21 @@ Global configuration fallback
 The lookup plugins described above normally require the ``debops`` Python
 module to read their configuration. When installed via Ansible Galaxy, the
 ``debops`` Python module is not available. In that case the lookup plugins
-fall back to reading the ``override_paths`` section directly from the global
-DebOps configuration directories.
+fall back to reading the ``override_paths`` section directly from a
+project-local configuration file or the global DebOps configuration
+directories.
 
-The configuration directories are checked in this order (first match wins):
+Before reading the global directories, the plugins look for a file named
+:file:`.debops.json`, :file:`.debops.toml`, or :file:`.debops.yml` /
+:file:`.debops.yaml` in the current working directory (typically the project
+root where :command:`ansible-playbook` is executed). The first readable file
+found is used. This allows you to keep the override configuration in your
+project repository, alongside the Ansible playbooks.
+
+If no project-local configuration file is found, or it does not contain the
+relevant ``override_paths`` key, the plugins fall through to the global
+configuration directories, which are checked in this order (first match
+wins):
 
 - :file:`/usr/lib/debops/conf.d/`
 - :file:`/usr/local/lib/debops/conf.d/`
@@ -253,5 +264,6 @@ The lookup plugins will resolve relative paths against the directory where
 
 Note that the per-project :file:`.debops.cfg` configuration file is only
 supported when the ``debops`` Python module is installed. Users who install
-DebOps via Ansible Galaxy should use the global configuration directories
-described above.
+DebOps via Ansible Galaxy should use a :file:`.debops.yml` file (or a
+:file:`.debops.json` / :file:`.debops.toml` alternative) described above, or
+the global configuration directories.

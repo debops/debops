@@ -103,10 +103,12 @@ By combining above techniques, you can very easily extend DebOps roles without
 losing the ability to update them, using :command:`git` without having merge
 conflicts.
 
-When using the global DebOps configuration path
-(:file:`~/.config/debops/conf.d/`), create a TOML, YAML, or JSON file with
-the ``override_paths`` section. For example, to override files and templates
-for a project at :file:`/home/alice/myansible/`:
+Alternatively, you can create a :file:`.debops.yml` (or
+:file:`.debops.json` / :file:`.debops.toml`) file in your project root
+directory. The lookup plugins will pick it up automatically without needing
+the ``debops`` Python module or any configuration directory setup. For
+example, to override files and templates for a project at
+:file:`/home/alice/myansible/`:
 
 .. code-block:: toml
 
@@ -116,7 +118,10 @@ for a project at :file:`/home/alice/myansible/`:
    tasks_path = "/home/alice/myansible/resources/overrides/tasks"
 
 Relative paths are resolved against the directory where
-:command:`ansible-playbook` is executed.
+:command:`ansible-playbook` is executed. You can also use the global DebOps
+configuration path (:file:`~/.config/debops/conf.d/`) as an alternative —
+create a TOML, YAML, or JSON file with the same ``override_paths`` section
+in any of the configuration directories.
 
 
 Ansible inventory is a source of truth
