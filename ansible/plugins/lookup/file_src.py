@@ -117,34 +117,22 @@ if parse(__ansible_version__) < parse("2.0"):
             # (e.g. installed via Ansible Galaxy). Read override paths
             # directly from the global DebOps configuration directories.
             if not conf_section:
-                _xdg = os.environ.get(
-                    "XDG_CONFIG_HOME",
-                    os.path.join(os.path.expanduser("~"), ".config"))
-                _cfg_dirs = [
-                    "/usr/lib/debops/conf.d",
-                    "/usr/local/lib/debops/conf.d",
-                    "/etc/debops/conf.d",
-                    os.path.join(_xdg, "debops", "conf.d"),
-                ]
                 _found = None
-                for _cd in _cfg_dirs:
-                    if not os.path.isdir(_cd):
-                        continue
-                    for _f in sorted(os.listdir(_cd)):
-                        _fp = os.path.join(_cd, _f)
-                        if _f.startswith(".") or not os.path.isfile(_fp):
-                            continue
+
+                for _ext in [".json", ".toml", ".yaml", ".yml"]:
+                    _pp = os.path.join(os.getcwd(), ".debops" + _ext)
+                    if os.path.isfile(_pp):
                         try:
-                            if _f.endswith(".json"):
-                                with open(_fp) as _fh:
+                            if _pp.endswith(".json"):
+                                with open(_pp) as _fh:
                                     _parsed = json.load(_fh)
-                            elif _f.endswith(".toml"):
+                            elif _pp.endswith(".toml"):
                                 import tomllib as _tl
-                                with open(_fp, "rb") as _fh:
+                                with open(_pp, "rb") as _fh:
                                     _parsed = _tl.load(_fh)
-                            elif _f.endswith((".yaml", ".yml")):
+                            elif _pp.endswith((".yaml", ".yml")):
                                 import yaml as _yl
-                                with open(_fp) as _fh:
+                                with open(_pp) as _fh:
                                     _parsed = _yl.safe_load(_fh)
                             else:
                                 continue
@@ -154,16 +142,63 @@ if parse(__ansible_version__) < parse("2.0"):
                             _v = _parsed.get(
                                 "override_paths", {}).get("files_path")
                             if _v:
+                                for _p in _v.split(":"):
+                                    if os.path.isabs(_p):
+                                        places.append(_p)
+                                    else:
+                                        places.append(
+                                            os.path.join(os.getcwd(), _p))
                                 _found = _v
-                                break
-                    if _found:
                         break
-                if _found:
-                    for _p in _found.split(":"):
-                        if os.path.isabs(_p):
-                            places.append(_p)
-                        else:
-                            places.append(os.path.join(os.getcwd(), _p))
+
+                if not _found:
+                    _xdg = os.environ.get(
+                        "XDG_CONFIG_HOME",
+                        os.path.join(os.path.expanduser("~"), ".config"))
+                    _cfg_dirs = [
+                        "/usr/lib/debops/conf.d",
+                        "/usr/local/lib/debops/conf.d",
+                        "/etc/debops/conf.d",
+                        os.path.join(_xdg, "debops", "conf.d"),
+                    ]
+                    for _cd in _cfg_dirs:
+                        if not os.path.isdir(_cd):
+                            continue
+                        for _f in sorted(os.listdir(_cd)):
+                            _fp = os.path.join(_cd, _f)
+                            if _f.startswith(".") or not os.path.isfile(_fp):
+                                continue
+                            try:
+                                if _f.endswith(".json"):
+                                    with open(_fp) as _fh:
+                                        _parsed = json.load(_fh)
+                                elif _f.endswith(".toml"):
+                                    import tomllib as _tl
+                                    with open(_fp, "rb") as _fh:
+                                        _parsed = _tl.load(_fh)
+                                elif _f.endswith((".yaml", ".yml")):
+                                    import yaml as _yl
+                                    with open(_fp) as _fh:
+                                        _parsed = _yl.safe_load(_fh)
+                                else:
+                                    continue
+                            except Exception:
+                                continue
+                            if isinstance(_parsed, dict):
+                                _v = _parsed.get(
+                                    "override_paths", {}).get("files_path")
+                                if _v:
+                                    _found = _v
+                                    break
+                        if _found:
+                            break
+                    if _found:
+                        for _p in _found.split(":"):
+                            if os.path.isabs(_p):
+                                places.append(_p)
+                            else:
+                                places.append(
+                                    os.path.join(os.getcwd(), _p))
 
             for term in terms:
                 if '_original_file' in inject:
@@ -233,34 +268,22 @@ else:
             # (e.g. installed via Ansible Galaxy). Read override paths
             # directly from the global DebOps configuration directories.
             if not conf_section:
-                _xdg = os.environ.get(
-                    "XDG_CONFIG_HOME",
-                    os.path.join(os.path.expanduser("~"), ".config"))
-                _cfg_dirs = [
-                    "/usr/lib/debops/conf.d",
-                    "/usr/local/lib/debops/conf.d",
-                    "/etc/debops/conf.d",
-                    os.path.join(_xdg, "debops", "conf.d"),
-                ]
                 _found = None
-                for _cd in _cfg_dirs:
-                    if not os.path.isdir(_cd):
-                        continue
-                    for _f in sorted(os.listdir(_cd)):
-                        _fp = os.path.join(_cd, _f)
-                        if _f.startswith(".") or not os.path.isfile(_fp):
-                            continue
+
+                for _ext in [".json", ".toml", ".yaml", ".yml"]:
+                    _pp = os.path.join(os.getcwd(), ".debops" + _ext)
+                    if os.path.isfile(_pp):
                         try:
-                            if _f.endswith(".json"):
-                                with open(_fp) as _fh:
+                            if _pp.endswith(".json"):
+                                with open(_pp) as _fh:
                                     _parsed = json.load(_fh)
-                            elif _f.endswith(".toml"):
+                            elif _pp.endswith(".toml"):
                                 import tomllib as _tl
-                                with open(_fp, "rb") as _fh:
+                                with open(_pp, "rb") as _fh:
                                     _parsed = _tl.load(_fh)
-                            elif _f.endswith((".yaml", ".yml")):
+                            elif _pp.endswith((".yaml", ".yml")):
                                 import yaml as _yl
-                                with open(_fp) as _fh:
+                                with open(_pp) as _fh:
                                     _parsed = _yl.safe_load(_fh)
                             else:
                                 continue
@@ -270,16 +293,63 @@ else:
                             _v = _parsed.get(
                                 "override_paths", {}).get("files_path")
                             if _v:
+                                for _p in _v.split(":"):
+                                    if os.path.isabs(_p):
+                                        places.append(_p)
+                                    else:
+                                        places.append(
+                                            os.path.join(os.getcwd(), _p))
                                 _found = _v
-                                break
-                    if _found:
                         break
-                if _found:
-                    for _p in _found.split(":"):
-                        if os.path.isabs(_p):
-                            places.append(_p)
-                        else:
-                            places.append(os.path.join(os.getcwd(), _p))
+
+                if not _found:
+                    _xdg = os.environ.get(
+                        "XDG_CONFIG_HOME",
+                        os.path.join(os.path.expanduser("~"), ".config"))
+                    _cfg_dirs = [
+                        "/usr/lib/debops/conf.d",
+                        "/usr/local/lib/debops/conf.d",
+                        "/etc/debops/conf.d",
+                        os.path.join(_xdg, "debops", "conf.d"),
+                    ]
+                    for _cd in _cfg_dirs:
+                        if not os.path.isdir(_cd):
+                            continue
+                        for _f in sorted(os.listdir(_cd)):
+                            _fp = os.path.join(_cd, _f)
+                            if _f.startswith(".") or not os.path.isfile(_fp):
+                                continue
+                            try:
+                                if _f.endswith(".json"):
+                                    with open(_fp) as _fh:
+                                        _parsed = json.load(_fh)
+                                elif _f.endswith(".toml"):
+                                    import tomllib as _tl
+                                    with open(_fp, "rb") as _fh:
+                                        _parsed = _tl.load(_fh)
+                                elif _f.endswith((".yaml", ".yml")):
+                                    import yaml as _yl
+                                    with open(_fp) as _fh:
+                                        _parsed = _yl.safe_load(_fh)
+                                else:
+                                    continue
+                            except Exception:
+                                continue
+                            if isinstance(_parsed, dict):
+                                _v = _parsed.get(
+                                    "override_paths", {}).get("files_path")
+                                if _v:
+                                    _found = _v
+                                    break
+                        if _found:
+                            break
+                    if _found:
+                        for _p in _found.split(":"):
+                            if os.path.isabs(_p):
+                                places.append(_p)
+                            else:
+                                places.append(
+                                    os.path.join(os.getcwd(), _p))
 
             for term in terms:
                 if 'role_path' in variables:
