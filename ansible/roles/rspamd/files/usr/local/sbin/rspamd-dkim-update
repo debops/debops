@@ -22,6 +22,7 @@ import argparse
 import datetime
 import subprocess
 import shutil
+import requests
 
 __license__ = 'GPL-2.0 OR Apache-2.0'
 __author__ = 'David Härdeman <david@hardeman.nu>'
@@ -86,7 +87,7 @@ def get_args_parser():
 
 def get_default_config():
     return {
-        "method": "log/email/nsupdate/nsupdate_tsig/nsupdate_gsstsig",
+        "method": "log/email/nsupdate/nsupdate_tsig/nsupdate_gsstsig/netbox",
         "log_file": "/var/log/rspamd/rspamd-dkim-update.log",
         "email_to": "root@localhost",
         "email_from": "noreply@{}".format(socket.getfqdn()),
@@ -97,7 +98,15 @@ def get_default_config():
         "nsupdate_gsstsig_princ": "dnsupdate@EXAMPLE.COM",
         "nsupdate_ttl": 3600,
         "nsupdate_server": "dns.example.com",
+        "netbox_url": "https://netbox.example.com",
+        "netbox_token_file": "/etc/rspamd/dkim-update-netbox-token",
     }
+    # Optionals:
+    #   "netbox_ttl": 86400,                # Default: null
+    #   "netbox_verify_ssl": True,          # Default: True
+    #   "healthchecks_url": "https://..."   # Default: null
+    # Note:
+    # - "netbox_token_file" could be deployed through role::resources:files.
 
 
 def print_example_config():
@@ -152,6 +161,15 @@ def read_config_file(path):
                 not config["nsupdate_gsstsig_princ"]):
             die("nsupdate gsstsig principal not configured")
 
+    elif config["method"] == "netbox":
+        if not config["netbox_url"]:
+            die("netbox_url not configured")
+
+        if not config["netbox_token_file"]:
+            die("netbox_token_file not configured")
+            if not os.access(config["netbox_token_file"]):
+                die("netbox_token_file " + config["netbox_token_file"] + "is not readable")
+
     # Note: invalid methods are caught in main()
     return config
 
@@ -177,28 +195,31 @@ def get_keys(key_list):
         #
         # The last line can also be:
         # \t"chunkN" ) ;
-        #
+
+        # NOTE rr_data should be defined even for the delete action, otherwise
+        # do_netbox may remove keys published by another servers!
+        try:
+            with open(dns_file, "r") as f:
+                rr_data = f.read().strip()
+        except Exception as err:
+            die("Can't open file {}: {}".format(dns_file, str(err)))
+
+        parts = rr_data.split(maxsplit=3)
+        if len(parts) != 4:
+            die("Invalid file {}: missing parts".format(dns_file))
+        elif parts[0] != name:
+            die("Invalid file {}: name mismatch".format(dns_file))
+        elif parts[1].upper() != "IN":
+            die("Invalid file {}: IN missing".format(dns_file))
+        elif parts[2].upper() != "TXT":
+            die("Invalid file {}: TXT missing".format(dns_file))
+
+        rr_lines = parts[3].strip("\r\n\t ();").split("\n")
+        # nsupdate wants the data in < 256 byte chunks
+        rr_data = " ".join([line.strip("\r\n\t ") for line in rr_lines])
+
         if action == "add":
-            try:
-                with open(dns_file, "r") as f:
-                    rr_data = f.read().strip()
-            except Exception as err:
-                die("Can't open file {}: {}".format(dns_file, str(err)))
-
-            parts = rr_data.split(maxsplit=3)
-            if len(parts) != 4:
-                die("Invalid file {}: missing parts".format(dns_file))
-            elif parts[0] != name:
-                die("Invalid file {}: name mismatch".format(dns_file))
-            elif parts[1].upper() != "IN":
-                die("Invalid file {}: IN missing".format(dns_file))
-            elif parts[2].upper() != "TXT":
-                die("Invalid file {}: TXT missing".format(dns_file))
-
-            rr_lines = parts[3].strip("\r\n\t ();").split("\n")
-            # nsupdate wants the data in < 256 byte chunks
-            rr_data = " ".join([line.strip("\r\n\t ") for line in rr_lines])
-
+            pass
         elif action == "del":
             action = "delete"
 
@@ -215,6 +236,11 @@ def get_keys(key_list):
             "rr": rr,
             "rr_data": rr_data,
         }
+
+
+def hc_ping(config, data):
+    if "healthchecks_url" in config:
+        requests.post(config["healthchecks_url"], data=data)
 
 
 def do_nsupdate(config, keys):
@@ -284,6 +310,151 @@ def do_nsupdate(config, keys):
         die("Failed to call {}".format(main_cmd))
 
 
+def netbox_api(config, method, path, data=None):
+    base = config["netbox_url"].rstrip("/")
+    url = base + path
+    headers = {
+        "Authorization": "{}".format(open(config["netbox_token_file"]).read()),
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    body = None
+    if data is not None:
+        body = json.dumps(data).encode("utf-8")
+
+    verify = True
+    if url.startswith("https://"):
+        if "netbox_verify_ssl" in config and not config["netbox_verify_ssl"]:
+            verify = False
+
+    try:
+        with requests.Session() as s:
+            s.verify = verify
+            resp = s.request(method=method, url=url, headers=headers, data=body)
+            raw = resp.text
+            return json.loads(raw) if raw else {}
+    except requests.HTTPError as e:
+        body = ""
+        try:
+            body = resp.text
+        except Exception:
+            pass
+        raise RuntimeError(
+            "NetBox {} {} failed: {} {}".format(method, url, getattr(resp, "status_code", "??"), body)
+        ) from e
+    except requests.RequestException as e:
+        raise RuntimeError("NetBox {} {} failed: {}".format(method, url, e)) from e
+
+def netbox_find_zone(config, fqdn):
+    zones = netbox_api(config, "GET", "/api/plugins/netbox-dns/zones/?name={}".format(
+        requests.utils.quote(fqdn)
+    ))
+    results = zones.get("results", [])
+    if results:
+        return results[0]
+
+    # fallback: lookup by suffix
+    labels = fqdn.rstrip(".").split(".")
+    for i in range(0, len(labels) - 1):
+        candidate = ".".join(labels[i:])
+        zones = netbox_api(config, "GET", "/api/plugins/netbox-dns/zones/?name={}".format(
+            requests.utils.quote(candidate)
+        ))
+        results = zones.get("results", [])
+        if results:
+            return results[0]
+
+    return None
+
+# Split DKIM domain to isolate the zone found in NetBox.
+# For example, for two.one.example.com:
+#   - The actual RR is "two.one"; and
+#   - The NetBox zone is "example.com".
+def split_zone(domain, zone_name):
+    domain = domain.rstrip(".")
+    zone_name = zone_name.rstrip(".")
+    if domain == zone_name:
+        return ""
+    suffix = "." + zone_name
+    if domain.endswith(suffix):
+        return domain[:-len(suffix)]
+    return domain
+
+# Remove double-quotes from TXT value, so that this:
+#   "v=DKIM1; k=rsa;" "p=t6M" "VsY="
+# becomes this:
+#   v=DKIM1; k=rsa; p=t6MVsY=
+def strip_dkim_spaces(val):
+    return val.replace(';" "', '; ').replace('" ";', ' ;').replace('" "', '').replace('"', '')
+
+def do_netbox(config, keys):
+    zonenotfound = []
+
+    for key in keys:
+        zone = netbox_find_zone(config, key["domain"])
+        if not zone:
+            # Will fallback on email if zone is not found in NetBox
+            zonenotfound.append(key)
+            continue
+
+        record_name = key["name"]
+        relative_domain = split_zone(key["domain"], zone["name"])
+        if relative_domain:
+            record_name = "{}.{}".format(record_name, relative_domain)
+
+        record_data = strip_dkim_spaces(key["rr_data"])
+
+        records = netbox_api(
+            config, "GET",
+            "/api/plugins/netbox-dns/records/?zone_id={}&name={}&type={}".format(
+                zone["id"], requests.utils.quote(record_name), "TXT"
+            )
+        )
+        existing = None
+        for r in records.get("results", []):
+            if (r.get("name") == record_name
+            and r.get("type") == "TXT"
+            and strip_dkim_spaces(r.get("value")) == record_data):
+                existing = r
+                break
+
+        payload = {
+            "zone": zone["id"],
+            "name": record_name,
+            "type": "TXT",
+        }
+        if "netbox_ttl" in config:
+            payload["ttl"] = config["netbox_ttl"]
+
+        hc_data = key["selector"] + "." + key["domain"]
+
+        if key["action"] == "add":
+            payload["value"] = record_data
+            payload["description"] = "Key from " + socket.getfqdn()
+            payload["status"] = "active"
+
+            if existing:
+                netbox_api(config, "PATCH", "/api/plugins/netbox-dns/records/{}/".format(existing["id"]), payload)
+                # Ping Healthchecks only for creations and updates
+                hc_ping(config, "Update " + hc_data)
+            else:
+                netbox_api(config, "POST", "/api/plugins/netbox-dns/records/", payload)
+                hc_ping(config, "Create " + hc_data)
+
+        elif key["action"] == "delete":
+            if existing:
+                # Be conservative, don't delete but just mark as expired. (Also
+                # helps to reduce the permissions required to the API user)
+                # netbox_api(config, "DELETE", "/api/plugins/netbox-dns/records/{}/".format(existing["id"]))
+                payload["status"] = "expired"
+                netbox_api(config, "PATCH", "/api/plugins/netbox-dns/records/{}/".format(existing["id"]), payload)
+        else:
+            die("Invalid action specified")
+
+    if zonenotfound:
+        do_email(config, zonenotfound)
+
+
 def create_message(config, keys, sep):
     msg = "{}{}Executed at {}{}".format(
         sys.argv[0],
@@ -321,6 +492,10 @@ def do_email(config, keys):
         # smtp.set_debuglevel(1)
         smtp.sendmail(config["email_from"], config["email_to"], msg)
 
+    hc_list = []
+    for key in keys:
+        hc_list += key["selector"] + "." + key["domain"]
+    hc_ping(config, "Email " + " ".join(hc_list))
 
 def do_log(config, keys):
     if not config["log_file"]:
@@ -360,6 +535,8 @@ def main():
         do_email(config, keys)
     elif config["method"] in ["nsupdate", "nsupdate_tsig", "nsupdate_gsstsig"]:
         do_nsupdate(config, keys)
+    elif config["method"] == "netbox":
+        do_netbox(config, keys)
     elif config["method"] != "log":
         die("Invalid method configured")
 
