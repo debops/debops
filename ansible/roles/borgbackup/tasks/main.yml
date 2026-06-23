@@ -1,0 +1,109 @@
+---
+
+- import_role:
+    name: 'ansible_plugins'
+
+- import_role:
+    name: 'secret'
+
+# Install packages [[[1
+- name: Install required packages
+  package:
+    name: '{{ q("flattened", borgbackup__base_packages,
+                             borgbackup__packages) }}'
+    state: 'present'
+  tags: [ 'role::borgbackup:install' ]
+
+# Configure borgmatic [[[1
+- name: Create directory for borgmatic configuration
+  file:
+    path: '{{ borgbackup__configuration_base_path }}'
+    state: 'directory'
+    mode: '0700'
+
+- name: Delete borgmatic configuration
+  file:
+    path: '{{ borgbackup__configuration_base_path + "/" + item.name + ".yaml" }}'
+    state: 'absent'
+  with_items: '{{ borgbackup__combined_configuration | parse_kv_config }}'
+  when: item.name|d() and item.state|d('present') == 'absent'
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Create borgmatic configuration
+  template:
+    src: 'etc/borgmatic/config.yaml.j2'
+    dest: '{{ borgbackup__configuration_base_path + "/" + item.name + ".yaml" }}'
+    mode: '0600'
+    ## FIXME: Reenable.
+    # validate: 'validate-borgmatic-config --config "%s"'
+  with_items: '{{ borgbackup__combined_configuration | parse_kv_config }}'
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Create directory for borgbackup passphrase files
+  file:
+    path: '{{ borgbackup__passphrase_base_path }}'
+    state: 'directory'
+    mode: '0700'
+
+- name: Delete borgbackup passphrase files
+  file:
+    path: '{{ borgbackup__passphrase_base_path + "/" + item.name + "_passphrase.txt" }}'
+    state: 'absent'
+  with_items: '{{ borgbackup__combined_configuration | parse_kv_config }}'
+  when: item.name|d() and item.state|d('present') == 'absent'
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Create borgbackup passphrase files
+  copy:
+    dest: '{{ borgbackup__passphrase_base_path + "/" + item.name + "_passphrase.txt" }}'
+    mode: '0600'
+    content: '{{ lookup("password", borgbackup__secret_base_path + "/credentials/" + item.name + "/password"
+                 + " length=" + (borgbackup__passphrase_length|string)) }}'
+  with_items: '{{ borgbackup__combined_configuration | parse_kv_config }}'
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+  no_log: True
+  tags: [ 'role::borgbackup:config' ]
+
+
+# Initialize borgbackup repository [[[1
+- name: Initialize borgbackup repository
+  command: borgmatic --config '{{ borgbackup__configuration_base_path + "/" + item.name + ".yaml" }}' --init --encryption keyfile
+  with_items: '{{ borgbackup__combined_configuration | parse_kv_config }}'
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+  register: borgbackup__register_repo_create
+  changed_when: (borgbackup__register_repo_create is success and
+                 borgbackup__register_repo_create.stdout|d())
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Backup .config/borg to the Ansible controller
+  synchronize:
+    src: '/root/.config/borg/'
+    dest: '{{ borgbackup__secret_base_path + "/backup_of_borg" }}'
+    checksum: True
+    mode: 'pull'
+    recursive: True
+    verify_host: True
+  tags: [ 'role::borgbackup:config' ]
+
+# Create Ansible local facts [[[1
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save borgbackup local facts
+  template:
+    src: 'etc/ansible/facts.d/borgbackup.fact.j2'
+    dest: '/etc/ansible/facts.d/borgbackup.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: borgbackup__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: borgbackup__register_facts is changed
