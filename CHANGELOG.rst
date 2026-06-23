@@ -204,6 +204,14 @@ General
 - Fixed an issue with variables that define IMAP,SMTP,Sieve ports being defined
   as integers instead of strings.
 
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- The ``syslog`` UNIX account default shell and home directory have been
+  updated to include changes in the Ubuntu 24.04 release onwards. This avoids
+  the issue with the role failing due to the underlying :command:`usermod`
+  command not being able to change the account's home directory.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
