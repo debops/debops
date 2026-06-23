@@ -342,18 +342,19 @@ def netbox_api(config, method, path, data=None):
         except Exception:
             pass
         raise RuntimeError(
-            "NetBox {} {} failed: {} {}".format(method, url,
-                getattr(resp, "status_code", "??"), body)
+            "NetBox {} {} failed: {} {}".format(
+                method, url, getattr(resp, "status_code", "??"), body)
         ) from e
     except requests.RequestException as e:
         raise RuntimeError("NetBox {} {} failed: {}".format(method, url, e)) from e
 
 
 def netbox_find_zone(config, fqdn):
-    zones = netbox_api(config, "GET",
-        "/api/plugins/netbox-dns/zones/?name={}".format(
+    zones = netbox_api(
+        config, "GET", "/api/plugins/netbox-dns/zones/?name={}".format(
             requests.utils.quote(fqdn)
-    ))
+        )
+    )
     results = zones.get("results", [])
     if results:
         return results[0]
@@ -362,10 +363,11 @@ def netbox_find_zone(config, fqdn):
     labels = fqdn.rstrip(".").split(".")
     for i in range(0, len(labels) - 1):
         candidate = ".".join(labels[i:])
-        zones = netbox_api(config, "GET",
-            "/api/plugins/netbox-dns/zones/?name={}".format(
+        zones = netbox_api(
+            config, "GET", "/api/plugins/netbox-dns/zones/?name={}".format(
                 requests.utils.quote(candidate)
-        ))
+            )
+        )
         results = zones.get("results", [])
         if results:
             return results[0]
@@ -424,8 +426,8 @@ def do_netbox(config, keys):
         existing = None
         for r in records.get("results", []):
             if (r.get("name") == record_name
-                and r.get("type") == "TXT"
-                and strip_dkim_spaces(r.get("value")) == record_data):
+                    and r.get("type") == "TXT"
+                    and strip_dkim_spaces(r.get("value")) == record_data):
                 existing = r
                 break
 
@@ -445,15 +447,15 @@ def do_netbox(config, keys):
             payload["status"] = "active"
 
             if existing:
-                netbox_api(config, "PATCH",
+                netbox_api(
+                    config, "PATCH",
                     "/api/plugins/netbox-dns/records/{}/".format(existing["id"]),
                     payload)
                 # Ping Healthchecks only for creations and updates
                 hc_ping(config, "Update " + hc_data)
             else:
-                netbox_api(config, "POST",
-                    "/api/plugins/netbox-dns/records/",
-                    payload)
+                netbox_api(
+                    config, "POST", "/api/plugins/netbox-dns/records/", payload)
                 hc_ping(config, "Create " + hc_data)
 
         elif key["action"] == "delete":
@@ -463,7 +465,8 @@ def do_netbox(config, keys):
                 # netbox_api(config, "DELETE",
                 #     "/api/plugins/netbox-dns/records/{}/".format(existing["id"]))
                 payload["status"] = "expired"
-                netbox_api(config, "PATCH",
+                netbox_api(
+                    config, "PATCH",
                     "/api/plugins/netbox-dns/records/{}/".format(existing["id"]),
                     payload)
         else:
