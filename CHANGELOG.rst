@@ -211,6 +211,12 @@ General
   preferred key exchange, cipher and MAC algorithms. OpenSSH v10.x+ versions
   should now be detected correctly.
 
+- The role now detects the KEX algorithms actually supported by the installed
+  OpenSSH binary via :command:`ssh -Q kex` and filters the configured list
+  accordingly. This fixes configuration failures on systems where OpenSSH is
+  compiled without support for post-quantum algorithms (e.g. ``sntrup761x25519-sha512``
+  on Ubuntu 24.04 Noble).
+
 
 `debops v3.1.7`_ - 2026-03-13
 -----------------------------
