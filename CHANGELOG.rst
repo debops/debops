@@ -74,6 +74,14 @@ General
   layered execution order to accommodate deployment of Docker-based services
   and applications. This affects the use of the :file:`site.yml` playbook.
 
+- The ``debops.debops.file_src``, ``debops.debops.template_src`` and
+  ``debops.debops.task_src`` lookup plugins now fall back to reading override
+  paths from the global DebOps configuration directories
+  (:file:`~/.config/debops/conf.d/` and system-wide paths) when the
+  ``debops`` Python module is not available. This allows these plugins to work
+  when the collection is installed via Ansible Galaxy without the ``debops``
+  Python package.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
