@@ -1,0 +1,100 @@
+{# Copyright (C) 2025 Patryk Ściborek <patryk@sciborek.com>
+ # Copyright (C) 2025 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+#
+# cloudflared tunnel configuration for '{{ tunnel.name }}'
+# Mode: {{ tunnel.mode | d('token') }}
+
+{% if tunnel.mode | d('token') == 'local' %}
+tunnel: {{ tunnel.tunnel_uuid }}
+credentials-file: {{ cloudflared__credentials_dir }}/{{ tunnel.name }}.json
+{% endif %}
+{% if tunnel.config | d({}) %}
+{%   for key, value in (tunnel.config | d({})).items() %}
+{%     if value is sameas true %}
+{{ key }}: true
+{%     elif value is sameas false %}
+{{ key }}: false
+{%     else %}
+{{ key }}: {{ value }}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if tunnel.config is not defined or 'protocol' not in tunnel.config | d({}) %}
+protocol: {{ cloudflared__protocol }}
+{% endif %}
+{% if tunnel.config is not defined or 'loglevel' not in tunnel.config | d({}) %}
+loglevel: {{ cloudflared__loglevel }}
+{% endif %}
+{% if tunnel.config is not defined or 'no-autoupdate' not in tunnel.config | d({}) %}
+no-autoupdate: {{ cloudflared__no_autoupdate | bool | lower }}
+{% endif %}
+{% if tunnel.config is not defined or 'grace-period' not in tunnel.config | d({}) %}
+grace-period: {{ cloudflared__grace_period }}
+{% endif %}
+{% if tunnel.config is not defined or 'edge-ip-version' not in tunnel.config | d({}) %}
+{%   if cloudflared__edge_ip_version != 'auto' %}
+edge-ip-version: {{ cloudflared__edge_ip_version }}
+{%   endif %}
+{% endif %}
+{% if cloudflared__metrics %}
+{%   if tunnel.config is not defined or 'metrics' not in tunnel.config | d({}) %}
+metrics: {{ cloudflared__metrics }}
+{%   endif %}
+{% endif %}
+{% if cloudflared__post_quantum | bool %}
+{%   if tunnel.config is not defined or 'post-quantum' not in tunnel.config | d({}) %}
+post-quantum: true
+{%   endif %}
+{% endif %}
+{% if tunnel.origin_request | d({}) %}
+
+originRequest:
+{%   for key, value in tunnel.origin_request.items() %}
+{%     if value is sameas true %}
+  {{ key }}: true
+{%     elif value is sameas false %}
+  {{ key }}: false
+{%     elif value is mapping %}
+  {{ key }}:
+{%       for subkey, subvalue in value.items() %}
+    {{ subkey }}: {{ subvalue }}
+{%       endfor %}
+{%     else %}
+  {{ key }}: {{ value }}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if tunnel.warp_routing | d({}) %}
+
+warp-routing:
+{%   for key, value in tunnel.warp_routing.items() %}
+  {{ key }}: {{ value | bool | lower }}
+{%   endfor %}
+{% endif %}
+{% if tunnel.mode | d('token') == 'local' and tunnel.ingress | d([]) %}
+
+ingress:
+{%   for rule in tunnel.ingress %}
+  - hostname: {{ rule.hostname }}
+{%     if rule.path | d() %}
+    path: {{ rule.path }}
+{%     endif %}
+    service: {{ rule.service }}
+{%     if rule.originRequest | d({}) %}
+    originRequest:
+{%       for key, value in rule.originRequest.items() %}
+{%         if value is sameas true %}
+      {{ key }}: true
+{%         elif value is sameas false %}
+      {{ key }}: false
+{%         else %}
+      {{ key }}: {{ value }}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endfor %}
+  - service: {{ tunnel.catch_all_service | d(cloudflared__catch_all_service) }}
+{% endif %}

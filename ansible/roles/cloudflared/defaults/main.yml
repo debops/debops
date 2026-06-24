@@ -1,0 +1,315 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2025 Patryk Ściborek <patryk@sciborek.com>
+# .. Copyright (C) 2025 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _cloudflared__ref_defaults:
+
+# debops.cloudflared default variables
+# =====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Role state and deployment [[[
+# -----------------------------
+
+# .. envvar:: cloudflared__enabled [[[
+#
+# Enable or disable the ``cloudflared`` role.
+cloudflared__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__deploy_state [[[
+#
+# If ``present``, the ``cloudflared`` package and its configuration will be
+# installed. If ``absent``, the package and its configuration will be removed.
+cloudflared__deploy_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: cloudflared__base_packages [[[
+#
+# List of base APT packages to install for cloudflared support.
+cloudflared__base_packages: [ 'cloudflared' ]
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__packages [[[
+#
+# List of additional APT packages to install with cloudflared.
+cloudflared__packages: []
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__version [[[
+#
+# The version of the currently installed :command:`cloudflared` daemon, exposed
+# using Ansible local facts. This variable is populated automatically and
+# shouldn't be set manually.
+cloudflared__version: '{{ ansible_local.cloudflared.version | d("0.0.0") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT repository configuration [[[
+# ---------------------------------
+
+# .. envvar:: cloudflared__upstream [[[
+#
+# Enable or disable the upstream Cloudflare APT repository.
+# When enabled, the :ref:`debops.keyring` Ansible role will configure the
+# repository and its GPG key.
+cloudflared__upstream: True
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__apt_key_url [[[
+#
+# The URL of the GPG key used to sign the Cloudflare APT repository.
+cloudflared__apt_key_url: 'https://pkg.cloudflare.com/cloudflare-public-v2.gpg'
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__apt_key_id [[[
+#
+# The fingerprint of the GPG key used to sign the Cloudflare APT repository.
+cloudflared__apt_key_id: 'CC94B39C77AE7342A68B89628A682D308D4E5E73'
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__apt_repo_distribution [[[
+#
+# The distribution component used in the APT repository URL.
+# Set to ``any`` for universal packages or a specific codename like
+# ``bookworm``, ``jammy``, etc.
+cloudflared__apt_repo_distribution: 'any'
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__apt_repo_url [[[
+#
+# The APT repository URL for cloudflared packages.
+cloudflared__apt_repo_url: 'deb [signed-by=/etc/apt/keyrings/cloudflare-public-v2.gpg] https://pkg.cloudflare.com/cloudflared {{ cloudflared__apt_repo_distribution }} main'
+                                                                   # ]]]
+                                                                   # ]]]
+# System user and group [[[
+# -------------------------
+
+# .. envvar:: cloudflared__user [[[
+#
+# Name of the UNIX system account used by cloudflared.
+cloudflared__user: 'cloudflared'
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__group [[[
+#
+# Name of the UNIX system group used by cloudflared.
+cloudflared__group: 'cloudflared'
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__home [[[
+#
+# Home directory of the cloudflared system user.
+cloudflared__home: '/var/lib/cloudflared'
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__shell [[[
+#
+# Default shell of the cloudflared system user.
+cloudflared__shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+# Directory paths [[[
+# -------------------
+
+# .. envvar:: cloudflared__config_dir [[[
+#
+# Directory where cloudflared configuration files are stored.
+cloudflared__config_dir: '/etc/cloudflared'
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__credentials_dir [[[
+#
+# Directory on the remote host where tunnel credentials files are stored.
+cloudflared__credentials_dir: '{{ cloudflared__config_dir }}/credentials'
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__log_dir [[[
+#
+# Directory for cloudflared log files.
+cloudflared__log_dir: '/var/log/cloudflared'
+                                                                   # ]]]
+                                                                   # ]]]
+# Tunnel definitions [[[
+# ----------------------
+
+# The lists below define Cloudflare Tunnel configurations. Each element is
+# a dictionary describing a tunnel instance. See
+# :ref:`cloudflared__ref_tunnels` for details about supported parameters.
+
+# .. envvar:: cloudflared__default_tunnels [[[
+#
+# List of default tunnel configurations defined by the role.
+cloudflared__default_tunnels: []
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__tunnels [[[
+#
+# List of tunnel configurations defined for all hosts in the Ansible inventory.
+cloudflared__tunnels: []
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__group_tunnels [[[
+#
+# List of tunnel configurations defined for hosts in a specific Ansible
+# inventory group.
+cloudflared__group_tunnels: []
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__host_tunnels [[[
+#
+# List of tunnel configurations defined for specific hosts in the Ansible
+# inventory.
+cloudflared__host_tunnels: []
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__combined_tunnels [[[
+#
+# Variable which combines all tunnel configuration lists and is used in role
+# tasks and templates.
+cloudflared__combined_tunnels: '{{ cloudflared__default_tunnels
+                                   + cloudflared__tunnels
+                                   + cloudflared__group_tunnels
+                                   + cloudflared__host_tunnels }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Global tunnel options [[[
+# -------------------------
+
+# These variables define default values applied to all tunnels unless
+# overridden in individual tunnel definitions.
+
+# .. envvar:: cloudflared__protocol [[[
+#
+# The default protocol used by cloudflared to connect to the Cloudflare edge.
+# Possible values: ``auto``, ``http2``, ``quic``.
+cloudflared__protocol: 'auto'
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__loglevel [[[
+#
+# The default log level for cloudflared. Possible values:
+# ``debug``, ``info``, ``warn``, ``error``, ``fatal``.
+cloudflared__loglevel: 'info'
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__metrics [[[
+#
+# Address and port to expose Prometheus metrics. Set to empty string to
+# disable. Example: ``127.0.0.1:2000``.
+cloudflared__metrics: ''
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__post_quantum [[[
+#
+# Enable or disable post-quantum cryptography for tunnel connections.
+cloudflared__post_quantum: False
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__no_autoupdate [[[
+#
+# Disable cloudflared automatic updates. Recommended when installing from
+# a package manager.
+cloudflared__no_autoupdate: True
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__edge_ip_version [[[
+#
+# The IP version used to connect to the Cloudflare edge.
+# Possible values: ``auto``, ``4``, ``6``.
+cloudflared__edge_ip_version: 'auto'
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__retries [[[
+#
+# Number of retries for establishing a tunnel connection.
+cloudflared__retries: 5
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__grace_period [[[
+#
+# Grace period before shutting down tunnel connections during a restart.
+cloudflared__grace_period: '30s'
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__catch_all_service [[[
+#
+# The default catch-all service used as the last ingress rule when no other
+# rules match. Required by cloudflared for locally-managed tunnels.
+cloudflared__catch_all_service: 'http_status:404'
+                                                                   # ]]]
+                                                                   # ]]]
+# systemd configuration [[[
+# -------------------------
+
+# .. envvar:: cloudflared__systemd_restart_policy [[[
+#
+# The restart policy for cloudflared systemd service instances.
+cloudflared__systemd_restart_policy: 'on-failure'
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__systemd_restart_sec [[[
+#
+# The time to wait between restarts of cloudflared service instances.
+cloudflared__systemd_restart_sec: '5'
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__systemd_after [[[
+#
+# The ``After=`` directive in cloudflared systemd service units.
+cloudflared__systemd_after: 'network-online.target'
+                                                                   # ]]]
+                                                                   # ]]]
+# Secret management [[[
+# ---------------------
+
+# .. envvar:: cloudflared__secret_base_path [[[
+#
+# The base path under the ``secret`` directory on the Ansible Controller
+# where cloudflared secrets are stored.
+cloudflared__secret_base_path: 'cloudflared/tunnels'
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__secret_directories [[[
+#
+# List of directories under the :file:`secret/` tree on the Ansible Controller
+# that should be created for cloudflared tunnel secrets. This variable is
+# populated by the ``main_env`` task file.
+cloudflared__secret_directories: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: cloudflared__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+cloudflared__keyring__dependent_apt_keys:
+
+  - url: '{{ cloudflared__apt_key_url }}'
+    keyring: 'cloudflare-public-v2.gpg'
+    repo: '{{ cloudflared__apt_repo_url }}'
+    state: '{{ "present"
+               if (cloudflared__upstream | bool and
+                   cloudflared__deploy_state != "absent")
+               else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+# By default empty because cloudflared uses only outbound connections.
+# If you expose Prometheus metrics on a network interface, add a rule here.
+cloudflared__ferm__dependent_rules: []
+                                                                   # ]]]
+                                                                   # ]]]
