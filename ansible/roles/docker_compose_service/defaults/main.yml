@@ -1,0 +1,160 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# .. Copyright (C) 2026 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _docker_compose_service__ref_defaults:
+
+# debops.docker_compose_service default variables
+# ================================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: docker_compose_service__domain [[[
+#
+# The DNS domain used for generating default FQDNs for Compose services
+# when a custom :command:`nginx` FQDN is not specified.
+docker_compose_service__domain: '{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_compose_service__data_path [[[
+#
+# Base directory path on the host for Docker Compose project directories.
+# Each service creates its own subdirectory under this path by default.
+docker_compose_service__data_path: '/srv/docker'
+
+                                                                   # ]]]
+# .. envvar:: docker_compose_service__pull [[[
+#
+# If ``True``, the role will run ``docker compose pull`` before bringing up
+# the Compose project. Can be overridden per service.
+docker_compose_service__pull: True
+
+                                                                   # ]]]
+# .. envvar:: docker_compose_service__templates_path [[[
+#
+# Absolute path to the role-private template tree on the Ansible Controller,
+# used to locate Jinja templates referenced by ``compose_src``,
+# ``compose_files.src``, ``config_files.src`` and ``config_dir.src``.
+# Layout: ``<path>/by-host/<inventory_hostname>/<service>/``.
+docker_compose_service__templates_path: '{{ inventory_dir | realpath + "/../docker_compose_service" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Service definitions [[[
+# -----------------------
+
+# These variables define Docker Compose services managed by this role.
+# See :ref:`docker_compose_service__ref_services` for more details.
+
+# .. envvar:: docker_compose_service__default_services [[[
+#
+# List of Docker Compose services defined by default in the role.
+docker_compose_service__default_services: []
+
+                                                                   # ]]]
+# .. envvar:: docker_compose_service__services [[[
+#
+# List of Docker Compose services defined on all hosts in the Ansible
+# inventory.
+docker_compose_service__services: []
+
+                                                                   # ]]]
+# .. envvar:: docker_compose_service__group_services [[[
+#
+# List of Docker Compose services defined on hosts in a specific Ansible
+# inventory group.
+docker_compose_service__group_services: []
+
+                                                                   # ]]]
+# .. envvar:: docker_compose_service__host_services [[[
+#
+# List of Docker Compose services defined on specific hosts in the Ansible
+# inventory.
+docker_compose_service__host_services: []
+
+                                                                   # ]]]
+# .. envvar:: docker_compose_service__combined_services [[[
+#
+# Variable which combines all Docker Compose service lists and is used in
+# role tasks and templates.
+docker_compose_service__combined_services: '{{ docker_compose_service__default_services
+                                               + docker_compose_service__services
+                                               + docker_compose_service__group_services
+                                               + docker_compose_service__host_services }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: docker_compose_service__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+# The ``python3-docker`` package is required by the ``community.docker``
+# Ansible collection used to manage Compose projects.
+docker_compose_service__python__dependent_packages3:
+  - 'python3-docker'
+
+                                                                   # ]]]
+# .. envvar:: docker_compose_service__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+# Populated dynamically by the ``build_nginx_vars`` task file which is
+# included as a ``pre_task`` in the playbook. The template lookup must
+# run in the ``docker_compose_service`` role context to find the templates.
+docker_compose_service__nginx__dependent_upstreams: []
+
+                                                                   # ]]]
+# .. envvar:: docker_compose_service__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+# Populated dynamically by the ``build_nginx_vars`` task file which is
+# included as a ``pre_task`` in the playbook. The template lookup must
+# run in the ``docker_compose_service`` role context to find the templates.
+docker_compose_service__nginx__dependent_servers: []
+                                                                   # ]]]
+
+# .. envvar:: docker_compose_service__ferm__default_chain [[[
+#
+# Default :command:`iptables` chain used for firewall rules generated by the
+# ``published_ports`` integration. Docker-published ports are filtered in the
+# ``FORWARD`` path via the ``DOCKER-USER`` chain, not ``INPUT``. A rule placed
+# in ``INPUT`` silently fails to filter a published container port.
+docker_compose_service__ferm__default_chain: 'DOCKER-USER'
+
+                                                                   # ]]]
+# .. envvar:: docker_compose_service__ferm__default_protocol [[[
+#
+# Default IP protocol used when a ``published_ports`` entry does not specify
+# ``protocol`` explicitly.
+docker_compose_service__ferm__default_protocol: 'tcp'
+
+                                                                   # ]]]
+# .. envvar:: docker_compose_service__ferm__default_action [[[
+#
+# Default action applied to traffic that does not match any ``allow`` source
+# range when a ``published_ports`` entry is firewalled. Supported values:
+#
+# - ``reject`` (default): send a TCP reset / ICMP admin-prohibited reply
+# - ``drop``: silently discard the packet
+docker_compose_service__ferm__default_action: 'reject'
+
+                                                                   # ]]]
+# .. envvar:: docker_compose_service__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+# Populated dynamically by the ``build_ferm_vars`` task file which is
+# included as a ``pre_task`` in the playbook. Each service entry that defines
+# ``published_ports`` with a non-empty ``allow`` list will contribute
+# ``DOCKER-USER`` accept rules (one per source CIDR) and a trailing
+# default-deny rule for the declared port.
+docker_compose_service__ferm__dependent_rules: []
+                                                                   # ]]]
+                                                                   # ]]]
