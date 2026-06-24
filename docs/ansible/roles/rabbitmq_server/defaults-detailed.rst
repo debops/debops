@@ -654,6 +654,20 @@ Supported parameters:
 ``node``
   Optional. The name of a RabbitMQ node to which a given feature flag applies.
 
+``opt_in``
+  Optional. Boolean. If ``True``, the role enables the feature flag via
+  ``rabbitmqctl -q enable_feature_flag --opt-in`` instead of the
+  ``community.rabbitmq.rabbitmq_feature_flag`` module. Required for flags
+  that can only be activated explicitly by the operator, for example
+  ``khepri_db`` on RabbitMQ 4.0/4.1. Default: ``False``.
+
+Entries referencing feature flags that have been promoted to "required"
+status in the running RabbitMQ version (and therefore no longer appear in
+``rabbitmqctl list_feature_flags``) are silently skipped so inventories
+written for older RabbitMQ versions stay idempotent after a major upgrade.
+Unknown flag names (typos in still-toggleable flags) continue to fail the
+play.
+
 Examples
 ~~~~~~~~
 
@@ -665,6 +679,15 @@ Enable the ``maintenance_mode_status`` feature flag on a specific Erlang node:
 
      - name: 'maintenance_mode_status'
        node: 'rabbit@node1'
+
+Enable the ``khepri_db`` opt-in feature flag cluster-wide:
+
+.. code-block:: yaml
+
+   rabbitmq_server__feature_flags:
+
+     - name: 'khepri_db'
+       opt_in: True
 
 
 .. _rabbitmq_server__ref_global_parameters:
@@ -803,3 +826,115 @@ Create a set of RabbitMQ policies:
        pattern: '.*'
        tags:
          'ha-mode': 'all'
+
+
+.. _rabbitmq_server__ref_cluster_autojoin:
+
+rabbitmq_server__cluster_autojoin
+---------------------------------
+
+The role can form the RabbitMQ cluster automatically. When
+``rabbitmq_server__cluster_autojoin`` is ``True``, each non-seed node runs
+``rabbitmqctl reset`` and ``rabbitmqctl join_cluster`` against the seed
+node after the role has applied its configuration and the
+``Restart rabbitmq-server`` handler has fired. Nodes that are already
+clustered with the seed are left alone.
+
+Automatic cluster formation is opt-in (default: ``False``) so that upgrading
+the role on existing deployments never alters cluster membership on its
+own. In particular, several independent single-node RabbitMQ instances that
+share the ``debops_service_rabbitmq_server`` inventory group will remain
+independent unless you explicitly enable auto-join on the groups that
+should form a cluster.
+
+``rabbitmq_server__cluster_hosts``
+  Ordered list of cluster members. Defaults to the
+  ``debops_service_rabbitmq_server`` inventory group, sorted alphabetically.
+  The first entry is used as the seed. Override in the inventory when you
+  need an explicit order.
+
+  .. warning::
+
+     The default pulls *every* host from ``debops_service_rabbitmq_server``.
+     When the inventory hosts more than one independent RabbitMQ cluster
+     under that umbrella group, you **must** narrow this variable to the
+     members of the individual cluster in the matching ``group_vars``
+     (see the "Running multiple independent clusters" example below).
+     Otherwise the seed election and, if enabled, the ``join_cluster`` step
+     will try to merge the clusters into one.
+
+``rabbitmq_server__cluster_seed_node``
+  Hostname (without the ``rabbit@`` prefix) of the seed node. Defaults to
+  the first entry of ``rabbitmq_server__cluster_hosts``. Non-seed members
+  always join this node.
+
+``rabbitmq_server__cluster_autojoin``
+  Master switch for automatic cluster formation. Default: ``False`` (opt-in).
+  Set to ``True`` on the inventory group(s) that should form or maintain
+  a real cluster. Keeping it ``False`` preserves the legacy manual workflow
+  (``rabbitmqctl join_cluster`` executed outside of Ansible) and is the
+  safe choice for deployments that run several independent RabbitMQ
+  instances under one inventory group.
+
+The ``reset + join_cluster`` sequence is guarded by an ``assert`` that the
+current node's ``disk_nodes`` list contains only itself. A node which is
+already a member of a different cluster is never reset; instead the play
+fails with a clear error and requires manual intervention or an opt-out.
+
+Examples
+~~~~~~~~
+
+Enable automatic cluster formation for a single cluster that covers the
+whole ``debops_service_rabbitmq_server`` group:
+
+.. code-block:: yaml
+
+   # group_vars/debops_service_rabbitmq_server/rabbitmq_server.yml
+   rabbitmq_server__cluster_autojoin: True
+
+Pick an explicit seed (without changing alphabetical order of the group):
+
+.. code-block:: yaml
+
+   rabbitmq_server__cluster_seed_node: 'rabbitmq-primary.example.org'
+
+Disable the feature on a host that should not join the cluster:
+
+.. code-block:: yaml
+
+   rabbitmq_server__cluster_autojoin: False
+
+Running multiple independent clusters under one inventory
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+When a single DebOps inventory manages several RabbitMQ clusters, split
+them into dedicated inventory groups and point
+``rabbitmq_server__cluster_hosts`` at the matching group in each
+``group_vars`` subtree. ``debops_service_rabbitmq_server`` stays as the
+umbrella group so the role is still applied to every cluster member.
+
+.. code-block:: ini
+
+   # inventory/hosts
+   [rabbitmq_cluster_a]
+   mq-a1
+   mq-a2
+   mq-a3
+
+   [rabbitmq_cluster_b]
+   mq-b1
+   mq-b2
+
+   [debops_service_rabbitmq_server:children]
+   rabbitmq_cluster_a
+   rabbitmq_cluster_b
+
+.. code-block:: yaml
+
+   # group_vars/rabbitmq_cluster_a/rabbitmq_server.yml
+   rabbitmq_server__cluster_autojoin: True
+   rabbitmq_server__cluster_hosts: '{{ groups["rabbitmq_cluster_a"] | sort }}'
+
+   # group_vars/rabbitmq_cluster_b/rabbitmq_server.yml
+   rabbitmq_server__cluster_autojoin: True
+   rabbitmq_server__cluster_hosts: '{{ groups["rabbitmq_cluster_b"] | sort }}'
