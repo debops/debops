@@ -218,8 +218,8 @@ project-local configuration file or the global DebOps configuration
 directories.
 
 Before reading the global directories, the plugins look for a file named
-:file:`.debops.json`, :file:`.debops.toml`, or :file:`.debops.yml` /
-:file:`.debops.yaml` in the current working directory (typically the project
+:file:`.debops.yaml` / :file:`.debops.yml`, :file:`.debops.json`, or
+:file:`.debops.toml` in the current working directory (typically the project
 root where :command:`ansible-playbook` is executed). The first readable file
 found is used. This allows you to keep the override configuration in your
 project repository, alongside the Ansible playbooks.
@@ -229,10 +229,10 @@ relevant ``override_paths`` key, the plugins fall through to the global
 configuration directories, which are checked in this order (first match
 wins):
 
-- :file:`/usr/lib/debops/conf.d/`
-- :file:`/usr/local/lib/debops/conf.d/`
-- :file:`/etc/debops/conf.d/`
 - :file:`~/.config/debops/conf.d/`
+- :file:`/etc/debops/conf.d/`
+- :file:`/usr/local/lib/debops/conf.d/`
+- :file:`/usr/lib/debops/conf.d/`
 
 Each directory can contain files with ``.toml``, ``.yaml``, ``.yml`` or
 ``.json`` extensions. The fallback reader supports all four formats. The

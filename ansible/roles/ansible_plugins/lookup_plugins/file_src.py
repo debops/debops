@@ -119,7 +119,7 @@ if LooseVersion(__ansible_version__) < LooseVersion("2.0"):
             if not conf_section:
                 _found = None
 
-                for _ext in [".json", ".toml", ".yaml", ".yml"]:
+                for _ext in [".yaml", ".yml", ".json", ".toml"]:
                     _project_path = os.path.join(os.getcwd(), ".debops" + _ext)
                     if os.path.isfile(_project_path):
                         try:
@@ -156,10 +156,10 @@ if LooseVersion(__ansible_version__) < LooseVersion("2.0"):
                         "XDG_CONFIG_HOME",
                         os.path.join(os.path.expanduser("~"), ".config"))
                     _cfg_dirs = [
-                        "/usr/lib/debops/conf.d",
-                        "/usr/local/lib/debops/conf.d",
-                        "/etc/debops/conf.d",
                         os.path.join(_xdg, "debops", "conf.d"),
+                        "/etc/debops/conf.d",
+                        "/usr/local/lib/debops/conf.d",
+                        "/usr/lib/debops/conf.d",
                     ]
                     for _cfg_dir in _cfg_dirs:
                         if not os.path.isdir(_cfg_dir):
@@ -270,7 +270,7 @@ else:
             if not conf_section:
                 _found = None
 
-                for _ext in [".json", ".toml", ".yaml", ".yml"]:
+                for _ext in [".yaml", ".yml", ".json", ".toml"]:
                     _project_path = os.path.join(os.getcwd(), ".debops" + _ext)
                     if os.path.isfile(_project_path):
                         try:
@@ -307,10 +307,10 @@ else:
                         "XDG_CONFIG_HOME",
                         os.path.join(os.path.expanduser("~"), ".config"))
                     _cfg_dirs = [
-                        "/usr/lib/debops/conf.d",
-                        "/usr/local/lib/debops/conf.d",
-                        "/etc/debops/conf.d",
                         os.path.join(_xdg, "debops", "conf.d"),
+                        "/etc/debops/conf.d",
+                        "/usr/local/lib/debops/conf.d",
+                        "/usr/lib/debops/conf.d",
                     ]
                     for _cfg_dir in _cfg_dirs:
                         if not os.path.isdir(_cfg_dir):
