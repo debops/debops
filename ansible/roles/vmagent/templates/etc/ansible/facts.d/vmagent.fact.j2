@@ -1,0 +1,77 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps
+import os
+import re
+import subprocess
+
+BIN_PATH = "{{ vmagent__bin_path }}"
+
+
+def read_version():
+    if not os.access(BIN_PATH, os.X_OK):
+        return None
+    try:
+        stdout = subprocess.check_output(
+            [BIN_PATH, "-version"],
+            stderr=subprocess.STDOUT
+        ).decode("utf-8", errors="replace").strip()
+    except Exception:
+        return None
+    match = re.search(r"v?(\d+\.\d+\.\d+)", stdout)
+    return match.group(1) if match else None
+
+
+def list_instances():
+    instances = []
+    try:
+        units_stdout = subprocess.check_output(
+            ["systemctl", "list-units", "vmagent@*.service",
+             "--no-legend", "--plain", "--all"],
+            stderr=subprocess.STDOUT
+        ).decode("utf-8", errors="replace").strip()
+    except Exception:
+        return instances
+
+    for line in units_stdout.split("\n"):
+        if not line.strip():
+            continue
+        unit_name = line.split()[0]
+        match = re.search(r"vmagent@(.+)\.service", unit_name)
+        if not match:
+            continue
+        name = match.group(1)
+        active = "unknown"
+        try:
+            active = subprocess.check_output(
+                ["systemctl", "is-active", "vmagent@{}.service".format(name)],
+                stderr=subprocess.STDOUT
+            ).decode("utf-8", errors="replace").strip()
+        except subprocess.CalledProcessError as e:
+            active = e.output.decode("utf-8", errors="replace").strip()
+        instances.append({"name": name, "active": active})
+    return instances
+
+
+def main():
+    output = {
+        "installed": os.access(BIN_PATH, os.X_OK),
+        "bin_path": BIN_PATH,
+    }
+    version = read_version()
+    if version is not None:
+        output["version"] = version
+    output["instances"] = list_instances()
+    print(dumps(output, sort_keys=True, indent=4))
+
+
+if __name__ == "__main__":
+    main()

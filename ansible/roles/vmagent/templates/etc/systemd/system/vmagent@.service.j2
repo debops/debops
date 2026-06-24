@@ -1,0 +1,54 @@
+{# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+[Unit]
+Description=VictoriaMetrics vmagent - %i
+Documentation=https://docs.victoriametrics.com/vmagent/
+After={{ vmagent__systemd_after }}
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{ vmagent__user }}
+Group={{ vmagent__group }}
+EnvironmentFile={{ vmagent__config_dir }}/%i.env
+ExecStart={{ vmagent__bin_path }} $ARGS
+ExecReload=/bin/kill -HUP $MAINPID
+Restart={{ vmagent__systemd_restart_policy }}
+RestartSec={{ vmagent__systemd_restart_sec }}
+TimeoutStopSec={{ vmagent__systemd_timeout_stop_sec }}
+LimitNOFILE={{ vmagent__systemd_limit_nofile }}
+StateDirectory=vmagent/%i
+StateDirectoryMode=0750
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+CapabilityBoundingSet=
+AmbientCapabilities=
+ReadWritePaths={{ vmagent__home }}/%i
+{% for line in vmagent__systemd_hardening_extra %}
+{{ line }}
+{% endfor %}
+
+[Install]
+WantedBy=multi-user.target
