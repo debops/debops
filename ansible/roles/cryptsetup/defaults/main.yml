@@ -380,6 +380,24 @@ cryptsetup__use_dev_random: True
 # This is the default for :ref:`item.iter_time <cryptsetup__devices_iter_time>`.
 cryptsetup__iter_time: 'default'
                                                                    # ]]]
+# .. envvar:: cryptsetup__pbkdf [[[
+#
+# PBKDF algorithm. Corresponds with the ``--pbkdf`` parameter.
+#
+# Up to Debian 11 (bullseye) the default of :command:`cryptsetup` (as shown by
+# :command:`cryptsetup --help`) was ``argon2i``.
+#
+# DebOps intentionally sets ``argon2id`` because `cryptsetup 2.4.0`__ has set
+# this as new default. Starting with Debian 12 (bookworm), which has 2.6
+# packaged, the compiled-in default and DebOps default match again.
+#
+# .. __: https://mirrors.edge.kernel.org/pub/linux/utils/cryptsetup/v2.4/v2.4.0-ReleaseNotes
+#
+# Set to ``default`` to use the compiled-in default of :command:`cryptsetup`.
+#
+# This is the default for :ref:`item.pbkdf <cryptsetup__devices_pbkdf>`.
+cryptsetup__pbkdf: 'argon2id'
+                                                                   # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------

@@ -154,6 +154,7 @@ If the application complains under ``/settings/admin/overview`` then you might n
 
 .. code-block:: console
 
+   sudo -u www-data php --define apc.enable_cli=1 /srv/www/nextcloud/updater/updater.phar
    occ upgrade; occ db:add-missing-indice; occ db:add-missing-columns; occ db:convert-filecache-bigint; occ db:add-missing-primary-keys && occ maintenance:mode --off
 
 It also does not hurt to run that by default.
@@ -217,7 +218,6 @@ The following Ansible facts are available:
 .. code-block:: json
 
    {
-       "auto_security_updates_enabled": false,
        "datadirectory": "/var/www/owncloud/data",
        "enabled": true,
        "instanceid": "xxxxxxxxxxxx",
@@ -250,7 +250,6 @@ and only the following facts will be available in this case:
 .. code-block:: json
 
    {
-       "auto_security_updates_enabled": true,
        "enabled": true,
        "variant": "owncloud",
        "webserver": "nginx"
@@ -291,7 +290,7 @@ Available role tags:
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
 
-``role::owncloud:pkg``
+``role::owncloud:pkgs``
   Tasks related to system package management like installing, upgrading or
   removing packages.
 
@@ -310,9 +309,6 @@ Available role tags:
 ``role::owncloud:occ_config``
   Run tasks related to :command:`occ config:` commands generated from
   :envvar:`owncloud__apps_config` variables.
-
-``role::owncloud:auto_upgrade``
-  Run tasks related preparing ownCloud auto upgrade.
 
 ``role::owncloud:ldap``
   Run tasks related to the LDAP configuration.

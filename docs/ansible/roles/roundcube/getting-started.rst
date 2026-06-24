@@ -202,7 +202,7 @@ Available role tags:
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
 
-``role::roundcube:pkg``
+``role::roundcube:pkgs``
   Run tasks related to system package installation.
 
 ``role::roundcube:deployment``
