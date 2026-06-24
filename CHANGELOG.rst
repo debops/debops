@@ -136,6 +136,13 @@ General
 - The :file:`lxc_ssh.py` Ansible connection plugin included in DebOps should
   now work correctly on Python v3.13.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- Fixed an idempotency issue with the :file:`/etc/apt/sources.list` file being
+  changed by the ``ansible.builtin.apt_repository`` Ansible module and using
+  differently formatted comments.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 
