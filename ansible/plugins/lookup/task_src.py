@@ -166,7 +166,8 @@ if parse(__ansible_version__) < parse("2.0"):
                             continue
                         for _filename in sorted(os.listdir(_cfg_dir)):
                             _filepath = os.path.join(_cfg_dir, _filename)
-                            if _filename.startswith(".") or not os.path.isfile(_filepath):
+                            if (_filename.startswith(".")
+                                    or not os.path.isfile(_filepath)):
                                 continue
                             try:
                                 if _filename.endswith(".json"):
@@ -317,7 +318,8 @@ else:
                             continue
                         for _filename in sorted(os.listdir(_cfg_dir)):
                             _filepath = os.path.join(_cfg_dir, _filename)
-                            if _filename.startswith(".") or not os.path.isfile(_filepath):
+                            if (_filename.startswith(".")
+                                    or not os.path.isfile(_filepath)):
                                 continue
                             try:
                                 if _filename.endswith(".json"):
