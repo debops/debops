@@ -22,7 +22,10 @@ import argparse
 import datetime
 import subprocess
 import shutil
-import requests
+try:
+    import requests
+except ImportError:
+    print("Please install Python module 'requests' if you need NetBox or Healthchecks.")
 
 __license__ = 'GPL-2.0 OR Apache-2.0'
 __author__ = 'David Härdeman <david@hardeman.nu>'
@@ -106,7 +109,11 @@ def get_default_config():
     #   "netbox_verify_ssl": True,          # Default: True
     #   "healthchecks_url": "https://..."   # Default: null
     # Note:
-    # - "netbox_token_file" could be deployed through role::resources:files.
+    # - "netbox_token_file" could be deployed through role::resources:files. It
+    # should contain the full Token, for exemple, according to API version:
+    #   v2: Bearer nbt_<KEY>.<TOKEN>
+    #   v1: Token <TOKEN>
+
 
 
 def print_example_config():
@@ -167,10 +174,11 @@ def read_config_file(path):
 
         if not config["netbox_token_file"]:
             die("netbox_token_file not configured")
-            if not os.access(config["netbox_token_file"]):
-                die("netbox_token_file "
-                    + config["netbox_token_file"]
-                    + "is not readable")
+
+        if not os.access(config["netbox_token_file"]):
+            die("netbox_token_file "
+                + config["netbox_token_file"]
+                + "is not readable")
 
     # Note: invalid methods are caught in main()
     return config
@@ -315,8 +323,10 @@ def do_nsupdate(config, keys):
 def netbox_api(config, method, path, data=None):
     base = config["netbox_url"].rstrip("/")
     url = base + path
+    with open(config["netbox_token_file"]) as f:
+        token = f.read().strip()
     headers = {
-        "Authorization": "{}".format(open(config["netbox_token_file"]).read()),
+        "Authorization": token,
         "Content-Type": "application/json",
         "Accept": "application/json",
     }
@@ -515,7 +525,7 @@ def do_email(config, keys):
 
     hc_list = []
     for key in keys:
-        hc_list += key["selector"] + "." + key["domain"]
+        hc_list.append(key["selector"] + "." + key["domain"])
     hc_ping(config, "Email " + " ".join(hc_list))
 
 
