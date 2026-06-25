@@ -63,6 +63,10 @@ General
   installations should update their Ansible Collections to get the updated
   Community collection.
 
+- The :ref:`debops.docker_server` playbook will be executed earlier in the
+  layered execution order to accommodate deployment of Docker-based services
+  and applications. This affects the use of the :file:`site.yml` playbook.
+
 :ref:`debops.machine` role
 ''''''''''''''''''''''''''
 
