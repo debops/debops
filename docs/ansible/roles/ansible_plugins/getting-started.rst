@@ -164,9 +164,10 @@ Ansible roles:
 
 ``debops.debops.file_src``
   This lookup plugin allows "sideloading" files to copy into roles without the
-  need to modify the roles themselves. It requires the ``debops`` Python module
-  to be installed and uses configuration in :file:`.debops.cfg` to get a list
-  of directories that are bases to look for custom files.
+  need to modify the roles themselves. It uses configuration in
+  :file:`.debops.cfg` (via the ``debops`` Python module) or the global DebOps
+  configuration directory (via an embedded fallback) to get a list of
+  directories that are bases to look for custom files.
 
   If a file in specified subdirectory is found in one of the base directories,
   its path will be returned to Ansible to use as a file source. If no custom
@@ -181,9 +182,10 @@ Ansible roles:
 
 ``debops.debops.task_src``
   This lookup plugin allows injection of custom Ansible tasks into roles without
-  the need to modify the roles themselves. It requires the ``debops`` Python
-  module to be installed and uses configuration in :file:`.debops.cfg` to get
-  a list of directories that are bases to look for a list of Ansible tasks.
+  the need to modify the roles themselves. It uses configuration in
+  :file:`.debops.cfg` (via the ``debops`` Python module) or the global DebOps
+  configuration directory (via an embedded fallback) to get a list of
+  directories that are bases to look for a list of Ansible tasks.
 
   If a file with list of tasks is found, they will be added to the Ansible
   playbook execution, usually as "pre" or "post" tasks at the beginning or end
@@ -194,11 +196,74 @@ Ansible roles:
 
 ``debops.debops.template_src``
   This lookup plugin allows "sideloading" Jinja templates into roles without
-  the need to modify the roles themselves. It requires the ``debops`` Python
-  module to be installed and uses configuration in :file:`.debops.cfg` to get
-  a list of directories that are bases to look for templates.
+  the need to modify the roles themselves. It uses configuration in
+  :file:`.debops.cfg` (via the ``debops`` Python module) or the global DebOps
+  configuration directory (via an embedded fallback) to get a list of
+  directories that are bases to look for templates.
 
   If a template file in specified subdirectory is found in one of the base
   directories, its path will be returned to Ansible to use as a template. If no
   custom templates are found, the lookup plugin returns the original path which
   corresponds to the template included in the role itself.
+
+
+Global configuration fallback
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The lookup plugins described above normally require the ``debops`` Python
+module to read their configuration. When installed via Ansible Galaxy, the
+``debops`` Python module is not available. In that case the lookup plugins
+fall back to reading the ``override_paths`` section directly from a
+project-local configuration file or the global DebOps configuration
+directories.
+
+Before reading the global directories, the plugins look for a file named
+:file:`.debops.yaml` / :file:`.debops.yml`, :file:`.debops.json`, or
+:file:`.debops.toml` in the current working directory (typically the project
+root where :command:`ansible-playbook` is executed). The first readable file
+found is used. This allows you to keep the override configuration in your
+project repository, alongside the Ansible playbooks.
+
+If no project-local configuration file is found, or it does not contain the
+relevant ``override_paths`` key, the plugins fall through to the global
+configuration directories, which are checked in this order (first match
+wins):
+
+- :file:`~/.config/debops/conf.d/`
+- :file:`/etc/debops/conf.d/`
+- :file:`/usr/local/lib/debops/conf.d/`
+- :file:`/usr/lib/debops/conf.d/`
+
+Each directory can contain files with ``.toml``, ``.yaml``, ``.yml`` or
+``.json`` extensions. The fallback reader supports all four formats. The
+relevant configuration keys are:
+
+``override_paths.files_path``
+  Custom directories for the ``debops.debops.file_src`` lookup plugin.
+``override_paths.tasks_path``
+  Custom directories for the ``debops.debops.task_src`` lookup plugin.
+``override_paths.templates_path``
+  Custom directories for the ``debops.debops.template_src`` lookup plugin.
+
+For example, to configure a custom files override directory for a project
+located at :file:`/home/alice/myansible/`:
+
+.. code-block:: json
+
+   {"override_paths": {"files_path": "/home/alice/myansible/resources/overrides/files"}}
+
+Or relative to the current working directory (typically the project root):
+
+.. code-block:: toml
+
+   [override_paths]
+   files_path = "resources/overrides/files"
+
+The lookup plugins will resolve relative paths against the directory where
+:command:`ansible-playbook` is executed.
+
+Note that the per-project :file:`.debops.cfg` configuration file is only
+supported when the ``debops`` Python module is installed. Users who install
+DebOps via Ansible Galaxy should use a :file:`.debops.yml` file (or a
+:file:`.debops.json` / :file:`.debops.toml` alternative) described above, or
+the global configuration directories.
