@@ -165,51 +165,71 @@ elasticsearch__pki_base_path: '{{ ansible_local.pki.base_path | d("/etc/pki/real
 elasticsearch__pki_realm: '{{ ansible_local.pki.realm | d("domain") }}'
 
                                                                    # ]]]
+# .. envvar:: elasticsearch__ssl_default_symlinks [[[
+#
+# List of the symlinks to private key and X.509 certificate used by
+# Elasticsearch, located in the :file:`/etc/elasticsearch/certs/` directory.
+# See :ref:`elasticsearch__ref_ssl_symlinks` for more details.
+elasticsearch__ssl_default_symlinks:
+
+  - link: '{{ elasticsearch__pki_key_file }}'
+    src: '{{ elasticsearch__pki_base_path + "/" + elasticsearch__pki_realm + "/private/key.pem" }}'
+
+  - link: '{{ elasticsearch__pki_crt_file }}'
+    # Java applications don't work well with Diffie-Hellman parameters
+    # embedded in the certificate chain, so let's use the "plain" one instead.
+    src: '{{ elasticsearch__pki_base_path + "/" + elasticsearch__pki_realm + "/public/cert_intermediate.pem" }}'
+
+  - link: '{{ elasticsearch__pki_ca_file }}'
+    src: '{{ elasticsearch__pki_base_path + "/" + elasticsearch__pki_realm + "/public/intermediate_root.pem" }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__ssl_symlinks [[[
+#
+# List of additional symlinks to private keys and X.509 certificates used by
+# Elasticsearch, located in the :file:`/etc/elasticsearch/certs/` directory.
+# See :ref:`elasticsearch__ref_ssl_symlinks` for more details.
+elasticsearch__ssl_symlinks: []
+
+                                                                   # ]]]
 # .. envvar:: elasticsearch__pki_ca_file [[[
 #
 # Name of the file which contains Certificate Authorities trusted by
 # Elasticsearch, relative to the PKI realm directory.
-elasticsearch__pki_ca_file: '{{ ansible_local.pki.ca | d("CA.crt") }}'
+elasticsearch__pki_ca_file: 'pki-root.pem'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__pki_key_file [[[
 #
 # Name of the file which contains the private key used by Elasticsearch for
 # HTTP and Transport communication, relative to the PKI realm directory.
-elasticsearch__pki_key_file: '{{ ansible_local.pki.key | d("default.key") }}'
+elasticsearch__pki_key_file: 'pki-key.pem'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__pki_crt_file [[[
 #
 # Name of the file which contains the X.509 certificate chain used by
 # Elasticsearch for HTTP and Transport communication, relative to the PKI realm
-# directory. Java applications don't work well with Diffie-Hellman parameters
-# embedded in the certificate chain, so let's use the "plain" one instead.
-elasticsearch__pki_crt_file: 'public/cert_intermediate.pem'
+# directory.
+elasticsearch__pki_crt_file: 'pki-cert_intermediate.pem'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__tls_ca_certificate [[[
 #
 # Absolute path of the Certificate Authority certificate used by Elasticsearch.
-elasticsearch__tls_ca_certificate: '{{ elasticsearch__pki_base_path + "/"
-                                       + elasticsearch__pki_realm + "/"
-                                       + elasticsearch__pki_ca_file }}'
+elasticsearch__tls_ca_certificate: '{{ "/etc/elasticsearch/certs/" + elasticsearch__pki_ca_file }}'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__tls_private_key [[[
 #
 # Absolute path of the private key used by Elasticsearch.
-elasticsearch__tls_private_key: '{{ elasticsearch__pki_base_path + "/"
-                                    + elasticsearch__pki_realm + "/"
-                                    + elasticsearch__pki_key_file }}'
+elasticsearch__tls_private_key: '{{ "/etc/elasticsearch/certs/" + elasticsearch__pki_key_file }}'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__tls_certificate [[[
 #
 # Absolute path of the X.509 certificate used by Elasticsearch.
-elasticsearch__tls_certificate: '{{ elasticsearch__pki_base_path + "/"
-                                    + elasticsearch__pki_realm + "/"
-                                    + elasticsearch__pki_crt_file }}'
+elasticsearch__tls_certificate: '{{ "/etc/elasticsearch/certs/" + elasticsearch__pki_crt_file }}'
                                                                    # ]]]
                                                                    # ]]]
 # Elastic X-Pack options [[[

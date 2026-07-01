@@ -54,6 +54,24 @@
 - name: Update Ansible facts if they were modified
   ansible.builtin.meta: 'flush_handlers'
 
+- name: Make sure that required directories exist
+  ansible.builtin.file:
+    path: '/etc/elasticsearch/certs'
+    state: 'directory'
+    owner: 'root'
+    group: '{{ elasticsearch__user }}'
+    mode: '0750'
+  when: elasticsearch__pki_enabled | bool
+
+- name: Manage CA, private key and SSL certificate symlinks in Elasticsearch environment
+  ansible.builtin.file:  # noqa risky-file-permissions
+    path: '{{ "/etc/elasticsearch/certs/" + item.link }}'
+    src:  '{{ item.src }}'
+    state: '{{ item.state | d("link") }}'
+  loop: '{{ q("flattened", (elasticsearch__ssl_default_symlinks + elasticsearch__ssl_symlinks)) }}'
+  notify: [ 'Start elasticsearch' ]
+  when: elasticsearch__pki_enabled | bool
+
 - name: Check if the dependent config file exists
   ansible.builtin.stat:
     path: '{{ secret + "/elasticsearch/dependent_config/" + inventory_hostname + "/config.json" }}'
