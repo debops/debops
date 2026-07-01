@@ -1011,57 +1011,6 @@ elasticsearch__combined_plugins: '{{ lookup("flattened", (elasticsearch__plugins
                                      + elasticsearch__host_plugins)) }}'
                                                                    # ]]]
                                                                    # ]]]
-# Java Policy configuration [[[
-# -----------------------------
-
-# Java Policy defines what paths and resources can be accessed by the
-# Elasticsearch application. By default the file access is limited to the
-# :file:`/etc/elasticsearch/` directory, but in DebOps we want to grant access
-# to the PKI directories managed by the :ref:`debops.pki` role to support
-# encrypted communication in the cluster.
-
-# .. envvar:: elasticsearch__java_policy [[[
-#
-# This variable contains the contents of the :file:`java.policy` configuration
-# file for Elasticsearch.
-elasticsearch__java_policy: |
-  // default permissions granted to all domains
-  grant {
-      // allows anyone to listen on dynamic ports
-      permission java.net.SocketPermission "localhost:0", "listen";
-
-      // "standard" properties that can be read by anyone
-      permission java.util.PropertyPermission "java.version", "read";
-      permission java.util.PropertyPermission "java.vendor", "read";
-      permission java.util.PropertyPermission "java.vendor.url", "read";
-      permission java.util.PropertyPermission "java.class.version", "read";
-      permission java.util.PropertyPermission "os.name", "read";
-      permission java.util.PropertyPermission "os.version", "read";
-      permission java.util.PropertyPermission "os.arch", "read";
-      permission java.util.PropertyPermission "file.separator", "read";
-      permission java.util.PropertyPermission "path.separator", "read";
-      permission java.util.PropertyPermission "line.separator", "read";
-      permission java.util.PropertyPermission
-                     "java.specification.version", "read";
-      permission java.util.PropertyPermission "java.specification.vendor", "read";
-      permission java.util.PropertyPermission "java.specification.name", "read";
-      permission java.util.PropertyPermission
-                     "java.vm.specification.version", "read";
-      permission java.util.PropertyPermission
-                     "java.vm.specification.vendor", "read";
-      permission java.util.PropertyPermission
-                     "java.vm.specification.name", "read";
-      permission java.util.PropertyPermission "java.vm.version", "read";
-      permission java.util.PropertyPermission "java.vm.vendor", "read";
-      permission java.util.PropertyPermission "java.vm.name", "read";
-
-      permission java.io.FilePermission "{{ elasticsearch__pki_base_path }}/-", "read";
-      permission java.io.FilePermission "{{ elasticsearch__pki_base_path }}/", "read";
-      permission java.io.FilePermission "/etc/ssl/certs/-", "read";
-      permission java.io.FilePermission "/etc/ssl/certs/", "read";
-  };
-# ]]]
-# ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 

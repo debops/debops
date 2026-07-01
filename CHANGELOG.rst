@@ -211,6 +211,17 @@ General
   compiled without support for post-quantum algorithms (e.g. ``sntrup761x25519-sha512``
   on Ubuntu 24.04 Noble).
 
+Removed
+~~~~~~~
+
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- The management of the Java Access Policy configuration file has been removed
+  from the role. Elasticsearch installation will use private keys and X.509
+  certificates symlinked in the :file:`/etc/elasticsearch/certs/` directory
+  instead.
+
 
 `debops v3.3.0`_ - 2026-03-13
 -----------------------------
