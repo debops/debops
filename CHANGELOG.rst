@@ -26,6 +26,13 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+General
+'''''''
+
+- Added :ref:`debops_policy__ai_contributions` policy document defining
+  project requirements for contributions that use LLM and AI-assisted
+  coding tools.
+
 :ref:`debops.java` role
 '''''''''''''''''''''''
 
