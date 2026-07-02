@@ -33,6 +33,13 @@ New DebOps roles
   services using Docker containers, and can integrate with the
   :ref:`debops.nginx` role to manage the :command:`nginx` reverse proxy.
 
+General
+'''''''
+
+- Added :ref:`debops_policy__ai_contributions` policy document defining
+  project requirements for contributions that use LLM and AI-assisted
+  coding tools.
+
 :ref:`debops.java` role
 '''''''''''''''''''''''
 
