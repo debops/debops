@@ -1,0 +1,32 @@
+---
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# inventory/group_vars/elastic/resources.yml
+#
+# Configure APT policy for sha1-signed GPG keys to allow already expired ones
+# to work correctly.
+resources__group_files:
+
+  - path: '/etc/crypto-policies/back-ends/apt-sequoia.config'
+    content: |
+      # Default APT Sequoia configuration. To overwrite, consider copying this
+      # to /etc/crypto-policies/back-ends/apt-sequoia.config and modify the
+      # desired values.
+      [asymmetric_algorithms]
+      dsa2048 = 2024-02-01
+      dsa3072 = 2024-02-01
+      dsa4096 = 2024-02-01
+      brainpoolp256 = 2028-02-01
+      brainpoolp384 = 2028-02-01
+      brainpoolp512 = 2028-02-01
+      rsa2048  = 2030-02-01
+
+      [hash_algorithms]
+      sha1.second_preimage_resistance = 2028-02-01    # Extend the expiry for legacy repositories
+      sha224 = 2026-02-01
+
+      [packets]
+      signature.v3 = 2026-02-01   # Extend the expiry
+    state: 'present'
