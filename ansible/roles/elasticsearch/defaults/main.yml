@@ -254,6 +254,20 @@ elasticsearch__xpack_enabled: '{{ True
 # Elasticsearch users and roles management [[[
 # --------------------------------------------
 
+# .. envvar:: elasticsearch__authentication_enabled [[[
+#
+# Enable or disable configuration of user authentication in the Elasticsearch
+# cluster. When disabled, the role will not try to configure user accounts
+# automatically on new installs.
+elasticsearch__authentication_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__authentication_anonymous_access [[[
+#
+# Enable or disable anonymous user account access to the Elasticsearch cluster.
+elasticsearch__authentication_anonymous_access: False
+
+                                                                   # ]]]
 # .. envvar:: elasticsearch__api_base_url [[[
 #
 # The URL of the Elasticsearch API endpoint used to manage user accounts and
@@ -791,6 +805,17 @@ elasticsearch__default_configuration:
   - name: 'xpack.security.transport.ssl.certificate_authorities'
     value: '{{ elasticsearch__tls_ca_certificate }}'
     state: '{{ "present" if elasticsearch__xpack_enabled | bool else "absent" }}'
+
+  - name: 'xpack.security.authc.anonymous'
+    raw: |
+      xpack.security.authc.anonymous:
+        username: 'anonymous_user'
+        roles: [ 'superuser' ]
+        authz_exception: True
+    state: '{{ "present"
+               if (elasticsearch__xpack_enabled | bool and
+                   elasticsearch__authentication_anonymous_access | bool)
+               else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__configuration [[[
