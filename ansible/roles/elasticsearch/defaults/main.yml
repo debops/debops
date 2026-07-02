@@ -165,51 +165,71 @@ elasticsearch__pki_base_path: '{{ ansible_local.pki.base_path | d("/etc/pki/real
 elasticsearch__pki_realm: '{{ ansible_local.pki.realm | d("domain") }}'
 
                                                                    # ]]]
+# .. envvar:: elasticsearch__ssl_default_symlinks [[[
+#
+# List of the symlinks to private key and X.509 certificate used by
+# Elasticsearch, located in the :file:`/etc/elasticsearch/certs/` directory.
+# See :ref:`elasticsearch__ref_ssl_symlinks` for more details.
+elasticsearch__ssl_default_symlinks:
+
+  - link: '{{ elasticsearch__pki_key_file }}'
+    src: '{{ elasticsearch__pki_base_path + "/" + elasticsearch__pki_realm + "/private/key.pem" }}'
+
+  - link: '{{ elasticsearch__pki_crt_file }}'
+    # Java applications don't work well with Diffie-Hellman parameters
+    # embedded in the certificate chain, so let's use the "plain" one instead.
+    src: '{{ elasticsearch__pki_base_path + "/" + elasticsearch__pki_realm + "/public/cert_intermediate.pem" }}'
+
+  - link: '{{ elasticsearch__pki_ca_file }}'
+    src: '{{ elasticsearch__pki_base_path + "/" + elasticsearch__pki_realm + "/public/intermediate_root.pem" }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__ssl_symlinks [[[
+#
+# List of additional symlinks to private keys and X.509 certificates used by
+# Elasticsearch, located in the :file:`/etc/elasticsearch/certs/` directory.
+# See :ref:`elasticsearch__ref_ssl_symlinks` for more details.
+elasticsearch__ssl_symlinks: []
+
+                                                                   # ]]]
 # .. envvar:: elasticsearch__pki_ca_file [[[
 #
 # Name of the file which contains Certificate Authorities trusted by
 # Elasticsearch, relative to the PKI realm directory.
-elasticsearch__pki_ca_file: '{{ ansible_local.pki.ca | d("CA.crt") }}'
+elasticsearch__pki_ca_file: 'pki-root.pem'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__pki_key_file [[[
 #
 # Name of the file which contains the private key used by Elasticsearch for
 # HTTP and Transport communication, relative to the PKI realm directory.
-elasticsearch__pki_key_file: '{{ ansible_local.pki.key | d("default.key") }}'
+elasticsearch__pki_key_file: 'pki-key.pem'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__pki_crt_file [[[
 #
 # Name of the file which contains the X.509 certificate chain used by
 # Elasticsearch for HTTP and Transport communication, relative to the PKI realm
-# directory. Java applications don't work well with Diffie-Hellman parameters
-# embedded in the certificate chain, so let's use the "plain" one instead.
-elasticsearch__pki_crt_file: 'public/cert_intermediate.pem'
+# directory.
+elasticsearch__pki_crt_file: 'pki-cert_intermediate.pem'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__tls_ca_certificate [[[
 #
 # Absolute path of the Certificate Authority certificate used by Elasticsearch.
-elasticsearch__tls_ca_certificate: '{{ elasticsearch__pki_base_path + "/"
-                                       + elasticsearch__pki_realm + "/"
-                                       + elasticsearch__pki_ca_file }}'
+elasticsearch__tls_ca_certificate: '{{ "/etc/elasticsearch/certs/" + elasticsearch__pki_ca_file }}'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__tls_private_key [[[
 #
 # Absolute path of the private key used by Elasticsearch.
-elasticsearch__tls_private_key: '{{ elasticsearch__pki_base_path + "/"
-                                    + elasticsearch__pki_realm + "/"
-                                    + elasticsearch__pki_key_file }}'
+elasticsearch__tls_private_key: '{{ "/etc/elasticsearch/certs/" + elasticsearch__pki_key_file }}'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__tls_certificate [[[
 #
 # Absolute path of the X.509 certificate used by Elasticsearch.
-elasticsearch__tls_certificate: '{{ elasticsearch__pki_base_path + "/"
-                                    + elasticsearch__pki_realm + "/"
-                                    + elasticsearch__pki_crt_file }}'
+elasticsearch__tls_certificate: '{{ "/etc/elasticsearch/certs/" + elasticsearch__pki_crt_file }}'
                                                                    # ]]]
                                                                    # ]]]
 # Elastic X-Pack options [[[
@@ -234,6 +254,20 @@ elasticsearch__xpack_enabled: '{{ True
 # Elasticsearch users and roles management [[[
 # --------------------------------------------
 
+# .. envvar:: elasticsearch__authentication_enabled [[[
+#
+# Enable or disable configuration of user authentication in the Elasticsearch
+# cluster. When disabled, the role will not try to configure user accounts
+# automatically on new installs.
+elasticsearch__authentication_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__authentication_anonymous_access [[[
+#
+# Enable or disable anonymous user account access to the Elasticsearch cluster.
+elasticsearch__authentication_anonymous_access: False
+
+                                                                   # ]]]
 # .. envvar:: elasticsearch__api_base_url [[[
 #
 # The URL of the Elasticsearch API endpoint used to manage user accounts and
@@ -772,6 +806,17 @@ elasticsearch__default_configuration:
     value: '{{ elasticsearch__tls_ca_certificate }}'
     state: '{{ "present" if elasticsearch__xpack_enabled | bool else "absent" }}'
 
+  - name: 'xpack.security.authc.anonymous'
+    raw: |
+      xpack.security.authc.anonymous:
+        username: 'anonymous_user'
+        roles: [ 'superuser' ]
+        authz_exception: True
+    state: '{{ "present"
+               if (elasticsearch__xpack_enabled | bool and
+                   elasticsearch__authentication_anonymous_access | bool)
+               else "absent" }}'
+
                                                                    # ]]]
 # .. envvar:: elasticsearch__configuration [[[
 #
@@ -991,57 +1036,6 @@ elasticsearch__combined_plugins: '{{ lookup("flattened", (elasticsearch__plugins
                                      + elasticsearch__host_plugins)) }}'
                                                                    # ]]]
                                                                    # ]]]
-# Java Policy configuration [[[
-# -----------------------------
-
-# Java Policy defines what paths and resources can be accessed by the
-# Elasticsearch application. By default the file access is limited to the
-# :file:`/etc/elasticsearch/` directory, but in DebOps we want to grant access
-# to the PKI directories managed by the :ref:`debops.pki` role to support
-# encrypted communication in the cluster.
-
-# .. envvar:: elasticsearch__java_policy [[[
-#
-# This variable contains the contents of the :file:`java.policy` configuration
-# file for Elasticsearch.
-elasticsearch__java_policy: |
-  // default permissions granted to all domains
-  grant {
-      // allows anyone to listen on dynamic ports
-      permission java.net.SocketPermission "localhost:0", "listen";
-
-      // "standard" properties that can be read by anyone
-      permission java.util.PropertyPermission "java.version", "read";
-      permission java.util.PropertyPermission "java.vendor", "read";
-      permission java.util.PropertyPermission "java.vendor.url", "read";
-      permission java.util.PropertyPermission "java.class.version", "read";
-      permission java.util.PropertyPermission "os.name", "read";
-      permission java.util.PropertyPermission "os.version", "read";
-      permission java.util.PropertyPermission "os.arch", "read";
-      permission java.util.PropertyPermission "file.separator", "read";
-      permission java.util.PropertyPermission "path.separator", "read";
-      permission java.util.PropertyPermission "line.separator", "read";
-      permission java.util.PropertyPermission
-                     "java.specification.version", "read";
-      permission java.util.PropertyPermission "java.specification.vendor", "read";
-      permission java.util.PropertyPermission "java.specification.name", "read";
-      permission java.util.PropertyPermission
-                     "java.vm.specification.version", "read";
-      permission java.util.PropertyPermission
-                     "java.vm.specification.vendor", "read";
-      permission java.util.PropertyPermission
-                     "java.vm.specification.name", "read";
-      permission java.util.PropertyPermission "java.vm.version", "read";
-      permission java.util.PropertyPermission "java.vm.vendor", "read";
-      permission java.util.PropertyPermission "java.vm.name", "read";
-
-      permission java.io.FilePermission "{{ elasticsearch__pki_base_path }}/-", "read";
-      permission java.io.FilePermission "{{ elasticsearch__pki_base_path }}/", "read";
-      permission java.io.FilePermission "/etc/ssl/certs/-", "read";
-      permission java.io.FilePermission "/etc/ssl/certs/", "read";
-  };
-# ]]]
-# ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 

@@ -165,6 +165,13 @@ kibana__elasticsearch_hosts: [ 'http://localhost:9200' ]
 kibana__elasticsearch_cluster_name: '{{ kibana__domain | replace(".", "-") }}'
 
                                                                    # ]]]
+# .. envvar:: kibana__elasticsearch_anonymous_access [[[
+#
+# Enable or disable anonymous access to the Elasticsearch infrastructure via
+# Kibana user interface.
+kibana__elasticsearch_anonymous_access: False
+
+                                                                   # ]]]
 # .. envvar:: kibana__elasticsearch_username [[[
 #
 # The username used by Kibana for internal maintenance on password-protected
@@ -209,6 +216,15 @@ kibana__index: '.kibana'
 #
 # The default Kibana 'application' to load on start. Deprecated in Kibana 7.9.
 kibana__default_app_id: 'discover'
+
+                                                                   # ]]]
+# .. envvar:: kibana__security_enabled [[[
+#
+# Enable or disable X-Pack security extensions in Kibana. This needs to be
+# disabled for anonymous access to work.
+kibana__security_enabled: '{{ False
+                              if (kibana__elasticsearch_anonymous_access | bool)
+                              else True }}'
 
                                                                    # ]]]
 # .. envvar:: kibana__security_encryption_key [[[
@@ -402,7 +418,8 @@ kibana__default_configuration:
     value: '{{ kibana__elasticsearch_username }}'
     state: '{{ "present"
                if (kibana__elasticsearch_username | d() and
-                   kibana__elasticsearch_password | d())
+                   kibana__elasticsearch_password | d() and
+                   not kibana__elasticsearch_anonymous_access | bool)
                else "comment" }}'
     comment: |
       If your Elasticsearch is protected with basic authentication, these settings provide
@@ -414,7 +431,8 @@ kibana__default_configuration:
     value: '{{ kibana__elasticsearch_password }}'
     state: '{{ "present"
                if (kibana__elasticsearch_username | d() and
-                   kibana__elasticsearch_password | d())
+                   kibana__elasticsearch_password | d() and
+                   not kibana__elasticsearch_anonymous_access | bool)
                else "comment" }}'
 
   - name: 'server.ssl.enabled'
@@ -558,6 +576,12 @@ kibana__default_configuration:
       The default locale. This locale can be used in certain circumstances to substitute any missing
       translations.
     value: 'en'
+
+  - name: 'xpack.security.enabled'
+    value: '{{ kibana__security_enabled }}'
+    state: '{{ "present"
+               if (kibana__version is version("8.0.0", "<"))
+               else "ignore" }}'
 
   - name: 'xpack.security.encryptionKey'
     comment: |

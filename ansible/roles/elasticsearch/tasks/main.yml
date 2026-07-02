@@ -54,6 +54,24 @@
 - name: Update Ansible facts if they were modified
   ansible.builtin.meta: 'flush_handlers'
 
+- name: Make sure that required directories exist
+  ansible.builtin.file:
+    path: '/etc/elasticsearch/certs'
+    state: 'directory'
+    owner: 'root'
+    group: '{{ elasticsearch__user }}'
+    mode: '0750'
+  when: elasticsearch__pki_enabled | bool
+
+- name: Manage CA, private key and SSL certificate symlinks in Elasticsearch environment
+  ansible.builtin.file:  # noqa risky-file-permissions
+    path: '{{ "/etc/elasticsearch/certs/" + item.link }}'
+    src:  '{{ item.src }}'
+    state: '{{ item.state | d("link") }}'
+  loop: '{{ q("flattened", (elasticsearch__ssl_default_symlinks + elasticsearch__ssl_symlinks)) }}'
+  notify: [ 'Start elasticsearch' ]
+  when: elasticsearch__pki_enabled | bool
+
 - name: Check if the dependent config file exists
   ansible.builtin.stat:
     path: '{{ secret + "/elasticsearch/dependent_config/" + inventory_hostname + "/config.json" }}'
@@ -122,14 +140,6 @@
   when: elasticsearch__version is version("5.0.0", ">=")
   tags: [ 'role::elasticsearch:config' ]
 
-- name: Generate Java Policy configuration file
-  ansible.builtin.template:
-    src: 'usr/share/elasticsearch/jdk/conf/security/java.policy.j2'
-    dest: '/usr/share/elasticsearch/jdk/conf/security/java.policy'
-    mode: '0644'
-  notify: [ 'Restart elasticsearch' ]
-  when: elasticsearch__version is version("7.0.0", ">=")
-
 - name: Manage data paths
   ansible.builtin.file:
     path: '{{ item }}'
@@ -190,15 +200,18 @@
   ansible.builtin.import_tasks: 'authentication.yml'
   run_once: True
   when: elasticsearch__version is version("8.0", "<") and
-        elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool
+        elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool and
+        elasticsearch__authentication_enabled | bool
 
 - name: Manage Elasticsearch authentication (new)
   ansible.builtin.import_tasks: 'authentication_v8.yml'
   run_once: True
   when: elasticsearch__version is version("8.0", ">=") and
-        elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool
+        elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool and
+        elasticsearch__authentication_enabled | bool
 
 - name: Manage Elasticsearch roles and users
   ansible.builtin.import_tasks: 'roles_users.yml'
   run_once: True
-  when: elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool
+  when: elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool and
+        elasticsearch__authentication_enabled | bool

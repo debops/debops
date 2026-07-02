@@ -70,6 +70,19 @@ General
   installations should update their Ansible Collections to get the updated
   Community collection.
 
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- Since Elasticsearch v8.0.0, the service does not support a configurable Java
+  security policy. The role was updated to instead symlink private keys, X.509
+  certificates and CA certificates managed by the :ref:`debops.pki` role to the
+  :file:`/etc/elasticsearch/certs/` subdirectory to allow for TLS encryption.
+
+  .. note:: Existing Elasticsearch installations should work correctly after
+     the role has been applied (symlinks created, configuration file changed to
+     point to the new file paths, service restarted). But it's best to test
+     this change on a separate environment.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
@@ -197,6 +210,17 @@ General
   accordingly. This fixes configuration failures on systems where OpenSSH is
   compiled without support for post-quantum algorithms (e.g. ``sntrup761x25519-sha512``
   on Ubuntu 24.04 Noble).
+
+Removed
+~~~~~~~
+
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- The management of the Java Access Policy configuration file has been removed
+  from the role. Elasticsearch installation will use private keys and X.509
+  certificates symlinked in the :file:`/etc/elasticsearch/certs/` directory
+  instead.
 
 
 `debops v3.3.0`_ - 2026-03-13
