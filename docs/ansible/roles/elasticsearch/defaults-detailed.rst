@@ -172,6 +172,43 @@ specific parameters:
   configured.
 
 
+.. _elasticsearch__ref_ssl_symlinks:
+
+elasticsearch__ssl_symlinks
+---------------------------
+
+Elasticsearch internal Java policy enforces access to files in the
+:file:`/etc/elasticsearch/` directory, which prevents easy usage of the
+:ref:`debops.pki` realms located elsewhere. The role can instead symlink the
+relevant private keys, X.509 certificates and Certificate Authority files in
+the :file:`/etc/elasitcsearch/certs/` directory, so that Elasticsearch can
+access them and use them for its TLS connections.
+
+Examples
+~~~~~~~~
+
+You can see the default set of private key and X.509 certificate symlinks
+defined in the :envvar:`elasticsearch__ssl_default_symlinks` variable.
+
+Syntax
+~~~~~~
+
+The variables are defined as a list of YAML dictionaries, with specific
+parameters:
+
+``link``
+  Required. Name of the symlink in the :file:`/etc/elasticsearch/certs/`
+  directory which will point to a specific resource.
+
+``src``
+  Required. Absolute path to a file which will be symlinked to in the
+  :file:`/etc/elasticsearch/certs/` directory.
+
+``state``
+  Optional. If not specified or ``link``, a given symlink will be created or
+  updated if necessary. If ``absent``, a given symlink will be removed.
+
+
 .. _elasticsearch__ref_configuration:
 
 elasticsearch__configuration
