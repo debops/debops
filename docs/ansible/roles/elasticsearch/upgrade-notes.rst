@@ -85,9 +85,10 @@ and the :ref:`debops.kibana` roles.
    # Select Elasticsearch v6.8.x release
    elastic_co__version: '6.x'
 
-The Elasticsearch v6.8.x version requires Java 8 to work correctly. This
-version of OpenJDK is not available in Debian repositories, but an external
-`Eclipse Temurin`__ OpenJDK 8 can be used instead. This can be configured in
+The Elasticsearch v6.8.x version requires Java 8 or Java 11 to work correctly
+(going with Java 11 will make it easier to upgrade to ES v7.x.y). These
+versions of OpenJDK are not available in Debian repositories, but an external
+`Eclipse Temurin`__ OpenJDK 11 can be used instead. This can be configured in
 the :ref:`debops.java` role, used in the Elasticsearch playbook.
 
 .. __: https://adoptium.net/temurin
@@ -98,7 +99,7 @@ the :ref:`debops.java` role, used in the Elasticsearch playbook.
    # inventory/group_vars/elastic/java.yml
 
    java__flavor: 'temurin'
-   java__temurin_version: '8'
+   java__temurin_version: '11'
 
 You have to explicitly configure the :ref:`debops.elasticsearch` role to
 disable X-Pack support and user authentication. At the same time, we set up an
