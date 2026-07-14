@@ -672,7 +672,7 @@ server {
 {%     endif %}
 {%     for port in nginx_tpl_listen_ssl %}
 {%      set opts = [ 'ssl' ] %}
-{%      if nginx_version is version_compare('1.9.5', '>=') %}
+{%      if nginx_version is version_compare('1.9.5', '>=') and nginx_version is version_compare('1.25.1', '<') %}
 {%        if nginx_enable_http2 | bool %}
 {%          set _ = opts.append('http2') %}
 {%        endif %}
@@ -683,6 +683,9 @@ server {
 {%      endif %}
         listen {{ port }} {{ opts | join(" ") }};
 {%     endfor %}
+{%     if nginx_enable_http2 | bool and nginx_version is version_compare('1.25.1', '>=') %}
+        http2 on;
+{%     endif %}
 
         ssl_certificate           {{ nginx_tpl_ssl_certificate }};
         ssl_certificate_key       {{ nginx_tpl_ssl_certificate_key }};
