@@ -41,6 +41,10 @@ env PATH;
 events {
         worker_connections {{ nginx_worker_connections | default('1024') }};
         multi_accept {{ nginx_multi_accept | default('off') }};
+{% if nginx_events_extra_options | d() and nginx_events_extra_options %}
+{{ nginx_events_extra_options | indent(8, true) | regex_replace("(?m)^\s*$", "") }}
+
+{% endif %}
 }
 
 http {
