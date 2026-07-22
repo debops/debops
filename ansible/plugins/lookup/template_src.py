@@ -60,6 +60,7 @@ except ImportError:
     LookupBase = object
 
 from ansible.errors import AnsibleError
+from ansible_collections.debops.debops.plugins.plugin_utils import debops_config
 
 
 class LookupModule(LookupBase):
@@ -108,89 +109,7 @@ class LookupModule(LookupBase):
         # (e.g. installed via Ansible Galaxy). Read override paths
         # directly from the global DebOps configuration directories.
         if not conf_section:
-            _found = None
-
-            for _ext in [".yaml", ".yml", ".json", ".toml"]:
-                _project_path = os.path.join(os.getcwd(), ".debops" + _ext)
-                if os.path.isfile(_project_path):
-                    try:
-                        if _project_path.endswith(".json"):
-                            with open(_project_path) as _fh:
-                                _parsed = json.load(_fh)
-                        elif _project_path.endswith(".toml"):
-                            import tomllib as _tl
-                            with open(_project_path, "rb") as _fh:
-                                _parsed = _tl.load(_fh)
-                        elif _project_path.endswith((".yaml", ".yml")):
-                            import yaml as _yl
-                            with open(_project_path) as _fh:
-                                _parsed = _yl.safe_load(_fh)
-                        else:
-                            continue
-                    except Exception:
-                        continue
-                    if isinstance(_parsed, dict):
-                        _override_value = _parsed.get(
-                            "override_paths", {}).get("templates_path")
-                        if _override_value:
-                            for _path_item in _override_value.split(":"):
-                                if os.path.isabs(_path_item):
-                                    places.append(_path_item)
-                                else:
-                                    places.append(
-                                        os.path.join(os.getcwd(), _path_item))
-                            _found = _override_value
-                    break
-
-            if not _found:
-                _xdg = os.environ.get(
-                    "XDG_CONFIG_HOME",
-                    os.path.join(os.path.expanduser("~"), ".config"))
-                _cfg_dirs = [
-                    os.path.join(_xdg, "debops", "conf.d"),
-                    "/etc/debops/conf.d",
-                    "/usr/local/lib/debops/conf.d",
-                    "/usr/lib/debops/conf.d",
-                ]
-                for _cfg_dir in _cfg_dirs:
-                    if not os.path.isdir(_cfg_dir):
-                        continue
-                    for _filename in sorted(os.listdir(_cfg_dir)):
-                        _filepath = os.path.join(_cfg_dir, _filename)
-                        if (_filename.startswith(".")
-                                or not os.path.isfile(_filepath)):
-                            continue
-                        try:
-                            if _filename.endswith(".json"):
-                                with open(_filepath) as _fh:
-                                    _parsed = json.load(_fh)
-                            elif _filename.endswith(".toml"):
-                                import tomllib as _tl
-                                with open(_filepath, "rb") as _fh:
-                                    _parsed = _tl.load(_fh)
-                            elif _filename.endswith((".yaml", ".yml")):
-                                import yaml as _yl
-                                with open(_filepath) as _fh:
-                                    _parsed = _yl.safe_load(_fh)
-                            else:
-                                continue
-                        except Exception:
-                            continue
-                        if isinstance(_parsed, dict):
-                            _override_value = _parsed.get(
-                                "override_paths", {}).get("templates_path")
-                            if _override_value:
-                                _found = _override_value
-                                break
-                    if _found:
-                        break
-                if _found:
-                    for _path_item in _found.split(":"):
-                        if os.path.isabs(_path_item):
-                            places.append(_path_item)
-                        else:
-                            places.append(
-                                os.path.join(os.getcwd(), _path_item))
+            places.extend(debops_config.load_fallback_paths('templates_path'))
 
         for term in terms:
             if 'role_path' in variables:
