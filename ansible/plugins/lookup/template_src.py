@@ -108,7 +108,7 @@ class LookupModule(LookupBase):
         # Fallback when the debops Python module is not available
         # (e.g. installed via Ansible Galaxy). Read override paths
         # directly from the global DebOps configuration directories.
-        if not conf_section:
+        if not places:
             places.extend(debops_config.load_fallback_paths('templates_path'))
 
         for term in terms:
