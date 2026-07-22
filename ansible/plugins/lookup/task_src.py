@@ -58,81 +58,118 @@ try:
 except ImportError:
     LookupBase = object
 
-from packaging.version import parse
-from ansible import __version__ as __ansible_version__
+from ansible.errors import AnsibleError
 
 
-if parse(__ansible_version__) < parse("2.0"):
-    from ansible import utils, errors
+class LookupModule(LookupBase):
 
-    class LookupModule(object):
+    def run(self, terms, variables=None, **kwargs):
+        ret = []
+        config = {}
+        places = []
 
-        def __init__(self, basedir, *args, **kwargs):
-            self.basedir = basedir
+        # this can happen if the variable contains a string,
+        # strictly not desired for lookup plugins, but users may
+        # try it, so make it work.
+        if not isinstance(terms, list):
+            terms = [terms]
 
-        def run(self, terms, inject=None, **kwargs):
-
-            terms = utils.listify_lookup_plugin_terms(
-                    terms, self.basedir, inject)
-            ret = []
-            config = {}
-            places = []
-
-            # this can happen if the variable contains a string,
-            # strictly not desired for lookup plugins, but users may
-            # try it, so make it work.
-            if not isinstance(terms, list):
-                terms = [terms]
-
+        try:
+            project_config = debops.config.Configuration()
+            project_dir = debops.projectdir.ProjectDir(
+                    config=project_config)
+            project_root = project_dir.path
+            if project_dir.config.get(['project', 'type']) == 'modern':
+                config = project_dir.config.get([])
+            else:
+                config = project_dir.config.get(['views', 'system'])
+        except NameError:
             try:
-                project_config = debops.config.Configuration()
-                project_dir = debops.projectdir.ProjectDir(
-                        config=project_config)
-                project_root = project_dir.path
-                if project_dir.config.get(['project', 'type']) == 'modern':
-                    config = project_dir.config.get([])
-                else:
-                    config = project_dir.config.get(['views', 'system'])
+                project_root = find_debops_project(required=False)
+                config = read_config(project_root)
             except NameError:
-                try:
-                    project_root = find_debops_project(required=False)
-                    config = read_config(project_root)
-                except NameError:
-                    pass
-            except NotADirectoryError:
-                # This is not a DebOps project directory, so continue as normal
                 pass
+        except NotADirectoryError:
+            # This is not a DebOps project directory, so continue as normal
+            pass
 
-            if conf_section in config and conf_key in config[conf_section]:
-                custom_places = (
-                        config[conf_section][conf_key].split(':'))
-                for custom_path in custom_places:
-                    if os.path.isabs(custom_path):
-                        places.append(custom_path)
-                    else:
-                        places.append(os.path.join(
-                            project_root, custom_path))
+        if conf_section in config and conf_key in config[conf_section]:
+            custom_places = (
+                    config[conf_section][conf_key].split(':'))
+            for custom_path in custom_places:
+                if os.path.isabs(custom_path):
+                    places.append(custom_path)
+                else:
+                    places.append(os.path.join(
+                        project_root, custom_path))
 
-            # Fallback when the debops Python module is not available
-            # (e.g. installed via Ansible Galaxy). Read override paths
-            # directly from the global DebOps configuration directories.
-            if not conf_section:
-                _found = None
+        # Fallback when the debops Python module is not available
+        # (e.g. installed via Ansible Galaxy). Read override paths
+        # directly from the global DebOps configuration directories.
+        if not conf_section:
+            _found = None
 
-                for _ext in [".yaml", ".yml", ".json", ".toml"]:
-                    _project_path = os.path.join(os.getcwd(), ".debops" + _ext)
-                    if os.path.isfile(_project_path):
+            for _ext in [".yaml", ".yml", ".json", ".toml"]:
+                _project_path = os.path.join(os.getcwd(), ".debops" + _ext)
+                if os.path.isfile(_project_path):
+                    try:
+                        if _project_path.endswith(".json"):
+                            with open(_project_path) as _fh:
+                                _parsed = json.load(_fh)
+                        elif _project_path.endswith(".toml"):
+                            import tomllib as _tl
+                            with open(_project_path, "rb") as _fh:
+                                _parsed = _tl.load(_fh)
+                        elif _project_path.endswith((".yaml", ".yml")):
+                            import yaml as _yl
+                            with open(_project_path) as _fh:
+                                _parsed = _yl.safe_load(_fh)
+                        else:
+                            continue
+                    except Exception:
+                        continue
+                    if isinstance(_parsed, dict):
+                        _override_value = _parsed.get(
+                            "override_paths", {}).get("tasks_path")
+                        if _override_value:
+                            for _path_item in _override_value.split(":"):
+                                if os.path.isabs(_path_item):
+                                    places.append(_path_item)
+                                else:
+                                    places.append(
+                                        os.path.join(os.getcwd(), _path_item))
+                            _found = _override_value
+                    break
+
+            if not _found:
+                _xdg = os.environ.get(
+                    "XDG_CONFIG_HOME",
+                    os.path.join(os.path.expanduser("~"), ".config"))
+                _cfg_dirs = [
+                    os.path.join(_xdg, "debops", "conf.d"),
+                    "/etc/debops/conf.d",
+                    "/usr/local/lib/debops/conf.d",
+                    "/usr/lib/debops/conf.d",
+                ]
+                for _cfg_dir in _cfg_dirs:
+                    if not os.path.isdir(_cfg_dir):
+                        continue
+                    for _filename in sorted(os.listdir(_cfg_dir)):
+                        _filepath = os.path.join(_cfg_dir, _filename)
+                        if (_filename.startswith(".")
+                                or not os.path.isfile(_filepath)):
+                            continue
                         try:
-                            if _project_path.endswith(".json"):
-                                with open(_project_path) as _fh:
+                            if _filename.endswith(".json"):
+                                with open(_filepath) as _fh:
                                     _parsed = json.load(_fh)
-                            elif _project_path.endswith(".toml"):
+                            elif _filename.endswith(".toml"):
                                 import tomllib as _tl
-                                with open(_project_path, "rb") as _fh:
+                                with open(_filepath, "rb") as _fh:
                                     _parsed = _tl.load(_fh)
-                            elif _project_path.endswith((".yaml", ".yml")):
+                            elif _filename.endswith((".yaml", ".yml")):
                                 import yaml as _yl
-                                with open(_project_path) as _fh:
+                                with open(_filepath) as _fh:
                                     _parsed = _yl.safe_load(_fh)
                             else:
                                 continue
@@ -142,232 +179,33 @@ if parse(__ansible_version__) < parse("2.0"):
                             _override_value = _parsed.get(
                                 "override_paths", {}).get("tasks_path")
                             if _override_value:
-                                for _path_item in _override_value.split(":"):
-                                    if os.path.isabs(_path_item):
-                                        places.append(_path_item)
-                                    else:
-                                        places.append(
-                                            os.path.join(os.getcwd(), _path_item))
                                 _found = _override_value
-                        break
-
-                if not _found:
-                    _xdg = os.environ.get(
-                        "XDG_CONFIG_HOME",
-                        os.path.join(os.path.expanduser("~"), ".config"))
-                    _cfg_dirs = [
-                        os.path.join(_xdg, "debops", "conf.d"),
-                        "/etc/debops/conf.d",
-                        "/usr/local/lib/debops/conf.d",
-                        "/usr/lib/debops/conf.d",
-                    ]
-                    for _cfg_dir in _cfg_dirs:
-                        if not os.path.isdir(_cfg_dir):
-                            continue
-                        for _filename in sorted(os.listdir(_cfg_dir)):
-                            _filepath = os.path.join(_cfg_dir, _filename)
-                            if (_filename.startswith(".")
-                                    or not os.path.isfile(_filepath)):
-                                continue
-                            try:
-                                if _filename.endswith(".json"):
-                                    with open(_filepath) as _fh:
-                                        _parsed = json.load(_fh)
-                                elif _filename.endswith(".toml"):
-                                    import tomllib as _tl
-                                    with open(_filepath, "rb") as _fh:
-                                        _parsed = _tl.load(_fh)
-                                elif _filename.endswith((".yaml", ".yml")):
-                                    import yaml as _yl
-                                    with open(_filepath) as _fh:
-                                        _parsed = _yl.safe_load(_fh)
-                                else:
-                                    continue
-                            except Exception:
-                                continue
-                            if isinstance(_parsed, dict):
-                                _override_value = _parsed.get(
-                                    "override_paths", {}).get("tasks_path")
-                                if _override_value:
-                                    _found = _override_value
-                                    break
-                        if _found:
-                            break
+                                break
                     if _found:
-                        for _path_item in _found.split(":"):
-                            if os.path.isabs(_path_item):
-                                places.append(_path_item)
-                            else:
-                                places.append(
-                                    os.path.join(os.getcwd(), _path_item))
-
-            for term in terms:
-                if '_original_file' in inject:
-                    relative_path = utils.path_dwim_relative(
-                            inject['_original_file'], 'tasks', '',
-                            self.basedir, check=False)
-                    places.append(relative_path)
-                for path in places:
-                    template = os.path.join(path, term)
-                    if template and os.path.exists(template):
-                        ret.append(template)
                         break
-                else:
-                    raise errors.AnsibleError(
-                            "could not locate file in lookup: %s"
-                            % term)
+                if _found:
+                    for _path_item in _found.split(":"):
+                        if os.path.isabs(_path_item):
+                            places.append(_path_item)
+                        else:
+                            places.append(
+                                os.path.join(os.getcwd(), _path_item))
 
-            return ret
+        for term in terms:
+            if 'role_path' in variables:
+                relative_path = (
+                        self._loader.path_dwim_relative(
+                            variables['role_path'],
+                            'tasks', ''))
+                places.append(relative_path)
+            for path in places:
+                template = os.path.join(path, term)
+                if template and os.path.exists(template):
+                    ret.append(template)
+                    break
+            else:
+                raise AnsibleError(
+                        "could not locate file in lookup: %s"
+                        % term)
 
-else:
-    from ansible.errors import AnsibleError
-    from ansible.plugins.lookup import LookupBase
-
-    class LookupModule(LookupBase):
-
-        def run(self, terms, variables=None, **kwargs):
-            ret = []
-            config = {}
-            places = []
-
-            # this can happen if the variable contains a string,
-            # strictly not desired for lookup plugins, but users may
-            # try it, so make it work.
-            if not isinstance(terms, list):
-                terms = [terms]
-
-            try:
-                project_config = debops.config.Configuration()
-                project_dir = debops.projectdir.ProjectDir(
-                        config=project_config)
-                project_root = project_dir.path
-                if project_dir.config.get(['project', 'type']) == 'modern':
-                    config = project_dir.config.get([])
-                else:
-                    config = project_dir.config.get(['views', 'system'])
-            except NameError:
-                try:
-                    project_root = find_debops_project(required=False)
-                    config = read_config(project_root)
-                except NameError:
-                    pass
-            except NotADirectoryError:
-                # This is not a DebOps project directory, so continue as normal
-                pass
-
-            if conf_section in config and conf_key in config[conf_section]:
-                custom_places = (
-                        config[conf_section][conf_key].split(':'))
-                for custom_path in custom_places:
-                    if os.path.isabs(custom_path):
-                        places.append(custom_path)
-                    else:
-                        places.append(os.path.join(
-                            project_root, custom_path))
-
-            # Fallback when the debops Python module is not available
-            # (e.g. installed via Ansible Galaxy). Read override paths
-            # directly from the global DebOps configuration directories.
-            if not conf_section:
-                _found = None
-
-                for _ext in [".yaml", ".yml", ".json", ".toml"]:
-                    _project_path = os.path.join(os.getcwd(), ".debops" + _ext)
-                    if os.path.isfile(_project_path):
-                        try:
-                            if _project_path.endswith(".json"):
-                                with open(_project_path) as _fh:
-                                    _parsed = json.load(_fh)
-                            elif _project_path.endswith(".toml"):
-                                import tomllib as _tl
-                                with open(_project_path, "rb") as _fh:
-                                    _parsed = _tl.load(_fh)
-                            elif _project_path.endswith((".yaml", ".yml")):
-                                import yaml as _yl
-                                with open(_project_path) as _fh:
-                                    _parsed = _yl.safe_load(_fh)
-                            else:
-                                continue
-                        except Exception:
-                            continue
-                        if isinstance(_parsed, dict):
-                            _override_value = _parsed.get(
-                                "override_paths", {}).get("tasks_path")
-                            if _override_value:
-                                for _path_item in _override_value.split(":"):
-                                    if os.path.isabs(_path_item):
-                                        places.append(_path_item)
-                                    else:
-                                        places.append(
-                                            os.path.join(os.getcwd(), _path_item))
-                                _found = _override_value
-                        break
-
-                if not _found:
-                    _xdg = os.environ.get(
-                        "XDG_CONFIG_HOME",
-                        os.path.join(os.path.expanduser("~"), ".config"))
-                    _cfg_dirs = [
-                        os.path.join(_xdg, "debops", "conf.d"),
-                        "/etc/debops/conf.d",
-                        "/usr/local/lib/debops/conf.d",
-                        "/usr/lib/debops/conf.d",
-                    ]
-                    for _cfg_dir in _cfg_dirs:
-                        if not os.path.isdir(_cfg_dir):
-                            continue
-                        for _filename in sorted(os.listdir(_cfg_dir)):
-                            _filepath = os.path.join(_cfg_dir, _filename)
-                            if (_filename.startswith(".")
-                                    or not os.path.isfile(_filepath)):
-                                continue
-                            try:
-                                if _filename.endswith(".json"):
-                                    with open(_filepath) as _fh:
-                                        _parsed = json.load(_fh)
-                                elif _filename.endswith(".toml"):
-                                    import tomllib as _tl
-                                    with open(_filepath, "rb") as _fh:
-                                        _parsed = _tl.load(_fh)
-                                elif _filename.endswith((".yaml", ".yml")):
-                                    import yaml as _yl
-                                    with open(_filepath) as _fh:
-                                        _parsed = _yl.safe_load(_fh)
-                                else:
-                                    continue
-                            except Exception:
-                                continue
-                            if isinstance(_parsed, dict):
-                                _override_value = _parsed.get(
-                                    "override_paths", {}).get("tasks_path")
-                                if _override_value:
-                                    _found = _override_value
-                                    break
-                        if _found:
-                            break
-                    if _found:
-                        for _path_item in _found.split(":"):
-                            if os.path.isabs(_path_item):
-                                places.append(_path_item)
-                            else:
-                                places.append(
-                                    os.path.join(os.getcwd(), _path_item))
-
-            for term in terms:
-                if 'role_path' in variables:
-                    relative_path = (
-                            self._loader.path_dwim_relative(
-                                variables['role_path'],
-                                'tasks', ''))
-                    places.append(relative_path)
-                for path in places:
-                    template = os.path.join(path, term)
-                    if template and os.path.exists(template):
-                        ret.append(template)
-                        break
-                else:
-                    raise AnsibleError(
-                            "could not locate file in lookup: %s"
-                            % term)
-
-            return ret
+        return ret
