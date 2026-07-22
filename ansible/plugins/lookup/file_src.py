@@ -121,8 +121,13 @@ class LookupModule(LookupBase):
                     ret.append(template)
                     break
             else:
-                raise AnsibleError(
-                        "could not locate file in lookup: %s"
-                        % term)
+                msg = "could not locate file in lookup: %s" % term
+                if not places:
+                    msg += (". No override paths configured. Install"
+                            " the debops Python module, create a"
+                            " .debops.{yaml,yml,json,toml} file,"
+                            " or add config to"
+                            " ~/.config/debops/conf.d/")
+                raise AnsibleError(msg)
 
         return ret
