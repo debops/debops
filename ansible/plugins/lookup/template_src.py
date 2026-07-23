@@ -59,141 +59,78 @@ try:
 except ImportError:
     LookupBase = object
 
-from packaging.version import parse
-from ansible import __version__ as __ansible_version__
+from ansible.errors import AnsibleError
+from ansible_collections.debops.debops.plugins.plugin_utils import debops_config
 
 
-if parse(__ansible_version__) < parse("2.0"):
-    from ansible import utils, errors
+class LookupModule(LookupBase):
 
-    class LookupModule(object):
+    def run(self, terms, variables=None, **kwargs):
+        ret = []
+        config = {}
+        places = []
 
-        def __init__(self, basedir, *args, **kwargs):
-            self.basedir = basedir
+        # this can happen if the variable contains a string,
+        # strictly not desired for lookup plugins, but users may
+        # try it, so make it work.
+        if not isinstance(terms, list):
+            terms = [terms]
 
-        def run(self, terms, inject=None, **kwargs):
-
-            terms = utils.listify_lookup_plugin_terms(
-                    terms, self.basedir, inject)
-            ret = []
-            config = {}
-            places = []
-
-            # this can happen if the variable contains a string,
-            # strictly not desired for lookup plugins, but users may
-            # try it, so make it work.
-            if not isinstance(terms, list):
-                terms = [terms]
-
+        try:
+            project_config = debops.config.Configuration()
+            project_dir = debops.projectdir.ProjectDir(
+                    config=project_config)
+            project_root = project_dir.path
+            if project_dir.config.get(['project', 'type']) == 'modern':
+                config = project_dir.config.get([])
+            else:
+                config = project_dir.config.get(['views', 'system'])
+        except NameError:
             try:
-                project_config = debops.config.Configuration()
-                project_dir = debops.projectdir.ProjectDir(
-                        config=project_config)
-                project_root = project_dir.path
-                if project_dir.config.get(['project', 'type']) == 'modern':
-                    config = project_dir.config.get([])
-                else:
-                    config = project_dir.config.get(['views', 'system'])
+                project_root = find_debops_project(required=False)
+                config = read_config(project_root)
             except NameError:
-                try:
-                    project_root = find_debops_project(required=False)
-                    config = read_config(project_root)
-                except NameError:
-                    pass
-            except NotADirectoryError:
-                # This is not a DebOps project directory, so continue as normal
                 pass
+        except NotADirectoryError:
+            # This is not a DebOps project directory, so continue as normal
+            pass
 
-            if conf_section in config and conf_key in config[conf_section]:
-                custom_places = (
-                        config[conf_section][conf_key].split(':'))
-                for custom_path in custom_places:
-                    if os.path.isabs(custom_path):
-                        places.append(custom_path)
-                    else:
-                        places.append(os.path.join(
-                            project_root, custom_path))
-
-            for term in terms:
-                if '_original_file' in inject:
-                    relative_path = (
-                            utils.path_dwim_relative(
-                                inject['_original_file'], 'templates',
-                                '', self.basedir, check=False))
-                    places.append(relative_path)
-                for path in places:
-                    template = os.path.join(path, term)
-                    if template and os.path.exists(template):
-                        ret.append(template)
-                        break
+        if conf_section in config and conf_key in config[conf_section]:
+            custom_places = (
+                    config[conf_section][conf_key].split(':'))
+            for custom_path in custom_places:
+                if os.path.isabs(custom_path):
+                    places.append(custom_path)
                 else:
-                    raise errors.AnsibleError(
-                            "could not locate file in lookup: %s"
-                            % term)
+                    places.append(os.path.join(
+                        project_root, custom_path))
 
-            return ret
+        # Fallback when the debops Python module is not available
+        # (e.g. installed via Ansible Galaxy). Read override paths
+        # directly from the global DebOps configuration directories.
+        if not places:
+            places.extend(debops_config.load_fallback_paths('templates_path'))
 
-else:
-    from ansible.errors import AnsibleError
-    from ansible.plugins.lookup import LookupBase
+        for term in terms:
+            if 'role_path' in variables:
+                relative_path = (
+                        self._loader.path_dwim_relative(
+                            variables['role_path'], 'templates',
+                            ''))
+                places.append(relative_path)
+            for path in places:
+                template = os.path.join(path, term)
+                if template and os.path.exists(template):
+                    ret.append(template)
+                    break
+            else:
+                msg = "could not locate file in lookup: %s" % term
+                if not places:
+                    msg += (". No override paths configured. Install"
+                            " the debops Python module, create a"
+                            " .debops.{yaml,yml,json,toml} file,"
+                            " or add config to"
+                            " ~/.config/debops/conf.d/")
+                raise AnsibleError(msg)
 
-    class LookupModule(LookupBase):
-
-        def run(self, terms, variables=None, **kwargs):
-            ret = []
-            config = {}
-            places = []
-
-            # this can happen if the variable contains a string,
-            # strictly not desired for lookup plugins, but users may
-            # try it, so make it work.
-            if not isinstance(terms, list):
-                terms = [terms]
-
-            try:
-                project_config = debops.config.Configuration()
-                project_dir = debops.projectdir.ProjectDir(
-                        config=project_config)
-                project_root = project_dir.path
-                if project_dir.config.get(['project', 'type']) == 'modern':
-                    config = project_dir.config.get([])
-                else:
-                    config = project_dir.config.get(['views', 'system'])
-            except NameError:
-                try:
-                    project_root = find_debops_project(required=False)
-                    config = read_config(project_root)
-                except NameError:
-                    pass
-            except NotADirectoryError:
-                # This is not a DebOps project directory, so continue as normal
-                pass
-
-            if conf_section in config and conf_key in config[conf_section]:
-                custom_places = (
-                        config[conf_section][conf_key].split(':'))
-                for custom_path in custom_places:
-                    if os.path.isabs(custom_path):
-                        places.append(custom_path)
-                    else:
-                        places.append(os.path.join(
-                            project_root, custom_path))
-
-            for term in terms:
-                if 'role_path' in variables:
-                    relative_path = (
-                            self._loader.path_dwim_relative(
-                                variables['role_path'], 'templates',
-                                ''))
-                    places.append(relative_path)
-                for path in places:
-                    template = os.path.join(path, term)
-                    if template and os.path.exists(template):
-                        ret.append(template)
-                        break
-                else:
-                    raise AnsibleError(
-                            "could not locate file in lookup: %s"
-                            % term)
-
-            return ret
+        return ret

@@ -87,18 +87,41 @@ templates according to your specific needs.
 
 Certain roles use ``debops.debops.file_src`` or ``debops.debops.template_src``
 to calculate path to files or templates used by a role. You can override these
-paths using ``.debops.cfg`` configuration file and provide your own versions of
-files and templates stored in DebOps project directory.
+paths using the global DebOps configuration at
+:file:`~/.config/debops/conf.d/` (works without the ``debops`` Python module)
+or the :file:`.debops.cfg` configuration file in the project directory
+(requires the ``debops`` Python module), and provide your own versions of
+files and templates stored in the project directory.
 
 Some roles provide "task hooks" at the beginning and end of task lists, which
 are empty files in a specific subdirectories. Using ``debops.debops.task_src``
-lookup plugin and settings defined in ``.debops.cfg`` configuration file you
-can "inject" your own tasks at the beginning or end of these roles, which gives
-you more control over the configuration.
+lookup plugin and the same override configuration you can "inject" your own
+tasks at the beginning or end of these roles, which gives you more control
+over the configuration.
 
 By combining above techniques, you can very easily extend DebOps roles without
 losing the ability to update them, using :command:`git` without having merge
 conflicts.
+
+Alternatively, you can create a :file:`.debops.yml` (or
+:file:`.debops.json` / :file:`.debops.toml`) file in your project root
+directory. The lookup plugins will pick it up automatically without needing
+the ``debops`` Python module or any configuration directory setup. For
+example, to override files and templates for a project at
+:file:`/home/alice/myansible/`:
+
+.. code-block:: toml
+
+   [override_paths]
+   files_path = "/home/alice/myansible/resources/overrides/files"
+   templates_path = "/home/alice/myansible/resources/overrides/templates"
+   tasks_path = "/home/alice/myansible/resources/overrides/tasks"
+
+Relative paths are resolved against the directory where
+:command:`ansible-playbook` is executed. You can also use the global DebOps
+configuration path (:file:`~/.config/debops/conf.d/`) as an alternative —
+create a TOML, YAML, or JSON file with the same ``override_paths`` section
+in any of the configuration directories.
 
 
 Ansible inventory is a source of truth
