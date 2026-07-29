@@ -1119,56 +1119,25 @@ request_acme_tiny_certificate () {
             fi
 
             if [ -r acme/cert.pem.tmp ] && [ -s acme/cert.pem.tmp ] ; then
-
                 # Let's Encrypt provides certificates with attached
                 # intermediates but we don't want that, PKI realms handle the
                 # intermediates themselves. Extract the first certificate from
                 # the generated file and swap it in, so the rest of the script
                 # works.
-                openssl x509 -in acme/cert.pem.tmp -out acme/first-cert.pem.tmp
-                mv acme/first-cert.pem.tmp acme/cert.pem.tmp
+
+                csplit -s -z -f acme/temp_cert_ acme/cert.pem.tmp '/-----BEGIN CERTIFICATE-----/' '{*}'
+                if [ ! -r acme/temp_cert_00 ] ; then
+                  echo "no certificates found in acme/certm.pem.tmp"
+                  exit 1
+                fi
 
                 if [ -r acme/cert.pem ] ; then
                     mv acme/cert.pem acme/cert.pem.old
                 fi
-                mv acme/cert.pem.tmp acme/cert.pem
-
-                local acme_intermediate_uri
-                acme_intermediate_uri="$(openssl x509 -in acme/cert.pem -text -noout -certopt ca_default,no_validity,no_serial | grep -E '^\s+CA\s+Issuers\s+-\s+URI:' | awk '{print $4}' | sed -e 's/^URI://')"
-
-                if [ ! -r acme/intermediate.pem ] ; then
-
-                    if [ -n "${acme_intermediate_uri}" ] ; then
-                        curl -s -L -o acme/intermediate.pem.tmp "${acme_intermediate_uri}"
-                        convert_der_to_pem acme/intermediate.pem.tmp
-                        mv acme/intermediate.pem.tmp acme/intermediate.pem
-                        if [ ! -r acme/intermediate_uri.txt ] ; then
-                            echo "${acme_intermediate_uri}" > acme/intermediate_uri.txt
-                        fi
-                    fi
-
-                elif [ -r acme/intermediate.pem ] ; then
-
-                    if [ -n "${acme_intermediate_uri}" ] && [ -r acme/intermediate_uri.txt ] ; then
-                        if [ "${acme_intermediate_uri}" != "$(<acme/intermediate_uri.txt)" ] ; then
-                            curl -s -L -o acme/intermediate.pem.tmp "${acme_intermediate_uri}"
-                            if ! diff -q -N acme/intermediate.pem acme/intermediate.pem.tmp > /dev/null ; then
-                                rm -f acme/intermediate.pem acme/intermediate_uri.txt
-                                convert_der_to_pem acme/intermediate.pem.tmp
-                                mv acme/intermediate.pem.tmp acme/intermediate.pem
-                                if [ ! -r acme/intermediate_uri.txt ] ; then
-                                    echo "${acme_intermediate_uri}" > acme/intermediate_uri.txt
-                                fi
-                            else
-                                rm -f acme/intermediate.pem.tmp acme/intermediate_uri.txt
-                                if [ ! -r acme/intermediate_uri.txt ] ; then
-                                    echo "${acme_intermediate_uri}" > acme/intermediate_uri.txt
-                                fi
-                            fi
-                        fi
-                    fi
-
-                fi
+                mv acme/temp_cert_00 acme/cert.pem
+                cat acme/temp_cert_* > acme/intermediate.pem
+                rm -f acme/temp_cert_*
+                rm -f acme/cert.pem.tmp
 
                 if [ ! -r acme/root.pem ] ; then
                     if [ -n "${config['acme_root_ca_path']}" ] && [ -n "${config['acme_root_ca_file']}" ] ; then
