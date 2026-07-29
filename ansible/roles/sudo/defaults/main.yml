@@ -28,9 +28,14 @@ sudo__enabled: True
 # .. envvar:: sudo__base_packages [[[
 #
 # List of base APT packages to install for :command:`sudo` support.
-sudo__base_packages: '{{ ["sudo-ldap"]
-                         if sudo__ldap_enabled | bool
-                         else ["sudo"] }}'
+sudo__base_packages: >-
+  {{ ["sudo-ldap"] if sudo__ldap_enabled is truthy
+                   else
+     ["sudo-rs"]   if (ansible_distribution == "Ubuntu"
+                       and ansible_facts.distribution_major_version is version_compare('26', '>='))
+                   else
+     ["sudo"]
+  }}
 
                                                                    # ]]]
 # .. envvar:: sudo__packages [[[
