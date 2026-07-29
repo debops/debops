@@ -231,6 +231,12 @@ General
   command options and their arguments are separated with a spaca. This fixes an
   issue with ACME DNS-01 challenge not being processed correctly.
 
+- The :command:`pki-realm` script was fixed to correctly handle multiple
+  intermediate CA certificates acquired from ACME-compliant Certificate
+  Authorities using the :command:`acme-tiny` script. Instead of downloading the
+  intermediate X.509 certificates directly from the issuer URI, the script
+  extracts them from the full certificate chain received from the ACME issuer.
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
