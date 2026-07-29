@@ -138,6 +138,13 @@ General
   path of existing OpenLDAP servers managed by DebOps is not tested yet, check
   the changes in a test environment.
 
+:ref:`debops.sudo` role
+'''''''''''''''''''''''
+
+- Ubuntu 26.04 LTS switched the default :command:`sudo` APT package to
+  ``sudo-rs``. The role will use this package by default on this and future
+  Ubuntu releases.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
