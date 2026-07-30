@@ -386,24 +386,41 @@ required -- Immich handles database migrations automatically on first start.
 
 .. _docker_compose_service__guide_paperless:
 
-Paperless-ngx with host PostgreSQL/Redis and AI sidecars
---------------------------------------------------------
+Paperless-ngx with host PostgreSQL/Redis, native AI and an OCR sidecar
+------------------------------------------------------------------------
 
 `Paperless-ngx <https://docs.paperless-ngx.com/>`_ is a self-hosted document
-management system that scans, OCRs, indexes and tags documents. This example is
-a more advanced deployment that exercises several role features at once:
+management system that scans, OCRs, indexes and tags documents. Since version
+3.0, Paperless-ngx ships **native AI features** (LLM-assisted suggestions, a
+vector index for retrieval-augmented generation, and a document chat) --
+configured entirely through ``PAPERLESS_AI_*`` environment variables, with no
+extra container required. This example is a more advanced deployment that
+exercises several role features at once:
 
 - the database and cache run **on the host** (managed by the
   :ref:`debops.postgresql_server` and :ref:`debops.redis_server` roles) and are
   reached through **UNIX sockets** bind-mounted into the container -- not as
   Compose services;
-- two **AI sidecars** share the Compose project: ``paperless-gpt`` (vision OCR
-  and tagging) and ``paperless-ai`` (classification and RAG chat);
-- the sidecars authenticate to Paperless with **dedicated Django service
-  accounts** whose API tokens are bootstrapped by the role's
+- native AI (suggestions, RAG chat, vector index) is enabled directly on the
+  ``webserver`` service through environment variables, pointing at an Ollama
+  server reachable over the network;
+- one **OCR sidecar**, ``paperless-gpt``, still runs alongside the main
+  container -- it is the only piece native AI does not replace, because
+  Paperless-ngx's built-in "Remote OCR" only supports Azure AI (a paid, cloud
+  service), not a local vision LLM via Ollama;
+- the sidecar authenticates to Paperless with a **dedicated Django service
+  account** whose API token is bootstrapped by the role's
   :ref:`pre_main / post_main custom tasks <docker_compose_service__ref_custom_tasks>`;
-- the main UI is proxied by :command:`nginx`, while the sidecar UIs are exposed
-  on LAN-only virtual hosts.
+- the main UI is proxied by :command:`nginx`, while the sidecar UI is exposed
+  on a LAN-only virtual host.
+
+.. note::
+
+   Earlier revisions of this guide also deployed a second sidecar,
+   ``paperless-ai`` (``clusterzx/paperless-ai``), for classification and RAG
+   chat. As of Paperless-ngx 3.0 those features are native, so the dedicated
+   sidecar -- and its Django account, API token, ``config_files`` pre-seed and
+   LAN-only virtual host -- can be removed entirely.
 
 This guide focuses on the parts that differ from the simpler
 :ref:`Immich <docker_compose_service__guide_immich>` example; adapt names,
@@ -418,18 +435,17 @@ Architecture
    [nginx]  -- TLS termination (DebOps PKI)
        |  paperless.example.com -> 127.0.0.1:8000
        |  paperless-gpt.example.com (LAN only) -> 127.0.0.1:8080
-       |  paperless-ai.example.com  (LAN only) -> 127.0.0.1:3000
        |
-   +-- Compose project "paperless" ---------------------------------+
-   |   [webserver] paperless-ngx        [gotenberg]   [tika]        |
-   |       |  (UNIX sockets, bind-mounted from host)                 |
-   |   [paperless-gpt] -> webserver:8000   (vision OCR / tagging)    |
-   |   [paperless-ai]  -> webserver:8000   (classification / RAG)    |
-   +----------------------------------------------------------------+
-       |                         |
-   /var/run/postgresql       /var/run/redis        (host sockets)
-   PostgreSQL                Redis
-   (debops.postgresql_server)(debops.redis_server)
+   +-- Compose project "paperless" -------------------------------------+
+   |   [webserver] paperless-ngx (native AI: PAPERLESS_AI_*)            |
+   |       |  (UNIX sockets, bind-mounted from host)     [gotenberg]    |
+   |       |                                              [tika]        |
+   |   [paperless-gpt] -> webserver:8000   (vision OCR only)            |
+   +----------------------------------------------------------------+---+
+       |                         |                    |
+   /var/run/postgresql       /var/run/redis      ollama.example.com:11434
+   PostgreSQL                Redis               (LLM + embedding backend,
+   (debops.postgresql_server)(debops.redis_server) reached over the network)
 
 Unlike Immich (which keeps PostgreSQL inside the Compose project), Paperless
 uses the standard Debian PostgreSQL and Redis managed by DebOps on the host.
@@ -528,7 +544,7 @@ Service definition
        + '/docker_compose_service/paperless/admin_password'
        + ' length=24 chars=ascii_letters,digits') }}"
 
-   # API tokens of the dedicated sidecar accounts. Generated by the post_main
+   # API token of the dedicated sidecar account. Generated by the post_main
    # custom task and stored in the secret directory. Empty on a fresh install
    # (see "Dedicated service accounts" below). lookup('file', ...) is used
    # instead of 'password' because the value is produced inside the container,
@@ -536,26 +552,26 @@ Service definition
    paperless__gpt_api_token: "{{ lookup('file', secret
        + '/docker_compose_service/paperless/gpt_api_token', errors='warn')
        | default('') }}"
-   paperless__ai_api_token:  "{{ lookup('file', secret
-       + '/docker_compose_service/paperless/ai_api_token', errors='warn')
-       | default('') }}"
 
    docker_compose_service__host_services:
 
      - name: 'paperless'
        compose_src: 'paperless/docker-compose.yml'
        data_dirs:
-         # data/ stays on local storage (Whoosh index + ML classifiers do not
-         # tolerate NFS locking); media/export/consume are on an NFS mount.
-         # owner/group is the local 'paperless' service account, uid/gid 800
-         # (an arbitrary local convention -- see the note after this example).
+         # data/ stays on local storage (the tantivy search index, the
+         # llmindex.db vector store used by native AI, and ML classifiers do
+         # not tolerate NFS locking); media/export/consume are on an NFS
+         # mount. owner/group is the local 'paperless' service account,
+         # uid/gid 800 (an arbitrary local convention -- see the note after
+         # this example).
          - { path: '/srv/docker/paperless/data',    owner: '800', group: '800' }
          - { path: '/mnt/paperless/media',          owner: '800', group: '800' }
          - { path: '/mnt/paperless/export',         owner: '800', group: '800' }
          - { path: '/mnt/paperless/consume',        owner: '800', group: '800' }
          - { path: '/srv/docker/paperless/paperless-gpt/prompts', owner: '800', group: '800' }
          - { path: '/srv/docker/paperless/paperless-gpt/hocr',    owner: '800', group: '800' }
-         - { path: '/srv/docker/paperless/paperless-ai/data',     owner: '800', group: '800' }
+         - { path: '/srv/docker/paperless/paperless-gpt/config',  owner: '800', group: '800' }
+         - { path: '/srv/docker/paperless/paperless-gpt/db',      owner: '800', group: '800' }
        env:
          # PostgreSQL and Redis over UNIX socket from the host
          PAPERLESS_DBENGINE: 'postgresql'
@@ -577,15 +593,15 @@ Service definition
          USERMAP_GID: '800'
          # API token for the paperless-gpt sidecar (its own account, not admin)
          PAPERLESS_GPT_API_TOKEN: '{{ paperless__gpt_api_token }}'
-       # Pre-seed the paperless-ai configuration (.env) so its web wizard is
-       # skipped on first start. A template is used (not inline content) because
-       # a long multi-line content block in host_vars trips over ansible_managed.
-       config_files:
-         - dest: '/srv/docker/paperless/paperless-ai/data/.env'
-           owner: '800'
-           group: '800'
-           mode: '0600'
-           src: 'paperless-ai-data.env.j2'
+         # Native AI (Paperless-ngx 3.0+): suggestions, vector index, RAG chat.
+         # Off by default -- opt in explicitly and point at your Ollama server
+         # (or an OpenAI-compatible endpoint via PAPERLESS_AI_LLM_BACKEND=openai-like).
+         PAPERLESS_AI_ENABLED:               'true'
+         PAPERLESS_AI_LLM_BACKEND:           'ollama'
+         PAPERLESS_AI_LLM_ENDPOINT:          'http://ollama.example.com:11434'
+         PAPERLESS_AI_LLM_MODEL:             'llama3.1'
+         PAPERLESS_AI_LLM_EMBEDDING_BACKEND: 'ollama'
+         PAPERLESS_AI_LLM_EMBEDDING_MODEL:   'nomic-embed-text'
        nginx:
          enabled: true
          fqdn: 'paperless.example.com'
@@ -593,6 +609,40 @@ Service definition
          proxy_options: |
            client_max_body_size 100M;
            proxy_read_timeout 300s;
+           proxy_http_version 1.1;
+           proxy_set_header Upgrade $http_upgrade;
+           proxy_set_header Connection $connection_upgrade;
+
+.. note::
+
+   Paperless-ngx 3.0 changed how ``allauth`` determines the client IP address
+   for login rate limiting; without a correctly configured trusted proxy/header
+   it raises ``403 PermissionDenied: Unable to determine client IP address`` on
+   every login attempt, even from the LAN. Two ``env`` settings are involved:
+
+   - ``PAPERLESS_TRUSTED_PROXIES`` (shown above) covers the *direct* proxy hop
+     (:command:`nginx` on loopback);
+   - if a CDN/tunnel (e.g. Cloudflare) sits in front and injects a header such
+     as ``CF-Connecting-IP``, also set
+     ``PAPERLESS_ALLAUTH_TRUSTED_CLIENT_IP_HEADER: 'CF-Connecting-IP'``.
+
+   The second setting has a sharp edge: it makes Paperless treat *any request
+   missing that header* as having no determinable client IP, which raises the
+   same 403 -- so LAN clients that bypass the CDN and hit :command:`nginx`
+   directly break unless :command:`nginx` fills the header in itself with a
+   fallback::
+
+      map $http_cf_connecting_ip $paperless_client_ip {
+          default   $http_cf_connecting_ip;
+          ''        $remote_addr;
+      }
+      # ... in proxy_options:
+      proxy_set_header CF-Connecting-IP $paperless_client_ip;
+
+   The ``proxy_http_version``/``Upgrade``/``Connection`` lines above are
+   unrelated but equally easy to miss: without them the system status page
+   reports ``websocket_connected: ERROR`` because :command:`nginx` never
+   upgrades the connection for Paperless-ngx's WebSocket endpoint.
 
 .. note::
 
@@ -612,7 +662,7 @@ Service definition
 
    The same value is reused for the ``data_dirs`` ``owner``/``group``, for
    ``USERMAP_UID``/``USERMAP_GID`` (the paperless-ngx container drops to it) and
-   for the sidecars' ``PUID``/``PGID``, so every file the containers create on
+   for the sidecar's ``PUID``/``PGID``, so every file the containers create on
    the (possibly NFS-mounted) data directories is owned by one known, non-root
    account. Pick whatever uid/gid your environment uses; only consistency
    between the host account, the volume ownership and the in-container user
@@ -631,8 +681,8 @@ Compose file template
 ~~~~~~~~~~~~~~~~~~~~~~
 
 The Compose file omits the ``db`` and ``broker`` services from the upstream
-example (they live on the host) and bind-mounts the host sockets. The sidecars
-reach Paperless through the Compose network name ``webserver`` (not
+example (they live on the host) and bind-mounts the host sockets. The sidecar
+reaches Paperless through the Compose network name ``webserver`` (not
 ``container_name``):
 
 .. code-block:: yaml
@@ -676,32 +726,38 @@ reach Paperless through the Compose network name ``webserver`` (not
        container_name: paperless_tika
        image: docker.io/apache/tika:latest
 
+     # Kept only for vision OCR (native AI covers suggestions/tagging/RAG chat).
+     # Pin an explicit tag rather than :latest -- this image has shipped two
+     # releases with breaking changes (entrypoint privilege drop, new
+     # config/db directories) in quick succession.
      paperless-gpt:
        container_name: paperless_gpt
-       image: ghcr.io/icereed/paperless-gpt:latest
+       image: ghcr.io/icereed/paperless-gpt:v0.27.0
        environment:
+         # PUID/PGID (since v0.26.0): the entrypoint drops privileges to this
+         # uid/gid and chowns /app -- must match data_dirs owner/group above.
+         - PUID=800
+         - PGID=800
          - PAPERLESS_BASE_URL=http://webserver:8000
          - PAPERLESS_API_TOKEN=${PAPERLESS_GPT_API_TOKEN}
+         # An LLM provider/model is required at startup even in OCR-only mode.
          - LLM_PROVIDER=ollama
          - LLM_MODEL=llama3.1
          - OLLAMA_HOST=http://ollama.example.com:11434
+         - OCR_PROVIDER=llm
+         - VISION_LLM_PROVIDER=ollama
+         - VISION_LLM_MODEL=minicpm-v
+         - AUTO_OCR_TAG=paperless-gpt-ocr-auto
        ports:
          - '127.0.0.1:8080:8080'
-       depends_on:
-         webserver:
-           condition: service_healthy
-
-     paperless-ai:
-       container_name: paperless_ai
-       image: clusterzx/paperless-ai:latest
-       environment:
-         - PUID=800
-         - PGID=800
-         - RAG_SERVICE_ENABLED=true
-       ports:
-         - '127.0.0.1:3000:3000'
        volumes:
-         - /srv/docker/paperless/paperless-ai/data:/app/data
+         - /srv/docker/paperless/paperless-gpt/prompts:/app/prompts
+         - /srv/docker/paperless/paperless-gpt/hocr:/app/hocr
+         # config/ (OCR Playground "save as defaults") and db/ (OCR activity
+         # log) since v0.27.0 -- without these mounts both are lost on every
+         # container recreation.
+         - /srv/docker/paperless/paperless-gpt/config:/app/config
+         - /srv/docker/paperless/paperless-gpt/db:/app/db
        depends_on:
          webserver:
            condition: service_healthy
@@ -715,20 +771,20 @@ reach Paperless through the Compose network name ``webserver`` (not
    regardless of the Redis ``unixsocketperm`` setting.
 
 
-Dedicated service accounts and API tokens
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Dedicated service account and API token
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-So that the document history records which sidecar made a change, each sidecar
+So that the document history records which sidecar made a change, the sidecar
 gets its **own** Django account and API token instead of sharing ``admin``.
-The accounts and tokens are bootstrapped with the role's custom tasks (see
+The account and token are bootstrapped with the role's custom tasks (see
 :ref:`Custom Ansible tasks <docker_compose_service__ref_custom_tasks>` in
 *Getting started*), placed under the project's ``override_paths.tasks_path``
 (by default
 :file:`ansible/overrides/tasks/docker_compose_service/`).
 
-``pre_main.yml`` -- create empty token files **before** the service list is
+``pre_main.yml`` -- create an empty token file **before** the service list is
 evaluated. Without this, the ``lookup('file', ...)`` for the not-yet-generated
-tokens raises (even with ``errors='warn'``) and collapses
+token raises (even with ``errors='warn'``) and collapses
 :envvar:`docker_compose_service__host_services` to an empty list, so nothing is
 deployed:
 
@@ -737,7 +793,7 @@ deployed:
    # ansible/overrides/tasks/docker_compose_service/pre_main.yml
    ---
 
-   - name: Bootstrap paperless sidecar API token secret files
+   - name: Bootstrap paperless sidecar API token secret file
      when: inventory_hostname == 'paperless.example.com'
      delegate_to: localhost
      become: false
@@ -749,25 +805,24 @@ deployed:
            state: 'directory'
            mode: '0700'
 
-       - name: Ensure paperless sidecar token files exist (empty if new)
+       - name: Ensure paperless sidecar token file exists (empty if new)
          ansible.builtin.copy:
            content: ''
-           dest: '{{ secret }}/docker_compose_service/paperless/{{ item }}'
+           dest: '{{ secret }}/docker_compose_service/paperless/gpt_api_token'
            mode: '0600'
            force: false   # never overwrite an already-generated token
-         loop: [ 'gpt_api_token', 'ai_api_token' ]
 
-``post_main.yml`` -- once the containers are up, create the accounts
-(idempotently) and generate their tokens inside the ``webserver`` container,
-saving each token back to the secret directory only when its file is still
-empty:
+``post_main.yml`` -- once the containers are up, create the account
+(idempotently) and fetch its token from the **database** on every run,
+overwriting the secret file (and re-injecting the ``.env``) only if it
+disagrees with what is actually stored there:
 
 .. code-block:: yaml
 
    # ansible/overrides/tasks/docker_compose_service/post_main.yml
    ---
 
-   - name: Provision paperless dedicated service accounts and API tokens
+   - name: Provision paperless dedicated service account and API token
      when: inventory_hostname == 'paperless.example.com'
      block:
 
@@ -800,15 +855,16 @@ empty:
                u.is_superuser = True; u.is_staff = False; u.save()
          changed_when: false
 
-       - name: Check paperless sidecar token secret files
-         ansible.builtin.stat:
-           path: '{{ secret }}/docker_compose_service/paperless/{{ item }}'
-         register: paperless__stat_tokens
-         loop: [ 'gpt_api_token', 'ai_api_token' ]
-         delegate_to: localhost
-         become: false
-
-       - name: Generate paperless-gpt API token
+       # drf_create_token (without -r) is idempotent against the *database*:
+       # it returns the existing token for the user, or creates a new one.
+       # Run it unconditionally on every pass -- the database is the source
+       # of truth for which token actually works. Gating this call on "the
+       # secret file is non-empty" (an earlier revision of this guide did)
+       # breaks after a host reinstall: the secret file survives in the repo,
+       # but a fresh database has no matching token, so the sidecar keeps
+       # authenticating with a token that no longer exists -> persistent 401s
+       # that a normal idempotent run never notices or fixes.
+       - name: Fetch (or create) paperless-gpt API token from the database
          ansible.builtin.command:
            argv:
              - docker
@@ -822,21 +878,27 @@ empty:
              - paperless-gpt
          register: paperless__register_gpt_token
          changed_when: false
-         when: paperless__stat_tokens.results[0].stat.size == 0
 
-       - name: Save paperless-gpt API token to the secret store
+       - name: Check current paperless-gpt token secret file
+         ansible.builtin.slurp:
+           path: '{{ secret }}/docker_compose_service/paperless/gpt_api_token'
+         register: paperless__slurp_gpt_token
+         delegate_to: localhost
+         become: false
+         failed_when: false
+
+       - name: Save paperless-gpt API token to the secret store if it changed
          ansible.builtin.copy:
            content: '{{ paperless__register_gpt_token.stdout.split()[2] }}'
            dest: '{{ secret }}/docker_compose_service/paperless/gpt_api_token'
            mode: '0600'
          delegate_to: localhost
          become: false
-         when:
-           - paperless__stat_tokens.results[0].stat.size == 0
-           - paperless__register_gpt_token is not skipped
-           - paperless__register_gpt_token is succeeded
-
-   # The paperless-ai account and token follow the same pattern.
+         when: >-
+           paperless__slurp_gpt_token.content is not defined or
+           (paperless__slurp_gpt_token.content | b64decode | trim)
+             != paperless__register_gpt_token.stdout.split()[2]
+         register: paperless__register_gpt_secret_updated
 
 .. note::
 
@@ -848,33 +910,35 @@ empty:
 Single-pass token injection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-On a fresh install (or after manually deleting a token file to force
-regeneration) the ``post_main`` hook performs all the work in a single role run:
+On a fresh install (or after the database and the secret file disagree, e.g.
+following a host reinstall) the ``post_main`` hook performs all the work in a
+single role run:
 
-1. ``pre_main`` creates empty token placeholder files so the
+1. ``pre_main`` creates an empty token placeholder file so the
    ``lookup('file', ...)`` in ``host_vars`` does not raise an error.
-2. The role's main tasks write the ``.env`` files with an empty token and start
-   the containers.
-3. ``post_main`` creates the Django accounts, calls ``drf_create_token``,
-   saves the token to the secret directory, and then **directly injects** the
-   token into the ``.env`` file(s) on the server using
+2. The role's main tasks write the ``.env`` file with an empty (or stale)
+   token and start the containers.
+3. ``post_main`` creates the Django account, calls ``drf_create_token``
+   (always -- see above), compares the returned token against the secret
+   file, and if they differ, saves the new token to the secret directory and
+   **directly injects** it into the ``.env`` file on the server using
    `ansible.builtin.lineinfile <https://docs.ansible.com/ansible/latest/collections/ansible/builtin/lineinfile_module.html>`__
    and recreates only the affected sidecar.
 
 The final state after a single run is therefore correct: the sidecar container
-holds a valid token.  A subsequent idempotent run skips all token-related tasks
-(the token files are no longer empty) and does not restart any containers.
+holds a valid token that matches the database. A subsequent idempotent run
+still calls ``drf_create_token`` (cheap, no ``changed`` reported) but the
+comparison finds no difference, so no file write, ``.env`` edit or container
+restart happens.
 
-To trigger regeneration, delete the token file(s) from the secret directory and
-re-run the role:
-
-.. code-block:: console
-
-   rm ~/.../secret/docker_compose_service/paperless/gpt_api_token
-   debops run service/docker_compose_service -l paperless.example.com
+To force a completely fresh token instead of the one currently valid in the
+database, revoke it from Django first (``manage.py drf_create_token -r
+paperless-gpt``) and re-run the role -- deleting only the secret file is
+**not** enough on its own, since the next run would just fetch the same
+still-valid token back out of the database and write it back unchanged.
 
 The ``post_main.yml`` example above should be extended with the following tasks
-after each ``Save ... token to secret store`` step:
+after the ``Save ... token to the secret store`` step:
 
 .. code-block:: yaml
 
@@ -883,10 +947,7 @@ after each ``Save ... token to secret store`` step:
            path: /srv/docker/paperless/.env
            regexp: '^PAPERLESS_GPT_API_TOKEN='
            line: 'PAPERLESS_GPT_API_TOKEN={{ paperless__register_gpt_token.stdout.split()[2] }}'
-         when:
-           - paperless__stat_tokens.results[0].stat.size == 0
-           - paperless__register_gpt_token is not skipped
-           - paperless__register_gpt_token is succeeded
+         when: paperless__register_gpt_secret_updated is changed
          register: paperless__register_gpt_env_updated
 
        - name: Restart paperless-gpt to pick up new token
@@ -897,18 +958,14 @@ after each ``Save ... token to secret store`` step:
            recreate: always
          when: paperless__register_gpt_env_updated is changed
 
-   # Repeat the same two tasks for paperless-ai, pointing at
-   # /srv/docker/paperless/paperless-ai/data/.env and PAPERLESS_API_TOKEN.
 
+LAN-only sidecar UI
+~~~~~~~~~~~~~~~~~~~~
 
-LAN-only sidecar UIs
-~~~~~~~~~~~~~~~~~~~~~
-
-The sidecars bind to loopback (``127.0.0.1:8080`` and ``127.0.0.1:3000``).
-Their web UIs are published on separate :command:`nginx` virtual hosts
-restricted to the LAN, configured in a host-level
-:file:`host_vars/.../nginx.yml` (not through the service's ``nginx:`` block,
-which is reserved for the main application):
+The sidecar binds to loopback (``127.0.0.1:8080``). Its web UI is published on
+a separate :command:`nginx` virtual host restricted to the LAN, configured in
+a host-level :file:`host_vars/.../nginx.yml` (not through the service's
+``nginx:`` block, which is reserved for the main application):
 
 .. code-block:: yaml
 
