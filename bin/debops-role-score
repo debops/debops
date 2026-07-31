@@ -71,6 +71,11 @@ DEFAULT_WEIGHTS: dict[str, float] = {
     "static_json_facts": 0.3,
     "unconditional_debug": 0.2,
     "hardcoded_paths": 0.3,
+    "scoped_variables": 1.0,
+    "combined_variables": 0.8,
+    "parse_kv_items_usage": 0.6,
+    "task_description": 0.2,
+    "yaml_syntax": 0.2,
 }
 
 DEFAULT_MIN_ANSIBLE: str = "2.10.0"
@@ -1585,6 +1590,247 @@ def rule_hardcoded_paths(
     )
 
 
+def rule_scoped_variables(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Ratio of variables using the 3-level scoping pattern.
+
+    A scoped variable family consists of the base role variable
+    (``<role>__<suffix>``) plus its ``__group_`` and ``__host_`` override
+    levels. Variables carrying a ``__group_`` or ``__host_`` segment anchor
+    the family; the matching base variable completes the set.
+    """
+    w = weights.get("scoped_variables", 0.3)
+    defaults_file = role_path / "defaults" / "main.yml"
+    if not defaults_file.is_file():
+        return RuleResult("scoped_variables", w, 0.0, 0.0, "no defaults/main.yml")
+
+    data = load_yaml(defaults_file)
+    if isinstance(data, dict):
+        keys = list(data.keys())
+    else:
+        text = defaults_file.read_text(encoding="utf-8")
+        keys = re.findall(r"^([a-zA-Z_]\w*):", text, re.MULTILINE)
+
+    exclude = {"galaxy_info", "dependencies", "collections"}
+    keys = [k for k in keys if k not in exclude and not k.startswith(".")]
+
+    if not keys:
+        return RuleResult("scoped_variables", w, 0.0, 0.0, "no variables")
+
+    suffixes: set[str] = set()
+    for k in keys:
+        m = re.search(r"__group_(\w+)", k)
+        if m:
+            suffixes.add(m.group(1))
+        else:
+            m = re.search(r"__host_(\w+)", k)
+            if m:
+                suffixes.add(m.group(1))
+
+    scoped = sum(1 for k in keys if "__group_" in k or "__host_" in k)
+    base = sum(1 for s in suffixes if f"{role_name}__{s}" in keys)
+    score = (scoped + base) / len(keys)
+    return RuleResult(
+        "scoped_variables",
+        w,
+        score,
+        1.0,
+        f"{scoped + base}/{len(keys)} scoped ({base} base + {scoped} group/host)",
+    )
+
+
+def rule_combined_variables(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Ratio of variables using __combined_ merge pattern."""
+    w = weights.get("combined_variables", 0.2)
+    if _is_minimal_surface(kwargs.get("surface"), role_path):
+        return RuleResult("combined_variables", w, 0.0, 0.0, "minimal role surface")
+    defaults_file = role_path / "defaults" / "main.yml"
+    if not defaults_file.is_file():
+        return RuleResult("combined_variables", w, 0.0, 0.0, "no defaults/main.yml")
+
+    data = load_yaml(defaults_file)
+    if isinstance(data, dict):
+        keys = list(data.keys())
+    else:
+        text = defaults_file.read_text(encoding="utf-8")
+        keys = re.findall(r"^([a-zA-Z_]\w*):", text, re.MULTILINE)
+
+    exclude = {"galaxy_info", "dependencies", "collections"}
+    keys = [k for k in keys if k not in exclude and not k.startswith(".")]
+
+    if not keys:
+        return RuleResult("combined_variables", w, 0.0, 0.0, "no variables")
+
+    combined = sum(1 for k in keys if "__combined_" in k)
+    score = combined / len(keys)
+    return RuleResult(
+        "combined_variables",
+        w,
+        score,
+        1.0,
+        f"{combined}/{len(keys)} combined",
+    )
+
+
+def rule_parse_kv_items_usage(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Ratio of files using parse_kv_items filter for structured config."""
+    w = weights.get("parse_kv_items_usage", 0.2)
+    if _is_minimal_surface(kwargs.get("surface"), role_path):
+        return RuleResult("parse_kv_items_usage", w, 0.0, 0.0, "minimal role surface")
+    total = 0
+    using = 0
+
+    for subdir_name in ("tasks", "templates", "defaults", "handlers"):
+        subdir = role_path / subdir_name
+        if not subdir.is_dir():
+            continue
+        for f in sorted(subdir.rglob("*")):
+            if not f.is_file() or f.suffix not in (".yml", ".j2", ".yaml"):
+                continue
+            text = f.read_text(encoding="utf-8")
+            if re.search(r"\{\{.*\|.*parse_kv_items", text):
+                using += 1
+                total += 1
+            elif re.search(r"[a-zA-Z_]", text):
+                total += 1
+
+    if total == 0:
+        return RuleResult("parse_kv_items_usage", w, 0.0, 0.0, "no relevant files")
+
+    score = using / total
+    return RuleResult(
+        "parse_kv_items_usage",
+        w,
+        score,
+        1.0,
+        f"{using}/{total} using parse_kv_items",
+    )
+
+
+TASK_DIRECTIVES: frozenset[str] = frozenset(
+    {
+        "name",
+        "tags",
+        "when",
+        "register",
+        "notify",
+        "ignore_errors",
+        "changed_when",
+        "failed_when",
+        "delegate_to",
+        "run_once",
+        "become",
+        "become_user",
+        "become_method",
+        "check_mode",
+        "diff",
+        "environment",
+        "loop",
+        "until",
+        "retries",
+        "delay",
+        "no_log",
+        "connection",
+        "async",
+        "poll",
+        "throttle",
+        "timeout",
+        "block",
+        "rescue",
+        "always",
+        "include",
+        "import_tasks",
+        "include_tasks",
+        "import_role",
+        "include_role",
+        "collections",
+        "module_defaults",
+    }
+)
+
+
+def rule_task_description(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Ratio of tasks with a name: attribute."""
+    w = weights.get("task_description", 0.2)
+    tasks_dir = role_path / "tasks"
+    if not tasks_dir.is_dir():
+        return RuleResult("task_description", w, 0.0, 0.0, "no tasks/ dir")
+
+    total = 0
+    named = 0
+
+    for f in sorted(tasks_dir.rglob("*.yml")):
+        if not f.is_file():
+            continue
+        data = load_yaml(f)
+        items = parse_tasks(data)
+        for t in items:
+            total += 1
+            if "name" in t and isinstance(t["name"], str) and t["name"].strip():
+                named += 1
+
+    if total == 0:
+        return RuleResult("task_description", w, 0.0, 0.0, "no tasks found")
+
+    score = named / total
+    return RuleResult(
+        "task_description",
+        w,
+        score,
+        1.0,
+        f"{named}/{total} named",
+    )
+
+
+def rule_yaml_syntax(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Ratio of tasks using native YAML syntax (not key=value shorthand)."""
+    w = weights.get("yaml_syntax", 0.2)
+    tasks_dir = role_path / "tasks"
+    if not tasks_dir.is_dir():
+        return RuleResult("yaml_syntax", w, 0.0, 0.0, "no tasks/ dir")
+
+    total = 0
+    native = 0
+
+    for f in sorted(tasks_dir.rglob("*.yml")):
+        if not f.is_file():
+            continue
+        data = load_yaml(f)
+        items = parse_tasks(data)
+        for t in items:
+            total += 1
+            module_keys = [k for k in t if k not in TASK_DIRECTIVES]
+            is_native = True
+            for mk in module_keys:
+                val = t[mk]
+                if isinstance(val, str) and re.search(r"\w+=", val):
+                    is_native = False
+                    break
+            if is_native:
+                native += 1
+
+    if total == 0:
+        return RuleResult("yaml_syntax", w, 0.0, 0.0, "no tasks found")
+
+    score = native / total
+    return RuleResult(
+        "yaml_syntax",
+        w,
+        score,
+        1.0,
+        f"{native}/{total} native YAML",
+    )
+
+
 # ---------------------------------------------------------------------------
 # Rule registry
 # ---------------------------------------------------------------------------
@@ -1621,6 +1867,11 @@ RULES: list[Any] = [
     rule_static_json_facts,
     rule_unconditional_debug,
     rule_hardcoded_paths,
+    rule_scoped_variables,
+    rule_combined_variables,
+    rule_parse_kv_items_usage,
+    rule_task_description,
+    rule_yaml_syntax,
 ]
 
 
@@ -2008,6 +2259,11 @@ def list_rules(weights: dict[str, float]) -> None:
         "static_json_facts": "static JSON fact files (not Jinja templates)",
         "unconditional_debug": "debug tasks without verbosity:",
         "hardcoded_paths": "hardcoded /etc/ /var/ paths in templates",
+        "scoped_variables": "3-level scoping (__base + __group_/__host_ overrides)",
+        "combined_variables": "variables using __combined_ merge pattern",
+        "parse_kv_items_usage": "usage of parse_kv_items filter for structured config",
+        "task_description": "tasks with meaningful name: attribute",
+        "yaml_syntax": "tasks using native YAML syntax (not key=value shorthand)",
     }
 
     print(f"{'Rule':<30} {'Weight':>6}  Description")
