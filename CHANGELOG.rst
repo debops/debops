@@ -40,6 +40,13 @@ General
   project requirements for contributions that use LLM and AI-assisted
   coding tools.
 
+- Added the :command:`debops-role-score` script, a developer tool which
+  grades DebOps roles against the project's quality rules and reports a
+  per-rule breakdown of the result. A GitHub Actions workflow scores the
+  roles touched by a change and fails the build when any of them falls
+  below 40% of the computed score ceiling. See the :ref:`role_score`
+  documentation for details.
+
 :ref:`debops.java` role
 '''''''''''''''''''''''
 

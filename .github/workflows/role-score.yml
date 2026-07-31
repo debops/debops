@@ -1,0 +1,41 @@
+---
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: 'Role Quality Score'
+on: [ 'push', 'pull_request' ]
+
+jobs:
+  role-score:
+    runs-on: 'ubuntu-latest'
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed roles
+        id: roles
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="${{ github.base_ref }}"
+          else
+            BASE="HEAD~1"
+          fi
+          CHANGED=$(git diff --name-only "origin/${BASE}...HEAD" \
+            | grep -E '^(roles|ansible/roles)/' \
+            | cut -d/ -f2 \
+            | sort -u \
+            | paste -sd ',')
+          echo "changed=${CHANGED}" >> "${GITHUB_OUTPUT}"
+
+      - name: Score changed roles
+        if: steps.roles.outputs.changed != ''
+        run: |
+          # Gate at 40% of the score ceiling, computed from current rule weights
+          bin/debops-role-score \
+            --roles "${{ steps.roles.outputs.changed }}" \
+            --min-score-fraction 0.40 \
+            --verbose

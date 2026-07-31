@@ -78,6 +78,18 @@ syntax: test-playbook-syntax
 lint:           ## Check Ansible roles using ansible-lint
 lint: test-ansible-lint
 
+.PHONY: role-score
+role-score:     ## Score Ansible roles against quality rules
+role-score:
+	@printf "%s\n" "Scoring Ansible roles against quality rules..."
+	@bin/debops-role-score
+
+.PHONY: role-score-verbose
+role-score-verbose: ## Score Ansible roles with per-rule details
+role-score-verbose:
+	@printf "%s\n" "Scoring Ansible roles against quality rules..."
+	@bin/debops-role-score --verbose
+
 .PHONY: test
 test:           ## Perform all DebOps tests
 test: test-all
