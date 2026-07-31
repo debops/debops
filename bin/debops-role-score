@@ -62,6 +62,15 @@ DEFAULT_WEIGHTS: dict[str, float] = {
     "spdx_headers": 0.1,
     "ansible_managed": 0.3,
     "template_default_filter": 0.4,
+    "fact_runtime_detection": 0.4,
+    "files_directory_absent": 0.4,
+    "meta_platforms_specific": 0.4,
+    "galaxy_tags_present": 0.1,
+    "legacy_vars_dir": 0.2,
+    "missing_meta": 0.2,
+    "static_json_facts": 0.3,
+    "unconditional_debug": 0.2,
+    "hardcoded_paths": 0.3,
 }
 
 DEFAULT_MIN_ANSIBLE: str = "2.10.0"
@@ -106,6 +115,8 @@ BINARY_RULES: frozenset[str] = frozenset(
         "dependencies_empty",
         "ansible_plugins_import",
         "flush_handlers",
+        "legacy_vars_dir",
+        "missing_meta",
     }
 )
 
@@ -116,6 +127,11 @@ NEGATIVE_RULES: frozenset[str] = frozenset(
     {
         "variable_naming",
         "default_filter_usage",
+        "legacy_vars_dir",
+        "missing_meta",
+        "static_json_facts",
+        "unconditional_debug",
+        "hardcoded_paths",
     }
 )
 
@@ -1348,6 +1364,227 @@ def rule_template_default_filter(
     )
 
 
+def rule_fact_runtime_detection(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Check fact templates use runtime detection (subprocess/os.access)."""
+    w = weights.get("fact_runtime_detection", 0.4)
+    fact_dir = role_path / "templates" / "etc" / "ansible" / "facts.d"
+    fact_files: list[Path] = []
+    if fact_dir.is_dir():
+        fact_files = sorted(fact_dir.glob("*.fact.j2"))
+
+    if not fact_files:
+        return RuleResult("fact_runtime_detection", w, 0.0, 0.0, "no fact template")
+
+    primary = fact_files[0]
+    text = primary.read_text(encoding="utf-8")
+
+    has_runtime = any(
+        keyword in text
+        for keyword in ("subprocess", "os.access", "cmd_exists", "os.path")
+    )
+
+    score = 1.0 if has_runtime else 0.0
+    detail = (
+        f"runtime ({Path(primary.name)})"
+        if has_runtime
+        else f"static ({Path(primary.name)})"
+    )
+    return RuleResult("fact_runtime_detection", w, score, 1.0, detail)
+
+
+def rule_files_directory_absent(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Binary: static files should go through templates, not files/."""
+    w = weights.get("files_directory_absent", 0.4)
+    files_dir = role_path / "files"
+    if files_dir.is_dir() and any(files_dir.iterdir()):
+        return RuleResult("files_directory_absent", w, 0.0, 1.0, "files/ present")
+    return RuleResult("files_directory_absent", w, 1.0, 1.0, "no files/")
+
+
+def rule_meta_platforms_specific(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Binary: meta/main.yml lists specific platform versions, not 'all'."""
+    w = weights.get("meta_platforms_specific", 0.4)
+    meta = load_yaml_robust(role_path / "meta" / "main.yml")
+    gi = meta.get("galaxy_info", {})
+    if not isinstance(gi, dict):
+        return RuleResult("meta_platforms_specific", w, 0.0, 1.0, "no galaxy_info")
+
+    platforms = gi.get("platforms", [])
+    if not isinstance(platforms, list) or not platforms:
+        return RuleResult("meta_platforms_specific", w, 0.0, 1.0, "no platforms")
+
+    for entry in platforms:
+        if not isinstance(entry, dict):
+            continue
+        versions = entry.get("versions", [])
+        if isinstance(versions, list) and "all" in versions:
+            return RuleResult(
+                "meta_platforms_specific", w, 0.0, 1.0, "uses 'all' version"
+            )
+        if isinstance(versions, str) and versions == "all":
+            return RuleResult(
+                "meta_platforms_specific", w, 0.0, 1.0, "uses 'all' version"
+            )
+
+    return RuleResult("meta_platforms_specific", w, 1.0, 1.0, "specific versions")
+
+
+def rule_galaxy_tags_present(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Binary: galaxy_tags is non-empty in meta/main.yml."""
+    w = weights.get("galaxy_tags_present", 0.1)
+    meta = load_yaml_robust(role_path / "meta" / "main.yml")
+    gi = meta.get("galaxy_info", {})
+    if not isinstance(gi, dict):
+        return RuleResult("galaxy_tags_present", w, 0.0, 1.0, "no galaxy_info")
+
+    tags = gi.get("galaxy_tags", [])
+    if isinstance(tags, list) and len(tags) > 0:
+        return RuleResult("galaxy_tags_present", w, 1.0, 1.0, f"{len(tags)} tags")
+    return RuleResult("galaxy_tags_present", w, 0.0, 1.0, "no tags")
+
+
+def rule_legacy_vars_dir(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Binary negative: vars/ directory indicates legacy structure."""
+    w = weights.get("legacy_vars_dir", 0.2)
+    vars_dir = role_path / "vars"
+    if vars_dir.is_dir() and any(vars_dir.iterdir()):
+        return RuleResult("legacy_vars_dir", w, 1.0, 1.0, "vars/ present")
+    return RuleResult("legacy_vars_dir", w, 0.0, 1.0, "no vars/")
+
+
+def rule_missing_meta(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Binary negative: missing meta/main.yml."""
+    w = weights.get("missing_meta", 0.2)
+    meta_file = role_path / "meta" / "main.yml"
+    if not meta_file.is_file():
+        return RuleResult("missing_meta", w, 1.0, 1.0, "missing meta/main.yml")
+    return RuleResult("missing_meta", w, 0.0, 1.0, "meta/main.yml present")
+
+
+def rule_static_json_facts(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Proportional negative: fact files without .j2 template (static JSON)."""
+    w = weights.get("static_json_facts", 0.3)
+    fact_dir = role_path / "files" / "etc" / "ansible" / "facts.d"
+    if not fact_dir.is_dir():
+        return RuleResult("static_json_facts", w, 0.0, 0.0, "no static facts dir")
+
+    static = sorted(fact_dir.glob("*.fact"))
+    if not static:
+        return RuleResult("static_json_facts", w, 0.0, 0.0, "no static fact files")
+
+    # Count non-json (Python fact scripts are ok, static JSON is penalized)
+    # Actually all .fact files in files/ are static — check if content is JSON
+    static_count = 0
+    for f in static:
+        text = f.read_text(encoding="utf-8").strip()
+        if text.startswith("{"):
+            static_count += 1
+
+    total = len(static)
+    # Also check templates/ for Jinja versions of the same facts
+    tpl_fact_dir = role_path / "templates" / "etc" / "ansible" / "facts.d"
+    if tpl_fact_dir.is_dir():
+        tpl_facts = list(tpl_fact_dir.glob("*.fact.j2"))
+        if tpl_facts:
+            total += len(tpl_facts)
+
+    if total == 0:
+        return RuleResult("static_json_facts", w, 0.0, 0.0, "no facts at all")
+
+    score = static_count / total if total > 0 else 0.0
+    return RuleResult(
+        "static_json_facts",
+        w,
+        score,
+        1.0,
+        f"{static_count}/{total} static JSON facts",
+    )
+
+
+def rule_unconditional_debug(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Proportional negative: debug tasks without verbosity:."""
+    w = weights.get("unconditional_debug", 0.2)
+    task_files = find_task_files(role_path)
+    total_debug = 0
+    unconditional = 0
+
+    for tf in task_files:
+        data = load_yaml(tf)
+        tasks = parse_tasks(data)
+        for task in tasks:
+            if not isinstance(task, dict):
+                continue
+            mod = task.get("ansible.builtin.debug") or task.get("debug")
+            if not isinstance(mod, dict):
+                continue
+            total_debug += 1
+            if not mod.get("verbosity"):
+                unconditional += 1
+
+    if total_debug == 0:
+        return RuleResult("unconditional_debug", w, 0.0, 0.0, "no debug tasks")
+
+    score = unconditional / total_debug
+    return RuleResult(
+        "unconditional_debug",
+        w,
+        score,
+        1.0,
+        f"{unconditional}/{total_debug} unconditional",
+    )
+
+
+def rule_hardcoded_paths(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Proportional negative: hardcoded paths in templates."""
+    w = weights.get("hardcoded_paths", 0.2)
+    templates = find_template_files(role_path)
+    if not templates:
+        return RuleResult("hardcoded_paths", w, 0.0, 0.0, "no templates")
+
+    path_pattern = re.compile(r"/etc/|/var/|/opt/|/usr/|/srv/")
+    jinja_expr = re.compile(r"\{\{.*?\}\}")
+    jinja_stmt = re.compile(r"\{%-?\s*.*?\s*-?%\}")
+    penalized = 0
+    for tpl in templates:
+        text = tpl.read_text(encoding="utf-8")
+        outside_jinja = jinja_expr.sub("", text)
+        outside_jinja = jinja_stmt.sub("", outside_jinja)
+        lines = outside_jinja.split("\n")
+        for line in lines:
+            stripped = line.strip()
+            if not stripped.startswith("#") and not stripped.startswith("{#"):
+                if path_pattern.search(stripped):
+                    penalized += 1
+                    break
+
+    score = penalized / len(templates)
+    return RuleResult(
+        "hardcoded_paths",
+        w,
+        score,
+        1.0,
+        f"{penalized}/{len(templates)} with hardcoded paths",
+    )
+
+
 # ---------------------------------------------------------------------------
 # Rule registry
 # ---------------------------------------------------------------------------
@@ -1375,6 +1612,15 @@ RULES: list[Any] = [
     rule_spdx_headers,
     rule_ansible_managed,
     rule_template_default_filter,
+    rule_fact_runtime_detection,
+    rule_files_directory_absent,
+    rule_meta_platforms_specific,
+    rule_galaxy_tags_present,
+    rule_legacy_vars_dir,
+    rule_missing_meta,
+    rule_static_json_facts,
+    rule_unconditional_debug,
+    rule_hardcoded_paths,
 ]
 
 
@@ -1753,6 +1999,15 @@ def list_rules(weights: dict[str, float]) -> None:
         "spdx_headers": "SPDX headers in templates",
         "ansible_managed": "{{ ansible_managed }} in templates",
         "template_default_filter": "| d() default filter usage in templates",
+        "fact_runtime_detection": "fact templates use runtime detection",
+        "files_directory_absent": "no files/ directory (templates preferred)",
+        "meta_platforms_specific": "specific platform versions in meta",
+        "galaxy_tags_present": "non-empty galaxy_tags in meta",
+        "legacy_vars_dir": "vars/ directory present (legacy)",
+        "missing_meta": "missing meta/main.yml",
+        "static_json_facts": "static JSON fact files (not Jinja templates)",
+        "unconditional_debug": "debug tasks without verbosity:",
+        "hardcoded_paths": "hardcoded /etc/ /var/ paths in templates",
     }
 
     print(f"{'Rule':<30} {'Weight':>6}  Description")
