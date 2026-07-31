@@ -1,0 +1,16 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# This task file is included via pre_tasks in the playbook to build
+# ferm dependent variables before the ferm role runs. The template
+# lookup must execute in the docker_service role context to find
+# the templates in this role's templates/ directory.
+
+- name: Build ferm dependent variables from service definitions
+  ansible.builtin.set_fact:
+    docker_service__ferm__dependent_rules: '{{ lookup("template",
+                                               "lookup/docker_service__ferm_rules.j2")
+                                               | from_yaml
+                                               | default([], true) }}'
