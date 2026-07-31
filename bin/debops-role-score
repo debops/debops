@@ -118,6 +118,23 @@ DOCS_DEPTH_CAP: int = 150
 # return N/A (max_score=0) for such roles.
 MINIMAL_TASK_COUNT: int = 3
 
+# Fraction of the score ceiling recommended for the CI gate.
+DEFAULT_MIN_SCORE_FRACTION: float = 0.40
+
+# Best-case ``score`` for the hypothetical "perfect" role used to derive the
+# score ceiling. Defaults: 1.0 for every rule, 0.0 for negative rules.
+# ``None`` means the rule is N/A (max_score=0) for a perfect role.
+# The era-based rules are mutually inconsistent for any single role (a role
+# can't both be Universal Configuration-era and pre-2022-stable), so these
+# values encode the reference lifecycle: Universal Configuration-era, steadily
+# maintained, and shipped in the Collection.
+CEILING_EXCEPTIONS: dict[str, float | None] = {
+    "role_era": 0.50,  # Universal Configuration era (+0.50 is the max)
+    "role_modernization": 0.20,  # maintained-role judgment call
+    "role_stability": None,  # conflicts with modern_stability (post-2022)
+    "collection_excluded": None,  # a perfect role is in the Collection
+}
+
 # Rules in this set contribute their full weight if passed, 0 if failed.
 # The pass condition is score >= 1.0 (i.e., 100% compliance for ratio rules).
 # Negative binary rules subtract their weight if violated.
@@ -597,6 +614,34 @@ def _is_minimal_surface(surface: dict[str, int] | None, role_path: Path) -> bool
     if surface is None:
         surface = compute_surface(role_path)
     return surface["tasks"] <= MINIMAL_TASK_COUNT and surface["templates"] == 0
+
+
+def compute_ceiling(weights: dict[str, float], rule_ids: list[str]) -> float:
+    """Best overall score a hypothetical "perfect" role can reach.
+
+    Uses the same binary/negative arithmetic as RoleScore.weighted_sum,
+    with the best-case per-rule score taken from CEILING_EXCEPTIONS (or
+    the rule-type default: 1.0, 0.0 for negative rules). Rules the perfect
+    role does not apply to (CEILING_EXCEPTIONS value ``None``) are N/A and
+    contribute nothing, matching how N/A rules behave when scoring.
+    """
+    weighted_sum = 0.0
+    total_weight = 0.0
+    for rid in rule_ids:
+        w = weights.get(rid, 0.0)
+        if w <= 0:
+            continue
+        score = CEILING_EXCEPTIONS.get(rid, 0.0 if rid in NEGATIVE_RULES else 1.0)
+        if score is None:
+            continue
+        if rid in NEGATIVE_RULES:
+            weighted_sum -= w if (rid in BINARY_RULES and score >= 1.0) else w * score
+        elif rid in BINARY_RULES:
+            weighted_sum += w if score >= 1.0 else 0.0
+        else:
+            weighted_sum += w * score
+        total_weight += w
+    return weighted_sum / total_weight * 10 if total_weight else 0.0
 
 
 # ---------------------------------------------------------------------------
@@ -2388,6 +2433,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
             "Examples:\n"
             "  %(prog)s\n"
             "  %(prog)s --json\n"
+            "  %(prog)s --ceiling\n"
+            "  %(prog)s --min-score-fraction 0.40\n"
             "  %(prog)s --weights weights.yml --threshold 0.7\n"
             "  %(prog)s --rule variable_naming,template_src_lookup\n"
         ),
@@ -2431,6 +2478,26 @@ def build_arg_parser() -> argparse.ArgumentParser:
         type=str,
         default=None,
         help="Comma-separated list of roles to score (default: all)",
+    )
+    parser.add_argument(
+        "--min-score",
+        type=float,
+        default=None,
+        help="Exit with code 1 if any scored role is below this score (absolute; "
+        "overrides --min-score-fraction)",
+    )
+    parser.add_argument(
+        "--min-score-fraction",
+        type=float,
+        default=None,
+        help=f"Exit with code 1 if any scored role is below this fraction of the "
+        f"score ceiling (recommended: {DEFAULT_MIN_SCORE_FRACTION:.2f})",
+    )
+    parser.add_argument(
+        "--ceiling",
+        action="store_true",
+        help=f"Print the theoretical score ceiling and its "
+        f"{int(DEFAULT_MIN_SCORE_FRACTION * 100)}%% gate value, then exit",
     )
     parser.add_argument(
         "--threshold",
@@ -2611,6 +2678,15 @@ def main() -> None:
             continue
         rule_ids.append(rid)
 
+    if args.ceiling:
+        ceiling = compute_ceiling(weights, rule_ids)
+        gate = ceiling * DEFAULT_MIN_SCORE_FRACTION
+        print(
+            f"score ceiling: {ceiling:.4f}/10 "
+            f"({DEFAULT_MIN_SCORE_FRACTION:.0%} gate: {gate:.4f}/10)"
+        )
+        return
+
     # Resolve roles directory
     roles_dir = Path(args.roles_dir)
     if not roles_dir.is_absolute():
@@ -2657,6 +2733,22 @@ def main() -> None:
         print_compact(results)
 
     sys.stdout.flush()
+
+    # CI gate: exit with code 1 if any role is below the target score.
+    # An absolute --min-score wins over --min-score-fraction.
+    min_score: float | None = args.min_score
+    if min_score is None and args.min_score_fraction is not None:
+        min_score = compute_ceiling(weights, rule_ids) * args.min_score_fraction
+    if min_score is not None:
+        failing = [rs for rs in results if rs.overall < min_score]
+        if failing:
+            names = ", ".join(rs.name for rs in failing)
+            print(
+                f"\nFAIL: {len(failing)} role(s) below min-score"
+                f" {min_score:.4f}: {names}",
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
 
 if __name__ == "__main__":
