@@ -26,6 +26,7 @@ import re
 import subprocess
 import sys
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterator
 
@@ -76,6 +77,13 @@ DEFAULT_WEIGHTS: dict[str, float] = {
     "parse_kv_items_usage": 0.6,
     "task_description": 0.2,
     "yaml_syntax": 0.2,
+    "role_era": 1.0,
+    "role_modernization": 0.9,
+    "modern_stability": 0.3,
+    "role_stability": 0.3,
+    "foundational": 0.5,
+    "collection_excluded": 1.5,
+    "docs_presence": 0.4,
 }
 
 DEFAULT_MIN_ANSIBLE: str = "2.10.0"
@@ -122,6 +130,7 @@ BINARY_RULES: frozenset[str] = frozenset(
         "flush_handlers",
         "legacy_vars_dir",
         "missing_meta",
+        "collection_excluded",
     }
 )
 
@@ -137,6 +146,7 @@ NEGATIVE_RULES: frozenset[str] = frozenset(
         "static_json_facts",
         "unconditional_debug",
         "hardcoded_paths",
+        "collection_excluded",
     }
 )
 
@@ -1831,6 +1841,240 @@ def rule_yaml_syntax(
     )
 
 
+def _copyright_year_range(role_path: Path) -> tuple[int | None, int | None]:
+    """Find (min, max) Copyright (C) YYYY year in any role file."""
+    first_year: int | None = None
+    last_year: int | None = None
+    for f in role_path.rglob("*"):
+        if not f.is_file():
+            continue
+        try:
+            text = f.read_text()
+        except Exception:
+            continue
+        for m in re.finditer(r"Copyright \(C\) (\d{4})(?:-(\d{4}))?", text):
+            y1 = int(m.group(1))
+            y2 = int(m.group(2)) if m.group(2) else y1
+            if first_year is None or y1 < first_year:
+                first_year = y1
+            if last_year is None or y2 > last_year:
+                last_year = y2
+    return first_year, last_year
+
+
+def rule_role_era(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Score based on design era (early negative, exploration neutral,
+    Universal Configuration positive)."""
+    w = weights.get("role_era", 1.0)
+    first_year, _ = _copyright_year_range(role_path)
+
+    if first_year is None:
+        return RuleResult("role_era", w, 0.0, 0.0, "no copyright years")
+
+    if first_year >= 2021:
+        score = 0.50
+        label = "Universal Configuration"
+    elif first_year >= 2017:
+        score = 0.0
+        label = "exploration"
+    else:
+        score = -0.50
+        label = "early"
+
+    return RuleResult("role_era", w, score, 1.0, f"{label} ({first_year})")
+
+
+def rule_role_modernization(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Bonus for old roles substantially rewritten in the Universal Configuration era."""
+    w = weights.get("role_modernization", 0.9)
+    first_year, last_year = _copyright_year_range(role_path)
+
+    if first_year is None or last_year is None:
+        return RuleResult("role_modernization", w, 0.0, 0.0, "no copyright years")
+
+    if last_year < 2021:
+        return RuleResult(
+            "role_modernization",
+            w,
+            0.0,
+            0.0,
+            "not maintained into Universal Configuration era",
+        )
+
+    span = last_year - first_year
+    if span < 3:
+        return RuleResult("role_modernization", w, 0.0, 0.0, f"span {span}yr < 3yr")
+
+    bonus = min(0.50, span * 0.05)
+    return RuleResult(
+        "role_modernization",
+        w,
+        bonus,
+        1.0,
+        f"span {span}yr (first {first_year}, last {last_year})",
+    )
+
+
+def rule_modern_stability(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Bonus for post-2022 roles with low commit churn (well-designed from start)."""
+    w = weights.get("modern_stability", 0.3)
+    first_year, _ = _copyright_year_range(role_path)
+
+    if first_year is None or first_year < 2022:
+        return RuleResult("modern_stability", w, 0.0, 0.0, "pre-2022 role")
+
+    git_data = kwargs.get("git_data", {})
+    stats = git_data.get(role_name)
+    if not stats or "commit_count" not in stats:
+        return RuleResult("modern_stability", w, 0.0, 0.0, "no git data")
+
+    commit_count = stats["commit_count"]
+    age_years = max(
+        0.5,
+        (datetime.now() - datetime.fromtimestamp(stats["first_commit"])).days / 365.25,
+    )
+    commits_per_year = commit_count / age_years
+
+    score = max(0.0, 1.0 - commits_per_year / 10.0)
+    return RuleResult(
+        "modern_stability",
+        w,
+        score,
+        1.0,
+        f"{commit_count} commits over {age_years:.1f}yr ({commits_per_year:.1f}/yr)",
+    )
+
+
+def rule_role_stability(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Bonus for early-era roles with minimal recent change (stable/complete design).
+
+    The inverse of modern_stability — rewards roles that were designed so
+    well they haven't needed updates for years.
+    """
+    w = weights.get("role_stability", 0.3)
+    first_year, last_year = _copyright_year_range(role_path)
+
+    if first_year is None or last_year is None:
+        return RuleResult("role_stability", w, 0.0, 0.0, "no copyright years")
+
+    # Only applies to pre-Universal Configuration (early or exploration era) roles
+    if first_year >= 2022:
+        return RuleResult("role_stability", w, 0.0, 0.0, "modern role")
+
+    # Must have no Universal Configuration-era updates to qualify for stability bonus
+    if last_year >= 2021:
+        return RuleResult(
+            "role_stability", w, 0.0, 0.0, "maintained in Universal Configuration era"
+        )
+
+    # Check recent git churn as a stability signal
+    git_data: dict = kwargs.get("git_data", {})
+    stats = git_data.get(role_name)
+    commits_per_year = 0.0
+    if stats and "commit_count" in stats:
+        first = datetime.fromtimestamp(stats["first_commit"])
+        age_years = max(0.5, (datetime.now() - first).days / 365.25)
+        commits_per_year = stats["commit_count"] / age_years
+
+    current_year = datetime.now().year
+    years_since_last = current_year - last_year
+
+    if years_since_last >= 5 and commits_per_year < 5.0:
+        score = min(0.50, years_since_last * 0.03)
+        return RuleResult(
+            "role_stability", w, score, 0.50,
+            f"stable {years_since_last}yr, {commits_per_year:.1f} commits/yr",
+        )
+
+    return RuleResult(
+        "role_stability", w, 0.0, 0.0,
+        f"last modified {last_year} ({years_since_last}yr ago),"
+        f" {commits_per_year:.1f}/yr",
+    )
+
+
+def rule_foundational(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Bonus for roles whose variables are referenced by other roles.
+
+    A role that other roles depend on (via unnamespaced variables)
+    provides foundational infrastructure — a positive quality signal.
+    """
+    w = weights.get("foundational", 0.5)
+    inbound_refs: dict[str, set[str]] = kwargs.get("inbound_refs", {})
+    refs = inbound_refs.get(role_name, set())
+
+    if not refs:
+        return RuleResult("foundational", w, 0.0, 0.0, "no referencing roles")
+
+    score = min(1.0, len(refs) * 0.1)
+    return RuleResult(
+        "foundational", w, score, 1.0,
+        f"referenced by {len(refs)} roles",
+    )
+
+
+def rule_collection_excluded(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Penalize roles omitted from the DebOps Ansible Collection build.
+
+    Roles excluded by lib/ansible-galaxy/make-collection are not shipped
+    with the Collection — either not yet integrated or no longer usable.
+    The rule only applies to excluded roles (N/A for roles in Collection).
+    """
+    w = weights.get("collection_excluded", 1.5)
+    excluded = (
+        role_name.startswith("debops-contrib.") or role_name in COLLECTION_EXCLUDED
+    )
+    if not excluded:
+        return RuleResult("collection_excluded", w, 0.0, 0.0, "in Collection")
+    return RuleResult(
+        "collection_excluded", w, 1.0, 1.0, "excluded from Collection build"
+    )
+
+
+def rule_docs_presence(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Reward roles with substantive role documentation.
+
+    Documentation lives in ``docs/ansible/roles/<role>/getting-started.rst``.
+    The score is based on the depth of the body content (SPDX/copyright
+    headers excluded), capped at DOCS_DEPTH_CAP lines. Roles excluded from
+    the Ansible Collection build have no official docs by design and are N/A.
+    """
+    w = weights.get("docs_presence", 0.4)
+    if role_name.startswith("debops-contrib.") or role_name in COLLECTION_EXCLUDED:
+        return RuleResult("docs_presence", w, 0.0, 0.0, "excluded from Collection")
+
+    docs_dir: Path | None = kwargs.get("docs_dir")
+    if docs_dir is None:
+        docs_dir = Path(DOCS_DIR)
+    doc_path = docs_dir / role_name / "getting-started.rst"
+    if not doc_path.is_file():
+        return RuleResult("docs_presence", w, 0.0, 1.0, "no docs")
+
+    text = doc_path.read_text(encoding="utf-8")
+    body = re.sub(
+        r"^\.\. (Copyright|SPDX).*\n(  .*\n)*", "", text, flags=re.MULTILINE
+    )
+    lines = len(body.splitlines())
+    score = min(1.0, lines / DOCS_DEPTH_CAP)
+    return RuleResult(
+        "docs_presence", w, score, 1.0, f"{lines}/{DOCS_DEPTH_CAP} body lines"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Rule registry
 # ---------------------------------------------------------------------------
@@ -1872,6 +2116,13 @@ RULES: list[Any] = [
     rule_parse_kv_items_usage,
     rule_task_description,
     rule_yaml_syntax,
+    rule_role_era,
+    rule_role_modernization,
+    rule_modern_stability,
+    rule_role_stability,
+    rule_foundational,
+    rule_collection_excluded,
+    rule_docs_presence,
 ]
 
 
@@ -2264,6 +2515,23 @@ def list_rules(weights: dict[str, float]) -> None:
         "parse_kv_items_usage": "usage of parse_kv_items filter for structured config",
         "task_description": "tasks with meaningful name: attribute",
         "yaml_syntax": "tasks using native YAML syntax (not key=value shorthand)",
+        "role_era": (
+            "score based on design era (early/exploration/Universal Configuration)"
+        ),
+        "role_modernization": (
+            "bonus for old roles rewritten in Universal Configuration era"
+        ),
+        "modern_stability": "bonus for post-2022 roles with low commit churn",
+        "role_stability": (
+            "bonus for early-era roles with minimal change (stable design)"
+        ),
+        "foundational": "bonus for roles referenced by other roles via variables",
+        "collection_excluded": (
+            "excluded from Ansible Collection builds (make-collection omit list)"
+        ),
+        "docs_presence": (
+            "role documentation present with substantive getting-started content"
+        ),
     }
 
     print(f"{'Rule':<30} {'Weight':>6}  Description")
