@@ -128,8 +128,10 @@ Rules that hurt — the negative ones — stand out, and the detail text says wh
 they fired.
 
 The default output without :command:`--details` is a compact scoreboard
-sorted by score, with the role count, average and median. To compare a few
-roles:
+sorted by score, with the role count, average and median. To score the whole
+fleet, :command:`make role-score` prints that scoreboard and
+:command:`make role-score-verbose` adds the per-rule breakdown. To compare a
+few roles:
 
 .. code-block:: console
 
