@@ -48,14 +48,20 @@ DEFAULT_WEIGHTS: dict[str, float] = {
     "file_src_lookup": 0.05,
     "collections_declared": 0.2,
     "dependencies_empty": 0.2,
+    "dependent_variables": 0.9,
+    "ansible_local_in_conditions": 0.8,
     "min_ansible_version": 0.5,
     "ansible_plugins_import": 0.5,
     "pre_post_hooks": 0.2,
     "task_tags": 0.3,
+    "task_file_organization": 0.3,
     "local_facts": 1.0,
     "flush_handlers": 0.4,
     "register_until": 0.2,
     "no_debug_ignore": 0.2,
+    "spdx_headers": 0.1,
+    "ansible_managed": 0.3,
+    "template_default_filter": 0.4,
 }
 
 DEFAULT_MIN_ANSIBLE: str = "2.10.0"
@@ -1132,6 +1138,216 @@ def rule_no_debug_ignore(
     )
 
 
+def _check_template_headers(
+    role_path: Path,
+    pattern: re.Pattern,
+) -> tuple[int, int]:
+    """Count templates where text matches *pattern*."""
+    templates = find_template_files(role_path)
+    matching = 0
+    for tpl in templates:
+        text = tpl.read_text(encoding="utf-8")
+        if pattern.search(text):
+            matching += 1
+    return matching, len(templates)
+
+
+def rule_spdx_headers(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Ratio of templates with SPDX-License-Identifier."""
+    w = weights.get("spdx_headers", 0.1)
+    # REUSE-IgnoreStart
+    pattern = re.compile(r"SPDX-License-Identifier:\s*\S+")
+    # REUSE-IgnoreEnd
+    matching, total = _check_template_headers(role_path, pattern)
+
+    if total == 0:
+        return RuleResult("spdx_headers", w, 0.0, 0.0, "no templates")
+
+    score = matching / total
+    return RuleResult(
+        "spdx_headers",
+        w,
+        score,
+        1.0,
+        f"{matching}/{total} with SPDX",
+    )
+
+
+def rule_ansible_managed(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Ratio of templates containing {{ ansible_managed }}."""
+    w = weights.get("ansible_managed", 0.3)
+    pattern = re.compile(r"\{\{.*ansible_managed.*}}")
+    matching, total = _check_template_headers(role_path, pattern)
+
+    if total == 0:
+        return RuleResult("ansible_managed", w, 0.0, 0.0, "no templates")
+
+    score = matching / total
+    return RuleResult(
+        "ansible_managed",
+        w,
+        score,
+        1.0,
+        f"{matching}/{total} with ansible_managed",
+    )
+
+
+def rule_dependent_variables(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Ratio of variables following the dependent variable pattern."""
+    w = weights.get("dependent_variables", 0.5)
+    defaults_file = role_path / "defaults" / "main.yml"
+    if not defaults_file.is_file():
+        return RuleResult("dependent_variables", w, 0.0, 0.0, "no defaults/main.yml")
+
+    data = load_yaml(defaults_file)
+    if isinstance(data, dict):
+        keys = list(data.keys())
+    else:
+        text = defaults_file.read_text(encoding="utf-8")
+        keys = re.findall(r"^([a-zA-Z_]\w*):", text, re.MULTILINE)
+
+    exclude = {"galaxy_info", "dependencies", "collections"}
+    keys = [k for k in keys if k not in exclude and not k.startswith(".")]
+
+    if not keys:
+        return RuleResult("dependent_variables", w, 0.0, 0.0, "no variables")
+
+    dependent = sum(1 for k in keys if "__dependent_" in k)
+    main_score = dependent / len(keys)
+    detail = f"{dependent}/{len(keys)} dependent"
+    total_score = main_score
+
+    # Inbound reference bonus: other roles reference this role's variables
+    inbound_refs: dict[str, set[str]] = kwargs.get("inbound_refs", {})
+    refs = inbound_refs.get(role_name, set())
+    if refs:
+        bonus = min(0.30, len(refs) * 0.03)
+        total_score = min(1.0, main_score + bonus)
+        detail += f", +{bonus:.2f} inbound ({len(refs)} roles)"
+
+    return RuleResult(
+        "dependent_variables",
+        w,
+        total_score,
+        1.0,
+        detail,
+    )
+
+
+def rule_ansible_local_in_conditions(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Ratio of tasks referencing ansible_local in when clauses."""
+    w = weights.get("ansible_local_in_conditions", 0.3)
+    if _is_minimal_surface(kwargs.get("surface"), role_path):
+        return RuleResult(
+            "ansible_local_in_conditions", w, 0.0, 0.0, "minimal role surface"
+        )
+    task_files = find_task_files(role_path)
+    if not task_files:
+        return RuleResult("ansible_local_in_conditions", w, 0.0, 0.0, "no task files")
+
+    total_when = 0
+    using_ansible_local = 0
+
+    for tf in task_files:
+        data = load_yaml(tf)
+        tasks = parse_tasks(data)
+        for task in tasks:
+            when_val = task.get("when")
+            if isinstance(when_val, str) and when_val.strip():
+                total_when += 1
+                if "ansible_local." in when_val:
+                    using_ansible_local += 1
+            elif isinstance(when_val, list):
+                total_when += 1
+                items_str = " ".join(str(v) for v in when_val)
+                if "ansible_local." in items_str:
+                    using_ansible_local += 1
+
+    if total_when == 0:
+        return RuleResult("ansible_local_in_conditions", w, 0.0, 0.0, "no when clauses")
+
+    score = using_ansible_local / total_when
+    return RuleResult(
+        "ansible_local_in_conditions",
+        w,
+        score,
+        1.0,
+        f"{using_ansible_local}/{total_when} with ansible_local",
+    )
+
+
+def rule_task_file_organization(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Reward splitting tasks into multiple files by concern."""
+    w = weights.get("task_file_organization", 0.3)
+    if _is_minimal_surface(kwargs.get("surface"), role_path):
+        return RuleResult("task_file_organization", w, 0.0, 0.0, "minimal role surface")
+    tasks_dir = role_path / "tasks"
+    if not tasks_dir.is_dir():
+        return RuleResult("task_file_organization", w, 0.0, 0.0, "no tasks directory")
+
+    # Count task files beyond main.yml, pre_main.yml, post_main.yml
+    all_yml = sorted(tasks_dir.rglob("*.yml"))
+    extra = [
+        f
+        for f in all_yml
+        if f.name not in ("main.yml", "pre_main.yml", "post_main.yml")
+    ]
+    score = min(1.0, len(extra) / 3.0)
+    return RuleResult(
+        "task_file_organization",
+        w,
+        score,
+        1.0,
+        f"{len(extra)} extra files",
+    )
+
+
+def rule_template_default_filter(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Ratio of Jinja expressions in templates using | d() / | default()."""
+    w = weights.get("template_default_filter", 0.4)
+    templates = find_template_files(role_path)
+    if not templates:
+        return RuleResult("template_default_filter", w, 0.0, 0.0, "no templates")
+
+    total_expr = 0
+    safe_expr = 0
+
+    for tpl in templates:
+        text = tpl.read_text(encoding="utf-8")
+        exprs = re.findall(r"\{\{[^}]+}}", text)
+        for expr in exprs:
+            if re.search(r"[a-zA-Z_]", expr):
+                total_expr += 1
+                if "| d(" in expr or "| default(" in expr:
+                    safe_expr += 1
+
+    if total_expr == 0:
+        return RuleResult(
+            "template_default_filter", w, 1.0, 1.0, "no Jinja expressions"
+        )
+
+    score = safe_expr / total_expr
+    return RuleResult(
+        "template_default_filter",
+        w,
+        score,
+        1.0,
+        f"{safe_expr}/{total_expr} safe",
+    )
+
+
 # ---------------------------------------------------------------------------
 # Rule registry
 # ---------------------------------------------------------------------------
@@ -1145,14 +1361,20 @@ RULES: list[Any] = [
     rule_file_src_lookup,
     rule_collections_declared,
     rule_dependencies_empty,
+    rule_dependent_variables,
+    rule_ansible_local_in_conditions,
     rule_min_ansible_version,
     rule_ansible_plugins_import,
     rule_pre_post_hooks,
     rule_task_tags,
+    rule_task_file_organization,
     rule_local_facts,
     rule_flush_handlers,
     rule_register_until,
     rule_no_debug_ignore,
+    rule_spdx_headers,
+    rule_ansible_managed,
+    rule_template_default_filter,
 ]
 
 
@@ -1517,14 +1739,20 @@ def list_rules(weights: dict[str, float]) -> None:
         "file_src_lookup": "file_src lookup for copy/template src",
         "collections_declared": "'collections: [debops.debops]' in meta",
         "dependencies_empty": "'dependencies: []' in meta",
+        "dependent_variables": "dependent variable pattern (__dependent_)",
+        "ansible_local_in_conditions": "ansible_local references in when clauses",
         "min_ansible_version": "min_ansible_version relative to threshold",
         "ansible_plugins_import": "no ansible_plugins role import",
         "pre_post_hooks": "pre_main/post_main hook dirs present",
         "task_tags": "role::<name> / skip::<name> tags on tasks",
+        "task_file_organization": "multiple task files by concern",
         "local_facts": "local fact template with shebang",
         "flush_handlers": "flush_handlers after facts",
         "register_until": "package install uses register+until",
         "no_debug_ignore": "no unconditional debug/ignore_errors",
+        "spdx_headers": "SPDX headers in templates",
+        "ansible_managed": "{{ ansible_managed }} in templates",
+        "template_default_filter": "| d() default filter usage in templates",
     }
 
     print(f"{'Rule':<30} {'Weight':>6}  Description")
