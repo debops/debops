@@ -1,0 +1,1021 @@
+#!/usr/bin/env python3
+
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+"""Deterministic quality scoring for DebOps Ansible roles.
+
+Scans roles/ and scores each role against a configured set of rules
+based on the DebOps style guide. Output is a table (default), JSON,
+or CSV.
+
+Usage::
+
+    bin/debops-role-score
+    bin/debops-role-score --roles-dir ansible/roles --json
+    bin/debops-role-score --weights my-weights.yml --threshold 0.7
+"""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+import re
+import subprocess
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+DEFAULT_SKIP_ROLES: list[str] = []
+
+# Map: rule_id -> default_weight
+DEFAULT_WEIGHTS: dict[str, float] = {
+}
+
+DEFAULT_MIN_ANSIBLE: str = "2.10.0"
+
+# Roles omitted from DebOps Ansible Collection builds by
+# lib/ansible-galaxy/make-collection (the "Omit specific DebOps roles"
+# section). Keep in sync with that script.
+COLLECTION_EXCLUDED: frozenset[str] = frozenset(
+    {
+        "boxbackup",
+        "btrfs",
+        "firejail",
+        "foodsoft",
+        "fuse",
+        "homeassistant",
+        "kodi",
+        "rails_deploy",
+        "snapshot_snapper",
+        "tor",
+        "x2go_server",
+    }
+)
+
+# Directory with role documentation (relative to the repository root).
+DOCS_DIR: str = "docs/ansible/roles"
+
+# Body lines of getting-started.rst at which the docs depth score saturates.
+DOCS_DEPTH_CAP: int = 150
+
+# Roles with this many tasks or fewer AND no templates have no meaningful
+# surface to adopt task-structure modernization patterns. Structural rules
+# return N/A (max_score=0) for such roles.
+MINIMAL_TASK_COUNT: int = 3
+
+# Rules in this set contribute their full weight if passed, 0 if failed.
+# The pass condition is score >= 1.0 (i.e., 100% compliance for ratio rules).
+# Negative binary rules subtract their weight if violated.
+BINARY_RULES: frozenset[str] = frozenset(
+    {
+    }
+)
+
+# Rules in this set subtract from the weighted sum.
+# Proportional negative rules contribute -weight * score.
+# Binary negative rules contribute -weight if score >= 1.0, else 0.
+NEGATIVE_RULES: frozenset[str] = frozenset(
+    {
+    }
+)
+
+TAG_ROLE_RE: re.Pattern = re.compile(r"role::[\w-]+")
+TAG_SKIP_RE: re.Pattern = re.compile(r"skip::[\w-]+")
+
+VERSION_RE: re.Pattern = re.compile(r"(\d+)\.(\d+)\.(\d+)")
+
+
+# ---------------------------------------------------------------------------
+# Data types
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class RuleResult:
+    """Score for a single rule applied to a single role."""
+
+    rule_id: str
+    weight: float
+    score: float  # 0.0 – 1.0
+    max_score: float  # 1.0 normally; 0.0 if N/A
+    detail: str = ""
+
+
+@dataclass
+class RoleScore:
+    """Aggregated score for one role."""
+
+    name: str
+    rules: dict[str, RuleResult] = field(default_factory=dict)
+    flags: list[str] = field(default_factory=list)
+
+    @property
+    def total_weight(self) -> float:
+        return sum(r.weight for r in self.rules.values() if r.max_score > 0)
+
+    @property
+    def weighted_sum(self) -> float:
+        total = 0.0
+        for r in self.rules.values():
+            if r.max_score == 0:
+                continue
+            if r.rule_id in NEGATIVE_RULES:
+                if r.rule_id in BINARY_RULES:
+                    total -= r.weight if r.score >= 1.0 else 0.0
+                else:
+                    total -= r.weight * r.score
+            elif r.rule_id in BINARY_RULES:
+                total += r.weight if r.score >= 1.0 else 0.0
+            else:
+                total += r.weight * r.score
+        return total
+
+    @property
+    def overall(self) -> float:
+        tw = self.total_weight
+        if tw <= 0:
+            return 0.0
+        val = self.weighted_sum / tw * 10
+        return max(0.0, val)
+
+
+# ---------------------------------------------------------------------------
+# YAML / file helpers
+# ---------------------------------------------------------------------------
+
+
+def load_yaml(path: Path) -> dict[str, Any] | list[Any] | None:
+    """Load a YAML file, returning None on failure."""
+    try:
+        with path.open("r", encoding="utf-8") as fh:
+            return yaml.safe_load(fh)
+    except (yaml.YAMLError, OSError):
+        return None
+
+
+def load_yaml_robust(path: Path) -> dict[str, Any]:
+    """Load a YAML mapping, returning {} on failure."""
+    data = load_yaml(path)
+    if isinstance(data, dict):
+        return data
+    return {}
+
+
+def find_task_files(role_path: Path) -> list[Path]:
+    """Return all YAML files under tasks/."""
+    tasks_dir = role_path / "tasks"
+    if not tasks_dir.is_dir():
+        return []
+    return sorted(tasks_dir.rglob("*.yml"))
+
+
+def find_template_files(role_path: Path) -> list[Path]:
+    """Return all .j2 files under templates/."""
+    templates_dir = role_path / "templates"
+    if not templates_dir.is_dir():
+        return []
+    return sorted(templates_dir.rglob("*.j2"))
+
+
+def parse_tasks(data: Any) -> list[dict[str, Any]]:
+    """Turn loaded YAML into a flat list of task dicts."""
+    if isinstance(data, dict):
+        data = [data]
+    if not isinstance(data, list):
+        return []
+    result: list[dict[str, Any]] = []
+    for item in data:
+        if isinstance(item, dict):
+            result.append(item)
+            # recurse into block/rescue/always
+            for key in ("block", "rescue", "always"):
+                if key in item:
+                    result.extend(parse_tasks(item[key]))
+        elif isinstance(item, list):
+            result.extend(parse_tasks(item))
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Git helpers
+# ---------------------------------------------------------------------------
+
+
+def _git_log_roles(
+    rel_path: Path, repo_root: str
+) -> tuple[dict[str, int], dict[str, int], dict[str, set[str]]]:
+    """Run git log for *rel_path* and return (last_seen, first_seen, commit_set)."""
+    last_seen: dict[str, int] = {}
+    first_seen: dict[str, int] = {}
+    commit_set: dict[str, set[str]] = {}
+
+    try:
+        result = subprocess.run(
+            ["git", "log", "--format=%H %at", "--name-only", "--", f"{rel_path}/"],
+            capture_output=True,
+            text=True,
+            cwd=repo_root,
+            timeout=120,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return last_seen, first_seen, commit_set
+
+    if result.returncode != 0 or not result.stdout.strip():
+        return last_seen, first_seen, commit_set
+
+    current_hash: str | None = None
+    current_ts: int | None = None
+
+    for line in result.stdout.splitlines():
+        if not line.strip():
+            continue
+        parts = line.split(None, 1)
+        if len(parts) == 2 and parts[0].isalnum() and len(parts[0]) == 40:
+            current_hash, ts_str = parts
+            current_ts = int(ts_str)
+        elif (
+            current_ts is not None and current_hash and line.startswith(f"{rel_path}/")
+        ):
+            sub_parts = line.split("/")
+            if len(sub_parts) >= 3:
+                role_name = sub_parts[len(rel_path.parts)]
+                if role_name not in last_seen:
+                    last_seen[role_name] = current_ts
+                first_seen[role_name] = current_ts
+                if role_name not in commit_set:
+                    commit_set[role_name] = set()
+                commit_set[role_name].add(current_hash)
+
+    return last_seen, first_seen, commit_set
+
+
+def compute_git_stats(roles_dir: Path) -> dict[str, dict[str, int]]:
+    """Compute per-role git history stats from multiple paths.
+
+    Searches under *roles_dir* (usually ``roles/``) and, when that
+    yields no history, falls back to ``ansible/roles/`` (the original
+    path before a repo restructuring that broke git tracking).
+
+    Returns dict[role_name] -> {"last_commit", "first_commit", "commit_count"}.
+    Returns empty dict if git is unavailable or no data found.
+    """
+    real_dir = roles_dir.resolve()
+    try:
+        repo_root = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        ).stdout.strip()
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return {}
+    if not repo_root:
+        return {}
+
+    try:
+        rel_path = real_dir.relative_to(Path(repo_root))
+    except ValueError:
+        return {}
+
+    last_seen, first_seen, commit_set = _git_log_roles(rel_path, repo_root)
+
+    # Fallback: roles/ has no history (moved from ansible/roles/ without git mv)
+    if not last_seen:
+        fallback = Path("ansible/roles/")
+        last_seen, first_seen, commit_set = _git_log_roles(fallback, repo_root)
+
+    return {
+        name: {
+            "last_commit": last_seen[name],
+            "first_commit": first_seen.get(name, last_seen[name]),
+            "commit_count": len(commit_set.get(name, [])),
+        }
+        for name in last_seen
+    }
+
+
+def _collect_unnamespaced_variables(role_path: Path) -> list[str]:
+    """Return variable names without ``__`` (potentially visible to other roles)."""
+    defaults_file = role_path / "defaults" / "main.yml"
+    if not defaults_file.is_file():
+        return []
+
+    data = load_yaml(defaults_file)
+    if isinstance(data, dict):
+        keys = list(data.keys())
+    else:
+        text = defaults_file.read_text(encoding="utf-8")
+        keys = re.findall(r"^([a-zA-Z_]\w*):", text, re.MULTILINE)
+
+    exclude = {"galaxy_info", "dependencies", "collections"}
+    return [
+        k
+        for k in keys
+        if k not in exclude and "__" not in k and not k.startswith(".")
+    ]
+
+
+_ROLE_IN_VAR_RE: re.Pattern = re.compile(r"__(\w+)__")
+
+
+def compute_inbound_references(roles_dir: Path) -> dict[str, set[str]]:
+    """Build reverse dependency map from cross-role references.
+
+    Two detection strategies:
+    1. Scan all roles' variable definitions for ``__ROLENAME__`` patterns
+       (the standard DebOps convention for cross-role references).
+    2. Scan templates, defaults, and tasks for standalone references to
+       unnamespaced variables (e.g., the ``secret`` variable).
+
+    Returns ``{referenced_role_name: {referencing_role_name, ...}}``.
+    """
+    role_names: set[str] = set()
+    entry_names: list[str] = []
+    for entry in sorted(roles_dir.iterdir()):
+        if not entry.is_dir() or not (entry / "tasks" / "main.yml").is_file():
+            continue
+        role_names.add(entry.name)
+        entry_names.append(entry.name)
+
+    referenced: dict[str, set[str]] = {}
+
+    def _add_ref(ref_role: str, by_role: str) -> None:
+        if ref_role == by_role or ref_role not in role_names:
+            return
+        if ref_role not in referenced:
+            referenced[ref_role] = set()
+        referenced[ref_role].add(by_role)
+
+    # --- Strategy 1: variable-name-based ---
+    # Scan each role's declared variables for __ROLENAME__ segments.
+    for entry in sorted(roles_dir.iterdir()):
+        if not entry.is_dir() or not (entry / "tasks" / "main.yml").is_file():
+            continue
+        name = entry.name
+        defaults_file = entry / "defaults" / "main.yml"
+        if not defaults_file.is_file():
+            continue
+        try:
+            text = defaults_file.read_text(encoding="utf-8")
+        except Exception:
+            continue
+        keys = re.findall(r"^([a-zA-Z_]\w*):", text, re.MULTILINE)
+        for key in keys:
+            for m in _ROLE_IN_VAR_RE.finditer(key):
+                _add_ref(m.group(1), name)
+
+    # --- Strategy 2: unnamespaced-variable-content-based ---
+    # Collect unnamespaced variables across all roles (owned by exactly one).
+    role_vars: dict[str, list[str]] = {}
+    var_owners: dict[str, str] = {}
+    occurrences: dict[str, list[str]] = {}
+
+    for entry in sorted(roles_dir.iterdir()):
+        if not entry.is_dir() or not (entry / "tasks" / "main.yml").is_file():
+            continue
+        name = entry.name
+        vars_ = _collect_unnamespaced_variables(entry)
+        role_vars[name] = vars_
+        for v in vars_:
+            if v not in occurrences:
+                occurrences[v] = []
+            occurrences[v].append(name)
+
+    for v, owners in occurrences.items():
+        if len(owners) == 1:
+            var_owners[v] = owners[0]
+
+    if var_owners:
+        sorted_vars = sorted(var_owners.keys(), key=len, reverse=True)
+        alt = "|".join(re.escape(v) for v in sorted_vars)
+        combined = re.compile(r"(?<![a-zA-Z_])(?:" + alt + r")(?![a-zA-Z_])")
+
+        own_var_set: dict[str, frozenset[str]] = {
+            n: frozenset(role_vars.get(n, [])) for n in entry_names
+        }
+        scan_dirs = {"templates", "defaults", "tasks"}
+
+        for entry in sorted(roles_dir.iterdir()):
+            if not entry.is_dir() or not (entry / "tasks" / "main.yml").is_file():
+                continue
+            name = entry.name
+            own_vars = own_var_set.get(name, frozenset())
+
+            found: set[str] = set()
+            for sd in scan_dirs:
+                sdir = entry / sd
+                if not sdir.is_dir():
+                    continue
+                for ext in ("*.j2", "*.yml", "*.yaml"):
+                    for fpath in sdir.rglob(ext):
+                        if not fpath.is_file():
+                            continue
+                        try:
+                            file_text = fpath.read_text(
+                                encoding="utf-8", errors="replace"
+                            )
+                        except Exception:
+                            continue
+                        for m in combined.finditer(file_text):
+                            var = m.group(0)
+                            if var in own_vars:
+                                continue
+                            owner = var_owners.get(var)
+                            if owner and owner != name:
+                                found.add(owner)
+
+            for ref in found:
+                _add_ref(ref, name)
+
+    return referenced
+
+
+def compute_playbook_signals(roles_dir: Path) -> dict[str, set[str]]:
+    """Identify roles wired into the sibling playbooks directory.
+
+    Returns two sets of role names:
+    - ``common``: roles applied to every host via layer/common.yml
+    - ``service``: roles with a playbook under service/ (variant playbooks
+      like ``<role>-plain.yml`` match their base role)
+
+    Returns empty sets if the playbooks directory is absent, so custom
+    ``--roles-dir`` usage outside the repository yields no flags.
+    """
+    common: set[str] = set()
+    service: set[str] = set()
+
+    playbooks_dir = roles_dir.parent / "playbooks"
+    if not playbooks_dir.is_dir():
+        return {"common": common, "service": service}
+
+    common_yml = playbooks_dir / "layer" / "common.yml"
+    if common_yml.is_file():
+        data = load_yaml(common_yml)
+        if isinstance(data, list):
+            for play in data:
+                if not isinstance(play, dict):
+                    continue
+                for role in play.get("roles") or []:
+                    if isinstance(role, dict) and isinstance(role.get("role"), str):
+                        common.add(role["role"])
+                    elif isinstance(role, str):
+                        common.add(role)
+                for task in play.get("pre_tasks") or []:
+                    if not isinstance(task, dict):
+                        continue
+                    for key in ("ansible.builtin.import_role", "import_role"):
+                        spec = task.get(key)
+                        if isinstance(spec, dict) and isinstance(spec.get("name"), str):
+                            common.add(spec["name"])
+
+    service_dir = playbooks_dir / "service"
+    if service_dir.is_dir():
+        for playbook in service_dir.glob("*.yml"):
+            service.add(playbook.stem.split("-")[0])
+
+    return {"common": common, "service": service}
+
+
+def compute_surface(role_path: Path) -> dict[str, int]:
+    """Count a role's structural surface: tasks, task files, templates."""
+    tasks = 0
+    task_files = 0
+    tasks_dir = role_path / "tasks"
+    if tasks_dir.is_dir():
+        for tf in sorted(tasks_dir.rglob("*.yml")):
+            if not tf.is_file():
+                continue
+            task_files += 1
+            try:
+                tasks += len(
+                    re.findall(
+                        r"^-\s+name:",
+                        tf.read_text(encoding="utf-8", errors="replace"),
+                        re.MULTILINE,
+                    )
+                )
+            except Exception:
+                pass
+    templates = 0
+    templates_dir = role_path / "templates"
+    if templates_dir.is_dir():
+        templates = len(list(templates_dir.rglob("*.j2")))
+    return {"tasks": tasks, "task_files": task_files, "templates": templates}
+
+
+def _is_minimal_surface(surface: dict[str, int] | None, role_path: Path) -> bool:
+    """True if the role is too small to adopt task-structure patterns."""
+    if surface is None:
+        surface = compute_surface(role_path)
+    return surface["tasks"] <= MINIMAL_TASK_COUNT and surface["templates"] == 0
+
+
+# ---------------------------------------------------------------------------
+# Rule implementations
+# ---------------------------------------------------------------------------
+
+# Each rule function has signature:
+#   (role_path: Path, role_name: str, weights: dict, **kwargs) -> RuleResult
+
+
+# ---------------------------------------------------------------------------
+# Rule registry
+# ---------------------------------------------------------------------------
+
+RULES: list[Any] = [
+]
+
+
+# ---------------------------------------------------------------------------
+# Analysis
+# ---------------------------------------------------------------------------
+
+
+def score_role(
+    role_path: Path,
+    weights: dict[str, float],
+    skip_roles: list[str],
+    min_ansible: str,
+    git_data: dict[str, dict[str, int]] | None = None,
+    inbound_refs: dict[str, set[str]] | None = None,
+    docs_dir: Path | None = None,
+) -> RoleScore | None:
+    """Run all rules against a single role."""
+    role_name = role_path.name
+
+    if role_name in skip_roles:
+        return None
+
+    rs = RoleScore(name=role_name)
+    surface = compute_surface(role_path)
+    for rule_fn in RULES:
+        result = rule_fn(
+            role_path,
+            role_name,
+            weights,
+            min_ansible=min_ansible,
+            git_data=git_data,
+            inbound_refs=inbound_refs or {},
+            surface=surface,
+            docs_dir=docs_dir,
+        )
+        rs.rules[result.rule_id] = result
+    return rs
+
+
+def analyze_roles(
+    roles_dir: Path,
+    weights: dict[str, float],
+    skip_roles: list[str],
+    min_ansible: str,
+    only_rules: list[str] | None = None,
+    only_roles: list[str] | None = None,
+    docs_dir: Path | None = None,
+) -> list[RoleScore]:
+    """Score all roles in a directory."""
+    if not roles_dir.is_dir():
+        print(f"Error: roles directory not found: {roles_dir}", file=sys.stderr)
+        sys.exit(1)
+
+    git_data = compute_git_stats(roles_dir)
+    inbound_refs = compute_inbound_references(roles_dir)
+    playbook_signals = compute_playbook_signals(roles_dir)
+    only_set = set(only_roles) if only_roles else None
+
+    results: list[RoleScore] = []
+    for entry in sorted(roles_dir.iterdir()):
+        if not entry.is_dir():
+            continue
+        if not (entry / "tasks" / "main.yml").is_file():
+            continue  # not an Ansible role
+        if only_set and entry.name not in only_set:
+            continue
+
+        rs = score_role(
+            entry, weights, skip_roles, min_ansible,
+            git_data=git_data, inbound_refs=inbound_refs,
+            docs_dir=docs_dir,
+        )
+        if rs is not None:
+            if playbook_signals:
+                if entry.name in playbook_signals["common"]:
+                    rs.flags.append("common")
+                if entry.name not in playbook_signals["service"]:
+                    rs.flags.append("no-service-playbook")
+            if only_rules:
+                rs.rules = {rid: r for rid, r in rs.rules.items() if rid in only_rules}
+            results.append(rs)
+    return results
+
+
+# ---------------------------------------------------------------------------
+# Output
+# ---------------------------------------------------------------------------
+
+
+def rule_table_header(rule_ids: list[str]) -> list[str]:
+    return ["Role", "Score"] + [rid[:12] for rid in rule_ids] + ["Flags"]
+
+
+def rule_table_row(rs: RoleScore, rule_ids: list[str]) -> list[str]:
+    row: list[str] = [
+        rs.name,
+        f"{rs.overall:.1f}",
+    ]
+    for rid in rule_ids:
+        r = rs.rules.get(rid)
+        if r is None:
+            row.append("")
+        elif r.max_score == 0:
+            row.append("-")
+        else:
+            row.append(f"{r.score:.2f}")
+    row.append(",".join(rs.flags) if rs.flags else "-")
+    return row
+
+
+def flag_suffix(rs: RoleScore) -> str:
+    """Render playbook flags as a bracketed name suffix, e.g. ' [common]'."""
+    return "".join(f" [{f}]" for f in rs.flags)
+
+
+def print_compact(results: list[RoleScore]) -> None:
+    """Print role name and overall score sorted descending."""
+    sorted_rs = sorted(results, key=lambda rs: rs.overall, reverse=True)
+    name_w = max(len(rs.name) + len(flag_suffix(rs)) for rs in sorted_rs)
+    print(f"{'Role':<{name_w}}  Score")
+    print("-" * (name_w + 8))
+    for rs in sorted_rs:
+        print(f"{rs.name}{flag_suffix(rs):<{name_w - len(rs.name)}}  {rs.overall:.2f}")
+
+    # Summary
+    scores = [rs.overall for rs in sorted_rs]
+    avg = sum(scores) / len(scores)
+    sorted_scores = sorted(scores)
+    median = sorted_scores[len(sorted_scores) // 2]
+    print()
+    print(f"Roles scored: {len(results)}")
+    print(f"Average:      {avg:.2f}")
+    print(f"Median:       {median:.2f}")
+
+
+def print_detailed(results: list[RoleScore], verbose: bool = False) -> None:
+    """Print role score plus per-rule weight, score and detail (impact-sorted).
+
+    In verbose mode only rules with significant impact are shown, skipping
+    N/A rules and negligible (|weight*score| < 0.10) contributions.
+    """
+    sorted_rs = sorted(results, key=lambda rs: rs.overall, reverse=True)
+    name_w = max(len(rs.name) + len(flag_suffix(rs)) for rs in sorted_rs)
+    print(f"{'Role':<{name_w}}  Score")
+    print("-" * (name_w + 8))
+    for rs in sorted_rs:
+        print(f"{rs.name}{flag_suffix(rs):<{name_w - len(rs.name)}}  {rs.overall:.2f}")
+
+        def impact(r: RuleResult) -> float:
+            return abs(r.weight * r.score) if r.max_score > 0 else 0.0
+
+        ordered = sorted(rs.rules.values(), key=impact, reverse=True)
+        if verbose:
+            ordered = [r for r in ordered if impact(r) >= 0.10]
+        if not ordered:
+            print()
+            continue
+        rid_w = max(len(r.rule_id) for r in ordered)
+        for r in ordered:
+            na = r.max_score <= 0
+            mark = "[N/A]" if na else "     "
+            penalized = (
+                r.rule_id in NEGATIVE_RULES
+                and not na
+                and (r.score >= 1.0 if r.rule_id in BINARY_RULES else r.score > 0)
+            )
+            sign = "-" if penalized else ""
+            print(
+                f"    {mark} {r.rule_id:<{rid_w}}  "
+                f"w={r.weight:.2f}  {sign}{r.score:.2f}/{r.max_score:.1f}  {r.detail}"
+            )
+        print()
+
+    # Summary
+    scores = [rs.overall for rs in sorted_rs]
+    avg = sum(scores) / len(scores)
+    sorted_scores = sorted(scores)
+    median = sorted_scores[len(sorted_scores) // 2]
+    print(f"Roles scored: {len(results)}")
+    print(f"Average:      {avg:.2f}")
+    print(f"Median:       {median:.2f}")
+
+
+def print_table(results: list[RoleScore], rule_ids: list[str]) -> None:
+    """Print a human-readable table to stdout."""
+    header = rule_table_header(rule_ids)
+    rows = [rule_table_row(rs, rule_ids) for rs in results]
+
+    # Calculate column widths
+    widths = [len(h) for h in header]
+    for row in rows:
+        for i, cell in enumerate(row):
+            widths[i] = max(widths[i], len(cell))
+
+    # Build separator
+    sep = "-" * (sum(widths) + len(widths) + 1)
+
+    def fmt_row(row: list[str]) -> str:
+        parts: list[str] = []
+        for i, cell in enumerate(row):
+            parts.append(cell.ljust(widths[i]))
+        return "  ".join(parts)
+
+    print(sep)
+    print(fmt_row(header))
+    print(sep)
+    for row in rows:
+        print(fmt_row(row))
+    print(sep)
+
+    # Summary
+    scores = [rs.overall for rs in results]
+    if scores:
+        avg = sum(scores) / len(scores)
+        sorted_scores = sorted(scores)
+        median = sorted_scores[len(sorted_scores) // 2]
+        print(f"\nRoles scored: {len(results)}")
+        print(f"Average:      {avg:.2f}")
+        print(f"Median:       {median:.2f}")
+
+
+def print_json(results: list[RoleScore]) -> None:
+    """Print JSON to stdout."""
+    data: list[dict[str, Any]] = []
+    for rs in results:
+        entry: dict[str, Any] = {
+            "name": rs.name,
+            "overall": round(rs.overall, 4),
+            "flags": list(rs.flags),
+            "rules": {},
+        }
+        for rid, r in rs.rules.items():
+            entry["rules"][rid] = {
+                "score": round(r.score, 4),
+                "max": r.max_score,
+                "weight": r.weight,
+                "detail": r.detail,
+            }
+        data.append(entry)
+    json.dump(data, sys.stdout, indent=2)
+    sys.stdout.write("\n")
+
+
+def print_csv(results: list[RoleScore], rule_ids: list[str]) -> None:
+    """Print CSV to stdout."""
+    writer = csv.writer(sys.stdout)
+    writer.writerow(rule_table_header(rule_ids))
+    for rs in results:
+        writer.writerow(rule_table_row(rs, rule_ids))
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
+
+def build_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Score DebOps Ansible roles against quality rules.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Examples:\n"
+            "  %(prog)s\n"
+            "  %(prog)s --json\n"
+            "  %(prog)s --weights weights.yml --threshold 0.7\n"
+            "  %(prog)s --rule variable_naming,template_src_lookup\n"
+        ),
+    )
+    parser.add_argument(
+        "--roles-dir",
+        type=str,
+        default="ansible/roles",
+        help="Path to roles directory (default: ansible/roles/)",
+    )
+    parser.add_argument(
+        "--docs-dir",
+        type=str,
+        default=DOCS_DIR,
+        help="Path to role documentation directory (default: docs/ansible/roles)",
+    )
+    parser.add_argument(
+        "--weights",
+        type=str,
+        default=None,
+        help="YAML file with rule weights and skip_roles",
+    )
+    parser.add_argument(
+        "--min-ansible",
+        type=str,
+        default=DEFAULT_MIN_ANSIBLE,
+        help=f"Minimum ansible version threshold (default: {DEFAULT_MIN_ANSIBLE})",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output JSON instead of table",
+    )
+    parser.add_argument(
+        "--csv",
+        action="store_true",
+        help="Output CSV instead of table",
+    )
+    parser.add_argument(
+        "--roles",
+        type=str,
+        default=None,
+        help="Comma-separated list of roles to score (default: all)",
+    )
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        default=None,
+        help="Only show roles below this score",
+    )
+    parser.add_argument(
+        "--rule",
+        type=str,
+        default=None,
+        help="Comma-separated list of rules to check",
+    )
+    parser.add_argument(
+        "--list-rules",
+        action="store_true",
+        help="List all rules with weights and descriptions",
+    )
+    parser.add_argument(
+        "--skip-roles",
+        type=str,
+        default=None,
+        help="Comma-separated list of roles to skip (appended to config)",
+    )
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Show full table with all rule columns",
+    )
+    parser.add_argument(
+        "--details",
+        action="store_true",
+        help="Show per-rule weight, score and detail after each role (compact mode)",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help=(
+            "Show per-rule weight, score and detail for impactful rules only"
+            " (compact mode)"
+        ),
+    )
+    return parser
+
+
+def list_rules(weights: dict[str, float]) -> None:
+    """Print all rules with their weights and descriptions."""
+    descriptions: dict[str, str] = {
+    }
+
+    print(f"{'Rule':<30} {'Weight':>6}  Description")
+    print("-" * 70)
+    for rule_id in RULES:
+        rid = rule_id.__name__.removeprefix("rule_")
+        w = weights.get(rid, 0.0)
+        desc = descriptions.get(rid, "")
+        markers: list[str] = []
+        if rid in BINARY_RULES:
+            markers.append("binary")
+        if rid in NEGATIVE_RULES:
+            markers.append("negative")
+        mark = f" ({', '.join(markers)})" if markers else ""
+        print(f"{rid:<30} {w:>6.1f}  {desc}{mark}")
+    print()
+    print("Weights range 0.0–2.0. Set to 0 to disable a rule.")
+    print("Binary rules contribute full weight if passed, 0 if failed.")
+    print("Negative rules subtract from the weighted sum.")
+    print("Use --weights FILE to override.")
+
+
+def load_weights(weights_path: str | None) -> dict[str, Any]:
+    """Load weights and config from file, return combined config dict."""
+    config: dict[str, Any] = {
+        "weights": dict(DEFAULT_WEIGHTS),
+        "skip_roles": list(DEFAULT_SKIP_ROLES),
+    }
+    if weights_path:
+        path = Path(weights_path)
+        if path.is_file():
+            try:
+                user_cfg = load_yaml_robust(path)
+                user_weights = user_cfg.get("weights", {})
+                if isinstance(user_weights, dict):
+                    config["weights"].update(user_weights)
+                user_skip = user_cfg.get("skip_roles", [])
+                if isinstance(user_skip, list):
+                    config["skip_roles"].extend(user_skip)
+            except Exception as exc:
+                print(f"Warning: could not load weights file: {exc}", file=sys.stderr)
+    return config
+
+
+def main() -> None:
+    parser = build_arg_parser()
+    args = parser.parse_args()
+
+    # Load weights
+    config = load_weights(args.weights)
+    weights: dict[str, float] = config["weights"]
+    skip_roles: list[str] = config["skip_roles"]
+
+    # Append CLI skip-roles
+    if args.skip_roles:
+        skip_roles.extend([s.strip() for s in args.skip_roles.split(",")])
+
+    # Filter to specific rules
+    only_rules: list[str] | None = None
+    if args.rule:
+        only_rules = [r.strip() for r in args.rule.split(",")]
+
+    # Filter to specific roles
+    only_roles: list[str] | None = None
+    if args.roles:
+        only_roles = [r.strip() for r in args.roles.split(",")]
+
+    if args.list_rules:
+        list_rules(weights)
+        return
+
+    # Determine rule order (all rules in definition order, filtered to --rule)
+    rule_ids: list[str] = []
+    for rule_fn in RULES:
+        rid = rule_fn.__name__.removeprefix("rule_")
+        if only_rules and rid not in only_rules:
+            continue
+        rule_ids.append(rid)
+
+    # Resolve roles directory
+    roles_dir = Path(args.roles_dir)
+    if not roles_dir.is_absolute():
+        # Try relative to cwd
+        roles_dir = Path.cwd() / args.roles_dir
+
+    # Resolve documentation directory
+    docs_dir = Path(args.docs_dir)
+    if not docs_dir.is_absolute():
+        docs_dir = Path.cwd() / args.docs_dir
+
+    results = analyze_roles(
+        roles_dir,
+        weights,
+        skip_roles,
+        args.min_ansible,
+        only_rules,
+        only_roles,
+        docs_dir=docs_dir,
+    )
+
+    if not results:
+        print("No roles found to score.", file=sys.stderr)
+        sys.exit(1)
+
+    # Filter by threshold
+    if args.threshold is not None:
+        results = [rs for rs in results if rs.overall < args.threshold]
+        if not results:
+            print(f"No roles below threshold {args.threshold:.2f}")
+            return
+
+    if args.json:
+        print_json(results)
+    elif args.csv:
+        print_csv(results, rule_ids)
+    elif args.full:
+        print_table(results, rule_ids)
+    elif args.details:
+        print_detailed(results)
+    elif args.verbose:
+        print_detailed(results, verbose=True)
+    else:
+        print_compact(results)
+
+    sys.stdout.flush()
+
+
+if __name__ == "__main__":
+    main()
