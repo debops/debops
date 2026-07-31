@@ -46,6 +46,16 @@ DEFAULT_WEIGHTS: dict[str, float] = {
     "template_src_lookup": 0.1,
     "task_src_lookup": 0.3,
     "file_src_lookup": 0.05,
+    "collections_declared": 0.2,
+    "dependencies_empty": 0.2,
+    "min_ansible_version": 0.5,
+    "ansible_plugins_import": 0.5,
+    "pre_post_hooks": 0.2,
+    "task_tags": 0.3,
+    "local_facts": 1.0,
+    "flush_handlers": 0.4,
+    "register_until": 0.2,
+    "no_debug_ignore": 0.2,
 }
 
 DEFAULT_MIN_ANSIBLE: str = "2.10.0"
@@ -85,6 +95,11 @@ MINIMAL_TASK_COUNT: int = 3
 # Negative binary rules subtract their weight if violated.
 BINARY_RULES: frozenset[str] = frozenset(
     {
+        "local_facts",
+        "collections_declared",
+        "dependencies_empty",
+        "ansible_plugins_import",
+        "flush_handlers",
     }
 )
 
@@ -814,6 +829,309 @@ def rule_file_src_lookup(
     )
 
 
+def rule_collections_declared(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """meta/main.yml has collections: ['debops.debops']."""
+    w = weights.get("collections_declared", 0.2)
+    meta = load_yaml_robust(role_path / "meta" / "main.yml")
+    coll = meta.get("collections")
+    if isinstance(coll, list) and "debops.debops" in coll:
+        return RuleResult("collections_declared", w, 1.0, 1.0, "declared")
+    return RuleResult("collections_declared", w, 0.0, 1.0, "missing or incorrect")
+
+
+def rule_dependencies_empty(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """meta/main.yml has dependencies: []."""
+    w = weights.get("dependencies_empty", 0.2)
+    meta = load_yaml_robust(role_path / "meta" / "main.yml")
+    deps = meta.get("dependencies")
+    if isinstance(deps, list) and len(deps) == 0:
+        return RuleResult("dependencies_empty", w, 1.0, 1.0, "empty")
+    return RuleResult("dependencies_empty", w, 0.0, 1.0, "non-empty or missing")
+
+
+def _parse_version(ver_str: str) -> tuple[int, int, int]:
+    """Parse 'X.Y.Z' version string into a tuple."""
+    m = VERSION_RE.match(ver_str)
+    if m:
+        return (int(m.group(1)), int(m.group(2)), int(m.group(3)))
+    return (0, 0, 0)
+
+
+def rule_min_ansible_version(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Check min_ansible_version meets the configured threshold."""
+    w = weights.get("min_ansible_version", 0.4)
+    threshold = _parse_version(kwargs.get("min_ansible", DEFAULT_MIN_ANSIBLE))
+    meta = load_yaml_robust(role_path / "meta" / "main.yml")
+    gi = meta.get("galaxy_info", {})
+    if not isinstance(gi, dict):
+        return RuleResult("min_ansible_version", w, 0.0, 1.0, "no galaxy_info")
+
+    raw = gi.get("min_ansible_version", "")
+    if not isinstance(raw, str):
+        return RuleResult("min_ansible_version", w, 0.0, 1.0, "no min_ansible_version")
+
+    actual = _parse_version(raw)
+    threshold_val = threshold[0] * 10_000 + threshold[1] * 100 + threshold[2]
+    actual_val = actual[0] * 10_000 + actual[1] * 100 + actual[2]
+    score = (
+        1.0
+        if actual >= threshold
+        else (min(1.0, actual_val / threshold_val) if threshold_val > 0 else 1.0)
+    )
+    return RuleResult(
+        "min_ansible_version",
+        w,
+        score,
+        1.0,
+        f"{raw} / {kwargs.get('min_ansible', DEFAULT_MIN_ANSIBLE)}",
+    )
+
+
+def rule_ansible_plugins_import(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Score 1 if tasks do NOT import ansible_plugins role."""
+    w = weights.get("ansible_plugins_import", 0.5)
+    task_files = find_task_files(role_path)
+    import_re = re.compile(
+        r"(?:include_role|import_role)\s*:.*\n\s+name:\s*['\"]?ansible_plugins['\"]?",
+        re.DOTALL,
+    )
+    for tf in task_files:
+        text = tf.read_text(encoding="utf-8")
+        if import_re.search(text):
+            return RuleResult(
+                "ansible_plugins_import", w, 0.0, 1.0, "imports ansible_plugins"
+            )
+    return RuleResult("ansible_plugins_import", w, 1.0, 1.0, "no import")
+
+
+def rule_pre_post_hooks(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Check pre_main.yml and post_main.yml exist in tasks/<role>/."""
+    w = weights.get("pre_post_hooks", 0.2)
+    if _is_minimal_surface(kwargs.get("surface"), role_path):
+        return RuleResult("pre_post_hooks", w, 0.0, 0.0, "minimal role surface")
+    hook_dir = role_path / "tasks" / role_name
+    pre = hook_dir / "pre_main.yml"
+    post = hook_dir / "post_main.yml"
+    pre_ok = pre.is_file()
+    post_ok = post.is_file()
+    count = sum([pre_ok, post_ok])
+    score = count / 2.0
+    detail_parts = []
+    if pre_ok:
+        detail_parts.append("pre")
+    if post_ok:
+        detail_parts.append("post")
+    detail = ",".join(detail_parts) if detail_parts else "none"
+    return RuleResult("pre_post_hooks", w, score, 1.0, detail)
+
+
+def rule_task_tags(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Ratio of tasks carrying role::<name> or skip::<name> tags."""
+    w = weights.get("task_tags", 0.7)
+    if _is_minimal_surface(kwargs.get("surface"), role_path):
+        return RuleResult("task_tags", w, 0.0, 0.0, "minimal role surface")
+    task_files = find_task_files(role_path)
+    if not task_files:
+        return RuleResult("task_tags", w, 0.0, 0.0, "no task files")
+
+    total_tasks = 0
+    tagged = 0
+    for tf in task_files:
+        data = load_yaml(tf)
+        tasks = parse_tasks(data)
+        for task in tasks:
+            total_tasks += 1
+            tags = task.get("tags", [])
+            if isinstance(tags, str):
+                tags = [tags]
+            if isinstance(tags, list):
+                tag_str = " ".join(str(t) for t in tags)
+                if TAG_ROLE_RE.search(tag_str) or TAG_SKIP_RE.search(tag_str):
+                    tagged += 1
+
+    if total_tasks == 0:
+        return RuleResult("task_tags", w, 1.0, 1.0, "no tasks found")
+
+    score = tagged / total_tasks
+    return RuleResult(
+        "task_tags",
+        w,
+        score,
+        1.0,
+        f"{tagged}/{total_tasks} tagged",
+    )
+
+
+def rule_local_facts(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Check that a fact template exists with a shebang."""
+    w = weights.get("local_facts", 1.0)
+    # Look for fact templates: templates/etc/ansible/facts.d/<role>.fact.j2
+    # or any .fact.j2 file under templates/etc/ansible/facts.d/
+    fact_dir = role_path / "templates" / "etc" / "ansible" / "facts.d"
+    fact_files: list[Path] = []
+    if fact_dir.is_dir():
+        fact_files = sorted(fact_dir.glob("*.fact.j2"))
+
+    if not fact_files:
+        return RuleResult("local_facts", w, 0.0, 0.0, "no fact template")
+
+    # Check shebang on first fact file (primary role fact)
+    primary = fact_files[0]
+    first_line = primary.read_text(encoding="utf-8").split("\n")[0].strip()
+    has_shebang = first_line.startswith("#!")
+
+    score = 1.0 if has_shebang else 0.0
+    detail = (
+        f"exists + shebang ({Path(primary.name)})"
+        if has_shebang
+        else f"exists, no shebang ({Path(primary.name)})"
+    )
+
+    return RuleResult("local_facts", w, score, 1.0, detail)
+
+
+def rule_flush_handlers(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Check that flush_handlers appears after a facts task."""
+    w = weights.get("flush_handlers", 0.5)
+    if _is_minimal_surface(kwargs.get("surface"), role_path):
+        return RuleResult("flush_handlers", w, 0.0, 0.0, "minimal role surface")
+    task_files = find_task_files(role_path)
+    found_facts = False
+    found_flush = False
+
+    for tf in task_files:
+        data = load_yaml(tf)
+        tasks = parse_tasks(data)
+        for task in tasks:
+            # Check if this task is saving facts
+            dest = ""
+            for mod_key in ("ansible.builtin.template", "template"):
+                mod = task.get(mod_key)
+                if isinstance(mod, dict):
+                    dest = str(mod.get("dest", ""))
+            if "facts.d" in dest or "facts/" in dest:
+                found_facts = True
+
+            meta = task.get("ansible.builtin.meta") or task.get("meta")
+            if isinstance(meta, str) and "flush_handlers" in meta:
+                found_flush = True
+
+    score = 1.0 if found_flush and found_facts else 0.0
+    detail_parts = []
+    if found_facts:
+        detail_parts.append("facts")
+    if found_flush:
+        detail_parts.append("flush")
+    detail = "+".join(detail_parts) if detail_parts else "none"
+    return RuleResult("flush_handlers", w, score, 1.0, detail)
+
+
+def rule_register_until(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Ratio of package install tasks using register + until."""
+    w = weights.get("register_until", 0.6)
+    task_files = find_task_files(role_path)
+    package_modules = {
+        "ansible.builtin.package",
+        "ansible.builtin.apt",
+        "ansible.builtin.yum",
+        "ansible.builtin.dnf",
+        "package",
+        "apt",
+        "yum",
+        "dnf",
+    }
+    total_pkg = 0
+    compliant = 0
+
+    for tf in task_files:
+        data = load_yaml(tf)
+        tasks = parse_tasks(data)
+        for task in tasks:
+            for mod_key in package_modules:
+                if mod_key not in task:
+                    continue
+                total_pkg += 1
+                has_register = "register" in task
+                has_until = "until" in task
+                if has_register and has_until:
+                    compliant += 1
+                break  # only count once per task
+
+    if total_pkg == 0:
+        return RuleResult("register_until", w, 0.0, 0.0, "no package tasks")
+
+    score = compliant / total_pkg
+    return RuleResult(
+        "register_until",
+        w,
+        score,
+        1.0,
+        f"{compliant}/{total_pkg} register+until",
+    )
+
+
+def rule_no_debug_ignore(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Penalize unconditional debug and ignore_errors."""
+    w = weights.get("no_debug_ignore", 0.2)
+    task_files = find_task_files(role_path)
+    violations = 0
+    total_interesting = 0
+
+    for tf in task_files:
+        data = load_yaml(tf)
+        tasks = parse_tasks(data)
+        for task in tasks:
+            if not isinstance(task, dict):
+                continue
+            has_debug = "ansible.builtin.debug" in task or "debug" in task
+            has_ignore = task.get("ignore_errors", False) is True
+            has_verbosity = False
+            # Check for verbosity on debug tasks
+            if has_debug:
+                mod = task.get("ansible.builtin.debug") or task.get("debug") or {}
+                if isinstance(mod, dict) and mod.get("verbosity"):
+                    has_verbosity = True
+                total_interesting += 1
+
+            if has_debug and not has_verbosity:
+                violations += 1
+            if has_ignore:
+                violations += 1
+                total_interesting += 1
+
+    if total_interesting == 0:
+        return RuleResult("no_debug_ignore", w, 1.0, 1.0, "no debug/ignore_errors")
+
+    score = max(0.0, 1.0 - (violations / total_interesting))
+    return RuleResult(
+        "no_debug_ignore",
+        w,
+        score,
+        1.0,
+        f"{violations} violations",
+    )
+
+
 # ---------------------------------------------------------------------------
 # Rule registry
 # ---------------------------------------------------------------------------
@@ -825,6 +1143,16 @@ RULES: list[Any] = [
     rule_template_src_lookup,
     rule_task_src_lookup,
     rule_file_src_lookup,
+    rule_collections_declared,
+    rule_dependencies_empty,
+    rule_min_ansible_version,
+    rule_ansible_plugins_import,
+    rule_pre_post_hooks,
+    rule_task_tags,
+    rule_local_facts,
+    rule_flush_handlers,
+    rule_register_until,
+    rule_no_debug_ignore,
 ]
 
 
@@ -1187,6 +1515,16 @@ def list_rules(weights: dict[str, float]) -> None:
         "template_src_lookup": "template_src lookup for templates",
         "task_src_lookup": "task_src lookup for includes",
         "file_src_lookup": "file_src lookup for copy/template src",
+        "collections_declared": "'collections: [debops.debops]' in meta",
+        "dependencies_empty": "'dependencies: []' in meta",
+        "min_ansible_version": "min_ansible_version relative to threshold",
+        "ansible_plugins_import": "no ansible_plugins role import",
+        "pre_post_hooks": "pre_main/post_main hook dirs present",
+        "task_tags": "role::<name> / skip::<name> tags on tasks",
+        "local_facts": "local fact template with shebang",
+        "flush_handlers": "flush_handlers after facts",
+        "register_until": "package install uses register+until",
+        "no_debug_ignore": "no unconditional debug/ignore_errors",
     }
 
     print(f"{'Rule':<30} {'Weight':>6}  Description")
