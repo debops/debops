@@ -47,6 +47,38 @@ VictoriaMetrics, Vaultwarden, Bugsink, Homepage and more), see the
 :ref:`docker_service__ref_guides` page.
 
 
+Persistent data directories
+----------------------------
+
+For backward compatibility, the role automatically creates host directories
+for bind-mount sources listed in a service's ``volumes`` parameter. This is
+convenient for simple cases, but it is an *inference* -- the role has no way
+to know whether a given ``volumes`` entry is meant to be a directory or a
+file, so it always creates a directory. This works until a bind mount's
+source is legitimately a file or socket (e.g. ``/etc/localtime``, a UNIX
+socket), or a service needs specific ownership/permissions on the host
+directory that ``volumes`` cannot express.
+
+Prefer declaring host directories explicitly with ``data_dirs`` instead:
+
+.. code-block:: yaml
+
+   docker_service__host_services:
+
+     - name: 'vaultwarden'
+       image: 'vaultwarden/server:1.37.1-alpine'
+       data_dirs:
+         - path: '/srv/docker/vaultwarden/data'
+           owner: 'root'
+           group: 'root'
+           mode: '0750'
+       volumes:
+         - '/srv/docker/vaultwarden/data:/data'
+
+See :ref:`docker_service__ref_services` for the full ``data_dirs`` and
+``create_volume_dirs`` syntax.
+
+
 Nginx reverse proxy
 -------------------
 
