@@ -114,6 +114,7 @@ infrastructure environments.
    developer-guide/contributing-docs
    developer-guide/testing
    developer-guide/development-model
+   developer-guide/role-score
    dep/index
 
 .. toctree::
