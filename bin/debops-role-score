@@ -27,7 +27,7 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 import yaml
 
@@ -40,6 +40,12 @@ DEFAULT_SKIP_ROLES: list[str] = []
 
 # Map: rule_id -> default_weight
 DEFAULT_WEIGHTS: dict[str, float] = {
+    "variable_naming": 1.0,
+    "default_filter_usage": 0.5,
+    "is_truthy_usage": 0.5,
+    "template_src_lookup": 0.1,
+    "task_src_lookup": 0.3,
+    "file_src_lookup": 0.05,
 }
 
 DEFAULT_MIN_ANSIBLE: str = "2.10.0"
@@ -87,6 +93,8 @@ BINARY_RULES: frozenset[str] = frozenset(
 # Binary negative rules contribute -weight if score >= 1.0, else 0.
 NEGATIVE_RULES: frozenset[str] = frozenset(
     {
+        "variable_naming",
+        "default_filter_usage",
     }
 )
 
@@ -205,6 +213,24 @@ def parse_tasks(data: Any) -> list[dict[str, Any]]:
         elif isinstance(item, list):
             result.extend(parse_tasks(item))
     return result
+
+
+# Ansible conditionals that must resolve to booleans. The | d() / | default()
+# filter breaks these in Ansible 2.19+, which requires is defined / is truthy.
+CONDITIONAL_KEYS: frozenset[str] = frozenset(
+    {"when", "changed_when", "failed_when", "until"}
+)
+
+
+def iter_conditionals(data: Any) -> Iterator[str]:
+    """Yield the string values of Ansible conditionals in parsed task data."""
+    for task in parse_tasks(data):
+        for key in CONDITIONAL_KEYS:
+            val = task.get(key)
+            if isinstance(val, str):
+                yield val
+            elif isinstance(val, list):
+                yield from (el for el in val if isinstance(el, str))
 
 
 # ---------------------------------------------------------------------------
@@ -529,11 +555,276 @@ def _is_minimal_surface(surface: dict[str, int] | None, role_path: Path) -> bool
 #   (role_path: Path, role_name: str, weights: dict, **kwargs) -> RuleResult
 
 
+def rule_variable_naming(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Penalize non-namespaced (single-underscore) variables.
+
+    Variables annotated with ``# noqa var-naming[no-role-prefix]`` are
+    intentional global variables (e.g., the ``secret`` role's ``secret``
+    variable) and are excluded from the check.
+    """
+    w = weights.get("variable_naming", 1.0)
+    defaults_file = role_path / "defaults" / "main.yml"
+    if not defaults_file.is_file():
+        return RuleResult("variable_naming", w, 0.0, 0.0, "no defaults/main.yml")
+
+    keys: list[str] = []
+    try:
+        lines = defaults_file.read_text(encoding="utf-8").splitlines()
+    except Exception:
+        return RuleResult("variable_naming", w, 0.0, 0.0, "unreadable defaults")
+
+    for line in lines:
+        m = re.match(r"^([a-zA-Z_]\w*):", line)
+        if not m:
+            continue
+        key = m.group(1)
+        if key in {"galaxy_info", "dependencies", "collections"} or key.startswith("."):
+            continue
+        if "noqa var-naming" in line:
+            continue
+        keys.append(key)
+
+    if not keys:
+        return RuleResult("variable_naming", w, 0.0, 0.0, "no variables")
+
+    double = sum(1 for k in keys if "__" in k)
+    single = sum(
+        1 for k in keys if "_" in k and "__" not in k and not k.startswith("_")
+    )
+    no_underscore = sum(1 for k in keys if "_" not in k)
+    total = double + single + no_underscore
+    score = (single + no_underscore) / total if total > 0 else 0.0
+    return RuleResult(
+        "variable_naming",
+        w,
+        score,
+        1.0,
+        f"{single}/{total} non-namespaced",
+    )
+
+
+def rule_default_filter_usage(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Penalize | d() / | default() in Ansible conditionals (negative).
+
+    The | d() / | default() filter returns the variable value (or its
+    default), which is usually a non-boolean — Ansible 2.19+ rejects such
+    conditionals. Use ``X is defined and X is truthy`` instead. Value
+    positions like ``{{ item.creates | d(omit) }}`` are not penalized.
+    """
+    w = weights.get("default_filter_usage", 0.5)
+    task_files = find_task_files(role_path)
+    if not task_files:
+        return RuleResult("default_filter_usage", w, 0.0, 0.0, "no task files")
+
+    total_cond = 0
+    bad_cond = 0
+
+    for tf in task_files:
+        data = load_yaml(tf)
+        for cond in iter_conditionals(data):
+            # Only count conditionals that reference a variable (not constants)
+            if re.search(r"[a-zA-Z_]", cond):
+                total_cond += 1
+                if "| d(" in cond or "| default(" in cond:
+                    bad_cond += 1
+
+    if total_cond == 0:
+        return RuleResult("default_filter_usage", w, 0.0, 1.0, "no conditionals")
+
+    score = bad_cond / total_cond
+    return RuleResult(
+        "default_filter_usage",
+        w,
+        score,
+        1.0,
+        f"{bad_cond}/{total_cond} use | d()",
+    )
+
+
+def rule_is_truthy_usage(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Ratio of Ansible conditionals using is truthy / is defined tests.
+
+    Rewards the Ansible 2.19+ idiom that replaces ``| d()`` in conditionals:
+    ``X is defined and X is truthy`` (or plain ``X is truthy`` for values
+    that are always defined, e.g. registered results).
+    """
+    w = weights.get("is_truthy_usage", 0.5)
+    task_files = find_task_files(role_path)
+    if not task_files:
+        return RuleResult("is_truthy_usage", w, 0.0, 0.0, "no task files")
+
+    total_cond = 0
+    good_cond = 0
+
+    for tf in task_files:
+        data = load_yaml(tf)
+        for cond in iter_conditionals(data):
+            if re.search(r"[a-zA-Z_]", cond):
+                total_cond += 1
+                if "is truthy" in cond or "is defined" in cond:
+                    good_cond += 1
+
+    if total_cond == 0:
+        return RuleResult("is_truthy_usage", w, 1.0, 1.0, "no conditionals")
+
+    score = good_cond / total_cond
+    return RuleResult(
+        "is_truthy_usage",
+        w,
+        score,
+        1.0,
+        f"{good_cond}/{total_cond} is truthy",
+    )
+
+
+def rule_template_src_lookup(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Ratio of template tasks using template_src lookup."""
+    w = weights.get("template_src_lookup", 0.3)
+    task_files = find_task_files(role_path)
+    lookup_count = 0
+    total = 0
+
+    for tf in task_files:
+        data = load_yaml(tf)
+        tasks = parse_tasks(data)
+        for task in tasks:
+            mod = task.get("ansible.builtin.template") or {}
+            if not isinstance(mod, dict):
+                continue
+            src = str(mod.get("src", ""))
+            if "template_src" in src:
+                lookup_count += 1
+                total += 1
+            elif src and "lookup" not in src:
+                total += 1
+
+    if total == 0:
+        return RuleResult("template_src_lookup", w, 0.0, 0.0, "no template tasks")
+
+    score = lookup_count / total
+    return RuleResult(
+        "template_src_lookup",
+        w,
+        score,
+        1.0,
+        f"{lookup_count}/{total} template_src",
+    )
+
+
+def _include_tasks_value(task: dict[str, Any], mod_key: str) -> str:
+    """Extract the file/value from an include_tasks task.
+
+    Handles both dict and string syntax::
+
+        ansible.builtin.include_tasks: 'file.yml'
+        ansible.builtin.include_tasks:
+          file: 'file.yml'
+    """
+    mod = task.get(mod_key)
+    if isinstance(mod, str):
+        return mod
+    if isinstance(mod, dict):
+        return str(mod.get("file", ""))
+    return ""
+
+
+def rule_task_src_lookup(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Ratio of include_tasks using task_src lookup."""
+    w = weights.get("task_src_lookup", 0.3)
+    task_files = find_task_files(role_path)
+    lookup_count = 0
+    total = 0
+
+    for tf in task_files:
+        data = load_yaml(tf)
+        tasks = parse_tasks(data)
+        for task in tasks:
+            inc_val = _include_tasks_value(task, "ansible.builtin.include_tasks")
+            if not inc_val:
+                inc_val = _include_tasks_value(task, "include_tasks")
+            if not inc_val:
+                continue
+
+            total += 1
+            if "task_src" in inc_val:
+                lookup_count += 1
+
+    if total == 0:
+        return RuleResult("task_src_lookup", w, 0.0, 0.0, "no include_tasks")
+
+    score = lookup_count / total
+    return RuleResult(
+        "task_src_lookup",
+        w,
+        score,
+        1.0,
+        f"{lookup_count}/{total} task_src",
+    )
+
+
+def rule_file_src_lookup(
+    role_path: Path, role_name: str, weights: dict, **kwargs: Any
+) -> RuleResult:
+    """Ratio of copy/template tasks using file_src lookup."""
+    w = weights.get("file_src_lookup", 0.05)
+    task_files = find_task_files(role_path)
+    lookup_count = 0
+    total = 0
+
+    for tf in task_files:
+        data = load_yaml(tf)
+        tasks = parse_tasks(data)
+        for task in tasks:
+            for mod_key in (
+                "ansible.builtin.copy",
+                "ansible.builtin.template",
+                "copy",
+                "template",
+            ):
+                mod = task.get(mod_key)
+                if not isinstance(mod, dict):
+                    continue
+                src = str(mod.get("src", ""))
+                if not src:
+                    continue
+                total += 1
+                if "file_src" in src:
+                    lookup_count += 1
+
+    if total == 0:
+        return RuleResult("file_src_lookup", w, 0.0, 0.0, "no copy/template tasks")
+
+    score = lookup_count / total
+    return RuleResult(
+        "file_src_lookup",
+        w,
+        score,
+        1.0,
+        f"{lookup_count}/{total} file_src",
+    )
+
+
 # ---------------------------------------------------------------------------
 # Rule registry
 # ---------------------------------------------------------------------------
 
 RULES: list[Any] = [
+    rule_variable_naming,
+    rule_default_filter_usage,
+    rule_is_truthy_usage,
+    rule_template_src_lookup,
+    rule_task_src_lookup,
+    rule_file_src_lookup,
 ]
 
 
@@ -890,6 +1181,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
 def list_rules(weights: dict[str, float]) -> None:
     """Print all rules with their weights and descriptions."""
     descriptions: dict[str, str] = {
+        "variable_naming": "non-namespaced variable naming (noqa-exempt)",
+        "default_filter_usage": "| d() / | default() in Ansible conditionals (negative)",
+        "is_truthy_usage": "is truthy / is defined tests in Ansible conditionals",
+        "template_src_lookup": "template_src lookup for templates",
+        "task_src_lookup": "task_src lookup for includes",
+        "file_src_lookup": "file_src lookup for copy/template src",
     }
 
     print(f"{'Rule':<30} {'Weight':>6}  Description")
