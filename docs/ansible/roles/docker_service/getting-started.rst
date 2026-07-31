@@ -95,6 +95,60 @@ container port to localhost only -- :command:`nginx` then handles external
 access with SSL termination.
 
 
+Exposing a service to the LAN
+------------------------------
+
+When a service publishes a port directly to the network (rather than binding
+to ``127.0.0.1`` behind :command:`nginx`), it is important to place firewall
+rules in the correct :command:`iptables` chain.
+
+Docker-published ports are processed in the ``FORWARD`` path: Docker performs
+a DNAT in ``nat/PREROUTING`` and the resulting traffic enters the ``FORWARD``
+chain, where the ``DOCKER-USER`` chain is consulted **before** Docker's own
+``DOCKER`` chain. Traffic that reaches a published container port **never
+traverses the** ``INPUT`` **chain**. A rule placed in ``INPUT`` -- the default
+for :envvar:`ferm__host_rules` -- silently fails to filter a published port.
+
+The ``published_ports`` integration in this role places rules in
+``DOCKER-USER`` automatically, so the correct chain is used without requiring
+per-host :file:`ferm.yml` files:
+
+.. code-block:: yaml
+
+   docker_service__host_services:
+
+     - name: 'grafana'
+       image: 'grafana/grafana:11.0.0'
+       ports:
+         - '0.0.0.0:3000:3000'
+       published_ports:
+         - port: 3000
+           protocol: 'tcp'
+           allow: [ '192.0.2.0/24' ]
+           comment: 'Grafana - monitoring VLAN only'
+
+For each port entry with a non-empty ``allow`` list the role generates:
+
+- An ``ACCEPT`` rule in ``DOCKER-USER`` for each source CIDR in ``allow``.
+- A trailing default-deny rule (``REJECT`` or ``DROP``) for all other sources
+  on that port.
+
+If ``allow`` is absent or empty, no rules are emitted (the port is assumed to
+be on loopback behind :command:`nginx`, or intentionally open).
+
+See :ref:`docker_service__ref_published_ports` for the full parameter
+reference.
+
+.. note::
+
+   The ``DOCKER-USER`` chain is managed by the :command:`ferm` role. On each
+   Ansible run :command:`ferm` rebuilds the chain with the current rules and
+   the ``docker_server__ferm_post_hook`` (installed by the
+   :ref:`debops.docker_server` role) then restarts Docker so that it
+   re-injects its own ``FORWARD`` jumps. Rules therefore survive a Docker
+   restart without any additional configuration.
+
+
 Example inventory
 -----------------
 

@@ -34,6 +34,13 @@
       tags: [ 'role::docker_service', 'skip::docker_service',
               'role::postgresql', 'skip::postgresql' ]
 
+    - name: Build docker_service ferm configuration
+      ansible.builtin.import_role:
+        name: 'docker_service'
+        tasks_from: 'build_ferm_vars'
+      tags: [ 'role::docker_service', 'skip::docker_service',
+              'role::ferm', 'skip::ferm' ]
+
   roles:
 
     - role: keyring
@@ -51,8 +58,12 @@
     - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
-        - '{{ nginx__ferm__dependent_rules }}'
-      when: docker_service__nginx__dependent_servers | d([]) | length > 0
+        - '{{ nginx__ferm__dependent_rules
+              if (docker_service__nginx__dependent_servers | d([]) | length > 0)
+              else [] }}'
+        - '{{ docker_service__ferm__dependent_rules | d([]) }}'
+      when: (docker_service__nginx__dependent_servers | d([]) | length > 0)
+            or (docker_service__ferm__dependent_rules | d([]) | length > 0)
 
     - role: python
       tags: [ 'role::python', 'skip::python' ]
