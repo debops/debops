@@ -207,10 +207,52 @@ parameters:
 ``volumes``
   Optional, list of strings. Volume mounts in standard Docker format:
   ``host_path:container_path[:options]``. The role automatically creates host
-  directories for bind mounts (paths starting with ``/``). When a volume
-  source path matches a ``config_files`` destination, the directory creation
-  is skipped -- the ``config_files`` tasks create the parent directory and
-  the file itself.
+  directories for bind mounts (paths starting with ``/``), for backward
+  compatibility -- prefer declaring host directories explicitly via
+  ``data_dirs`` instead of relying on this inference. Directory creation from
+  ``volumes`` is skipped when:
+
+  - the source path matches a ``config_files`` destination -- the
+    ``config_files`` tasks create the parent directory and the file itself;
+  - the source path matches a ``data_dirs`` path -- the ``data_dirs`` task
+    already created it, possibly with a non-default ``owner``/``group``/
+    ``mode`` that this inference would not know about;
+  - the source path already exists on the host and is not a directory (e.g.
+    ``/etc/localtime``, a UNIX socket) -- the role checks this with
+    ``ansible.builtin.stat`` before attempting creation;
+  - the service sets ``create_volume_dirs: false`` (see
+    :envvar:`docker_service__create_volume_dirs`) -- required when a bind
+    mount's source is a *file* that does not exist yet on the host, since the
+    ``stat`` check above cannot detect a path that has not been created.
+
+``data_dirs``
+  Optional, list of dictionaries. Directories to create on the host before
+  the container is started. Useful for pre-creating bind-mount targets (e.g.
+  on NFS volumes) with specific ownership and permissions that the
+  containerized application expects, and for bind-mount sources that are
+  *files*, not directories (declare the file's *parent* directory here and
+  exclude the file's own path from the ``volumes`` inference with
+  ``create_volume_dirs: false`` if it does not exist yet). Each entry has:
+
+  ``path``
+    Required, string. Absolute path of the directory to create.
+
+  ``owner``
+    Optional, string. Directory owner (name or UID). By default not
+    explicitly set (inherits from the parent directory).
+
+  ``group``
+    Optional, string. Directory group (name or GID). By default not
+    explicitly set.
+
+  ``mode``
+    Optional, string. Directory permissions. Defaults to ``0755``.
+
+``create_volume_dirs``
+  Optional, boolean. Defaults to :envvar:`docker_service__create_volume_dirs`
+  (``True``). Set to ``False`` to disable automatic directory creation from
+  ``volumes`` for this service entirely -- use together with ``data_dirs`` to
+  take full explicit control of which host paths are pre-created.
 
 ``tmpfs``
   Optional, list of strings. Tmpfs mounts inside the container.
