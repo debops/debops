@@ -47,6 +47,23 @@ docker_service__restart_policy: 'unless-stopped'
 docker_service__pull: true
 
                                                                    # ]]]
+# .. envvar:: docker_service__create_volume_dirs [[[
+#
+# If ``True`` (default), the role will automatically create host
+# directories for bind-mount sources listed in a service's ``volumes``
+# parameter (paths already covered by ``data_dirs`` or ``config_files`` are
+# always skipped, as are paths that already exist and are not directories).
+# Can be overridden per service with the ``create_volume_dirs`` key -- set to
+# ``False`` when a bind mount's source is a *file* that does not exist yet on
+# the host (e.g. an empty config file created by the containerized
+# application on first start); otherwise the role would create a directory
+# in its place and Docker would refuse to bind-mount a file where the
+# application expects to find one. Prefer declaring host directories
+# explicitly via ``data_dirs`` instead of relying on this inference where
+# possible.
+docker_service__create_volume_dirs: true
+
+                                                                   # ]]]
 # .. envvar:: docker_service__templates_path [[[
 #
 # Absolute path to the role-private template tree on the Ansible Controller,
