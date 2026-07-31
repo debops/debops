@@ -175,6 +175,65 @@ Deploy VictoriaMetrics and Grafana side by side:
          port: '3000'
 
 
+Custom hooks
+------------
+
+The role exposes two custom tasklists which let you execute additional Ansible
+tasks before and after the role's own tasks, without modifying the role itself.
+They are sourced through the :ref:`debops.debops.task_src <debops.ansible_plugins>`
+lookup plugin, so you can override them at the project level by creating a file
+with the same relative path under the directory configured by
+``override_paths.tasks_path`` (by default
+:file:`ansible/overrides/tasks/docker_service/`).
+
+``docker_service/pre_main.yml``
+  Tasks executed **before** the main role tasks, right after the
+  :ref:`debops.secret` role is imported and **before** the first task that
+  consumes :envvar:`docker_service__combined_services`. This is the place to
+  prepare anything the combined service list depends on -- for example to
+  pre-create a secret file referenced by a ``lookup("file", ...)`` inside a
+  service ``env`` entry, so that the lookup does not fail on a fresh install
+  before the value has been generated.
+
+``docker_service/post_main.yml``
+  Tasks executed **after** all main role tasks, once the containers have been
+  created and started. This is the place to act on the running containers --
+  for example to provision an application account or generate an API token by
+  running a management command inside a freshly started container.
+
+The role ships empty stub files for both tasklists, so the lookup always
+resolves and the role behaves identically when no project override is present.
+
+.. note::
+
+   The custom tasklists are included for **every** host that runs the role.
+   When a tasklist applies only to specific hosts, guard its tasks with an
+   appropriate condition (for example ``when: inventory_hostname == '...'``),
+   exactly like the custom tasklists of other DebOps roles.
+
+.. note::
+
+   Both ``include_tasks`` directives carry ``tags: [ 'always' ]``, so they are
+   evaluated even when Ansible is invoked with ``--tags`` or ``--skip-tags``.
+   Tag filtering is then applied to the individual tasks **inside** the hook
+   file. This means you can assign your own tags to blocks or tasks in
+   ``pre_main.yml`` / ``post_main.yml`` and target them directly with
+   ``--tags``. For example, if the hook file contains:
+
+   .. code-block:: yaml
+
+      - name: Provision application accounts
+        tags: [ 'myapp::accounts' ]
+        block:
+          # ...
+
+   you can run only those tasks with:
+
+   .. code-block:: console
+
+      debops run service/docker_service --tags myapp::accounts
+
+
 Example playbook
 ----------------
 
