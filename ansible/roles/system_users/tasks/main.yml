@@ -122,7 +122,7 @@
                  | intersect(getent_group.keys()))
                 if (item.groups is defined or (item.admin | d()) | bool)
                 else omit }}'
-    append: '{{ item.append | d(True) }}'
+    append: '{{ item.append | d(system_users__default_append) }}'
     state:  '{{ item.state | d("present") }}'
     create_home: '{{ item.create_home | d(omit) }}'
   loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'

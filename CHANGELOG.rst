@@ -145,6 +145,14 @@ General
   ``sudo-rs``. The role will use this package by default on this and future
   Ubuntu releases.
 
+:ref:`debops.system_users` role
+'''''''''''''''''''''''''''''''
+
+- The ``append`` parameter can now be set globally using a separate variable to
+  automatically append defined UNIX groups for a configured account, or include
+  only specified ones and strip the rest. This permits more fine-grained
+  control over UNIX group membership across different Ansible host groups.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
