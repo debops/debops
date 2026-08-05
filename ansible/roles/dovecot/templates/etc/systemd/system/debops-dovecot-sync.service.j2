@@ -1,0 +1,27 @@
+{# Copyright (C) 2026 David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+[Unit]
+Description=Dovecot mailbox sync to backup server
+Documentation=https://docs.debops.org/en/master/ansible/roles/debops.dovecot/
+After=dovecot.service
+Requires=dovecot.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/debops-dovecot-sync
+Restart=on-failure
+RestartSec=30
+Nice=10
+IOSchedulingClass=idle
+
+# Journal picks up stdout/stderr automatically
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=dovecot-sync
+
+[Install]
+WantedBy=multi-user.target

@@ -42,6 +42,18 @@ Currently supported features for :envvar:`dovecot__features` are:
     :command:`dovecot` servers using :command:`dovecot`'s own ``dsync``
     protocol, typically using port 12345. See
     `Dovecot's Replication Documentation`__ for further details.
+``zlib``
+    Support for compressed storage of emails. This involves a trade-off where
+    I/O bandwidth and storage space usage is reduced while CPU usage is
+    increased (usually a positive deal, given how storage bandwidth/space has
+    developed compared to CPU power). Note that if you plan to enable this
+    feature on older installation, you might have to tune the algorithm and
+    compression level (see :envvar:`dovecot__default_configuration`; in
+    particular the ``zlib_save`` and ``zlib_save_level`` settings in the
+    ``plugins`` section). Also, note that only ``sdbox``, ``mdbox``, and
+    ``Maildir`` mailboxes are supported. See `Dovecot's Zlib Plugin
+    Documentation`__ (and `settings documentation`__)
+    for further details
 
 Note that ``imaps`` and ``pop3s`` (implicit TLS) are recommended
 over ``imap`` and ``pop3`` (explicit TLS) by :rfc:`8314`. Furthermore,
@@ -50,6 +62,8 @@ LMTP is recommended over LDA by the Dovecot project.
 .. __: https://doc.dovecot.org/admin_manual/pigeonhole_managesieve_server/
 .. __: https://doc.dovecot.org/configuration_manual/quota_plugin/
 .. __: https://doc.dovecot.org/configuration_manual/replication/
+.. __: https://doc.dovecot.org/configuration_manual/zlib_plugin/
+.. __: https://doc.dovecot.org/settings/plugin/zlib-plugin/
 
 
 .. _dovecot__ref_dsync:
