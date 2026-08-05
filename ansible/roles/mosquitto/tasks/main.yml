@@ -33,7 +33,7 @@
   with_items: '{{ mosquitto__pip_packages }}'
   register: mosquitto__register_pip_install
   until: mosquitto__register_pip_install is succeeded
-  when: mosquitto__pip_packages | d()
+  when: mosquitto__pip_packages | d() | length > 0
 
 - name: Check the installed Mosquitto version
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&

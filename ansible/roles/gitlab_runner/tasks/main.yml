@@ -154,7 +154,7 @@
   delegate_to: '{{ item.host }}'
   become: '{{ item.become | d(True) }}'
   with_items: '{{ gitlab_runner__ssh_install_to }}'
-  when: gitlab_runner__ssh_generate | bool and item.user | d() and item.host | d()
+  when: gitlab_runner__ssh_generate | bool and item.user | d() | length > 0 and item.host | d() | length > 0
 
 - name: Make sure that the ~/.ssh directory exists
   ansible.builtin.file:
@@ -163,7 +163,7 @@
     owner: '{{ gitlab_runner__user }}'
     group: '{{ gitlab_runner__group }}'
     mode: '0700'
-  when: gitlab_runner__ssh_known_hosts | d()
+  when: gitlab_runner__ssh_known_hosts | d() | length > 0
 
 - name: Make sure the ~/.ssh/known_hosts file exists
   ansible.builtin.copy:
@@ -173,7 +173,7 @@
     group: '{{ gitlab_runner__group }}'
     mode: '0644'
     force: False
-  when: gitlab_runner__ssh_known_hosts | d()
+  when: gitlab_runner__ssh_known_hosts | d() | length > 0
 
 - name: Get list of already scanned host fingerprints
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
@@ -181,7 +181,7 @@
   args:
     executable: 'bash'
   with_items: '{{ gitlab_runner__ssh_known_hosts }}'
-  when: gitlab_runner__ssh_known_hosts | d()
+  when: gitlab_runner__ssh_known_hosts | d() | length > 0
   register: gitlab_runner__register_known_hosts
   changed_when: False
   failed_when: False
