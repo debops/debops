@@ -168,6 +168,25 @@ and follow the project's established format:
 - No AI-agent boilerplate ("Here is a summary of the changes...").
 - Describe the change and its motivation in plain prose.
 
+Verification of LLM-Created Code
+--------------------------------
+
+Content originally created by an LLM is held to at least the same standard
+as human-written content, and in some ways a higher one, because it is
+easier to produce at volume. The ``Generated-By: LLM`` trailer is the signal
+that a contribution requires the maintainers' extra attention during review.
+
+Contributions that carry the ``Generated-By: LLM`` trailer MUST pass the
+project's existing quality checks (``make test-pep8``, ``make test-spdx``,
+``make docs``) and MUST include tests where a test suite exists for the
+affected code. This is deliberately a higher bar than the general
+contribution standard. If tests cannot be written for a change, it SHOULD
+be discussed with the maintainers before submission.
+
+Changes to security-critical roles (for example ``secret``, ``pki``, and
+``auth``) that carry the ``Generated-By: LLM`` trailer receive heightened
+scrutiny from the maintainers during review.
+
 Prohibited Practices
 --------------------
 
@@ -188,6 +207,19 @@ The following practices are prohibited:
   security issues using LLM-generated content without human verification.
   Incorrect AI-generated security reports are particularly harmful because
   they waste maintainer time and desensitize maintainers to real issues.
+- **LLM reviews are advisory only.** An LLM review cannot, by itself, be a
+  sufficient reason to merge or reject a change. An LLM-generated comment
+  cannot, by itself, prevent a change from being merged; the human reviewer
+  must agree with the comment and take responsibility for it before it can
+  block a change.
+- **Omitting the required trailer.** Submitting content generated in whole
+  or in substantial part by an LLM without the required
+  ``Generated-By: LLM`` trailer. A first omission is a process violation;
+  repeated or willful omission is a Code of Conduct matter.
+- **Misrepresenting provenance.** Claiming authorship of content originally
+  created by an LLM, or otherwise falsely stating that a contribution was
+  not produced with LLM assistance. Misrepresentation is a violation of the
+  Code of Conduct from the first occurrence.
 
 Code review feedback that draws on LLM suggestions is subject to the same
 Core Principle: the reviewer must understand and stand behind the feedback
@@ -221,19 +253,48 @@ Pull requests and issues opened before the effective date of this policy
 — but not required — to apply the ``Generated-By: LLM`` trailer to subsequent
 commits on existing branches.
 
+Moderation
+----------
+
+The disclosure requirements in this policy are not a license to police
+other contributors. Maintainers and contributors MUST NOT play detective
+for LLM usage. Writing style is not evidence of LLM involvement; people who
+write in a second language, who are neurodivergent, or who tend to
+over-explain are the most likely to be falsely accused.
+
+Suspected undisclosed LLM use SHOULD be reported privately to the
+maintainers rather than raised as a public accusation.
+
+Harassing a contributor for using an LLM is not allowed, regardless of
+whether the use violates this policy. The Code of Conduct applies to all
+conversations in the DebOps Project.
+
+The disclosure requirement and the prohibition on harassment are enforced
+together. Disclosure works only when contributors are not punished for it,
+and the no-harassment rule works only when contributors are not suspected
+of hiding their LLM use.
+
 Handling Violations
 -------------------
 
-Maintainers MAY close pull requests, close issues, and hide comments that
-they reasonably believe violate this policy. Before taking action on
-ambiguous cases, maintainers SHOULD ask the contributor for clarification
-and SHOULD cite a link to this policy. Contributors are welcome to ask
-clarifying questions, revise their work, and resubmit once they can
-demonstrate understanding of their contribution.
+Before taking action on ambiguous cases, maintainers SHOULD ask the
+contributor for clarification and SHOULD cite a link to this policy.
+Contributors are welcome to ask clarifying questions, revise their work,
+and resubmit once they can demonstrate understanding of their contribution.
+
+Reasonable belief that this policy was violated MUST be based on verifiable
+evidence — the contributor's own words, admission, or metadata — not on
+writing style. Maintainers MAY close pull requests, close issues, and hide
+comments that they reasonably believe violate this policy.
 
 Repeated violations by the same contributor may result in a temporary or
 permanent ban from the project's spaces, handled according to the project's
 Code of Conduct enforcement guidelines.
+
+For minor violations, maintainers SHOULD explain what is non-compliant and
+give the contributor a chance to fix it rather than treating the violation
+as misconduct. Repeated or willful omissions of the trailer, and any
+misrepresentation of provenance, are handled as Code of Conduct matters.
 
 Additional References
 ---------------------
