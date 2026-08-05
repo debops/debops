@@ -11,8 +11,8 @@ DebOps LLM-Generated Contributions Policy
 
 :Date drafted: 2026-07-02
 :Date effective: 2026-09-01
-:Last changed: 2026-07-02
-:Version: 0.1.0
+:Last changed: 2026-08-05
+:Version: 0.2.0
 :Authors: - drybjed_
 
 .. This version may not correspond directly to the debops-policy version.
@@ -32,6 +32,10 @@ Terminology
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
 document are to be interpreted as described in BCP 14, [`RFC2119`_].
+
+This policy uses "LLM" for the class of AI tools that can generate or
+transform content, and "AI" as the umbrella term; the provisions apply to
+both.
 
 Core Principle
 --------------
@@ -57,9 +61,9 @@ declined outright.
 Contributors MUST review their work and not submit content they recognize
 as a verbatim copy of copyrighted sources. Contributors MUST apply the same
 license-compatibility diligence to AI-generated content as to any other
-third-party code. AI tool terms of service must not place restrictions on
-generated output that would conflict with the project's licensing or the
-ability to GPG-sign the resulting commits.
+third-party code. Contributors MUST NOT use AI tools whose terms of service
+place restrictions on generated output that conflict with the project's
+licensing or the ability to OpenPGP-sign the resulting commits.
 
 Meaning of "originally created by an LLM"
 -----------------------------------------
@@ -222,7 +226,7 @@ The following practices are prohibited:
   Code of Conduct from the first occurrence.
 
 Code review feedback that draws on LLM suggestions is subject to the same
-Core Principle: the reviewer must understand and stand behind the feedback
+Core Principle: the reviewer MUST understand and stand behind the feedback
 they post.
 
 Scope
@@ -240,10 +244,19 @@ but not limited to:
 
 This policy does not apply to:
 
-- AI-assisted language utilities: spelling and grammar checkers, translators,
-  provided they do not generate novel content or restructure logic.
+- Non-LLM language utilities: spelling and grammar checkers, and machine
+  translation that does not use LLMs, provided they do not generate novel
+  content or restructure logic. Machine translation performed by an LLM
+  produces content originally created by an LLM and is subject to the
+  ``Generated-By: LLM`` trailer requirement.
 - Authorized bots owned and operated by the DebOps Project (for example CI
   integrations, automated testing infrastructure).
+
+This policy governs contributions to the DebOps Project. It does not govern
+the use of LLM output against live infrastructure — for example playbooks
+generated or modified by an LLM and executed against managed hosts. That
+use is covered by the project's operational safeguards and verification
+tooling, not by this document.
 
 Transition
 ----------
@@ -296,6 +309,18 @@ give the contributor a chance to fix it rather than treating the violation
 as misconduct. Repeated or willful omissions of the trailer, and any
 misrepresentation of provenance, are handled as Code of Conduct matters.
 
+Conditions for Modification
+---------------------------
+
+Minor changes to this policy, such as typo fixes, require only a normal
+pull request. Major changes, such as adding or removing a rule, require a
+decision by the maintainers of the affected repository and a note in the
+project changelog.
+
+This policy is expected to evolve as the project gains experience with
+LLM-assisted contributions. Feedback gathered from how the policy is
+applied may inform future revisions.
+
 Additional References
 ---------------------
 
@@ -311,6 +336,9 @@ Additional References
 - KubeVirt Project, `AI Contribution Policy <https://github.com/kubevirt/community/blob/main/ai-contribution-policy.md>`__
 - Argo Project, `Generative AI Contribution Policy <https://github.com/argoproj/argoproj/blob/main/community/genai.md>`__
 - Linux Foundation, `Generative AI Policy <https://www.linuxfoundation.org/legal/generative-ai>`__
+- Rust Project, `LLM Usage Policy <https://forge.rust-lang.org/policies/llm-usage.html>`__
+- Jynn Nelson, `rust-lang/rust is adopting an LLM policy <https://blog.rust-lang.org/inside-rust/2026/08/05/rust-langrust-is-adopting-an-llm-policy/>`__
+- rustc-dev-guide, `LLM Guidance <https://rustc-dev-guide.rust-lang.org/llm-guidance.html>`__
 
 .. _REUSE: https://reuse.software/
 .. _SPDX: https://spdx.dev/
