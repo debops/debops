@@ -71,7 +71,7 @@
     owner: 'root'
     group: 'root'
     mode: '0440'
-  when: (ansible_local | d() and ansible_local.sudo | d() and
+  when: (ansible_local | d() | length > 0 and ansible_local.sudo | d() | length > 0 and
          (ansible_local.sudo.installed | d()) | bool)
 
                                                                    # ]]]
@@ -102,7 +102,7 @@
                            + php__group_configuration
                            + php__host_configuration
                            + php__dependent_configuration) }}'
-  when: item.state | d() and item.state == 'absent'
+  when: item.state | d() | length > 0 and item.state == 'absent'
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:config' ]
 
@@ -165,7 +165,7 @@
                            + php__group_pools
                            + php__host_pools
                            + php__dependent_pools) }}'
-  when: '"fpm" in php__server_api_packages and item.state | d() and item.state == "absent"'
+  when: '"fpm" in php__server_api_packages and item.state | d() | length > 0 and item.state == "absent"'
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:pools', 'role::php:config' ]
 
@@ -182,7 +182,7 @@
                            + php__group_pools
                            + php__host_pools
                            + php__dependent_pools) }}'
-  when: '"fpm" in php__server_api_packages and item.state | d("present") != "absent" and item.owner | d() and item.home | d()'
+  when: '"fpm" in php__server_api_packages and item.state | d("present") != "absent" and item.owner | d() | length > 0 and item.home | d() | length > 0'
 
 - name: Make sure required system accounts exist
   ansible.builtin.user:
@@ -197,7 +197,7 @@
                            + php__group_pools
                            + php__host_pools
                            + php__dependent_pools) }}'
-  when: '"fpm" in php__server_api_packages and item.state | d("present") != "absent" and item.owner | d() and item.home | d()'
+  when: '"fpm" in php__server_api_packages and item.state | d("present") != "absent" and item.owner | d() | length > 0 and item.home | d() | length > 0'
 
                                                                    # ]]]
 # Ansible local facts [[[

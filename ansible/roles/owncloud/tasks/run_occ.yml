@@ -59,8 +59,8 @@
   become_user: '{{ owncloud__app_user }}'
   ## https://github.com/debops/ansible-owncloud/issues/62
   when: (owncloud__do_autosetup | d() | bool and
-         owncloud__occ_item | d() and
-         owncloud__occ_item.command | d() and
+         owncloud__occ_item | d() | length > 0 and
+         owncloud__occ_item.command | d() | length > 0 and
          (owncloud__occ_item.when | d(True) | bool) and not
           (ansible_local.owncloud.maintenance | d() | bool and
            (owncloud__occ_item.command.startswith("dav") or
@@ -85,5 +85,5 @@
     ## regex_replace: Relies on the fact that `json_pretty` indents the JSON encoded object.
     owncloud__occ_run_output: '{{ owncloud__occ_run.stdout_lines
                                   | map("regex_replace", "^[^{} ].*$", "") | join("") | from_json }}'
-  when: (owncloud__do_autosetup | d() | bool and owncloud__occ_item | d() and (owncloud__occ_item.get_output | d() | bool) and (not ansible_check_mode))
+  when: (owncloud__do_autosetup | d() | bool and owncloud__occ_item | d() | length > 0 and (owncloud__occ_item.get_output | d() | bool) and (not ansible_check_mode))
   tags: [ 'role::owncloud:occ_config', 'role::owncloud:occ' ]
