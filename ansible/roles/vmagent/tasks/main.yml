@@ -29,8 +29,7 @@
     name: '{{ vmagent__group }}'
     state: 'present'
     system: True
-  when: vmagent__enabled | bool and
-        vmagent__deploy_state != 'absent'
+  when: vmagent__deploy_state != 'absent'
 
 - name: Create vmagent system user
   ansible.builtin.user:
@@ -41,8 +40,7 @@
     system: True
     create_home: True
     state: 'present'
-  when: vmagent__enabled | bool and
-        vmagent__deploy_state != 'absent'
+  when: vmagent__deploy_state != 'absent'
 
 - name: Create vmagent configuration directory
   ansible.builtin.file:
@@ -51,8 +49,7 @@
     owner: 'root'
     group: '{{ vmagent__group }}'
     mode: '0750'
-  when: vmagent__enabled | bool and
-        vmagent__deploy_state != 'absent'
+  when: vmagent__deploy_state != 'absent'
 
 - name: Create vmagent state directory
   ansible.builtin.file:
@@ -61,8 +58,7 @@
     owner: '{{ vmagent__user }}'
     group: '{{ vmagent__group }}'
     mode: '0750'
-  when: vmagent__enabled | bool and
-        vmagent__deploy_state != 'absent'
+  when: vmagent__deploy_state != 'absent'
 
 - name: Create vmagent download cache directory
   ansible.builtin.file:
@@ -71,14 +67,12 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: vmagent__enabled | bool and
-        vmagent__deploy_state != 'absent' and
+  when: vmagent__deploy_state != 'absent' and
         not (vmagent__skip_install | bool)
 
 - name: Install vmagent binary
   ansible.builtin.include_tasks: 'install_binary.yml'
-  when: vmagent__enabled | bool and
-        vmagent__deploy_state != 'absent' and
+  when: vmagent__deploy_state != 'absent' and
         not (vmagent__skip_install | bool)
 
 - name: Save vmagent local facts
@@ -100,8 +94,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Reload service manager' ]
-  when: vmagent__enabled | bool and
-        vmagent__deploy_state != 'absent'
+  when: vmagent__deploy_state != 'absent'
 
 - name: Remove vmagent systemd template unit
   ansible.builtin.file:
@@ -119,7 +112,6 @@
   loop_control:
     loop_var: 'instance'
     label: '{{ instance.name }}'
-  when: vmagent__enabled | bool
 
 - name: Remove vmagent binary when deploy state is absent
   ansible.builtin.file:
