@@ -40,8 +40,7 @@
     name: '{{ cloudflared__group }}'
     state: 'present'
     system: True
-  when: cloudflared__enabled | bool and
-        cloudflared__deploy_state != 'absent'
+  when: cloudflared__deploy_state != 'absent'
 
 - name: Create cloudflared system user
   ansible.builtin.user:
@@ -52,8 +51,7 @@
     system: True
     create_home: True
     state: 'present'
-  when: cloudflared__enabled | bool and
-        cloudflared__deploy_state != 'absent'
+  when: cloudflared__deploy_state != 'absent'
 
 - name: Install cloudflared packages
   ansible.builtin.apt:
@@ -64,7 +62,6 @@
     install_recommends: False
   register: cloudflared__register_packages
   until: cloudflared__register_packages is succeeded
-  when: cloudflared__enabled | bool
 
 - name: Create cloudflared configuration directory
   ansible.builtin.file:
@@ -73,8 +70,7 @@
     owner: 'root'
     group: '{{ cloudflared__group }}'
     mode: '0750'
-  when: cloudflared__enabled | bool and
-        cloudflared__deploy_state != 'absent'
+  when: cloudflared__deploy_state != 'absent'
 
 - name: Create cloudflared credentials directory
   ansible.builtin.file:
@@ -83,8 +79,7 @@
     owner: '{{ cloudflared__user }}'
     group: '{{ cloudflared__group }}'
     mode: '0700'
-  when: cloudflared__enabled | bool and
-        cloudflared__deploy_state != 'absent'
+  when: cloudflared__deploy_state != 'absent'
 
 - name: Create cloudflared log directory
   ansible.builtin.file:
@@ -93,8 +88,7 @@
     owner: '{{ cloudflared__user }}'
     group: '{{ cloudflared__group }}'
     mode: '0750'
-  when: cloudflared__enabled | bool and
-        cloudflared__deploy_state != 'absent'
+  when: cloudflared__deploy_state != 'absent'
 
 - name: Install cloudflared systemd template unit
   ansible.builtin.template:
@@ -105,8 +99,7 @@
     mode: '0644'
   notify:
     - 'Reload service manager'
-  when: cloudflared__enabled | bool and
-        cloudflared__deploy_state != 'absent'
+  when: cloudflared__deploy_state != 'absent'
 
 - name: Remove cloudflared systemd template unit
   ansible.builtin.file:
@@ -124,7 +117,6 @@
   loop_control:
     loop_var: 'tunnel'
     label: '{{ tunnel.name }}'
-  when: cloudflared__enabled | bool
 
 - name: Post hooks
   ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "cloudflared/post_main.yml") }}'
