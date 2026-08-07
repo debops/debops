@@ -32,5 +32,10 @@
       keyring__dependent_apt_keys:
         - '{{ cloudflared__keyring__dependent_apt_keys }}'
 
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ cloudflared__etc_services__dependent_list }}'
+
     - role: cloudflared
       tags: [ 'role::cloudflared', 'skip::cloudflared' ]
