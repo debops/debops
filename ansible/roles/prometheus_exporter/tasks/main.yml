@@ -31,7 +31,6 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: prometheus_exporter__enabled | bool
 
 - name: Manage Prometheus exporters
   ansible.builtin.include_tasks: 'manage_exporter.yml'
@@ -39,7 +38,6 @@
   loop_control:
     loop_var: 'exporter'
     label: '{{ exporter.name | d("<unnamed>") }}'
-  when: prometheus_exporter__enabled | bool
 
 - name: Save prometheus_exporter local facts
   ansible.builtin.template:
