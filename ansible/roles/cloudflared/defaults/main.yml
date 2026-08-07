@@ -251,25 +251,14 @@ cloudflared__catch_all_service: 'http_status:404'
 # -------------------------
 
 # The ``cloudflared@.service`` template unit hardcodes
-# ``After=network-online.target`` / ``Wants=network-online.target``, since
-# this is expected to be the same for all tunnel instances. To customize
-# boot ordering for a specific tunnel (for example to order it after a
-# service it depends on), use the :ref:`debops.systemd` role to deploy a
-# systemd override (drop-in) file for the relevant
-# ``cloudflared@<tunnel>.service`` instance instead of a role-wide variable.
-
-# .. envvar:: cloudflared__systemd_restart_policy [[[
-#
-# The restart policy for cloudflared systemd service instances.
-cloudflared__systemd_restart_policy: 'on-failure'
-
-                                                                   # ]]]
-# .. envvar:: cloudflared__systemd_restart_sec [[[
-#
-# The time to wait between restarts of cloudflared service instances.
-cloudflared__systemd_restart_sec: '5'
-
-                                                                   # ]]]
+# ``After=network-online.target`` / ``Wants=network-online.target``,
+# ``Restart=on-failure`` and ``RestartSec=5``, since these are expected to
+# be the same for all tunnel instances. To customize boot ordering or
+# restart behaviour for a specific tunnel (for example to order it after
+# a service it depends on), use the :ref:`debops.systemd` role to deploy
+# a systemd override (drop-in) file for the relevant
+# ``cloudflared@<tunnel>.service`` instance instead of a role-wide
+# variable.
                                                                    # ]]]
 # Secret management [[[
 # ---------------------

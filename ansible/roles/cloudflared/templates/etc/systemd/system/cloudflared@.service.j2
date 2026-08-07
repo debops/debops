@@ -15,8 +15,8 @@ User={{ cloudflared__user }}
 Group={{ cloudflared__group }}
 EnvironmentFile=-{{ cloudflared__config_dir }}/%i.env
 ExecStart=/usr/bin/cloudflared --config {{ cloudflared__config_dir }}/%i.yml tunnel run
-Restart={{ cloudflared__systemd_restart_policy }}
-RestartSec={{ cloudflared__systemd_restart_sec }}
+Restart=on-failure
+RestartSec=5
 TimeoutStartSec=0
 LimitNOFILE=65536
 
