@@ -7,7 +7,7 @@
 [Unit]
 Description=VictoriaMetrics vmagent - %i
 Documentation=https://docs.victoriametrics.com/vmagent/
-After={{ vmagent__systemd_after }}
+After=network-online.target
 Wants=network-online.target
 
 [Service]
@@ -17,8 +17,8 @@ Group={{ vmagent__group }}
 EnvironmentFile={{ vmagent__config_dir }}/%i.env
 ExecStart={{ vmagent__bin_path }} $ARGS
 ExecReload=/bin/kill -HUP $MAINPID
-Restart={{ vmagent__systemd_restart_policy }}
-RestartSec={{ vmagent__systemd_restart_sec }}
+Restart=on-failure
+RestartSec=5
 TimeoutStopSec={{ vmagent__systemd_timeout_stop_sec }}
 LimitNOFILE={{ vmagent__systemd_limit_nofile }}
 StateDirectory=vmagent/%i
