@@ -369,30 +369,20 @@ vmagent__instance_default_flags:
 # systemd configuration [[[
 # -------------------------
 
-# .. envvar:: vmagent__systemd_restart_policy [[[
-#
-# Value of the ``Restart=`` directive in the vmagent systemd template unit.
-vmagent__systemd_restart_policy: 'on-failure'
+# The ``vmagent@.service`` template unit hardcodes
+# ``After=network-online.target``, ``Restart=on-failure`` and
+# ``RestartSec=5``, since these are expected to be the same for all
+# instances. To customize boot ordering or restart behaviour for a
+# specific instance, use the :ref:`debops.systemd` role to deploy a
+# systemd override (drop-in) file for the relevant
+# ``vmagent@<instance>.service`` instance instead of a role-wide
+# variable.
 
-                                                                   # ]]]
-# .. envvar:: vmagent__systemd_restart_sec [[[
-#
-# Value of the ``RestartSec=`` directive in the vmagent systemd template
-# unit (seconds between restarts).
-vmagent__systemd_restart_sec: '5'
-
-                                                                   # ]]]
 # .. envvar:: vmagent__systemd_timeout_stop_sec [[[
 #
 # Value of the ``TimeoutStopSec=`` directive. Set high enough for vmagent to
 # flush its in-memory and on-disk queues during shutdown.
 vmagent__systemd_timeout_stop_sec: '30'
-
-                                                                   # ]]]
-# .. envvar:: vmagent__systemd_after [[[
-#
-# Value of the ``After=`` directive in the vmagent systemd template unit.
-vmagent__systemd_after: 'network-online.target'
 
                                                                    # ]]]
 # .. envvar:: vmagent__systemd_limit_nofile [[[
