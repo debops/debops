@@ -205,9 +205,13 @@ cloudflared__loglevel: 'info'
                                                                    # ]]]
 # .. envvar:: cloudflared__metrics [[[
 #
-# Address and port to expose Prometheus metrics. Set to empty string to
-# disable. Example: ``127.0.0.1:2000``.
-cloudflared__metrics: ''
+# Address and port to expose Prometheus metrics. Bound to loopback and
+# enabled by default so metrics are available out of the box without an
+# extra opt-in step; expose on a non-loopback address only behind a reverse
+# proxy or firewall. Set to empty string to disable entirely. Port ``2000``
+# is avoided as a default since it's already reserved for the Cisco SCCP
+# service on many systems.
+cloudflared__metrics: '127.0.0.1:20241'
 
                                                                    # ]]]
 # .. envvar:: cloudflared__post_quantum [[[
@@ -252,6 +256,14 @@ cloudflared__catch_all_service: 'http_status:404'
 # systemd configuration [[[
 # -------------------------
 
+# The ``cloudflared@.service`` template unit hardcodes
+# ``After=network-online.target`` / ``Wants=network-online.target``, since
+# this is expected to be the same for all tunnel instances. To customize
+# boot ordering for a specific tunnel (for example to order it after a
+# service it depends on), use the :ref:`debops.systemd` role to deploy a
+# systemd override (drop-in) file for the relevant
+# ``cloudflared@<tunnel>.service`` instance instead of a role-wide variable.
+
 # .. envvar:: cloudflared__systemd_restart_policy [[[
 #
 # The restart policy for cloudflared systemd service instances.
@@ -263,11 +275,6 @@ cloudflared__systemd_restart_policy: 'on-failure'
 # The time to wait between restarts of cloudflared service instances.
 cloudflared__systemd_restart_sec: '5'
 
-                                                                   # ]]]
-# .. envvar:: cloudflared__systemd_after [[[
-#
-# The ``After=`` directive in cloudflared systemd service units.
-cloudflared__systemd_after: 'network-online.target'
                                                                    # ]]]
                                                                    # ]]]
 # Secret management [[[
@@ -291,6 +298,20 @@ cloudflared__secret_directories: []
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: cloudflared__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role. Registers
+# the Prometheus metrics port in :file:`/etc/services` when
+# :envvar:`cloudflared__metrics` is enabled.
+cloudflared__etc_services__dependent_list:
+
+  - name: 'cloudflared-metrics'
+    port: '{{ cloudflared__metrics.split(":") | last
+              if (cloudflared__metrics | length > 0) else 0 }}'
+    comment: 'Cloudflare Tunnel (cloudflared) Prometheus metrics'
+    state: '{{ "present" if (cloudflared__metrics | length > 0) else "absent" }}'
+
+                                                                   # ]]]
 # .. envvar:: cloudflared__keyring__dependent_apt_keys [[[
 #
 # Configuration for the :ref:`debops.keyring` Ansible role.
