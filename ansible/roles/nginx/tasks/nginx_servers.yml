@@ -199,7 +199,7 @@
   notify: [ 'Test nginx and restart' ]
   when: (item.name is defined and
          ((item.state | d("present") == 'absent') or
-          (item.enabled | d() and not item.enabled | bool) or
+          (item.enabled is defined | d() and not item.enabled | bool) or
           (item.delete | d() | bool)))
   tags: [ 'role::nginx:servers' ]
 
