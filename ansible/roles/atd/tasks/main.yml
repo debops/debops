@@ -85,8 +85,8 @@
   loop: '{{ q("flattened", atd_default_deny
                            + atd_deny) }}'
   when: (atd_enabled | bool and
-         (atd_default_deny | d() or atd_deny | d()) and
-          item | d())
+         ((atd_default_deny is defined and atd_default_deny is truthy) or (atd_deny is defined and atd_deny is truthy)) and
+         (item is defined and item is truthy))
   tags: [ 'role::atd:users' ]
 
 - name: Make sure that Ansible local facts directory exists

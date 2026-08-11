@@ -52,7 +52,7 @@
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + (item.group | d(item.name)),
                 "state": item.state | d("present")} }}'
-  when: (system_users__enabled | bool and item.name | d() and item.name != 'root' and
+  when: (system_users__enabled | bool and item.name is defined and item.name is truthy and item.name != 'root' and
          item.state | d('present') not in ['absent', 'ignore'] and
          (item.private_group | d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
@@ -98,7 +98,7 @@
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"), "gecos": item.comment | d()} }}'
-  when: (system_users__enabled | bool and item.name | d() and item.name != 'root' and
+  when: (system_users__enabled | bool and item.name is defined and item.name is truthy and item.name != 'root' and
          item.state | d('present') not in ['ignore'] and (item.user | d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
 
@@ -130,7 +130,7 @@
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"), "gecos": item.comment | d(),
                 "groups": item.groups | d()} }}'
-  when: (system_users__enabled | bool and item.name | d() and item.name != 'root' and
+  when: (system_users__enabled | bool and item.name is defined and item.name is truthy and item.name != 'root' and
          item.state | d('present') not in ['ignore'] and
          (item.groups | d() or (item.admin | d()) | bool) and
          (item.user | d(True)) | bool)
@@ -157,7 +157,7 @@
                                         else (system_users__home_root + "/" + ((item.prefix | d(system_users__prefix)) + item.name)))
                                        if ((item.create_home | d(True)) | bool)
                                        else ""))} }}'
-  when: (system_users__enabled | bool and item.name | d() and item.name != 'root' and
+  when: (system_users__enabled | bool and item.name is defined and item.name is truthy and item.name != 'root' and
          item.state | d('present') not in ['absent', 'ignore'] and (item.create_home | d(True)) | bool and
          (item.home_owner | d() or item.home_group | d() or item.home_mode | d() or (item.local | d(True)) | bool) and
          (item.user | d(True)) | bool)
@@ -186,9 +186,9 @@
     label: '{{ {"name": (item.0.prefix | d(system_users__prefix)) + item.0.name,
                 "state": item.0.state | d("present"), "home_acl": item.1} }}'
   when: (system_users__enabled | bool and system_users__acl_enabled | bool and
-         item.0.name | d() and item.0.name != 'root' and
+         item.0.name is defined and item.0.name is truthy and item.0.name != 'root' and
          item.0.state | d('present') not in ['absent', 'ignore'] and (item.0.create_home | d(True)) | bool and
-         item.0.home_acl | d() and (item.user | d(True)) | bool)
+         item.0.home_acl is defined and item.0.home_acl is truthy and (item.user | d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password | d() else False) }}'
   tags: [ 'role::system_users:home_acl', 'skip::system_users:home_acl', 'skip::check' ]
 
@@ -201,7 +201,7 @@
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"), "linger": item.linger | d(False)} }}'
   when: (system_users__enabled | bool and ansible_service_mgr == 'systemd' and
-         item.name | d() and item.name != 'root' and
+         item.name is defined and item.name is truthy and item.name != 'root' and
          item.state | d('present') not in ['absent', 'ignore'] and
          item.linger is defined and item.linger | bool and (item.user | d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
@@ -215,7 +215,7 @@
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"), "linger": item.linger | d(False)} }}'
   when: (system_users__enabled | bool and ansible_service_mgr == 'systemd' and
-         item.name | d() and item.name != 'root' and
+         item.name is defined and item.name is truthy and item.name != 'root' and
          item.state | d('present') not in ['absent', 'ignore'] and
          item.linger is defined and not item.linger | bool and (item.user | d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
@@ -231,9 +231,9 @@
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"), "sshkeys": item.sshkeys | d()} }}'
-  when: (system_users__enabled | bool and item.name | d() and item.name != 'root' and
+  when: (system_users__enabled | bool and item.name is defined and item.name is truthy and item.name != 'root' and
          item.state | d('present') not in ['absent', 'ignore'] and (item.create_home | d(True)) | bool and
-         item.sshkeys | d() and item.sshkeys_state | d('present') != 'absent' and (item.user | d(True)) | bool and
+         item.sshkeys is defined and item.sshkeys is truthy and item.sshkeys_state | d('present') != 'absent' and (item.user | d(True)) | bool and
          not ansible_check_mode)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
   tags: [ 'role::system_users:authorized_keys', 'skip::system_users:authorized_keys', 'skip::check' ]
@@ -247,9 +247,9 @@
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"),
                 "sshkeys_state": item.sshkeys_state | d("present")} }}'
-  when: (system_users__enabled | bool and item.name | d() and item.name != 'root' and
+  when: (system_users__enabled | bool and item.name is defined and item.name is truthy and item.name != 'root' and
          item.state | d('present') not in ['absent', 'ignore'] and (item.create_home | d(True)) | bool and
-         item.sshkeys | d() and item.sshkeys_state | d('present') == 'absent' and (item.user | d(True)) | bool)
+         item.sshkeys is defined and item.sshkeys is truthy and item.sshkeys_state | d('present') == 'absent' and (item.user | d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
 
 - name: Configure system user mail forwarding
@@ -328,9 +328,9 @@
     label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
                 "state": item.0.state | d("present"), "resources": item.1} }}'
   when: (system_users__enabled | bool and
-         item.0.name | d() and item.0.name != 'root' and
+         item.0.name is defined and item.0.name is truthy and item.0.name != 'root' and
          item.0.state | d('present') not in ['absent', 'ignore'] and
-         item.0.create_home | d(True) and item.0.resources | d() and (item.0.user | d(True)) | bool and
+         item.0.create_home | d(True) and item.0.resources is defined and item.0.resources is truthy and (item.0.user | d(True)) | bool and
          item.1.state | d('directory') in ['directory', 'link', 'touch'] and
          item.1.content is undefined)
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password | d() else False) }}'
@@ -351,9 +351,9 @@
     label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
                 "state": item.0.state | d("present"), "resources": item.1} }}'
   when: (system_users__enabled | bool and
-         item.0.name | d() and item.0.name != 'root' and
+         item.0.name is defined and item.0.name is truthy and item.0.name != 'root' and
          item.0.state | d('present') not in ['absent', 'ignore'] and
-         item.0.create_home | d(True) and item.0.resources | d() and (item.0.user | d(True)) | bool and
+         item.0.create_home | d(True) and item.0.resources is defined and item.0.resources is truthy and (item.0.user | d(True)) | bool and
          item.1.state | d('directory') in ['present', 'file'])
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password | d() else False) }}'
 
@@ -373,11 +373,11 @@
     label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
                 "state": item.0.state | d("present"), "resources": item.1} }}'
   when: (system_users__enabled | bool and
-         item.0.name | d() and item.0.name != 'root' and
+         item.0.name is defined and item.0.name is truthy and item.0.name != 'root' and
          item.0.state | d('present') not in ['absent', 'ignore'] and
-         item.0.create_home | d(True) and item.0.resources | d() and (item.0.user | d(True)) | bool and
+         item.0.create_home | d(True) and item.0.resources is defined and item.0.resources is truthy and (item.0.user | d(True)) | bool and
          item.1.state | d('directory') in ['present', 'file'] and
-         (item.1.dest | d() or item.1.path | d()) and (item.1.src | d() or item.1.content | d()))
+         ((item.1.dest is defined and item.1.dest is truthy) or (item.1.path is defined and item.1.path is truthy)) and ((item.1.src is defined and item.1.src is truthy) or (item.1.content is defined and item.1.content is truthy)))
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password | d() else False) }}'
 
 - name: Remove system user resources if requested
@@ -391,9 +391,9 @@
     label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
                 "state": item.0.state | d("present"), "resources": item.1} }}'
   when: (system_users__enabled | bool and
-         item.0.name | d() and item.0.name != 'root' and
+         item.0.name is defined and item.0.name is truthy and item.0.name != 'root' and
          item.0.state | d('present') not in ['absent', 'ignore'] and
-         item.0.create_home | d(True) and item.0.resources | d() and (item.0.user | d(True)) | bool and
+         item.0.create_home | d(True) and item.0.resources is defined and item.0.resources is truthy and (item.0.user | d(True)) | bool and
          item.1.state | d('directory') == 'absent')
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password | d() else False) }}'
 
@@ -406,7 +406,7 @@
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present")} }}'
-  when: (system_users__enabled | bool and item.name | d() and item.name != 'root' and
+  when: (system_users__enabled | bool and item.name is defined and item.name is truthy and item.name != 'root' and
          item.state | d('present') == 'absent' and
          (item.private_group | d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'

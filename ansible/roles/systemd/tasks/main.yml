@@ -80,7 +80,7 @@
   loop: '{{ systemd__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
-  when: systemd__enabled | bool and item.raw | d() and
+  when: systemd__enabled | bool and item.raw is defined and item.raw is truthy and
         item.state | d("present") not in ['absent', 'ignore', 'init'] and
         (item.name | dirname).endswith('.d')
 
@@ -94,7 +94,7 @@
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   register: systemd__register_units_created
   notify: [ 'Reload systemd daemon' ]
-  when: systemd__enabled | bool and item.raw | d() and
+  when: systemd__enabled | bool and item.raw is defined and item.raw is truthy and
         item.state | d("present") not in ['absent', 'ignore', 'init']
 
 - name: Remove user units if requested
@@ -127,7 +127,7 @@
   loop: '{{ systemd__user_combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
-  when: systemd__enabled | bool and item.raw | d() and
+  when: systemd__enabled | bool and item.raw is defined and item.raw is truthy and
         item.state | d("present") not in ['absent', 'ignore', 'init'] and
         (item.name | dirname).endswith('.d')
 
@@ -140,7 +140,7 @@
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   notify: [ 'Reload systemd daemon' ]
-  when: systemd__enabled | bool and item.raw | d() and
+  when: systemd__enabled | bool and item.raw is defined and item.raw is truthy and
         item.state | d("present") not in ['absent', 'ignore', 'init']
 
 - name: Flush handlers when needed
@@ -167,7 +167,7 @@
   loop: '{{ systemd__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"restart": item.restart | d()} }}'
-  when: systemd__enabled | bool and item.restart | d() and
+  when: systemd__enabled | bool and item.restart is defined and item.restart is truthy and
         item.state | d("present") not in ['ignore', 'init'] and
         ((item.name in (systemd__register_units_removed.results | selectattr("changed", "true") | map(attribute="item.name") | list)) or
          (item.name in (systemd__register_units_created.results | selectattr("changed", "true") | map(attribute="item.name") | list)))

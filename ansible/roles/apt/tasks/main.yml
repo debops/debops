@@ -39,7 +39,7 @@
                            + apt__host_keys) }}'
   register: apt__register_apt_key
   until: apt__register_apt_key is succeeded
-  when: apt__enabled | bool and (item.url | d() or item.data | d() or item.id | d() or item.file | d()) and
+  when: apt__enabled | bool and ((item.url is defined and item.url is truthy) or (item.data is defined and item.data is truthy) or (item.id is defined and item.id is truthy) or (item.file is defined and item.file is truthy)) and
         (item.apt_key | d(False)) | bool
   tags: [ 'role::apt:keys' ]
 
@@ -75,7 +75,7 @@
                            + apt__host_keys) }}'
   register: apt__register_apt_key_get
   until: apt__register_apt_key_get is succeeded
-  when: apt__enabled | bool and (item.url | d()) and (item.state | d("present")) not in [ "absent" ] and
+  when: apt__enabled | bool and (item.url is defined and item.url is truthy) and (item.state | d("present")) not in [ "absent" ] and
         not (item.apt_key | d(False)) | bool
   tags: [ 'role::apt:keys' ]
 
@@ -86,7 +86,7 @@
   loop: '{{ q("flattened", apt__keys
                            + apt__group_keys
                            + apt__host_keys) }}'
-  when: apt__enabled | bool and ((item.url | d()) or (item.keyring | d())) and
+  when: apt__enabled | bool and ((item.url is defined and item.url is truthy) or (item.keyring is defined and item.keyring is truthy)) and
         (item.state | d("present")) in [ "absent" ] and not (item.apt_key | d(False)) | bool
 
 - name: Add/remove diversion of repository sources
@@ -115,7 +115,7 @@
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   register: apt__register_apt_repositories
-  when: (apt__enabled | bool and item.repo | d() and item.uris is undefined and
+  when: (apt__enabled | bool and item.repo is defined and item.repo is truthy and item.uris is undefined and
          (item.state | d("present")) not in [ "divert", "ignore", "init" ])
 
 - name: Configure custom APT Deb822 repositories
@@ -163,7 +163,7 @@
     dest: '{{ "/etc/apt/auth.conf.d/" + (item.filename | d(item.name | regex_replace(".conf$", "") + ".conf")) }}'
     mode: '0640'
   loop: '{{ q("flattened", (apt__auth_files + apt__group_auth_files + apt__host_auth_files)) }}'
-  when: apt__enabled | bool and item.machine | d() and item.login | d() and item.password | d() and
+  when: apt__enabled | bool and item.machine is defined and item.machine is truthy and item.login is defined and item.login is truthy and item.password is defined and item.password is truthy and
         item.state | d('present') not in ['absent', 'ignore']
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -214,7 +214,7 @@
   loop: '{{ apt__combined_configuration | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
-  when: apt__enabled | bool and item.raw | d() and item.state | d('present') == 'absent'
+  when: apt__enabled | bool and item.raw is defined and item.raw is truthy and item.state | d('present') == 'absent'
 
 - name: Generate APT configuration files
   ansible.builtin.template:
@@ -224,7 +224,7 @@
   loop: '{{ apt__combined_configuration | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
-  when: apt__enabled | bool and item.raw | d() and
+  when: apt__enabled | bool and item.raw is defined and item.raw is truthy and
         item.state | d('present') not in [ 'divert', 'absent', 'ignore', 'init' ]
 
 - name: Make sure that Ansible local facts directory exists
