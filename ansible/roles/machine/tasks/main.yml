@@ -60,7 +60,7 @@
     group: 'root'
     mode: '0644'
   when: machine__enabled | bool and machine__etc_motd_state | d('present') != 'absent' and
-        machine__motd | d()
+        machine__motd is defined and machine__motd is truthy
 
 - name: Ensure that required directories exist
   ansible.builtin.file:
@@ -131,7 +131,7 @@
     label: '{{ item.item.name }}'
   register: machine__register_remove_unknown
   changed_when: machine__register_remove_unknown.changed | bool
-  when: (item.item.name | d() and not item.item.divert | d(False) | bool and
+  when: (item.item.name is defined and item.item.name is truthy and not item.item.divert | d(False) | bool and
          item.item.filename is undefined and item is changed)
 
 - name: Make sure that Ansible local facts directory exists
