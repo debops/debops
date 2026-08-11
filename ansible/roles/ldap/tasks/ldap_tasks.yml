@@ -17,7 +17,7 @@
   become_user: '{{ ldap__admin_become_user if ldap__admin_become_user | d() else omit }}'
   delegate_to: '{{ ldap__admin_delegate_to if ldap__admin_delegate_to | d() else omit }}'
   run_once:    '{{ item.run_once | d(False) }}'
-  when: (item.objectClass | d() or item.entry_state | d()) and item.state not in ['init', 'ignore']
+  when: ((item.objectClass is defined and item.objectClass is truthy) or (item.entry_state is defined and item.entry_state is truthy)) and item.state not in ['init', 'ignore']
   tags: [ 'role::ldap:tasks', 'skip::ldap:tasks' ]
   no_log: '{{ debops__no_log | d(item.no_log | d(True
                                  if ("userPassword" in (item.attributes | d({})).keys() or
