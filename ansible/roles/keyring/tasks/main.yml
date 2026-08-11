@@ -140,7 +140,7 @@
     mode: '0640'
   loop: '{{ q("flattened", (keyring__dependent_apt_auth_files)) }}'
   when: keyring__enabled | bool and ansible_pkg_mgr == 'apt' and
-        item.machine | d() and item.login | d() and item.password | d() and
+        item.machine is defined and item.machine is truthy and item.login is defined and item.login is truthy and item.password is defined and item.password is truthy and
         item.state | d('present') not in ['absent', 'ignore']
   no_log: '{{ debops__no_log | d(True) }}'
 
