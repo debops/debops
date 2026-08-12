@@ -29,10 +29,7 @@ while read -r in ; do
             printf "%s" "."
         fi
     fi
-done < <(find . -type f -not -iwholename "./.git/*" \
-    -not -wholename "./ansible/roles/grub/templates/etc/grub.d/01_users.j2" \
-    -not -wholename "./ansible/roles/slapd/templates/etc/ldap/slapacl-test-suite.j2" \
-    -not -wholename "./ansible/roles/dropbear_initramfs/templates/etc/initramfs-tools/scripts/local-bottom/debops_dropbear_initramfs.j2")
+done < <(find . -type f -not -iwholename "./.git/*")
 
 printf " %s\\n" "found ${#file_list[@]} shell scripts"
 
