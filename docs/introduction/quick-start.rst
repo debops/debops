@@ -65,7 +65,7 @@ support, based on Debian Stretch:
 
 .. code-block:: console
 
-   git clone -b stable-1.1 https://github.com/debops/debops ; cd debops
+   git clone -b stable-3.2 https://github.com/debops/debops ; cd debops
    vagrant up && vagrant ssh
 
 The configuration relies heavily on your Vagrant environment. Having a real
