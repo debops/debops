@@ -63,7 +63,7 @@ for element in os.listdir(rst_ansible_roles):
                         (os.path.splitext(defaults_file)[0]
                             + '.rst').lstrip('../'),
                         strip_regex=r'\s*(:?\[{3}|\]{3})\d?$',
-                        yaml_strip_regex=r'^\s{66,67}#\s\]{3}\d?$',
+                        yaml_strip_regex=r'\s*#\s*(\[{3}|\]{3})\d?\s*$',
                     )
 
 
