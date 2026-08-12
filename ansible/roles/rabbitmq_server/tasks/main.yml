@@ -81,7 +81,7 @@
   register: rabbitmq_server__register_dependent_config_file
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local | d() and ansible_local.rabbitmq_server | d() and
+  when: (ansible_local is defined and ansible_local.rabbitmq_server is defined and
          ansible_local.rabbitmq_server.installed is defined and
          ansible_local.rabbitmq_server.installed | bool)
   tags: [ 'role::rabbitmq_server:config' ]
@@ -92,7 +92,7 @@
   register: rabbitmq_server__register_dependent_config
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local | d() and ansible_local.rabbitmq_server | d() and
+  when: (ansible_local is defined and ansible_local.rabbitmq_server is defined and
          ansible_local.rabbitmq_server.installed is defined and
          ansible_local.rabbitmq_server.installed | bool and
          rabbitmq_server__register_dependent_config_file.stat.exists | bool)
@@ -153,7 +153,7 @@
     cmd: >-
       rabbitmqctl update_vhost_metadata {{ item.name | d(item) }}
       --default-queue-type {{ item.default_queue_type }}
-  when: item.default_queue_type | d()
+  when: item.default_queue_type is defined and item.default_queue_type is truthy
   loop: '{{ q("flattened", rabbitmq_server__combined_vhosts) }}'
   register: rabbitmq_server__register_vhost_dqt
   changed_when: rabbitmq_server__register_vhost_dqt.rc == 0
@@ -195,7 +195,7 @@
                                                  | list }}'
   changed_when: true
   when:
-    - item.name | d()
+    - item.name is defined and item.name is truthy
     - item.opt_in | d(False) | bool
     - item.name not in _rabbitmq_server__enabled_feature_flags
 
@@ -211,7 +211,7 @@
     node: '{{ item.node | d(omit) }}'
   loop: '{{ q("flattened", rabbitmq_server__combined_feature_flags) }}'
   when:
-    - item.name | d()
+    - item.name is defined and item.name is truthy
     - not (item.opt_in | d(False) | bool)
     - item.name in (rabbitmq_server__register_feature_flags_list.stdout_lines
                     | default([]) | map('split', '\t') | map('first') | list)
@@ -234,7 +234,7 @@
     value:     '{{ item.value | d(omit) }}'
     vhost:     '{{ item.vhost | d(omit) }}'
   loop: '{{ q("flattened", rabbitmq_server__combined_parameters) }}'
-  when: (item.name | d() and item.component | d())
+  when: (item.name is defined and item.name is truthy and item.component is defined and item.component is truthy)
   tags: [ 'role::rabbitmq_server:parameter' ]
 
 - name: Manage RabbitMQ policies
@@ -248,7 +248,7 @@
     state:    '{{ item.state | d("present") }}'
     vhost:    '{{ item.vhost | d(omit) }}'
   loop: '{{ q("flattened", rabbitmq_server__combined_policies) }}'
-  when: (item.name | d() and item.pattern | d() and item.tags | d())
+  when: (item.name is defined and item.name is truthy and item.pattern is defined and item.pattern is truthy and item.tags is defined and item.tags is truthy)
   tags: [ 'role::rabbitmq_server:policy' ]
 
 - name: Manage RabbitMQ user accounts
