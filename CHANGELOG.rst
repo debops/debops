@@ -32,6 +32,9 @@ General
 - Added :ref:`hook scripts <debops_hooks>` support for extending DebOps CLI
   behavior at various execution points.
 
+- Manual pages for each Ansible role now include the role default
+  variables rendered from the :file:`defaults/main.yml` file.
+
 :ref:`debops.core` role
 '''''''''''''''''''''''
 

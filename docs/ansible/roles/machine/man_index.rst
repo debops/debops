@@ -13,6 +13,7 @@ debops.machine
    man_synopsis
    man_description
    getting-started
+   defaults/main
    defaults-detailed
 
 .. note:: Name of this role was based on the :file:`/etc/machine-info`
