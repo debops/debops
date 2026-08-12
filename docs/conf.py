@@ -31,6 +31,9 @@ yml_ansible_roles = '../ansible/roles/'
 
 # Convert Ansible role defaults files written in YAML to documentation written
 # in reStructuredText
+converter_mtime = os.stat(
+    os.path.join(os.path.dirname(yaml2rst.__file__), 'func.py')
+).st_mtime_ns
 for element in os.listdir(rst_ansible_roles):
     if os.path.isdir(yml_ansible_roles + element + '/defaults'):
         for path, subdirs, files in os.walk(yml_ansible_roles +
@@ -55,7 +58,8 @@ for element in os.listdir(rst_ansible_roles):
                     if os.path.exists(dst_file):
                         src_stat = os.stat(defaults_file)
                         dst_stat = os.stat(dst_file)
-                        if dst_stat.st_mtime_ns >= src_stat.st_mtime_ns:
+                        if (dst_stat.st_mtime_ns >= src_stat.st_mtime_ns
+                                and dst_stat.st_mtime_ns >= converter_mtime):
                             continue
 
                     yaml2rst.convert_file(
