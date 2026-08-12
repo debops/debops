@@ -14,6 +14,7 @@ debops.apache
    man_description
    getting-started
    ansible-integration
+   defaults/main
    defaults-detailed
 
 ..

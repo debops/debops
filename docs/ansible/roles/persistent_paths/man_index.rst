@@ -14,6 +14,7 @@ debops.persistent_paths
    man_description
    getting-started
    guides
+   defaults/main
    defaults-detailed
 
 ..

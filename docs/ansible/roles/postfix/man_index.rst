@@ -15,6 +15,7 @@ debops.postfix
    getting-started
    guides
    dependency
+   defaults/main
    defaults-detailed
    defaults-maincf
    defaults-mastercf

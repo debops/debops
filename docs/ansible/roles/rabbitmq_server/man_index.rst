@@ -14,6 +14,7 @@ debops.rabbitmq_server
    man_description
    getting-started
    dependency
+   defaults/main
    defaults-detailed
 
 ..

@@ -17,6 +17,7 @@ debops.ldap
    ldap-admin
    ldap-access
    dependency
+   defaults/main
    defaults-detailed
 
 ..
