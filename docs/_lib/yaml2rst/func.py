@@ -38,6 +38,12 @@ STATE_YAML = 1
 ENVVAR_INDENT = '   '
 ENVVAR_VALUE_INDENT = ENVVAR_INDENT + '   '
 
+# A section title overline/underline: a single non-word character repeated
+# four or more times (``-``, ``~``, ``=``, ...). Such lines must not be
+# indented, even inside an ``.. envvar::`` body, because RST forbids section
+# titles inside directive bodies.
+SECTION_MARKUP = re.compile(r'^([^\w\s])\1{3,}$')
+
 
 def setup_patterns():
 
@@ -115,10 +121,12 @@ def convert(lines, strip_regex=None, yaml_strip_regex=None):
     last_text_line = ''
     last_indent = ''
     in_envvar = False
+    in_section = False
     for line in lines:
         line = line.rstrip()
         if is_envvar_end(line):
             in_envvar = False
+            in_section = False
             yield ''
             continue
         if not line:
@@ -130,11 +138,26 @@ def convert(lines, strip_regex=None, yaml_strip_regex=None):
             line = get_stripped_line(line, strip_regex)
             line = last_text_line = line[2:]
             if in_envvar and not line.startswith('.. envvar::'):
-                yield ENVVAR_INDENT + line
+                if SECTION_MARKUP.match(line):
+                    # Section title overline or underline: emit at column 0,
+                    # outside the directive body. The second such line closes
+                    # both the section and the envvar it was nested in.
+                    yield line
+                    if in_section:
+                        in_section = False
+                        in_envvar = False
+                    else:
+                        in_section = True
+                elif in_section:
+                    # Section title between its overline and underline
+                    yield line
+                else:
+                    yield ENVVAR_INDENT + line
             else:
                 yield line
             if line.startswith('.. envvar::'):
                 in_envvar = True
+                in_section = False
             last_indent = get_indent(line) * ' '
             state = STATE_TEXT
         elif line == '---':
