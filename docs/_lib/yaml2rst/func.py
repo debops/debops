@@ -31,6 +31,13 @@ __version__ = "0.3dev"
 STATE_TEXT = 0
 STATE_YAML = 1
 
+# Indentation of a ``.. envvar::`` directive body (3 spaces) and of the
+# YAML value block nested inside it (6 spaces). Sphinx renders the body
+# as a definition list item, so descriptions and values have to be
+# indented to appear inside the directive.
+ENVVAR_INDENT = '   '
+ENVVAR_VALUE_INDENT = ENVVAR_INDENT + '   '
+
 
 def setup_patterns():
 
@@ -98,12 +105,22 @@ def get_stripped_line(line, strip_regex):
     return line
 
 
+def is_envvar_end(line):
+    """Return True if *line* is a closing vim fold marker ``# ]]]``."""
+    return re.match(r'^\s*#\s*\]{3}\d?\s*$', line) is not None
+
+
 def convert(lines, strip_regex=None, yaml_strip_regex=None):
     state = STATE_TEXT
     last_text_line = ''
     last_indent = ''
+    in_envvar = False
     for line in lines:
         line = line.rstrip()
+        if is_envvar_end(line):
+            in_envvar = False
+            yield ''
+            continue
         if not line:
             # do not change state if the line is empty
             yield ''
@@ -112,7 +129,12 @@ def convert(lines, strip_regex=None, yaml_strip_regex=None):
                 yield ''
             line = get_stripped_line(line, strip_regex)
             line = last_text_line = line[2:]
-            yield line
+            if in_envvar and not line.startswith('.. envvar::'):
+                yield ENVVAR_INDENT + line
+            else:
+                yield line
+            if line.startswith('.. envvar::'):
+                in_envvar = True
             last_indent = get_indent(line) * ' '
             state = STATE_TEXT
         elif line == '---':
@@ -122,10 +144,16 @@ def convert(lines, strip_regex=None, yaml_strip_regex=None):
                 line = line[3:]
             if state != STATE_YAML:
                 if not last_text_line.endswith('::'):
-                    yield last_indent + '\n.. code-block:: yaml'
+                    if in_envvar:
+                        yield '\n' + ENVVAR_INDENT + '.. code-block:: yaml'
+                    else:
+                        yield last_indent + '\n.. code-block:: yaml'
                 yield ''
             line = get_stripped_line(line, yaml_strip_regex)
-            yield last_indent + '  ' + line
+            if in_envvar:
+                yield ENVVAR_VALUE_INDENT + line
+            else:
+                yield last_indent + '  ' + line
             state = STATE_YAML
 
 
