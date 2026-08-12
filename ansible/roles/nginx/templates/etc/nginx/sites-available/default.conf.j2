@@ -295,6 +295,30 @@
 {%         endif                                                                    %}
 
 {%     endif                                                                        %}
+{% if item.csp_enabled | d(False) | bool %}
+        add_header                Content-Security-Policy "{{ item.csp | d("default-src https: ;") + (" " + item.csp_append | d(nginx__http_csp_append) if (item.csp_append | d(nginx__http_csp_append)) else "") }}";
+{% endif %}
+{% if item.csp_report_enabled | d(False) | bool %}
+        add_header                Content-Security-Policy-Report-Only "{{ item.csp_report | d(item.csp | d("default-src https: ;")) + (" " + item.csp_append | d(nginx__http_csp_append) if (item.csp_append | d(nginx__http_csp_append)) else "") }}";
+{% endif %}
+{%     if item.content_type_options | d(True) != omit             %}
+        add_header                X-Content-Type-Options "{{ item.content_type_options | d('nosniff') }}"{% if nginx_version is version_compare('1.7.5','>=') %} always{% endif %};
+{%     endif                                                    %}
+{%     if item.frame_options | d() != omit                        %}
+        add_header                X-Frame-Options "{{ item.frame_options | d('SAMEORIGIN') }}"{% if nginx_version is version_compare('1.7.5','>=') %} always{% endif %};
+{%     endif                                                    %}
+{%     if item.xss_protection | d(nginx__http_xss_protection) != omit %}
+        add_header                X-XSS-Protection "{{ item.xss_protection | d(nginx__http_xss_protection) }}";
+{%     endif                                                    %}
+{%     if item.http_referrer_policy | d(nginx__http_referrer_policy) != omit %}
+        add_header                Referrer-Policy "{{ item.http_referrer_policy | d(nginx__http_referrer_policy) }}";
+{%     endif                                                    %}
+{%     for robots_tag in nginx_tpl_robots_tag                   %}
+        add_header                X-Robots-Tag "{{ robots_tag }}";
+{%     endfor                                                   %}
+{%     if item.permitted_cross_domain_policies | d(nginx__http_permitted_cross_domain_policies) != omit %}
+        add_header                X-Permitted-Cross-Domain-Policies "{{ item.permitted_cross_domain_policies | d(nginx__http_permitted_cross_domain_policies) }}";
+{%     endif                                                    %}
 {%     if item.maintenance | d(True) | bool                                             %}
         if (-f $document_root/{{ item.maintenance_file | d('maintenance.html') }}) {
                 return 503;
@@ -723,30 +747,6 @@ server {
 {%     if item.hsts_enabled | d(True) | bool                      %}
         add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age }}{{ "; includeSubDomains" if nginx_hsts_subdomains | bool else "" }}{{ "; preload" if ((item.hsts_preload | d(nginx_hsts_preload)) | bool) else "" }}"{% if nginx_version is version_compare('1.7.5','>=') %} always{% endif %};
 {% endif                                                    %}
-{% if item.csp_enabled | d(False) | bool %}
-        add_header                Content-Security-Policy "{{ item.csp | d("default-src https: ;") + (" " + item.csp_append | d(nginx__http_csp_append) if (item.csp_append | d(nginx__http_csp_append)) else "") }}";
-{% endif %}
-{% if item.csp_report_enabled | d(False) | bool %}
-        add_header                Content-Security-Policy-Report-Only "{{ item.csp_report | d(item.csp | d("default-src https: ;")) + (" " + item.csp_append | d(nginx__http_csp_append) if (item.csp_append | d(nginx__http_csp_append)) else "") }}";
-{% endif %}
-{%     if item.content_type_options | d(True) != omit             %}
-        add_header                X-Content-Type-Options "{{ item.content_type_options | d('nosniff') }}"{% if nginx_version is version_compare('1.7.5','>=') %} always{% endif %};
-{%     endif                                                    %}
-{%     if item.frame_options | d() != omit                        %}
-        add_header                X-Frame-Options "{{ item.frame_options | d('SAMEORIGIN') }}"{% if nginx_version is version_compare('1.7.5','>=') %} always{% endif %};
-{%     endif                                                    %}
-{%     if item.xss_protection | d(nginx__http_xss_protection) != omit %}
-        add_header                X-XSS-Protection "{{ item.xss_protection | d(nginx__http_xss_protection) }}";
-{%     endif                                                    %}
-{%     if item.http_referrer_policy | d(nginx__http_referrer_policy) != omit %}
-        add_header                Referrer-Policy "{{ item.http_referrer_policy | d(nginx__http_referrer_policy) }}";
-{%     endif                                                    %}
-{%     for robots_tag in nginx_tpl_robots_tag                   %}
-        add_header                X-Robots-Tag "{{ robots_tag }}";
-{%     endfor                                                   %}
-{%     if item.permitted_cross_domain_policies | d(nginx__http_permitted_cross_domain_policies) != omit %}
-        add_header                X-Permitted-Cross-Domain-Policies "{{ item.permitted_cross_domain_policies | d(nginx__http_permitted_cross_domain_policies) }}";
-{%     endif                                                    %}
 
 {%     if item.name | d()                                         %}
 {%         if item.redirect_from | d()                            %}
