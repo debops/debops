@@ -24,6 +24,7 @@ debops.pki
    custom-files
    custom-hooks
    ansible-integration
+   defaults/main
    defaults-detailed
 
 ..

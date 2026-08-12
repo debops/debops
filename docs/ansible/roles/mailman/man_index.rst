@@ -14,6 +14,13 @@ debops.mailman
    man_description
    getting-started
    mailman2-migration
+   defaults/main/core_configuration
+   defaults/main/dependent
+   defaults/main/environment
+   defaults/main/hyperkitty_configuration
+   defaults/main/ldap
+   defaults/main/templates
+   defaults/main/web_configuration
    defaults-detailed
 
 ..

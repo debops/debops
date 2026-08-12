@@ -14,6 +14,7 @@ debops.minio
    man_description
    getting-started
    deployment-guide
+   defaults/main
    defaults-detailed
 
 ..
