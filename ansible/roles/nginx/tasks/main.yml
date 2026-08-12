@@ -143,7 +143,7 @@
   ansible.builtin.service:
     name: 'nginx'
     state: 'restarted'
-  when: (nginx_register_installed | d() and not nginx_register_installed.stat.exists and
+  when: (nginx_register_installed is defined and not nginx_register_installed.stat.exists and
          nginx__deploy_state in ['present', 'config'])
 
 - name: Get list of nameservers configured in /etc/resolv.conf
@@ -188,7 +188,7 @@
     owner: 'root'
     group: 'root'
     mode: '0440'
-  when: (ansible_local | d() and ansible_local.sudo | d() and
+  when: (ansible_local is defined and ansible_local.sudo is defined and
          (ansible_local.sudo.installed | d()) | bool and
          nginx__deploy_state in ['present', 'config'])
 

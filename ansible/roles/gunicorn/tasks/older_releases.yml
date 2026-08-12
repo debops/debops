@@ -18,7 +18,7 @@
   loop: '{{ q("flattened", gunicorn__applications
                            + gunicorn__dependent_applications) }}'
   notify: [ 'Restart gunicorn' ]
-  when: item.name | d() and item.state | d('present') == 'absent'
+  when: item.name is defined and item.name is truthy and item.state | d('present') == 'absent'
 
 - name: Generate gunicorn configuration
   ansible.builtin.template:
@@ -30,4 +30,4 @@
   loop: '{{ q("flattened", gunicorn__applications
                            + gunicorn__dependent_applications) }}'
   notify: [ 'Restart gunicorn' ]
-  when: item.name | d() and item.state | d('present') != 'absent'
+  when: item.name is defined and item.name is truthy and item.state | d('present') != 'absent'

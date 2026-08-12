@@ -24,9 +24,9 @@
                            + nginx_default_maps | d([])
                            + nginx_dependent_maps | d([])) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name | d() and
-         ((item.state | d() and item.state == 'absent') or
-          (item.delete | d() and item.delete | bool)))
+  when: (item.name is defined and item.name is truthy and
+         ((item.state is defined and item.state == 'absent') or
+          (item.delete is defined and item.delete | bool)))
   tags: [ 'role::nginx:servers' ]
 
 - name: Configure nginx maps
@@ -43,7 +43,7 @@
                            + nginx_default_maps | d([])
                            + nginx_dependent_maps | d([])) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name | d() and item.state | d('present') != 'absent' and
+  when: (item.name is defined and item.name is truthy and item.state | d('present') != 'absent' and
          (item.delete is undefined or not item.delete | bool))
   tags: [ 'role::nginx:servers' ]
 
@@ -58,9 +58,9 @@
                            + nginx_default_upstreams | d([])
                            + nginx_dependent_upstreams | d([])) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name | d() and
+  when: (item.name is defined and item.name is truthy and
          ((item.state | d('present') == 'absent') or
-          (item.delete | d() and item.delete | bool)))
+          (item.delete is defined and item.delete | bool)))
   tags: [ 'role::nginx:servers' ]
 
 - name: Configure nginx upstreams
@@ -77,7 +77,7 @@
                            + nginx_default_upstreams | d([])
                            + nginx_dependent_upstreams | d([])) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name | d() and item.state | d('present') != 'absent' and
+  when: (item.name is defined and item.name is truthy and item.state | d('present') != 'absent' and
          (item.delete is undefined or not item.delete | bool))
   tags: [ 'role::nginx:servers' ]
 
@@ -88,9 +88,9 @@
   loop: '{{ q("flattened", nginx__log_format
                            + nginx__dependent_log_format) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name | d() and
+  when: (item.name is defined and item.name is truthy and
          ((item.state | d('present') == 'absent') or
-          (item.delete | d() and item.delete | bool)))
+          (item.delete is defined and item.delete is truthy and item.delete | bool)))
   tags: [ 'role::nginx:servers' ]
 
 - name: Configure nginx log_format
@@ -103,7 +103,7 @@
   loop: '{{ q("flattened", nginx__log_format
                            + nginx__dependent_log_format) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name | d() and item.state | d('present') != 'absent' and
+  when: (item.name is defined and item.name is truthy and item.state | d('present') != 'absent' and
          (item.delete is undefined or not item.delete | bool))
   tags: [ 'role::nginx:servers' ]
 
@@ -114,9 +114,9 @@
   loop: '{{ q("flattened", nginx__custom_config
                            + nginx_custom_config | d([])) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name | d() and
-         ((item.state | d() and item.state == 'absent') or
-          (item.delete | d() and item.delete | bool)))
+  when: (item.name is defined and item.name is truthy and
+         ((item.state is defined and item.state == 'absent') or
+          (item.delete is defined and item.delete | bool)))
   tags: [ 'role::nginx:servers' ]
 
 - name: Add custom nginx configuration
@@ -129,6 +129,6 @@
   loop: '{{ q("flattened", nginx__custom_config
                            + nginx_custom_config | d([])) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name | d() and item.state | d('present') != 'absent' and
+  when: (item.name is defined and item.name is truthy and item.state | d('present') != 'absent' and
          (item.delete is undefined or not item.delete | bool))
   tags: [ 'role::nginx:servers' ]
