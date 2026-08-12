@@ -25,6 +25,7 @@ sys.path.insert(0, os.path.abspath('_lib'))
 
 import yaml2rst  # noqa
 import edit_url  # noqa
+import manpages  # noqa
 
 rst_ansible_roles = 'ansible/roles/'
 yml_ansible_roles = '../ansible/roles/'
@@ -101,6 +102,7 @@ html_context = {
 def setup(app):
     # app.add_javascript("custom.js")
     app.add_css_file("theme_overrides.css")
+    manpages.setup(app)
 
 
 # -- General configuration ------------------------------------------------
