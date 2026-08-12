@@ -16,5 +16,5 @@
     db: 'test'
     state: 'absent'
     login_unix_socket: '/run/mysqld/mysqld.sock'
-  when: ((mariadb_server__register_version | d() and not mariadb_server__register_version.stdout) and
-         (mariadb_server__register_install_status | d() and mariadb_server__register_install_status is changed))
+  when: ((mariadb_server__register_version is defined and not mariadb_server__register_version.stdout) and
+         (mariadb_server__register_install_status is defined and mariadb_server__register_install_status is changed))
