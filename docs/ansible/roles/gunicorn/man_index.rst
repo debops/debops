@@ -14,6 +14,7 @@ debops.gunicorn
    man_description
    getting-started
    virtualenv-support
+   defaults/main
    defaults-detailed
 
 ..

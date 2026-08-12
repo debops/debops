@@ -14,6 +14,7 @@ debops.kibana
    man_description
    getting-started
    dependency
+   defaults/main
    defaults-detailed
 
 ..

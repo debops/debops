@@ -14,6 +14,7 @@ debops.system_users
    man_description
    getting-started
    control-user
+   defaults/main
    defaults-detailed
 
 ..

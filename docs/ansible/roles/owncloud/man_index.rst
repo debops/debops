@@ -17,6 +17,7 @@ debops.owncloud
    getting-started
    external-users
    external-storage
+   defaults/main
    defaults-detailed
 
 ..

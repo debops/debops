@@ -18,6 +18,7 @@ debops.slapd
    ldap-acl
    backup-restore
    guide-multi-master-replication
+   defaults/main
    defaults-detailed
 
 ..

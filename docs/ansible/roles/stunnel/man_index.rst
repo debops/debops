@@ -15,6 +15,7 @@ debops.stunnel
    getting-started
    guides
    troubleshooting
+   defaults/main
    defaults-detailed
 
 ..

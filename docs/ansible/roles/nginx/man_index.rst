@@ -15,6 +15,7 @@ debops.nginx
    man_description
    getting-started
    acme-support
+   defaults/main
    defaults-detailed
 
 ..

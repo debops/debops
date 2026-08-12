@@ -14,6 +14,7 @@ debops.resolved
    man_description
    getting-started
    dnssd-support
+   defaults/main
    defaults-detailed
    man_seealso
 

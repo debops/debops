@@ -14,6 +14,7 @@ debops.freeradius
    man_description
    getting-started
    example-eduroam
+   defaults/main
    defaults-detailed
 
 ..

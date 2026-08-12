@@ -14,6 +14,7 @@ debops.redis_server
    man_description
    getting-started
    config-pipeline
+   defaults/main
    defaults-detailed
 
 ..
