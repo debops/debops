@@ -16,6 +16,7 @@ debops.ifupdown
    getting-started
    ifupdown-systemd
    custom-hooks
+   defaults/main
    defaults-detailed
 
 ..

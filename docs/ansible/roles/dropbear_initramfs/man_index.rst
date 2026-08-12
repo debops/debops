@@ -11,6 +11,7 @@ debops.ifupdown
 
    man_synopsis
    man_description
+   defaults/main
    defaults-detailed
    related-projects
    design

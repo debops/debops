@@ -15,6 +15,7 @@ debops.tinc
    man_description
    getting-started
    examples
+   defaults/main
    defaults-detailed
 
 ..

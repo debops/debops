@@ -18,6 +18,7 @@ debops.elasticsearch
    clustering
    dependency
    upgrade-notes
+   defaults/main
    defaults-detailed
 
 ..

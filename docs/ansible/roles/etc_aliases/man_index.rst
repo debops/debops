@@ -14,6 +14,7 @@ debops.etc_aliases
    man_description
    getting-started
    dependency
+   defaults/main
    defaults-detailed
 
 ..
