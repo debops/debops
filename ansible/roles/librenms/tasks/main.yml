@@ -131,7 +131,7 @@
     working_dir: '{{ librenms__install_path }}'
   register: librenms__register_composer
   until: librenms__register_composer is succeeded
-  when: (librenms__register_database_status | d() and librenms__register_database_status is changed)
+  when: (librenms__register_database_status is defined and librenms__register_database_status is changed)
   become: True
   become_user: '{{ librenms__user }}'
 
@@ -143,7 +143,7 @@
   become_user: '{{ librenms__user }}'
   register: librenms__register_database_init
   changed_when: librenms__register_database_init.changed | bool
-  when: (librenms__register_database_status | d() and librenms__register_database_status is changed)
+  when: (librenms__register_database_status is defined and librenms__register_database_status is changed)
   tags: [ 'role::librenms:database' ]
 
 - name: Get list of existing users from LibreNMS database
@@ -187,7 +187,7 @@
   register: librenms__register_passwd
   changed_when: False
   check_mode: False
-  when: librenms__home_snmp_conf | d() and librenms__home_snmp_conf
+  when: librenms__home_snmp_conf is defined and librenms__home_snmp_conf is truthy
   tags: [ 'role::librenms:config', 'role::librenms:snmp_conf' ]
 
 - name: Create ~/.snmp directories
@@ -199,8 +199,8 @@
     mode: '0700'
   with_items: '{{ librenms__home_snmp_conf }}'
   check_mode: False
-  when: ((librenms__home_snmp_conf | d() and librenms__home_snmp_conf) and
-         (librenms__register_passwd | d() and item in librenms__register_passwd.stdout_lines))
+  when: ((librenms__home_snmp_conf is defined and librenms__home_snmp_conf is truthy) and
+         (librenms__register_passwd is defined and item in librenms__register_passwd.stdout_lines))
   tags: [ 'role::librenms:config', 'role::librenms:snmp_conf' ]
 
 - name: Generate ~/.snmp/snmp.conf configuration
@@ -211,8 +211,8 @@
     group: '{{ item }}'
     mode: '0600'
   with_items: '{{ librenms__home_snmp_conf }}'
-  when: ((librenms__home_snmp_conf | d() and librenms__home_snmp_conf) and
-         (librenms__register_passwd | d() and item in librenms__register_passwd.stdout_lines))
+  when: ((librenms__home_snmp_conf is defined and librenms__home_snmp_conf is truthy) and
+         (librenms__register_passwd is defined and item in librenms__register_passwd.stdout_lines))
   tags: [ 'role::librenms:config', 'role::librenms:snmp_conf' ]
 
 - name: Get list of known devices from LibreNMS database
