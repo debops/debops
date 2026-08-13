@@ -70,7 +70,7 @@
                            + debconf__alternatives
                            + debconf__group_alternatives
                            + debconf__host_alternatives) }}'
-  when: item.name | d() and item.path | d()
+  when: item.name is defined and item.name is truthy and item.path is defined and item.path is truthy
 
 - name: Configure automatic alternatives
   ansible.builtin.command: update-alternatives --auto {{ item.name }}
@@ -78,8 +78,8 @@
   loop: '{{ q("flattened", debconf__alternatives
                            + debconf__group_alternatives
                            + debconf__host_alternatives) }}'
-  when: item.name | d() and not item.path | d()
-  changed_when: debconf__register_alternatives.stdout | d()
+  when: item.name is defined and item.name is truthy and not item.path | d()
+  changed_when: debconf__register_alternatives.stdout is defined and debconf__register_alternatives.stdout is truthy
 
 # Execute custom shell commands [[[1
 # This is not an alternative to a fully-fledged Ansible role.
@@ -88,6 +88,6 @@
   loop: '{{ q("flattened", debconf__combined_commands) | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name} }}'
-  when: item.name | d() and item.state | d('present') not in [ 'absent', 'ignore' ]
+  when: item.name is defined and item.name is truthy and item.state | d('present') not in [ 'absent', 'ignore' ]
   no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
   tags: [ 'role::debconf:commands' ]
