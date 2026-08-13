@@ -91,7 +91,7 @@
     label: '{{ docker_service__config_dir_service.name }}'
   when:
     - docker_service__config_dir_service.state | d('present') not in ['absent', 'ignore']
-    - docker_service__config_dir_service.config_dir.src | d()
+    - docker_service__config_dir_service.config_dir.src is defined and docker_service__config_dir_service.config_dir.src is truthy
   tags: ['role::docker_service:config']
 
 - name: Create Docker networks referenced by services
