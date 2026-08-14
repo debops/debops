@@ -120,7 +120,8 @@
   until: netbox__register_checkout is succeeded
   notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver', 'Restart netbox Request Queue Worker' ]
   when: (netbox__register_source.before is undefined or
-         (netbox__register_source.before | d() and netbox__register_target_branch.stdout | d() and
+         (netbox__register_source.before is defined and netbox__register_source.before is truthy and
+          netbox__register_target_branch.stdout is defined and netbox__register_target_branch.stdout is truthy and
           netbox__register_source.before != netbox__register_target_branch.stdout) or
           not netbox__register_installed.stat.exists | bool or
           netbox__register_virtalenv_deleted.changed | bool)
