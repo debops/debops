@@ -104,7 +104,7 @@
   loop: '{{ q("flattened", (keyring__dependent_apt_keys)) }}'
   register: keyring__register_get_url
   until: keyring__register_get_url is succeeded
-  when: keyring__enabled | bool and (item.url | d(item.id | d())) and (item.state | d("present")) not in [ "absent" ] and
+  when: keyring__enabled | bool and ((item.url is defined and item.url is truthy) or (item.id is defined and item.id is truthy)) and (item.state | d("present")) not in [ "absent" ] and
         not (item.apt_key | d(False)) | bool and item.keyring is defined and
         (item.extrepo is undefined or
          item.extrepo not in (ansible_local.extrepo.sources | d([]))) and
@@ -119,7 +119,7 @@
     update_cache: False
   loop: '{{ q("flattened", (keyring__dependent_apt_keys)) }}'
   register: keyring__register_apt_repository
-  when: keyring__enabled | bool and ansible_pkg_mgr == 'apt' and item.repo | d() and
+  when: keyring__enabled | bool and ansible_pkg_mgr == 'apt' and item.repo is defined and item.repo is truthy and
         (item.extrepo is undefined or
          item.extrepo not in (ansible_local.extrepo.sources | d([])))
   tags: [ 'role::keyring:apt_repository' ]
@@ -140,7 +140,7 @@
     mode: '0640'
   loop: '{{ q("flattened", (keyring__dependent_apt_auth_files)) }}'
   when: keyring__enabled | bool and ansible_pkg_mgr == 'apt' and
-        item.machine | d() and item.login | d() and item.password | d() and
+        item.machine is defined and item.machine is truthy and item.login is defined and item.login is truthy and item.password is defined and item.password is truthy and
         item.state | d('present') not in ['absent', 'ignore']
   no_log: '{{ debops__no_log | d(True) }}'
 

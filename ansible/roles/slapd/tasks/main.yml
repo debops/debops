@@ -108,7 +108,7 @@
   ansible.builtin.script: 'script/ldap-load-schema {{ item }}'
   loop: '{{ q("flattened", slapd__combined_schemas) }}'
   register: slapd__register_load_schemas
-  changed_when: (slapd__register_load_schemas.stdout | d() and
+  changed_when: (slapd__register_load_schemas.stdout is defined and slapd__register_load_schemas.stdout is truthy and
                  (item | basename | regex_replace('.schema$', '') + ' already exists in the LDAP, skipping…')
                  not in slapd__register_load_schemas.stdout_lines)
   tags: [ 'role::slapd:schema' ]
@@ -163,7 +163,7 @@
     label: '{{ {"state": item.state,
                 "dn": item.dn,
                 "attributes": item.attributes | d({})} }}'
-  when: item.name | d() and item.dn | d() and
+  when: item.name is defined and item.name is truthy and item.dn is defined and item.dn is truthy and
         item.state | d('present') not in [ 'init', 'ignore' ]
   tags: [ 'role::slapd:tasks' ]
   no_log: '{{ debops__no_log | d(item.no_log)
@@ -187,7 +187,7 @@
                 "dn": item.dn,
                 "attributes": item.attributes | d({})} }}'
   when: slapd__slapacl_deploy_state == 'present' and
-        item.name | d() and item.dn | d() and
+        item.name is defined and item.name is truthy and item.dn is defined and item.dn is truthy and
         item.state | d('present') not in [ 'init', 'ignore' ]
   tags: [ 'role::slapd:slapacl', 'role::slapd:tasks' ]
   no_log: '{{ debops__no_log | d(item.no_log)
@@ -215,5 +215,5 @@
   register: slapd__register_slapacl_test
   when: slapd__slapacl_deploy_state == 'present' and
         slapd__slapacl_run_tests | bool
-  changed_when: slapd__register_slapacl_test.stderr | d()
+  changed_when: slapd__register_slapacl_test.stderr is defined and slapd__register_slapacl_test.stderr is truthy
   tags: [ 'role::slapd:slapacl', 'role::slapd:tasks' ]

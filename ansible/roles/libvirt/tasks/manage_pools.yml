@@ -12,7 +12,7 @@
   loop: '{{ q("flattened", libvirt__pools) }}'
   become: False
   register: libvirt__register_stop
-  when: ((item.name | d()) and (item.state | d() in ['inactive', 'undefined', 'absent']))
+  when: ((item.name is defined and item.name is truthy) and (item.state | d() in ['inactive', 'undefined', 'absent']))
 
 - name: Delete storage pools if requested
   community.libvirt.virt_pool:  # noqa no-handler
@@ -22,7 +22,7 @@
     mode: '{{ item.item.mode | d(omit) }}'
   loop: '{{ q("flattened", libvirt__register_stop.results) }}'
   become: False
-  when: (item is changed and item.item.name | d() and item.item.delete | d(False) and
+  when: (item is changed and item.item.name is defined and item.item.name is truthy and item.item.delete | d(False) and
          item.item.state | d() in ['undefined'] and
          item.item.type in ['dir', 'nfs', 'logical'])
 
@@ -33,7 +33,7 @@
     state: 'absent'
   loop: '{{ q("flattened", libvirt__pools) }}'
   become: False
-  when: ((item.name | d()) and (item.state | d() in ['undefined', 'absent']))
+  when: ((item.name is defined and item.name is truthy) and (item.state | d() in ['undefined', 'absent']))
 
 - name: Define storage pools
   community.libvirt.virt_pool:
@@ -44,7 +44,7 @@
   loop: '{{ q("flattened", libvirt__pools) }}'
   become: False
   register: libvirt__register_define
-  when: ((item.name | d()) and (item.state | d('active') not in ['undefined', 'absent']))
+  when: ((item.name is defined and item.name is truthy) and (item.state | d('active') not in ['undefined', 'absent']))
 
 - name: Build new storage pools
   community.libvirt.virt_pool:  # noqa no-handler
@@ -54,11 +54,11 @@
     mode: '{{ item.item.mode | d(omit) }}'
   loop: '{{ q("flattened", libvirt__register_define.results) }}'
   become: False
-  when: (item is changed and item.item.name | d() and
+  when: (item is changed and item.item.name is defined and item.item.name is truthy and
          (item.item.state | d('active') not in ['undefined', 'absent']) and
          (item.item.build | d(True)) and
          (item.item.type in ['dir', 'nfs'] or
-         (item.item.type == 'logical' and item.item.devices | d())))
+         (item.item.type == 'logical' and item.item.devices is defined and item.item.devices is truthy)))
 
 - name: Start storage pools if not started
   community.libvirt.virt_pool:
@@ -67,7 +67,7 @@
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
   loop: '{{ q("flattened", libvirt__pools) }}'
   become: False
-  when: (item.name | d() and item.state | d('active') in ['active'])
+  when: (item.name is defined and item.name is truthy and item.state | d('active') in ['active'])
 
 - name: Set autostart attribute on storage pools
   community.libvirt.virt_pool:
@@ -76,4 +76,4 @@
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
   loop: '{{ q("flattened", libvirt__pools) }}'
   become: False
-  when: (item.name | d() and item.state | d('active') not in ['undefined', 'absent'])
+  when: (item.name is defined and item.name is truthy and item.state | d('active') not in ['undefined', 'absent'])

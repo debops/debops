@@ -24,7 +24,7 @@
     system: '{{ item.system | d(True) }}'
   with_items: '{{ system_groups__combined_list | debops.debops.parse_kv_items }}'
   when: system_groups__enabled | bool and
-        item.name | d() and item.state | d('present') not in ['init', 'absent', 'ignore']
+        item.name is defined and item.name is truthy and item.state | d('present') not in ['init', 'absent', 'ignore']
 
 - name: Get list of existing UNIX accounts
   ansible.builtin.getent:

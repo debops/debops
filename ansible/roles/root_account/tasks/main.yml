@@ -124,7 +124,7 @@
     fi
   register: root_account__register_dotfiles
   changed_when: ('Already up to date.' not in root_account__register_dotfiles.stdout_lines | regex_replace('-', ' '))
-  when: ((ansible_local | d() and ansible_local.yadm | d() and (ansible_local.yadm.installed | d()) | bool) and
+  when: ((ansible_local is defined and ansible_local.yadm is defined and (ansible_local.yadm.installed | d()) | bool) and
          root_account__dotfiles_enabled | bool)
   check_mode: False
 

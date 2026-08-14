@@ -31,7 +31,7 @@
     name: '{{ elasticsearch__user }}'
     groups: '{{ elasticsearch__additional_groups }}'
     append: True
-  when: elasticsearch__additional_groups | d()
+  when: elasticsearch__additional_groups is truthy
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
@@ -78,7 +78,7 @@
   register: elasticsearch__register_dependent_config_file
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local.elasticsearch.installed | d())
+  when: (ansible_local.elasticsearch.installed is defined and ansible_local.elasticsearch.installed is truthy)
   tags: [ 'role::elasticsearch:config' ]
 
 - name: Load the dependent configuration from Ansible Controller
@@ -87,7 +87,7 @@
   register: elasticsearch__register_dependent_config
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local.elasticsearch.installed | d() and
+  when: (ansible_local.elasticsearch.installed is defined and ansible_local.elasticsearch.installed is truthy and
          elasticsearch__register_dependent_config_file.stat.exists | bool)
   tags: [ 'role::elasticsearch:config' ]
 
@@ -168,7 +168,7 @@
   loop: '{{ q("flattened", elasticsearch__combined_plugins) }}'
   register: elasticsearch__register_plugin_install
   changed_when: elasticsearch__register_plugin_install.changed | bool
-  when: (item.name | d() and item.state | d('present') != 'absent' and
+  when: (item.name is defined and item.name is truthy and item.state | d('present') != 'absent' and
          (item.name if ':' not in item.name else item.name.split(':')[1])
          not in elasticsearch__register_plugins.stdout_lines)
 
@@ -180,7 +180,7 @@
   loop: '{{ q("flattened", elasticsearch__combined_plugins) }}'
   register: elasticsearch__register_plugin_remove
   changed_when: elasticsearch__register_plugin_remove.changed | bool
-  when: (item.name | d() and item.state | d('present') == 'absent' and
+  when: (item.name is defined and item.name is truthy and item.state | d('present') == 'absent' and
          (item.name if ':' not in item.name else item.name.split(':')[1])
          in elasticsearch__register_plugins.stdout_lines)
 
