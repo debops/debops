@@ -1,0 +1,21 @@
+---
+# Copyright (C) 2017      Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2019-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2017-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Install packages from the NeuroDebian repository
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_services', 'debops_service_neurodebian' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Import neurodebian role
+      ansible.builtin.import_role:
+        name: 'debops.debops.neurodebian'
+      tags: [ 'role::neurodebian', 'skip::neurodebian' ]

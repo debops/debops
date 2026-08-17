@@ -33,6 +33,12 @@ General
   project requirements for contributions that use LLM and AI-assisted
   coding tools.
 
+- New set of :ref:`scoped playbooks <scoped_playbooks>` allows execution of
+  specific roles on any host in the ``[debops_all_services]`` Ansible inventory
+  group. This is also a way to implement multiple role entry points and permit
+  role-specific custom playbooks that are not part of the main :file:`site.yml`
+  playbook.
+
 :ref:`debops.java` role
 '''''''''''''''''''''''
 

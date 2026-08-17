@@ -93,6 +93,16 @@ The directory structure will look similar to this:
    │   ├── init-directory.yml
    │   └── save-credential.yml
    ├── reboot.yml
+   ├── scope/
+   │   ├── apt/
+   │   │   └── update.yml
+   │   ├── ansible.yml
+   │   ├── apache.yml
+   │   ├── apt.yml
+   │   ├── ...
+   │   ├── yadm.yml
+   │   └── zabbix_agent.yml
+   ├── scope.yml
    ├── service/
    │   ├── ansible.yml
    │   ├── apache.yml
@@ -145,6 +155,60 @@ the order of execution of specific services.
 
 .. note:: This setup applies since DebOps v3.1.0, older releases use a set of
           symlinks to achieve a similar result.
+
+
+.. _scoped_playbooks:
+
+The "scoped" playbooks
+~~~~~~~~~~~~~~~~~~~~~~
+
+Besides the main :file:`playbooks/site.yml` playbook that includes all DebOps
+roles with the corresponding "service" playbooks, where each
+:file:`playbooks/service/*` playbook includes dependent roles to configure the
+whole "service stack", the project includes a set of :file:`playbooks/scope/*`
+playbooks. These playbooks are not included directly in the
+:file:`playbooks/site.yml` playbook, but can be applied on a host
+independently.
+
+To make their use easier, each scoped playbook uses the
+``[debops_all_services]`` Ansible inventory group in addition to the usual
+service-based inventory groups. This means that by adding a given host to this
+inventory group, users can apply any role they want on it, but it does not mean
+that everything will work as expected on an unconfigured host - for example,
+some DebOps roles expect an upstream APT repository to be configured by the
+:ref:`debops.extrepo` role, and if that's not already done when a scoped
+playbook is used, the role might not be able to install the required packages
+and fail. This is an expected behaviour with scoped playbooks and should be
+taken into account; any hosts already configured with the main DebOps playbooks
+should work without issues.
+
+The scoped playbooks are a way to access different "role entry points" in
+Ansible roles, and the :file:`playbooks/scope/` directory layout reflects that.
+The main role entry points are activated using the :file:`scope/<role>` name
+patterns (for example, :file:`scope/apt` playbook will activate the
+:ref:`debops.apt` main entry point in the :file:`roles/apt/tasks/main.yml`
+file. The roles can have separate "role entry points" with a corresponding
+:file:`scope/<role>/<entry_point>` Ansible playbooks. For example, in the
+future there can be a :file:`scope/apt/update` playbook which might activate
+the :file:`roles/apt/tasks/main_update.yml` task file in the APT role which
+will perform an :command:`apt update` command on the selected hosts. Roles
+executed through different entry points have access to the same role default
+variables and Ansible inventory as the main entry point and can operate in the
+same environment as the main playbooks.
+
+For completion, the project includes the :file:`playbooks/scope.yml` Ansible
+playbook which can be used to apply any Ansible role, from DebOps or any other
+Ansible Collection, by specifying it using the ``role=`` variable on the
+command line.
+
+Example :command:`debops run` commands which use scoped playbooks:
+
+.. code-block:: console
+
+   $ debops run scope/apt -l hostname
+   $ debops run scope/apt/update -l hostname
+   $ debops run scope -l host -e 'role=apt'
+   $ debops run scope -l host -e 'role=custom.collection.role'
 
 
 How to use provided playbooks with Ansible directly
