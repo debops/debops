@@ -1,6 +1,6 @@
-.. Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2026 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2019      Tasos Alvas <tasos.alvas@qwertyuiopia.com>
-.. Copyright (C) 2015-2019 DebOps <https://debops.org/>
+.. Copyright (C) 2015-2026 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. _debops_for_ansible:
@@ -173,6 +173,12 @@ inventory (for example, the ``debops.nginx`` role is activated on hosts in
 ``[debops_service_nginx]`` group). Some service playbooks use additional groups
 for various purposes; you are advised to check the role documentation to see
 what is their intended use case.
+
+:ref:`Scoped playbooks <scoped_playbooks>` use the ``[debops_all_services]``
+Ansible inventory group alongside the ``[debops_service_*]`` groups. This
+allows easy activation of any Ansible role using its corresponding
+:file:`scope/<role>[/<entry_point>/]` playbook on a given host. Keep in mind
+that roles used this way might not work correctly on an unconfigured host.
 
 
 LDAP integration

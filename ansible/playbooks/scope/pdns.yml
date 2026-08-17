@@ -1,0 +1,20 @@
+---
+# Copyright (C) 2022 CipherMail B.V. <https://www.ciphermail.com/>
+# Copyright (C) 2022-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Manage PowerDNS authoritative server
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_services', 'debops_service_pdns' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Import pdns role
+      ansible.builtin.import_role:
+        name: 'debops.debops.pdns'
+      tags: [ 'role::pdns', 'skip::pdns' ]
