@@ -1,0 +1,27 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage Docker container services
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_services', 'debops_service_docker_service' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  pre_tasks:
+
+    - name: Define variables used by Ansible roles
+      ansible.builtin.import_role:
+        name: 'secret'
+      tags: [ 'role::secret', 'role::docker_service' ]
+
+  tasks:
+
+    - name: Import docker_service role
+      ansible.builtin.import_role:
+        name: 'debops.debops.docker_service'
+      tags: [ 'role::docker_service', 'skip::docker_service' ]

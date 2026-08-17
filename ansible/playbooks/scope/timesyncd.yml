@@ -1,0 +1,20 @@
+---
+# Copyright (C) 2023-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2023-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage systemd-timesyncd service
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_hosts', 'debops_all_services', 'debops_service_timesyncd' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Import timesyncd role
+      ansible.builtin.import_role:
+        name: 'debops.debops.timesyncd'
+      tags: [ 'role::timesyncd', 'skip::timesyncd' ]
