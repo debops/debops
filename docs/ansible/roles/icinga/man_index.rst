@@ -15,6 +15,7 @@ debops.icinga
    getting-started
    deployment
    dependency
+   defaults/main
    defaults-detailed
 
 ..

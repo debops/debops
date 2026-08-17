@@ -15,6 +15,7 @@ debops.golang
    man_description
    getting-started
    usage-examples
+   defaults/main
    defaults-detailed
 
 ..

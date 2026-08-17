@@ -40,6 +40,9 @@ General
   project requirements for contributions that use LLM and AI-assisted
   coding tools.
 
+- Manual pages for each Ansible role now include the role default
+  variables rendered from the :file:`defaults/main.yml` file.
+
 :ref:`debops.java` role
 '''''''''''''''''''''''
 

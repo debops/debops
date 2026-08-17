@@ -13,6 +13,7 @@ debops.apt_mirror
    man_synopsis
    man_description
    getting-started
+   defaults/main
    defaults-detailed
 
 ..

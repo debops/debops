@@ -13,6 +13,7 @@ debops.pam_access
    man_synopsis
    man_description
    getting-started
+   defaults/main
    defaults-detailed
 
 ..

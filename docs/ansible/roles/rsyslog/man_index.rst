@@ -14,6 +14,7 @@ debops.rsyslog
    man_description
    getting-started
    unprivileged-tls
+   defaults/main
    defaults-detailed
 
 ..
