@@ -227,6 +227,11 @@ General
   changed by the ``ansible.builtin.apt_repository`` Ansible module and using
   differently formatted comments.
 
+- Fixed an issue in certain environments where after installing Debian the
+  :command:`gnupg` APT package is not installed which causes broken initial
+  configuration of the APT repositories and their GPG keys. The ``gnupg``
+  package will be installed early to ensure its availability.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 

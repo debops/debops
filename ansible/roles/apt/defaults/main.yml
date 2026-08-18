@@ -46,6 +46,14 @@ apt__cache_valid_time: '{{ ansible_local.core.cache_valid_time | d(60 * 60 * 24)
 # Packages to install [[[
 # -----------------------
 
+# .. envvar:: apt__core_packages [[[
+#
+# List of APT packages which are required to correctly configure APT keys and
+# repositories. These packages will be installed before main APT configuration
+# is performed. To disable this, set the variable to an empty list.
+apt__core_packages: [ 'gnupg' ]
+
+                                                                   # ]]]
 # .. envvar:: apt__base_packages [[[
 #
 # Default base packages to install for APT support. You can use the
@@ -58,7 +66,6 @@ apt__base_packages:
         if (ansible_distribution_release in
             ["stretch", "trusty", "xenial"])
         else [] }}'
-  - 'gnupg'
 
                                                                    # ]]]
 # .. envvar:: apt__packages [[[
