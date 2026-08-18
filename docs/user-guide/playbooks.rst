@@ -188,13 +188,13 @@ The main role entry points are activated using the :file:`scope/<role>` name
 patterns (for example, :file:`scope/apt` playbook will activate the
 :ref:`debops.apt` main entry point in the :file:`roles/apt/tasks/main.yml`
 file. The roles can have separate "role entry points" with a corresponding
-:file:`scope/<role>/<entry_point>` Ansible playbooks. For example, in the
-future there can be a :file:`scope/apt/update` playbook which might activate
-the :file:`roles/apt/tasks/main_update.yml` task file in the APT role which
-will perform an :command:`apt update` command on the selected hosts. Roles
-executed through different entry points have access to the same role default
-variables and Ansible inventory as the main entry point and can operate in the
-same environment as the main playbooks.
+:file:`scope/<role>/<entry_point>` Ansible playbooks. For example, the
+:file:`scope/apt/update` playbook will import the :ref:`debops.apt` role using
+the :file:`roles/apt/tasks/main_update.yml` task file, which will perform an
+:command:`apt update` command on the selected hosts. Roles executed through
+different entry points have access to the same role default variables and
+Ansible inventory as the main entry point and can operate in the same
+environment as the main playbooks.
 
 For completion, the project includes the :file:`playbooks/scope.yml` Ansible
 playbook which can be used to apply any Ansible role, from DebOps or any other
