@@ -83,11 +83,11 @@
                            + apt_preferences__dependent_list) }}'
   when: ((((item.state | d('present')) != 'absent' and (not ((item.delete is defined and item.delete is truthy) | bool))) and
           (item.package | d() or item.packages | d())) and
-         (item.raw | d() or
-          item.version | d() or
+         ((item.raw is defined and item.raw is string) or
+          (item.version is defined and item.version is string) or
           (item.pin is undefined and
            (item.backports is undefined or
             (item.backports is iterable and item.backports and
              ansible_distribution_release in item.backports)) and
             ansible_distribution_release in apt_preferences__next_release.keys()) or
-           item.pin | d())) | bool
+           (item.pin is defined and item.pin is string))) | bool
