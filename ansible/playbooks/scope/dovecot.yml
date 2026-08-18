@@ -1,0 +1,29 @@
+---
+# Copyright (C) 2015      Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+# Copyright (C) 2017-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage Dovecot service
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_services', 'debops_service_dovecot' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  pre_tasks:
+
+    - name: Prepare dovecot environment
+      ansible.builtin.import_role:
+        name: 'debops.debops.dovecot'
+        tasks_from: 'main_env'
+      tags: [ 'role::dovecot', 'role::dovecot:env' ]
+
+  tasks:
+
+    - name: Import dovecot role
+      ansible.builtin.import_role:
+        name: 'debops.debops.dovecot'
+      tags: [ 'role::dovecot', 'skip::dovecot' ]

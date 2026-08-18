@@ -1,0 +1,21 @@
+---
+# Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+# Copyright (C) 2021-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage rspamd service
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_services', 'debops_service_rspamd' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Import rspamd role
+      ansible.builtin.import_role:
+        name: 'debops.debops.rspamd'
+      tags: [ 'role::rspamd', 'skip::rspamd' ]

@@ -1,0 +1,20 @@
+---
+# Copyright (C) 2016-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2016-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage SSH public keys
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_hosts', 'debops_all_services', 'debops_service_authorized_keys' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Import authorized_keys role
+      ansible.builtin.import_role:
+        name: 'debops.debops.authorized_keys'
+      tags: [ 'role::authorized_keys', 'skip::authorized_keys' ]

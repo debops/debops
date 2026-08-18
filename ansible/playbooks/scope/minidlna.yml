@@ -1,0 +1,20 @@
+---
+# Copyright (C) 2021-2021 Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2021-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Install and manage MiniDLNA
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_services', 'debops_service_minidlna' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Import minidlna role
+      ansible.builtin.import_role:
+        name: 'debops.debops.minidlna'
+      tags: [ 'role::minidlna', 'skip::minidlna' ]
