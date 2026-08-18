@@ -194,6 +194,14 @@ General
 - The :file:`lxc_ssh.py` Ansible connection plugin included in DebOps should
   now work correctly on Python v3.13.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- Fixed an issue in certain environments where after installing Debian the
+  :command:`gnupg` APT package is not installed which causes broken initial
+  configuration of the APT repositories and their GPG keys. The ``gnupg``
+  package will be installed early to ensure its availability.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 

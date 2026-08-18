@@ -25,6 +25,15 @@
   loop_control:
     label: '{{ item.name }}'
 
+- name: Install core packages required by APT
+  ansible.builtin.apt:
+    name: '{{ (apt__core_packages) | flatten }}'
+    state: 'present'
+    install_recommends: False
+  register: apt__register_core_packages
+  until: apt__register_core_packages is succeeded
+  when: apt__enabled | bool and apt__core_packages is truthy
+
 - name: Configure custom APT keys with apt_key
   ansible.builtin.apt_key:
     data:      '{{ item.data | d(omit) }}'
