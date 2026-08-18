@@ -1,6 +1,6 @@
-.. Copyright (C) 2013-2018 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2013-2026 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-.. Copyright (C) 2014-2018 DebOps <https://debops.org/>
+.. Copyright (C) 2014-2026 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
@@ -69,6 +69,25 @@ that uses the ``debops.apt`` role:
 .. literalinclude:: ../../../../ansible/playbooks/service/apt.yml
    :language: yaml
    :lines: 1,6-
+
+
+Role entry points
+-----------------
+
+The ``debops.apt`` role supports multiple entry points, utilized by the
+playbooks provided with the role:
+
+``service/apt`` | ``scope/apt``
+  The main playbook which configures a complete APT service. Tags can be used
+  to apply specific roles or exclude roles that are not needed in a given
+  Ansible playbook run.
+
+  The :file:`service/apt` playbook is included in the main DebOps
+  :file:`site.yml` playbook.
+
+``scope/apt/update``
+  This playbook can be used to update APT cache on all or specific hosts in the
+  Ansible inventory. It's an equivalent of the :command:`apt update` command.
 
 
 Ansible tags
