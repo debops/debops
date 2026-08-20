@@ -158,6 +158,9 @@ class ProjectDir(object):
             }
         self.config.merge(view_data)
 
+        # Expose current view in runtime environment
+        self.config.set_env('DEBOPS_PROJECT_VIEW', self.view)
+
         if self.project_type == 'legacy':
             self.ansible_cfg = AnsibleConfig(
                     os.path.join(self.path, 'ansible.cfg'),
