@@ -15,6 +15,9 @@ The :command:`debops exec` command will automatically unlock and lock the
 encrypted :file:`ansible/secret/` directory as needed, to give the Ansible
 module access to secrets.
 
+This command executes :ref:`hook scripts <debops_hooks>` (``pre-exec`` and
+``post-exec``) before and after the Ansible module execution.
+
 Options
 ~~~~~~~
 
