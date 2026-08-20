@@ -81,6 +81,7 @@ class EnvRunner(object):
             if unlocked:
                 self.inventory.lock()
 
-        run_hooks(self.project.path, 'post-env')
+        run_hooks(self.project.path, 'post-env',
+                  extra_env={'DEBOPS_RETURN_CODE': rc})
 
         return rc

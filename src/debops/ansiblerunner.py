@@ -150,6 +150,7 @@ class AnsibleRunner(object):
             if unlocked:
                 self.inventory.lock()
 
-        run_hooks(self.project.path, 'post-exec')
+        run_hooks(self.project.path, 'post-exec',
+                  extra_env={'DEBOPS_RETURN_CODE': rc})
 
         return rc
