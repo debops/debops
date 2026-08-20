@@ -10,6 +10,9 @@ the main argument. The script will check if a :file:`.debops.cfg` file exists
 in a given directory; if not, it will be created along with a basic directory
 structure.
 
+This command executes :ref:`hook scripts <debops_hooks>` (``pre-init`` and
+``post-init``) before and after project initialization.
+
 Options
 ~~~~~~~
 
@@ -171,6 +174,9 @@ well as any untracked files will be committed automatically. The commit message
 is taken from the DebOps configuration; users can use :command:`git commit
 --amend` command to edit the commit message afterwards.
 
+This command executes :ref:`hook scripts <debops_hooks>` (``pre-commit`` and
+``post-commit``) before and after the git commit.
+
 Options
 ~~~~~~~
 
@@ -194,6 +200,9 @@ file. This allows the user to test new configuration if needed. When the
 :file:`ansible.cfg` configuration file based on the contents of its own
 internal configuration. The script will also ensure that the basic directory
 structure of a project exists.
+
+This command executes :ref:`hook scripts <debops_hooks>` (``pre-refresh`` and
+``post-refresh``) before and after the refresh.
 
 Options
 ~~~~~~~
@@ -226,6 +235,9 @@ When ``git-crypt`` is used to encrypt secrets, unlocking them will fail if the
 behavior. Easiest way to mitigate this is to unlock the project before making
 any changes.
 
+This command executes :ref:`hook scripts <debops_hooks>` (``pre-unlock`` and
+``post-unlock``) before and after unlocking the secrets.
+
 Options
 ~~~~~~~
 
@@ -257,6 +269,9 @@ When ``git-crypt`` is used to encrypt secrets, locking them will fail if the
 ``git`` working directory contains uncommitted changes. This is expected
 behavior. Easiest way to mitigate this is to commit any changes before locking
 the project directory.
+
+This command executes :ref:`hook scripts <debops_hooks>` (``pre-lock`` and
+``post-lock``) before and after locking the secrets.
 
 Options
 ~~~~~~~
