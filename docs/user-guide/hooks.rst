@@ -81,6 +81,9 @@ Each hook script runs as a subprocess with the following environment:
 ``DEBOPS_PROJECT_PATH``
   Absolute path to the DebOps project directory.
 
+``DEBOPS_PROJECT_VIEW``
+  Name of the current infrastructure view (e.g. ``system``, ``deployment``).
+
 ``DEBOPS_RETURN_CODE``
   Exit code of the preceding operation. Available only in ``post-`` hooks
   for :command:`debops run`, :command:`debops check`, :command:`debops exec`,
