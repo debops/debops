@@ -16,6 +16,9 @@ If a project directory contains encrypted secrets, they will be automatically
 unlocked before executing the external command and locked afterwards if
 necessary.
 
+This command executes :ref:`hook scripts <debops_hooks>` (``pre-env`` and
+``post-env``) before and after command execution.
+
 
 Options
 ~~~~~~~
