@@ -5,6 +5,7 @@
 from .utils import unexpanduser
 from .ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
+from .hooks import run_hooks
 import subprocess
 import configparser
 import textwrap
@@ -57,13 +58,19 @@ class EnvRunner(object):
 
         for key, value in self.project.config._env_vars.items():
             os.environ[key] = value
+
+        if not run_hooks(self.project.path, 'pre-env'):
+            raise RuntimeError('Hook pre-env aborted, '
+                               'not running command in environment')
+
+        rc = 0
         try:
             unlocked = self.inventory.unlock()
 
             executor = subprocess.Popen(' '.join(self._command),
                                         shell=True)
             std_out, std_err = executor.communicate()
-            return executor.returncode
+            rc = executor.returncode
 
         except KeyboardInterrupt:
             if unlocked:
@@ -73,3 +80,7 @@ class EnvRunner(object):
         finally:
             if unlocked:
                 self.inventory.lock()
+
+        run_hooks(self.project.path, 'post-env')
+
+        return rc
