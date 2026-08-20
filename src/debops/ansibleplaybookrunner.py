@@ -5,6 +5,7 @@
 from .utils import unexpanduser
 from .ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
+from .hooks import run_hooks
 import subprocess
 import datetime
 import configparser
@@ -22,6 +23,7 @@ class AnsiblePlaybookRunner(object):
         self.args = args
         self.kwargs = kwargs
 
+        self.project = project
         self.inventory = AnsibleInventory(project, name=project.view)
 
         try:
@@ -163,6 +165,12 @@ class AnsiblePlaybookRunner(object):
         # Notify user at end of execution
         if self.kwargs.get('bell', False):
             print('\a', end='')
+
+    def _get_check_mode(self):
+        if ('--check' in self._ansible_command or
+                '-C' in self._ansible_command):
+            return 'check'
+        return 'run'
 
     def _expand_playbook_paths(self, project):
         playbook_dirs = []
@@ -333,11 +341,19 @@ class AnsiblePlaybookRunner(object):
 
         for key, value in self._ansible_env.items():
             os.environ[key] = value
+
+        run_check_mode = self._get_check_mode()
+
+        hook_name = 'pre-' + run_check_mode
+        if not run_hooks(self.project.path, hook_name):
+            raise RuntimeError('Hook {} aborted, not running playbooks'
+                               .format(hook_name))
+
+        rc = 0
         try:
             unlocked = self.inventory.unlock()
 
-            if ('--check' in self._ansible_command or
-                    '-C' in self._ansible_command):
+            if run_check_mode == 'check':
                 logger.info('Checking Ansible playbooks: {}'.format(
                         ','.join(self._found_playbooks)),
                         extra={'block': 'stderr'})
@@ -359,7 +375,7 @@ class AnsiblePlaybookRunner(object):
                 logger.error('Ansible finished with '
                              'return code {}'.format(executor.returncode))
             self._ring_bell()
-            return executor.returncode
+            rc = executor.returncode
 
         except ChildProcessError:
             raise ChildProcessError('Cannot unlock project secrets, '
@@ -377,3 +393,8 @@ class AnsiblePlaybookRunner(object):
         finally:
             if unlocked:
                 self.inventory.lock()
+
+        post_hook_name = 'post-' + run_check_mode
+        run_hooks(self.project.path, post_hook_name)
+
+        return rc
