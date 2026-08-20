@@ -18,6 +18,10 @@ this process might fail if the project directory contains uncommitted changes.
 Easiest way to mitigate this is to unlock the project directory using the
 ``debops project unlock`` command before making any changes.
 
+This command executes :ref:`hook scripts <debops_hooks>` before and after
+playbook execution: ``pre-run``/``post-run`` for normal runs, or
+``pre-check``/``post-check`` when ``--check`` is active.
+
 Options
 ~~~~~~~
 
