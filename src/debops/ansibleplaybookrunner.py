@@ -395,6 +395,7 @@ class AnsiblePlaybookRunner(object):
                 self.inventory.lock()
 
         post_hook_name = 'post-' + run_check_mode
-        run_hooks(self.project.path, post_hook_name)
+        run_hooks(self.project.path, post_hook_name,
+                  extra_env={'DEBOPS_RETURN_CODE': rc})
 
         return rc

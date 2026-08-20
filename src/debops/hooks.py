@@ -35,7 +35,8 @@ def _discover_hooks(hook_dir):
     return scripts
 
 
-def run_hooks(project_path, hook_name, timeout=DEFAULT_HOOK_TIMEOUT):
+def run_hooks(project_path, hook_name, timeout=DEFAULT_HOOK_TIMEOUT,
+              extra_env=None):
     """Run all executable scripts for a given hook name.
 
     Searches for scripts in two locations, in priority order:
@@ -60,6 +61,8 @@ def run_hooks(project_path, hook_name, timeout=DEFAULT_HOOK_TIMEOUT):
         project_path: Absolute path to the DebOps project directory.
         hook_name: Name of the hook point (e.g. 'pre-run', 'post-lock').
         timeout: Maximum seconds to wait for each script. Default: 300.
+        extra_env: Optional dict of additional environment variables
+            to pass to the hook scripts. Values are converted to strings.
 
     Returns:
         True if all hooks executed successfully (exit code 0).
@@ -85,6 +88,9 @@ def run_hooks(project_path, hook_name, timeout=DEFAULT_HOOK_TIMEOUT):
     hook_env = os.environ.copy()
     hook_env['DEBOPS_HOOK_NAME'] = hook_name
     hook_env['DEBOPS_PROJECT_PATH'] = os.path.abspath(project_path)
+    if extra_env:
+        for key, value in extra_env.items():
+            hook_env[key] = str(value)
 
     for script in all_scripts:
         logger.notice('Running hook script: {}'.format(script),
