@@ -23,6 +23,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.1: https://github.com/debops/debops/compare/v3.1.0...stable-3.1
 
+Added
+~~~~~
+
+General
+'''''''
+
+- Added :ref:`hook scripts <debops_hooks>` support for extending DebOps CLI
+  behavior at various execution points.
+
 
 `debops v3.1.9`_ - 2026-09-28
 -----------------------------
