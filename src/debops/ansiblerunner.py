@@ -5,6 +5,7 @@
 from .utils import unexpanduser
 from .ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
+from .hooks import run_hooks
 import subprocess
 import configparser
 import textwrap
@@ -18,6 +19,7 @@ class AnsibleRunner(object):
         self.args = args
         self.kwargs = kwargs
 
+        self.project = project
         self.inventory = AnsibleInventory(project, name=project.view)
 
         try:
@@ -121,6 +123,12 @@ class AnsibleRunner(object):
 
         for key, value in self._ansible_env.items():
             os.environ[key] = value
+
+        if not run_hooks(self.project.path, 'pre-exec'):
+            raise RuntimeError('Hook pre-exec aborted, '
+                               'not executing Ansible command')
+
+        rc = 0
         try:
             unlocked = self.inventory.unlock()
 
@@ -128,7 +136,7 @@ class AnsibleRunner(object):
                                         shell=True)
             std_out, std_err = executor.communicate()
             self._ring_bell()
-            return executor.returncode
+            rc = executor.returncode
 
         except KeyboardInterrupt:
             if unlocked:
@@ -141,3 +149,7 @@ class AnsibleRunner(object):
         finally:
             if unlocked:
                 self.inventory.lock()
+
+        run_hooks(self.project.path, 'post-exec')
+
+        return rc
