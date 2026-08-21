@@ -1,0 +1,43 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps, loads
+import subprocess
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {
+    'installed': cmd_exists('docker'),
+    'projects': {},
+}
+
+if output['installed']:
+    try:
+        ls_output = subprocess.check_output(
+            ['docker', 'compose', 'ls', '--format', 'json'],
+            stderr=subprocess.DEVNULL
+        ).decode('utf-8').strip()
+
+        for project in loads(ls_output):
+            output['projects'][project.get('Name', '')] = {
+                'status': project.get('Status', ''),
+                'config_files': project.get('ConfigFiles', ''),
+            }
+    except Exception:
+        pass
+
+print(dumps(output, sort_keys=True, indent=4))
