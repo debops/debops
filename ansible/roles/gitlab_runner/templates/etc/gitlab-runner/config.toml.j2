@@ -80,6 +80,9 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%     if runner.limit | d() %}
   limit = {{ runner.limit }}
 {%     endif %}
+{%     if runner.request_concurrency | d() %}
+  limit = {{ runner.request_concurrency }}
+{%     endif %}
 {%     if runner.output_limit | d() %}
   output_limit = {{ runner.output_limit }}
 {%     endif %}
@@ -113,6 +116,10 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
   [runners.docker]
     image = "{{ runner.docker_image | d(gitlab_runner__docker_image) }}"
     privileged = {{ (runner.docker_privileged | d(gitlab_runner__docker_privileged)) | bool | lower }}
+{%       if (runner.docker_services_privileged | d() %}
+    docker_services_privileged = "{{ runner.docker_services_privileged }}"
+{%       endif %}
+    docker_services_privileged
     disable_cache = {{ (runner.docker_disable_cache | d(gitlab_runner__docker_disable_cache)) | bool | lower }}
 {%       if (runner.docker_cache_dir | d() or gitlab_runner__docker_cache_dir) %}
     cache_dir = "{{ runner.docker_cache_dir | d(gitlab_runner__docker_cache_dir) }}"
