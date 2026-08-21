@@ -208,6 +208,12 @@ General
 - The role should now correctly process the list of APT packages to install on
   Ansible v2.19+ instead of creating an empty list.
 
+:ref:`debops.apt_preferences` role
+''''''''''''''''''''''''''''''''''
+
+- The pins should now be correctly created by the role due to improved
+  conditional checks.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
