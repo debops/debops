@@ -47,6 +47,38 @@ VictoriaMetrics, Vaultwarden, Bugsink, Homepage and more), see the
 :ref:`docker_service__ref_guides` page.
 
 
+Persistent data directories
+----------------------------
+
+For backward compatibility, the role automatically creates host directories
+for bind-mount sources listed in a service's ``volumes`` parameter. This is
+convenient for simple cases, but it is an *inference* -- the role has no way
+to know whether a given ``volumes`` entry is meant to be a directory or a
+file, so it always creates a directory. This works until a bind mount's
+source is legitimately a file or socket (e.g. ``/etc/localtime``, a UNIX
+socket), or a service needs specific ownership/permissions on the host
+directory that ``volumes`` cannot express.
+
+Prefer declaring host directories explicitly with ``data_dirs`` instead:
+
+.. code-block:: yaml
+
+   docker_service__host_services:
+
+     - name: 'vaultwarden'
+       image: 'vaultwarden/server:1.37.1-alpine'
+       data_dirs:
+         - path: '/srv/docker/vaultwarden/data'
+           owner: 'root'
+           group: 'root'
+           mode: '0750'
+       volumes:
+         - '/srv/docker/vaultwarden/data:/data'
+
+See :ref:`docker_service__ref_services` for the full ``data_dirs`` and
+``create_volume_dirs`` syntax.
+
+
 Nginx reverse proxy
 -------------------
 
@@ -61,6 +93,60 @@ The container must expose the relevant port on ``127.0.0.1`` for this to work.
 A typical port mapping looks like ``127.0.0.1:8428:8428``, which binds the
 container port to localhost only -- :command:`nginx` then handles external
 access with SSL termination.
+
+
+Exposing a service to the LAN
+------------------------------
+
+When a service publishes a port directly to the network (rather than binding
+to ``127.0.0.1`` behind :command:`nginx`), it is important to place firewall
+rules in the correct :command:`iptables` chain.
+
+Docker-published ports are processed in the ``FORWARD`` path: Docker performs
+a DNAT in ``nat/PREROUTING`` and the resulting traffic enters the ``FORWARD``
+chain, where the ``DOCKER-USER`` chain is consulted **before** Docker's own
+``DOCKER`` chain. Traffic that reaches a published container port **never
+traverses the** ``INPUT`` **chain**. A rule placed in ``INPUT`` -- the default
+for :envvar:`ferm__host_rules` -- silently fails to filter a published port.
+
+The ``published_ports`` integration in this role places rules in
+``DOCKER-USER`` automatically, so the correct chain is used without requiring
+per-host :file:`ferm.yml` files:
+
+.. code-block:: yaml
+
+   docker_service__host_services:
+
+     - name: 'grafana'
+       image: 'grafana/grafana:11.0.0'
+       ports:
+         - '0.0.0.0:3000:3000'
+       published_ports:
+         - port: 3000
+           protocol: 'tcp'
+           allow: [ '192.0.2.0/24' ]
+           comment: 'Grafana - monitoring VLAN only'
+
+For each port entry with a non-empty ``allow`` list the role generates:
+
+- An ``ACCEPT`` rule in ``DOCKER-USER`` for each source CIDR in ``allow``.
+- A trailing default-deny rule (``REJECT`` or ``DROP``) for all other sources
+  on that port.
+
+If ``allow`` is absent or empty, no rules are emitted (the port is assumed to
+be on loopback behind :command:`nginx`, or intentionally open).
+
+See :ref:`docker_service__ref_published_ports` for the full parameter
+reference.
+
+.. note::
+
+   The ``DOCKER-USER`` chain is managed by the :command:`ferm` role. On each
+   Ansible run :command:`ferm` rebuilds the chain with the current rules and
+   the ``docker_server__ferm_post_hook`` (installed by the
+   :ref:`debops.docker_server` role) then restarts Docker so that it
+   re-injects its own ``FORWARD`` jumps. Rules therefore survive a Docker
+   restart without any additional configuration.
 
 
 Example inventory
@@ -141,6 +227,65 @@ Deploy VictoriaMetrics and Grafana side by side:
          enabled: true
          fqdn: 'grafana.example.com'
          port: '3000'
+
+
+Custom hooks
+------------
+
+The role exposes two custom tasklists which let you execute additional Ansible
+tasks before and after the role's own tasks, without modifying the role itself.
+They are sourced through the :ref:`debops.debops.task_src <debops.ansible_plugins>`
+lookup plugin, so you can override them at the project level by creating a file
+with the same relative path under the directory configured by
+``override_paths.tasks_path`` (by default
+:file:`ansible/overrides/tasks/docker_service/`).
+
+``docker_service/pre_main.yml``
+  Tasks executed **before** the main role tasks, right after the
+  :ref:`debops.secret` role is imported and **before** the first task that
+  consumes :envvar:`docker_service__combined_services`. This is the place to
+  prepare anything the combined service list depends on -- for example to
+  pre-create a secret file referenced by a ``lookup("file", ...)`` inside a
+  service ``env`` entry, so that the lookup does not fail on a fresh install
+  before the value has been generated.
+
+``docker_service/post_main.yml``
+  Tasks executed **after** all main role tasks, once the containers have been
+  created and started. This is the place to act on the running containers --
+  for example to provision an application account or generate an API token by
+  running a management command inside a freshly started container.
+
+The role ships empty stub files for both tasklists, so the lookup always
+resolves and the role behaves identically when no project override is present.
+
+.. note::
+
+   The custom tasklists are included for **every** host that runs the role.
+   When a tasklist applies only to specific hosts, guard its tasks with an
+   appropriate condition (for example ``when: inventory_hostname == '...'``),
+   exactly like the custom tasklists of other DebOps roles.
+
+.. note::
+
+   Both ``include_tasks`` directives carry ``tags: [ 'always' ]``, so they are
+   evaluated even when Ansible is invoked with ``--tags`` or ``--skip-tags``.
+   Tag filtering is then applied to the individual tasks **inside** the hook
+   file. This means you can assign your own tags to blocks or tasks in
+   ``pre_main.yml`` / ``post_main.yml`` and target them directly with
+   ``--tags``. For example, if the hook file contains:
+
+   .. code-block:: yaml
+
+      - name: Provision application accounts
+        tags: [ 'myapp::accounts' ]
+        block:
+          # ...
+
+   you can run only those tasks with:
+
+   .. code-block:: console
+
+      debops run service/docker_service --tags myapp::accounts
 
 
 Example playbook

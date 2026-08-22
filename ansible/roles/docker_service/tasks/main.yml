@@ -11,6 +11,10 @@
   ansible.builtin.import_role:
     name: 'secret'
 
+- name: Pre hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "docker_service/pre_main.yml") }}'
+  tags: ['always']
+
 - name: Install required packages
   ansible.builtin.apt:
     name: '{{ docker_service__python__dependent_packages3 | flatten }}'
@@ -18,6 +22,34 @@
     install_recommends: false
   register: docker_service__register_packages
   until: docker_service__register_packages is succeeded
+
+- name: Create data directories
+  ansible.builtin.file:
+    path: '{{ item.1.path }}'
+    state: 'directory'
+    owner: '{{ item.1.owner | d(omit) }}'
+    group: '{{ item.1.group | d(omit) }}'
+    mode: '{{ item.1.mode | d("0755") }}'
+  loop: '{{ docker_service__combined_services | d([])
+            | subelements("data_dirs", skip_missing=True) }}'
+  loop_control:
+    label: '{{ item.0.name }}: {{ item.1.path }}'
+  when: item.0.state | d('present') not in ['absent', 'ignore']
+  tags: ['role::docker_service:config']
+
+- name: Check state of bind mount source paths
+  ansible.builtin.stat:
+    path: '{{ item.1.split(":") | first }}'
+  loop: '{{ docker_service__combined_services | d([])
+            | subelements("volumes", skip_missing=True) }}'
+  loop_control:
+    label: '{{ item.0.name }}: {{ item.1.split(":") | first }}'
+  when:
+    - item.0.state | d('present') not in ['absent', 'ignore']
+    - item.0.create_volume_dirs | d(docker_service__create_volume_dirs) | bool
+    - item.1.split(":") | first is match("/")
+  register: docker_service__register_volume_stat
+  tags: ['role::docker_service:config']
 
 - name: Create persistent data directories for bind mounts
   ansible.builtin.file:
@@ -30,9 +62,18 @@
     label: '{{ item.0.name }}: {{ item.1.split(":") | first }}'
   when:
     - item.0.state | d('present') not in ['absent', 'ignore']
+    - item.0.create_volume_dirs | d(docker_service__create_volume_dirs) | bool
     - item.1.split(":") | first is match("/")
     - item.1.split(":") | first not in
       (item.0.config_files | d([]) | map(attribute="dest") | list)
+    - item.1.split(":") | first not in
+      (item.0.data_dirs | d([]) | map(attribute="path") | list)
+    - item.1 not in
+      (docker_service__register_volume_stat.results | d([])
+       | selectattr("stat", "defined")
+       | selectattr("stat.exists", "true")
+       | rejectattr("stat.isdir", "true")
+       | map(attribute="item.1") | list)
   tags: ['role::docker_service:config']
 
 - name: Create directories for config files
@@ -185,3 +226,7 @@
     mode: '0755'
   notify: ['Refresh host facts']
   tags: ['meta::facts']
+
+- name: Post hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "docker_service/post_main.yml") }}'
+  tags: ['always']
