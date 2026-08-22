@@ -259,6 +259,7 @@ Monitoring
 - :ref:`debops.metricbeat`
 - :ref:`debops.monit`
 - :ref:`debops.proc_hidepid`
+- :ref:`debops.prometheus_exporter`
 - :ref:`debops.snmpd`
 - :ref:`debops.telegraf`
 - :ref:`debops.zabbix_agent`

@@ -1,0 +1,98 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2026 Patryk Sciborek <patryk@sciborek.com>
+# .. Copyright (C) 2026 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _prometheus_exporter__ref_defaults:
+
+# debops.prometheus_exporter default variables
+# ============================================
+
+# .. contents:: Sections
+#    :local:
+
+
+# General [[[
+# -----------
+
+# .. envvar:: prometheus_exporter__config_dir [[[
+#
+# Directory for exporter configuration files (e.g. blackbox.yml, sql.yml).
+prometheus_exporter__config_dir: '/etc/prometheus'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__dropin_dir [[[
+#
+# Base directory for systemd drop-in override files.
+prometheus_exporter__dropin_dir: '/etc/systemd/system'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__default_listen_host [[[
+#
+# Default host/IP exporters bind to. Loopback keeps exporters private; the
+# local vmagent scrapes them and forwards samples.
+prometheus_exporter__default_listen_host: '127.0.0.1'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__purge_on_absent [[[
+#
+# When True, exporters with ``state: absent`` also have their APT package
+# purged.
+prometheus_exporter__purge_on_absent: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Known default ports [[[
+# -----------------------
+
+# .. envvar:: prometheus_exporter__known_ports [[[
+#
+# Mapping of exporter ``name`` to its default listen port. Used to build
+# ``listen_address`` when an exporter does not set it explicitly.
+prometheus_exporter__known_ports:
+  node: 9100
+  blackbox: 9115
+  apache: 9117
+  postgres: 9187
+  sql: 9237
+  mysqld: 9104
+  redis: 9121
+  memcached: 9150
+  nginx: 9113
+  elasticsearch: 9114
+  ipmi: 9290
+                                                                   # ]]]
+                                                                   # ]]]
+# Exporter definitions [[[
+# ------------------------
+
+# The lists below define managed exporters. Each element is a dict; see
+# :ref:`prometheus_exporter__ref_exporters` for all supported keys.
+
+# .. envvar:: prometheus_exporter__exporters [[[
+#
+# Exporters applied to all hosts in the inventory.
+prometheus_exporter__exporters: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__group_exporters [[[
+#
+# Exporters applied to hosts in a specific inventory group.
+prometheus_exporter__group_exporters: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__host_exporters [[[
+#
+# Exporters applied to specific hosts.
+prometheus_exporter__host_exporters: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__combined_exporters [[[
+#
+# Combined list consumed by the role tasks.
+prometheus_exporter__combined_exporters: '{{ prometheus_exporter__exporters
+                                             + prometheus_exporter__group_exporters
+                                             + prometheus_exporter__host_exporters }}'
+                                                                   # ]]]
+                                                                   # ]]]
