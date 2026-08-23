@@ -1229,16 +1229,16 @@ request_acme_dns_certificate() {
     esac
 
     # shellcheck disable=SC2086
-    certbot certonly $acme_extra -n --authenticator ${config['acme_type']} --expand --agree-tos "${email}" --${config['acme_type']}-credentials ${credentials} --server "${config['acme_ca_api']}" ${all_dns_str}
+    certbot certonly $acme_extra -n --quiet --authenticator ${config['acme_type']} --expand --agree-tos "${email}" --${config['acme_type']}-credentials ${credentials} --server "${config['acme_ca_api']}" ${all_dns_str}
 
     local folder
     local letsencrypt
     folder=$(printf '%s\n' "${all_dns[@]}" | xargs | cut -d' ' -f1)
     letsencrypt="/etc/letsencrypt/live/${folder}"
     if [ -f "${letsencrypt}/privkey.pem" ]; then
-        ln -vsfT "${letsencrypt}/privkey.pem"   "${pkirealm}/private/key.pem"
-        ln -vsfT "${letsencrypt}/cert.pem"      "${pkirealm}/acme/cert.pem"
-        ln -vsfT "${letsencrypt}/chain.pem"     "${pkirealm}/acme/intermediate.pem"
+        ln -sfT "${letsencrypt}/privkey.pem"   "${pkirealm}/private/key.pem"
+        ln -sfT "${letsencrypt}/cert.pem"      "${pkirealm}/acme/cert.pem"
+        ln -sfT "${letsencrypt}/chain.pem"     "${pkirealm}/acme/intermediate.pem"
     else
       echo "error: could not symlink let's encrypt certificates into pki realm" >&2
     fi
@@ -1298,10 +1298,10 @@ request_acme_manual_certificate() {
 
     if test "${config['acme_ca']}" == 'le-live-v2'; then
       # shellcheck disable=SC2086
-      certbot certonly -n --authenticator ${config['acme_type']} --preferred-challenges=dns --expand --agree-tos "${email}" ${all_dns_str}
+      certbot certonly -n --quiet --authenticator ${config['acme_type']} --preferred-challenges=dns --expand --agree-tos "${email}" ${all_dns_str}
     elif test "${config['acme_ca']}" == 'le-staging-v2'; then
       # shellcheck disable=SC2086
-      certbot certonly --test-cert -n --authenticator ${config['acme_type']} --preferred-challenges=dns --expand --agree-tos "${email}" ${all_dns_str}
+      certbot certonly --test-cert -n --quiet --authenticator ${config['acme_type']} --preferred-challenges=dns --expand --agree-tos "${email}" ${all_dns_str}
     fi
 
     local folder
@@ -1309,9 +1309,9 @@ request_acme_manual_certificate() {
     folder=$(printf '%s\n' "${all_dns[@]}" | xargs | cut -d' ' -f1)
     letsencrypt="/etc/letsencrypt/live/${folder}"
     if [ -f "${letsencrypt}/privkey.pem" ]; then
-        ln -vsfT "${letsencrypt}/privkey.pem"   "${pkirealm}/private/key.pem"
-        ln -vsfT "${letsencrypt}/cert.pem"      "${pkirealm}/acme/cert.pem"
-        ln -vsfT "${letsencrypt}/chain.pem"     "${pkirealm}/acme/intermediate.pem"
+        ln -sfT "${letsencrypt}/privkey.pem"   "${pkirealm}/private/key.pem"
+        ln -sfT "${letsencrypt}/cert.pem"      "${pkirealm}/acme/cert.pem"
+        ln -sfT "${letsencrypt}/chain.pem"     "${pkirealm}/acme/intermediate.pem"
     else
       echo "error: could not symlink let's encrypt certificates into pki realm" >&2
     fi
