@@ -1,0 +1,132 @@
+---
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Entry point playbook: scope/elasticsearch/remove_node.yml
+
+- name: Ensure that the playbook execution is limited
+  ansible.builtin.assert:
+    that:
+      - 'ansible_limit is defined'
+    fail_msg: 'This playbook needs to be used with the --limit parameter.'
+    quiet: True
+
+- name: Import custom Ansible plugins
+  ansible.builtin.import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  ansible.builtin.import_role:
+    name: 'secret'
+
+- name: Check state of host services
+  ansible.builtin.service_facts:
+
+- name: Assert that the Elasticsearch service is installed
+  ansible.builtin.assert:
+    that:
+      - '"elasticsearch.service" in ansible_facts.services'
+    fail_msg: 'Elasticsearch service not found, aborting execution'
+    quiet: True
+
+- name: Assert that the Elasticsearch service is running
+  ansible.builtin.assert:
+    that:
+      - 'ansible_facts.services["elasticsearch.service"].state == "running"'
+    fail_msg: 'Elasticsearch service not running, aborting execution'
+    quiet: True
+
+- name: Check current health status of the Elasitcsearch Cluster
+  ansible.builtin.uri:
+    url: '{{ elasticsearch__api_base_url + "/_cluster/health" }}'
+    method: 'GET'
+    status_code: '200'
+    user: "{{ elasticsearch__api_username }}"
+    password: "{{ elasticsearch__api_password }}"
+    force_basic_auth: True
+  register: elasticsearch__register_cluster_health
+  when: elasticsearch__api_base_url is truthy
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Check current configuration settings of the Elasitcsearch Cluster
+  ansible.builtin.uri:
+    url: '{{ elasticsearch__api_base_url + "/_cluster/settings?include_defaults=false" }}'
+    method: 'GET'
+    status_code: '200'
+    user: "{{ elasticsearch__api_username }}"
+    password: "{{ elasticsearch__api_password }}"
+    force_basic_auth: True
+  register: elasticsearch__register_cluster_settings
+  when: elasticsearch__api_base_url is truthy
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Assert that the Elasticsearch Cluster is healthy
+  ansible.builtin.assert:
+    that:
+      - 'elasticsearch__register_cluster_health.json.status == "green"'
+    fail_msg: 'Elasticsearch Cluster is not healthy, aborting node removal'
+    quiet: True
+
+- name: Assert that there are no allocation changes in progress
+  ansible.builtin.assert:
+    that:
+      - "elasticsearch__register_cluster_settings.json.persistent.cluster.routing.allocation.exclude is not defined or elasticsearch__register_cluster_settings.json.persistent.cluster.routing.allocation.exclude | length == 0"
+      - "elasticsearch__register_cluster_settings.json.transient.cluster.routing.allocation.exclude is not defined or elasticsearch__register_cluster_settings.json.transient.cluster.routing.allocation.exclude | length == 0"
+    fail_msg: 'Elasticsearch allocation changes in progress, aborting node removal'
+    quiet: True
+
+- name: Exclude node from Elasticsearch Cluster
+  ansible.builtin.uri:
+    url: '{{ elasticsearch__api_base_url + "/_cluster/settings" }}'
+    method: 'PUT'
+    body_format: 'json'
+    body:
+      persistent:
+        cluster.routing.allocation.exclude._name: '{{ elasticsearch__node_name }}'
+    status_code: '200'
+    user: "{{ elasticsearch__api_username }}"
+    password: "{{ elasticsearch__api_password }}"
+    force_basic_auth: True
+  when: elasticsearch__api_base_url is truthy
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Wait for shards to migrate from current node
+  ansible.builtin.uri:
+    url: '{{ elasticsearch__api_base_url + "/_cat/shards?format=json" }}'
+    method: 'GET'
+    status_code: '200'
+    user: "{{ elasticsearch__api_username }}"
+    password: "{{ elasticsearch__api_password }}"
+    force_basic_auth: True
+  register: elasticsearch__register_cat_shards
+  until: elasticsearch__register_cat_shards.json | selectattr("node", "equalto", elasticsearch__node_name) | list | length == 0
+  retries: 40
+  delay: 30
+  when: elasticsearch__api_base_url is truthy
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Stop Elastisearch service
+  ansible.builtin.service:
+    name: 'elasticsearch'
+    state: 'stopped'
+    enabled: False
+
+- name: Clear shard exclusion settings from Elasticsearch Cluster
+  ansible.builtin.uri:
+    url: '{{ elasticsearch__api_base_url + "/_cluster/settings" }}'
+    method: 'PUT'
+    body_format: 'json'
+    body:
+      persistent:
+        cluster.routing.allocation.exclude._name: null
+    status_code: '200'
+    user: "{{ elasticsearch__api_username }}"
+    password: "{{ elasticsearch__api_password }}"
+    force_basic_auth: True
+  when: elasticsearch__api_base_url is truthy
+  no_log: '{{ debops__no_log | d(True) }}'

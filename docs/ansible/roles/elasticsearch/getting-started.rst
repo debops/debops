@@ -1,7 +1,7 @@
 .. Copyright (C) 2014-2016 Nick Janetakis <nick.janetakis@gmail.com>
-.. Copyright (C) 2014-2021 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2014-2026 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2016      Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
-.. Copyright (C) 2014-2021 DebOps <https://debops.org/>
+.. Copyright (C) 2014-2026 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
@@ -137,6 +137,34 @@ that uses the ``debops.elasticsearch`` role:
 .. literalinclude:: ../../../../ansible/playbooks/service/elasticsearch.yml
    :language: yaml
    :lines: 1,7-
+
+
+Role entry points
+-----------------
+
+The ``debops.elasticsearch`` role supports multiple entry points, utilized by
+the playbooks provided with the role:
+
+``service/elasticsearch``
+  The main playbook which configures a complete service stack using other
+  DebOps roles as needed. Tags can be used to apply specific roles or exclude
+  roles that are not needed in a given Ansible playbook run.
+
+  This playbook is included in the main DebOps :file:`site.yml` playbook.
+
+``scope/elasticsearch``
+  The playbook that only configures the Elasticsearch service itself. It will
+  work correctly on already configured host, but might not work on a clean
+  host.
+
+``scope/elasticsearch/remove_node``
+  An auxiliary playbook that can be applied on an Elasticsearch node to remove
+  it from the cluster. The data shards will be moved to other nodes and the
+  Elasticsearch service will be stopped and disabled on a given host.
+
+  The ``--limit`` parameter needs to be specified to select on which hosts to
+  apply the playbook, otherwise the playbook will refuse execution to avoid
+  destruction of the whole cluster. Playbook is executed on one host at a time.
 
 
 Ansible tags
