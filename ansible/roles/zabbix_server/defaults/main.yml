@@ -1,0 +1,984 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2026 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _zabbix_server__ref_defaults:
+
+# debops.zabbix_server default variables
+# ========================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Basic configuration and state [[[
+# ----------------------------------
+
+# .. envvar:: zabbix_server__deploy_state [[[
+#
+# Define the desired state of Zabbix Server on a given host. If ``present``,
+# the role will install and configure Zabbix Server, its database schema and
+# the web frontend. If ``absent``, the role will stop and purge Zabbix
+# Server and its configuration from the host (the database and its contents
+# are not removed).
+zabbix_server__deploy_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__version [[[
+#
+# Major/minor version of the upstream Zabbix APT repository to configure,
+# for example ``'7.0'``. See https://repo.zabbix.com/zabbix/ for the list of
+# available versions.
+zabbix_server__version: '7.0'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__database [[[
+#
+# Selects the database engine used by Zabbix Server. This decides which
+# ``zabbix-server-*`` APT package is installed. Currently only
+# ``postgresql`` is fully supported by this role (schema import, PostgreSQL
+# role integration); ``mysql`` only selects the correct package.
+zabbix_server__database: 'postgresql'
+                                                                   # ]]]
+                                                                   # ]]]
+# Upstream APT repository [[[
+# ----------------------------
+
+# .. envvar:: zabbix_server__upstream_repository [[[
+#
+# Enable or disable configuration of the official Zabbix upstream APT
+# repository. Disable this if Zabbix packages are provided by another
+# source (Debian archive, a local mirror, etc.) already configured via the
+# :ref:`debops.apt` role.
+zabbix_server__upstream_repository: True
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__upstream_repo_url [[[
+#
+# Base URL of the official Zabbix APT repository for Debian.
+zabbix_server__upstream_repo_url: 'https://repo.zabbix.com/zabbix/{{ zabbix_server__version }}/debian'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__upstream_repo_key [[[
+#
+# URL of the GPG key used to sign the official Zabbix APT repository.
+zabbix_server__upstream_repo_key: 'https://repo.zabbix.com/zabbix-official-repo.key'
+                                                                   # ]]]
+                                                                   # ]]]
+# Packages [[[
+# ------------
+
+# .. envvar:: zabbix_server__base_packages [[[
+#
+# List of APT packages required for the selected :envvar:`zabbix_server__database`
+# engine.
+zabbix_server__base_packages: '{{ ["zabbix-server-pgsql", "postgresql-client"]
+                                  if (zabbix_server__database == "postgresql")
+                                  else ["zabbix-server-mysql", "default-mysql-client"] }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__sql_scripts_packages [[[
+#
+# List of APT packages which provide the SQL database schema files used to
+# initialize a new Zabbix database.
+zabbix_server__sql_scripts_packages: [ 'zabbix-sql-scripts' ]
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__frontend_packages [[[
+#
+# List of APT packages required for the Zabbix web frontend, installed when
+# :envvar:`zabbix_server__frontend_enabled` is ``True``.
+zabbix_server__frontend_packages: [ 'zabbix-frontend-php' ]
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__packages [[[
+#
+# List of additional APT packages to install with Zabbix Server.
+zabbix_server__packages: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__combined_packages [[[
+#
+# Variable which combines all of the APT package lists together and is used
+# in role tasks.
+zabbix_server__combined_packages: '{{ zabbix_server__base_packages
+                                    + zabbix_server__sql_scripts_packages
+                                    + (zabbix_server__frontend_packages
+                                       if zabbix_server__frontend_enabled | bool else [])
+                                    + zabbix_server__packages }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# UNIX environment [[[
+# ---------------------
+
+# .. envvar:: zabbix_server__user [[[
+#
+# Name of the UNIX account used to run Zabbix Server, created by the APT
+# package.
+zabbix_server__user: 'zabbix'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__group [[[
+#
+# Name of the UNIX group used by Zabbix Server, created by the APT package.
+zabbix_server__group: 'zabbix'
+                                                                   # ]]]
+                                                                   # ]]]
+# Network configuration [[[
+# ---------------------------
+
+# .. envvar:: zabbix_server__trapper_port [[[
+#
+# TCP port on which Zabbix Server listens for trapper (active check) items
+# sent by Zabbix Agents and Proxies. Matches the ``zabbix-trapper`` entry in
+# :file:`/etc/services` on Debian.
+zabbix_server__trapper_port: '10051'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# Zabbix Server trapper port, on all hosts in the Ansible inventory. If
+# empty, all hosts are allowed to connect.
+zabbix_server__allow: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__group_allow [[[
+#
+# Additional list of allowed IP addresses/subnets, defined on hosts in
+# a specific Ansible inventory group.
+zabbix_server__group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__host_allow [[[
+#
+# Additional list of allowed IP addresses/subnets, defined on specific hosts
+# in the Ansible inventory.
+zabbix_server__host_allow: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__combined_allow [[[
+#
+# Variable which combines all of the "allow" lists together and is used in
+# role tasks.
+zabbix_server__combined_allow: '{{ (zabbix_server__allow
+                                  + zabbix_server__group_allow
+                                  + zabbix_server__host_allow) | flatten | unique }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Database connection [[[
+# -------------------------
+
+# These variables configure the connection between Zabbix Server and its
+# PostgreSQL database. By default the role assumes that the
+# :ref:`debops.postgresql` role has been applied to the same host to create
+# the database and role (see
+# :envvar:`zabbix_server__postgresql__dependent_databases` below); point
+# :envvar:`zabbix_server__database_host` at a different host to use a remote
+# database server managed separately.
+
+# .. envvar:: zabbix_server__database_host [[[
+#
+# Hostname or IP address of the PostgreSQL database server.
+zabbix_server__database_host: '{{ ansible_local.postgresql.server | d("localhost") }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__database_port [[[
+#
+# TCP port of the PostgreSQL database server.
+zabbix_server__database_port: '{{ ansible_local.postgresql.port | d("5432") }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__database_name [[[
+#
+# Name of the PostgreSQL database used by Zabbix Server.
+zabbix_server__database_name: 'zabbix'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__database_user [[[
+#
+# Name of the PostgreSQL role used by Zabbix Server to connect to its
+# database.
+zabbix_server__database_user: 'zabbix'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__database_password [[[
+#
+# Autogenerated password of the PostgreSQL role used by Zabbix Server,
+# stored in the DebOps ``secret/`` directory. Uses the same lookup path
+# convention as other DebOps roles integrated with :ref:`debops.postgresql`
+# (see :envvar:`zabbix_server__postgresql__dependent_databases`), so that an
+# existing Zabbix installation migrated to this role keeps using the same
+# password.
+zabbix_server__database_password: '{{ lookup("password", secret + "/postgresql/" +
+                                      (ansible_local.postgresql.delegate_to | d("localhost")) + "/" +
+                                      (ansible_local.postgresql.port | d("5432")) + "/credentials/" +
+                                      zabbix_server__database_user + "/password") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# TLS encryption for agent/proxy connections [[[
+# ------------------------------------------------
+
+# .. envvar:: zabbix_server__tls_mode [[[
+#
+# Selects whether Zabbix Server is configured with certificate-based TLS
+# support (``TLSCAFile``/``TLSCertFile``/``TLSKeyFile``), required if any
+# Zabbix Agent or Proxy connects using :command:`zabbix_agent__tls_mode` set
+# to ``cert``. Note that pre-shared keys (PSK) are configured per-host in
+# the Zabbix database and do not require any server-wide configuration, so
+# there is no ``psk`` choice here. Available choices:
+#
+# - ``unencrypted``: do not configure TLS certificate files (default, works
+#   out of the box on a freshly installed server)
+# - ``cert``: configure certificate files using the PKI realm selected by
+#   :envvar:`zabbix_server__tls_pki_realm`
+zabbix_server__tls_mode: 'unencrypted'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__tls_pki_realm [[[
+#
+# Name of the PKI realm configured by the :ref:`debops.pki` Ansible role
+# which will be used to look up the host certificate files when
+# :envvar:`zabbix_server__tls_mode` is ``cert``.
+zabbix_server__tls_pki_realm: '{{ ansible_local.pki.realm
+                                   if (ansible_local.pki.realm | d())
+                                   else (pki_system_realm | d("domain")) }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__tls_pki_path [[[
+#
+# Base path to the directory which holds the PKI realms, as configured by
+# the :ref:`debops.pki` Ansible role.
+zabbix_server__tls_pki_path: '{{ ansible_local.pki.base_path
+                                  if (ansible_local.pki.base_path | d())
+                                  else ((pki_root | d("/etc/pki")) + "/realms") }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__tls_ca_file [[[
+#
+# Full path to the file with the top-level CA certificate(s), used when
+# :envvar:`zabbix_server__tls_mode` is ``cert``.
+zabbix_server__tls_ca_file: '{{ zabbix_server__tls_pki_path + "/"
+                                 + zabbix_server__tls_pki_realm + "/"
+                                 + (ansible_local.pki.ca | d("CA.crt")) }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__tls_cert_file [[[
+#
+# Full path to the file with the server certificate or certificate chain,
+# used when :envvar:`zabbix_server__tls_mode` is ``cert``.
+zabbix_server__tls_cert_file: '{{ zabbix_server__tls_pki_path + "/"
+                                   + zabbix_server__tls_pki_realm + "/"
+                                   + (ansible_local.pki.crt | d("default.crt")) }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__tls_key_file [[[
+#
+# Full path to the file with the server private key, used when
+# :envvar:`zabbix_server__tls_mode` is ``cert``.
+zabbix_server__tls_key_file: '{{ zabbix_server__tls_pki_path + "/"
+                                  + zabbix_server__tls_pki_realm + "/"
+                                  + (ansible_local.pki.key | d("default.key")) }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__tls_pki_group [[[
+#
+# Name of the UNIX group which owns the private files of the selected PKI
+# realm. The Zabbix Server UNIX account is added to this group
+# automatically when :envvar:`zabbix_server__tls_mode` is ``cert``, so that
+# the server process can read its private key at startup.
+zabbix_server__tls_pki_group: '{{ pki_private_group | d("ssl-cert") }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__additional_groups [[[
+#
+# List of additional UNIX groups which should include the Zabbix Server
+# account.
+zabbix_server__additional_groups: '{{ [zabbix_server__tls_pki_group]
+                                       if (zabbix_server__tls_mode == "cert")
+                                       else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Main configuration file [[[
+# -----------------------------
+
+# These variables define the contents of the
+# :file:`/etc/zabbix/zabbix_server.d/ansible.conf` configuration drop-in
+# file. The stock :file:`/etc/zabbix/zabbix_server.conf` file already
+# includes ``Include=/etc/zabbix/zabbix_server.d/*.conf`` and is left
+# untouched by this role; all customization happens through this drop-in.
+# Note that a directory named ``zabbix_server.conf.d`` (with a ``.conf``
+# suffix before ``.d``) is *not* read by the package and should not be used.
+
+# .. envvar:: zabbix_server__conf_directory [[[
+#
+# Absolute path to the directory with Zabbix Server configuration drop-in
+# files, as defined by the ``Include`` directive in the stock configuration
+# file.
+zabbix_server__conf_directory: '/etc/zabbix/zabbix_server.d'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__conf_file_path [[[
+#
+# Absolute path to the configuration drop-in file managed by this role.
+zabbix_server__conf_file_path: '{{ zabbix_server__conf_directory + "/ansible.conf" }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__default_configuration [[[
+#
+# List of the default configuration options defined by the role. See
+# :ref:`zabbix_server__ref_configuration` for the format description
+# (shared with :envvar:`zabbix_server__configuration`).
+zabbix_server__default_configuration:
+
+  - name: 'DBHost'
+    value: '{{ zabbix_server__database_host }}'
+    comment: 'Database host name.'
+    state: '{{ "present" if (zabbix_server__database == "postgresql") else "ignore" }}'
+
+  - name: 'DBName'
+    value: '{{ zabbix_server__database_name }}'
+    comment: 'Database name.'
+    state: '{{ "present" if (zabbix_server__database == "postgresql") else "ignore" }}'
+
+  - name: 'DBUser'
+    value: '{{ zabbix_server__database_user }}'
+    comment: 'Database user.'
+    state: '{{ "present" if (zabbix_server__database == "postgresql") else "ignore" }}'
+
+  - name: 'DBPassword'
+    value: '{{ zabbix_server__database_password }}'
+    comment: 'Database password.'
+    state: '{{ "present" if (zabbix_server__database == "postgresql") else "ignore" }}'
+    no_log: True
+
+  - name: 'DBPort'
+    value: '{{ zabbix_server__database_port }}'
+    comment: 'Database port when not using local socket.'
+    state: '{{ "present" if (zabbix_server__database == "postgresql") else "ignore" }}'
+
+  - name: 'ListenPort'
+    value: '{{ zabbix_server__trapper_port }}'
+    comment: 'Listen port for trapper connections.'
+    state: 'comment'
+
+  - name: 'SourceIP'
+    value: ''
+    comment: 'Source IP address for outgoing connections.'
+    state: 'comment'
+
+  - name: 'LogType'
+    value: 'file'
+    comment: |
+      Specifies where log messages are written to:
+        system  - syslog
+        file    - file specified with LogFile parameter
+        console - standard output
+    state: 'comment'
+
+  - name: 'LogFile'
+    value: '/var/log/zabbix/zabbix_server.log'
+    comment: 'Log file name for LogType "file" parameter.'
+    state: 'comment'
+
+  - name: 'LogFileSize'
+    value: 0
+    comment: 'Maximum size of log file in MB. 0 - disable automatic log rotation.'
+    state: 'comment'
+
+  - name: 'DebugLevel'
+    value: 3
+    comment: 'Specifies debug level, 0-5.'
+    state: 'comment'
+
+  - name: 'PidFile'
+    value: '/run/zabbix/zabbix_server.pid'
+    comment: 'Name of the PID file.'
+    state: 'comment'
+
+  - name: 'StatsAllowedIP'
+    value: ''
+    comment: 'List of comma delimited IP addresses allowed to connect to the internal statistics interface.'
+    state: 'comment'
+
+  - name: 'StartPollers'
+    value: 5
+    comment: 'Number of pre-forked instances of pollers.'
+    state: 'comment'
+
+  - name: 'StartTrappers'
+    value: 5
+    comment: 'Number of pre-forked instances of trappers.'
+    state: 'comment'
+
+  - name: 'StartPingers'
+    value: 1
+    comment: 'Number of pre-forked instances of ICMP pingers.'
+    state: 'comment'
+
+  - name: 'StartDiscoverers'
+    value: 1
+    comment: 'Number of pre-forked instances of discoverers.'
+    state: 'comment'
+
+  - name: 'HousekeepingFrequency'
+    value: 1
+    comment: 'How often Zabbix Server performs housekeeping procedure, in hours.'
+    state: 'comment'
+
+  - name: 'CacheSize'
+    value: '32M'
+    comment: 'Size of configuration cache, in bytes.'
+    state: 'comment'
+
+  - name: 'HistoryCacheSize'
+    value: '16M'
+    comment: 'Size of history cache, in bytes.'
+    state: 'comment'
+
+  - name: 'TrendCacheSize'
+    value: '4M'
+    comment: 'Size of trend cache, in bytes.'
+    state: 'comment'
+
+  - name: 'ValueCacheSize'
+    value: '8M'
+    comment: 'Size of history value cache, in bytes. 0 - disable value cache.'
+    state: 'comment'
+
+  - name: 'Timeout'
+    value: 4
+    comment: 'Spend no more than Timeout seconds on processing.'
+    state: 'comment'
+
+  - name: 'AllowUnsupportedDBVersions'
+    value: 0
+    comment: 'Allow Zabbix Server to start with an unsupported database version.'
+    state: 'comment'
+
+  - name: 'TLSCAFile'
+    value: '{{ zabbix_server__tls_ca_file }}'
+    comment: 'Full path to a file containing the top-level CA(s) certificates.'
+    state: '{{ "present" if (zabbix_server__tls_mode == "cert") else "comment" }}'
+
+  - name: 'TLSCertFile'
+    value: '{{ zabbix_server__tls_cert_file }}'
+    comment: 'Full path to a file containing the server certificate or certificate chain.'
+    state: '{{ "present" if (zabbix_server__tls_mode == "cert") else "comment" }}'
+
+  - name: 'TLSKeyFile'
+    value: '{{ zabbix_server__tls_key_file }}'
+    comment: 'Full path to a file containing the server private key.'
+    state: '{{ "present" if (zabbix_server__tls_mode == "cert") else "comment" }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__configuration [[[
+#
+# List of Zabbix Server configuration options defined on all hosts in the
+# Ansible inventory. Each list item should be a dict with the following
+# keys:
+#
+# ``name``
+#   Required. Name of the configuration option, as used in
+#   :file:`zabbix_server.conf`.
+#
+# ``value``
+#   Value of the configuration option. Required unless ``state`` is
+#   ``'comment'`` or ``'absent'``.
+#
+# ``comment``
+#   Optional comment rendered above the configuration option.
+#
+# ``state``
+#   Optional, ``'present'`` by default. If ``'comment'``, the option is
+#   rendered as a comment (documentation only, Zabbix uses its own
+#   built-in default). If ``'absent'`` or ``'ignore'``, the option is
+#   skipped entirely.
+zabbix_server__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__group_configuration [[[
+#
+# List of Zabbix Server configuration options defined on hosts in a specific
+# Ansible inventory group. See :envvar:`zabbix_server__configuration` for
+# the format description.
+zabbix_server__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__host_configuration [[[
+#
+# List of Zabbix Server configuration options defined on specific hosts in
+# the Ansible inventory. See :envvar:`zabbix_server__configuration` for the
+# format description.
+zabbix_server__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__combined_configuration [[[
+#
+# Variable which combines all of the configuration lists together and is
+# used in role templates (via the ``debops.debops.parse_kv_config`` filter,
+# which merges entries with the same ``name``, later entries taking
+# precedence).
+zabbix_server__combined_configuration: '{{ zabbix_server__default_configuration
+                                          + zabbix_server__configuration
+                                          + zabbix_server__group_configuration
+                                          + zabbix_server__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Database schema import [[[
+# ----------------------------
+
+# .. envvar:: zabbix_server__schema_file [[[
+#
+# Absolute path to the compressed SQL schema file used to initialize a new,
+# empty Zabbix database, provided by the
+# :envvar:`zabbix_server__sql_scripts_packages` APT package.
+zabbix_server__schema_file: '{{ "/usr/share/zabbix-sql-scripts/postgresql/server.sql.gz"
+                                if (zabbix_server__database == "postgresql")
+                                else "/usr/share/zabbix-sql-scripts/mysql/server.sql.gz" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Web frontend [[[
+# ------------------
+
+# .. envvar:: zabbix_server__frontend_enabled [[[
+#
+# Enable or disable configuration of the Zabbix web frontend
+# (``zabbix-frontend-php`` package, PHP-FPM pool and nginx vhost).
+zabbix_server__frontend_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__fqdn [[[
+#
+# Fully qualified domain name on which the Zabbix web frontend is
+# configured by the :ref:`debops.nginx` Ansible role.
+zabbix_server__fqdn: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__frontend_conf_path [[[
+#
+# Absolute path to the Zabbix frontend configuration file. Its presence
+# skips the interactive setup wizard.
+zabbix_server__frontend_conf_path: '/etc/zabbix/web/zabbix.conf.php'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__frontend_timezone [[[
+#
+# Default PHP timezone (``date.timezone``) used by the Zabbix web frontend
+# PHP-FPM pool.
+zabbix_server__frontend_timezone: 'UTC'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__frontend_image_format [[[
+#
+# Default image format used by the Zabbix frontend for graphs, one of
+# ``PNG`` or ``JPEG``.
+zabbix_server__frontend_image_format: 'PNG'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__frontend_root [[[
+#
+# Absolute path to the web root directory of the Zabbix frontend, installed
+# by the ``zabbix-frontend-php`` APT package.
+zabbix_server__frontend_root: '/usr/share/zabbix'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__php_pool_name [[[
+#
+# Name of the PHP-FPM pool used by the Zabbix web frontend.
+zabbix_server__php_pool_name: 'zabbix'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__php_pool_parameters [[[
+#
+# Additional PHP-FPM pool parameters (``pm``, ``pm_max_children``, ...) and
+# ``php_values`` merged into the pool configuration passed to the
+# :ref:`debops.php` role. See :envvar:`zabbix_server__php__dependent_pools`.
+zabbix_server__php_pool_parameters:
+  pm: 'dynamic'
+  pm_max_children: 10
+  pm_start_servers: 2
+  pm_min_spare_servers: 1
+  pm_max_spare_servers: 5
+  pm_max_requests: 200
+  php_values:
+    session.save_handler: 'files'
+    session.save_path: '/var/lib/php/sessions/'
+    max_execution_time: 300
+    memory_limit: '128M'
+    post_max_size: '16M'
+    upload_max_filesize: '2M'
+    max_input_time: 300
+    max_input_vars: 10000
+    date.timezone: '{{ zabbix_server__frontend_timezone }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__nginx_access_policy [[[
+#
+# Name of the "nginx access policy" for the Zabbix frontend. See
+# :ref:`debops.nginx` for more details. Empty by default (no restriction);
+# combine with ``nginx_host_allow``/``nginx__server_options`` at the
+# inventory level to restrict access to trusted networks.
+zabbix_server__nginx_access_policy: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Zabbix API access [[[
+# -----------------------
+
+# These variables configure how the role communicates with the Zabbix
+# JSON-RPC API to bootstrap credentials and manage global objects (media
+# types, actions, users, templates). They are also consumed by the
+# :ref:`debops.zabbix_agent` role for self-registration of hosts.
+
+# .. envvar:: zabbix_server__api_enabled [[[
+#
+# Enable or disable all Zabbix API management performed by this role
+# (credential bootstrap, media types, actions, users, templates, item
+# overrides). Disable if these objects are managed manually or by another
+# tool.
+zabbix_server__api_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__api_url [[[
+#
+# URL of the Zabbix Server JSON-RPC API endpoint.
+zabbix_server__api_url: 'https://{{ zabbix_server__fqdn }}/api_jsonrpc.php'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__api_validate_certs [[[
+#
+# Verify the TLS certificate of the Zabbix API endpoint when set to
+# ``True``.
+zabbix_server__api_validate_certs: True
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__api_delegate_to [[[
+#
+# Host on which the Ansible tasks that communicate with the Zabbix API will
+# be executed. By default this is the Ansible Controller (``localhost``).
+zabbix_server__api_delegate_to: 'localhost'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__api_default_admin_password [[[
+#
+# The well-known, stock password of the ``Admin`` superuser account created
+# by the Zabbix database schema on a fresh installation. Used only to
+# detect a not-yet-bootstrapped installation; never used afterwards.
+zabbix_server__api_default_admin_password: 'zabbix'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__api_admin_user [[[
+#
+# Login name of the Zabbix superuser account managed by the bootstrap
+# procedure.
+zabbix_server__api_admin_user: 'Admin'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__api_admin_password_path [[[
+#
+# Relative path, within the DebOps ``secret/`` directory, to the file which
+# holds the autogenerated password of the Zabbix ``Admin`` account.
+zabbix_server__api_admin_password_path: 'zabbix/admin_password'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__api_admin_password [[[
+#
+# Autogenerated password of the Zabbix ``Admin`` account, stored in the
+# DebOps ``secret/`` directory.
+zabbix_server__api_admin_password: '{{ lookup("password", secret + "/" +
+                                       zabbix_server__api_admin_password_path +
+                                       " length=32 chars=ascii_letters,digits") }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__api_token_path [[[
+#
+# Relative path, within the DebOps ``secret/`` directory, to the file which
+# holds the Zabbix API token bootstrapped by this role. The same path is
+# used by default by the :ref:`debops.zabbix_agent` role for API
+# self-registration (``zabbix_agent__api_token_path``).
+zabbix_server__api_token_path: 'zabbix/api_token'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__api_token_name [[[
+#
+# Name of the API token object created for the ``Admin`` account in Zabbix.
+zabbix_server__api_token_name: 'ansible-bootstrap'
+                                                                   # ]]]
+                                                                   # ]]]
+# Zabbix API objects [[[
+# ------------------------
+
+# .. envvar:: zabbix_server__media_types [[[
+#
+# List of Zabbix media types to manage via the ``mediatype.create``/
+# ``mediatype.update`` JSON-RPC API methods. Each list item is a dict of
+# the parameters accepted by these methods directly (``name``, ``type``,
+# ``smtp_server``, ...; see the Zabbix API reference), matched by ``name``
+# to decide between create and update. Empty by default; define actual
+# media types (Email, Pushover, ...) with their credentials at the
+# inventory level, out of a public repository. Example::
+#
+#     zabbix_server__media_types:
+#       - name: 'Email'
+#         type: 0
+#         smtp_server: 'smtp.example.org'
+#         smtp_email: 'zabbix@example.org'
+#         status: 0
+zabbix_server__media_types: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__actions [[[
+#
+# List of Zabbix actions to manage via the ``action.create``/
+# ``action.update`` JSON-RPC API methods, matched by ``name``. Each list
+# item is a dict of the parameters accepted by these methods directly
+# (``eventsource``, ``status``, ``filter``, ``operations``, ...); fields
+# left unspecified on an existing action are not modified. By default,
+# ensures that the built-in "Report problems to Zabbix administrators"
+# action (created by the database schema, but disabled by default) is
+# enabled - otherwise no notifications are ever sent, regardless of
+# configured media types and users.
+zabbix_server__actions:
+
+  - name: 'Report problems to Zabbix administrators'
+    status: 0
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__user_groups [[[
+#
+# List of Zabbix user groups to manage via the ``usergroup.create``/
+# ``usergroup.update`` JSON-RPC API methods, matched by ``name``.
+zabbix_server__user_groups: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__users [[[
+#
+# List of Zabbix users to manage via the ``user.create``/``user.update``
+# JSON-RPC API methods, matched by ``username``. Passwords should come from
+# the DebOps ``secret/`` directory via a Jinja lookup, not be hardcoded
+# here.
+zabbix_server__users: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__templates [[[
+#
+# List of custom Zabbix templates to import via the ``configuration.import``
+# JSON-RPC API method. Each item should define ``name`` (used only as
+# an Ansible task label) and ``source`` with the contents of a Zabbix
+# template export file in JSON format (usually via a Jinja
+# ``lookup('file', ...)`` expression). By default imports the "LXC
+# container" template shipped with this role, used together with
+# ``zabbix_agent__cgroup_metrics`` on the :ref:`debops.zabbix_agent`
+# side.
+zabbix_server__templates:
+
+  - name: 'LXC container'
+    source: "{{ lookup('file', role_path + '/files/templates/zabbix_template_lxc_container.json') }}"
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__host_item_overrides [[[
+#
+# List of item status overrides applied to all hosts linked to a given
+# template, using the Zabbix API directly (``template.get``, ``host.get``,
+# ``item.get``, ``item.update``). Used to disable host-wide metrics which
+# become misleading once a more specific template is linked - for example
+# ``system.cpu.load*``/``system.cpu.util*`` from the "Linux by Zabbix agent"
+# template are not meaningful on LXC containers once the "LXC container"
+# template (with its own ``ct.cpu.util`` item) is linked, since
+# ``/proc/loadavg`` and ``/proc/stat`` inside an LXC container reflect the
+# whole host, not the container's cgroup. Each list item is a dict with:
+#
+# ``template``
+#   Technical name of the Zabbix template (API ``host`` field, not the
+#   human-readable ``name`` shown in the web interface) whose linked hosts
+#   should be affected.
+#
+# ``key_regex``
+#   Regular expression (Python ``re.search()`` syntax) matched against the
+#   item key, for example ``'^system\.cpu\.(load|util)'``.
+zabbix_server__host_item_overrides:
+
+  - template: 'LXC CPU cgroup'
+    key_regex: '^system\.cpu\.(load|util)'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# --------------------------------------------
+
+# .. envvar:: zabbix_server__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+zabbix_server__keyring__dependent_apt_keys:
+
+  - id: 'zabbix-official-repo'
+    url: '{{ zabbix_server__upstream_repo_key }}'
+    keyring: 'zabbix-official-repo.asc'
+    repo: 'deb [signed-by=/etc/apt/keyrings/zabbix-official-repo.asc] {{ zabbix_server__upstream_repo_url }} {{ ansible_distribution_release }} main'
+    state: '{{ "present" if zabbix_server__upstream_repository | bool else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` Ansible role. Pins
+# packages from the upstream Zabbix repository so that a locally configured
+# Debian mirror does not shadow them with an older version.
+zabbix_server__apt_preferences__dependent_list:
+
+  - packages: [ 'zabbix-*' ]
+    pin: 'origin "repo.zabbix.com"'
+    priority: '900'
+    reason: 'Prefer official Zabbix repository packages over any other source'
+    by_role: 'debops.zabbix_server'
+    filename: 'debops_zabbix_server.pref'
+    state: '{{ "present" if zabbix_server__upstream_repository | bool else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__php__dependent_packages [[[
+#
+# Configuration for the :ref:`debops.php` Ansible role.
+zabbix_server__php__dependent_packages: '{{ ["pgsql", "bcmath", "ldap", "xml", "gd"]
+                                            if (zabbix_server__database == "postgresql")
+                                            else ["mysql", "bcmath", "ldap", "xml", "gd"] }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__php__dependent_pools [[[
+#
+# PHP-FPM pool configuration for the :ref:`debops.php` Ansible role.
+zabbix_server__php__dependent_pools:
+
+  - name: '{{ zabbix_server__php_pool_name }}'
+    enabled: True
+    user: 'www-data'
+    group: 'www-data'
+    state: '{{ "present" if zabbix_server__frontend_enabled | bool else "absent" }}'
+    parameters: '{{ zabbix_server__php_pool_parameters }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__nginx__dependent_upstreams [[[
+#
+# PHP upstream configuration for the :ref:`debops.nginx` Ansible role.
+zabbix_server__nginx__dependent_upstreams:
+
+  - name: 'php_zabbix'
+    by_role: 'debops.zabbix_server'
+    enabled: '{{ zabbix_server__frontend_enabled | bool }}'
+    type: 'php'
+    php_pool: '{{ zabbix_server__php_pool_name }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__nginx__dependent_servers [[[
+#
+# Server/vhost configuration for the :ref:`debops.nginx` Ansible role.
+zabbix_server__nginx__dependent_servers:
+
+  - name: '{{ zabbix_server__fqdn }}'
+    by_role: 'debops.zabbix_server'
+    enabled: '{{ zabbix_server__frontend_enabled | bool }}'
+    type: 'default'
+    root: '{{ zabbix_server__frontend_root }}'
+    webroot_create: False
+    index: 'index.php'
+    access_policy: '{{ zabbix_server__nginx_access_policy }}'
+
+    location_list:
+
+      - pattern: '/'
+        options: |
+          try_files       $uri $uri/ =404;
+
+      - pattern: '/assets'
+        options: |
+          access_log      off;
+          expires         10d;
+
+      - pattern: '~ /\.ht'
+        options: |
+          deny            all;
+
+      - pattern: '~ /(api\/|conf[^\.]|include|locale)'
+        options: |
+          deny            all;
+          return          404;
+
+      - pattern: '~ [^/]\.php(/|$)'
+        options: |
+          fastcgi_pass    php_zabbix;
+          fastcgi_split_path_info ^(.+\.php)(/.+)$;
+          fastcgi_index   index.php;
+
+          fastcgi_param   DOCUMENT_ROOT   {{ zabbix_server__frontend_root }};
+          fastcgi_param   SCRIPT_FILENAME {{ zabbix_server__frontend_root }}$fastcgi_script_name;
+          fastcgi_param   PATH_TRANSLATED {{ zabbix_server__frontend_root }}$fastcgi_script_name;
+
+          include fastcgi_params;
+          fastcgi_param   QUERY_STRING    $query_string;
+          fastcgi_param   REQUEST_METHOD  $request_method;
+          fastcgi_param   CONTENT_TYPE    $content_type;
+          fastcgi_param   CONTENT_LENGTH  $content_length;
+
+          fastcgi_intercept_errors        on;
+          fastcgi_ignore_client_abort     off;
+          fastcgi_connect_timeout         60;
+          fastcgi_send_timeout            180;
+          fastcgi_read_timeout            180;
+          fastcgi_buffer_size             128k;
+          fastcgi_buffers                 4 256k;
+          fastcgi_busy_buffers_size       256k;
+          fastcgi_temp_file_write_size    256k;
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+zabbix_server__ferm__dependent_rules:
+
+  - name: 'zabbix_server_trapper'
+    type: 'accept'
+    dport: [ 'zabbix-trapper' ]
+    protocol: [ 'tcp' ]
+    saddr: '{{ zabbix_server__combined_allow }}'
+    weight: '50'
+    by_role: 'debops.zabbix_server'
+    rule_state: '{{ zabbix_server__deploy_state }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__postgresql__dependent_roles [[[
+#
+# Role configuration for the :ref:`debops.postgresql` Ansible role.
+zabbix_server__postgresql__dependent_roles:
+
+  - name: '{{ zabbix_server__database_user }}'
+    password: '{{ zabbix_server__database_password }}'
+    state: '{{ "present" if (zabbix_server__database == "postgresql" and
+                              zabbix_server__deploy_state == "present") else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__postgresql__dependent_databases [[[
+#
+# Database configuration for the :ref:`debops.postgresql` Ansible role.
+zabbix_server__postgresql__dependent_databases:
+
+  - name: '{{ zabbix_server__database_name }}'
+    owner: '{{ zabbix_server__database_user }}'
+    state: '{{ "present" if (zabbix_server__database == "postgresql" and
+                              zabbix_server__deploy_state == "present") else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_server__postgresql__dependent_pgpass [[[
+#
+# ``~/.pgpass`` configuration for the :ref:`debops.postgresql` Ansible role,
+# used by the schema import task and convenient for manual ``psql``
+# troubleshooting as the ``zabbix`` UNIX account.
+zabbix_server__postgresql__dependent_pgpass:
+
+  - owner: '{{ zabbix_server__user }}'
+    group: '{{ zabbix_server__group }}'
+    home: '/var/lib/zabbix'
+    system: True
+    state: '{{ "present" if (zabbix_server__database == "postgresql") else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]
