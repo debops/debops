@@ -1,0 +1,204 @@
+---
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# This task file registers the current host as a Zabbix host object via the
+# Zabbix Server JSON-RPC API. It replaces manually run, ad-hoc registration
+# playbooks with an idempotent role task, executed on
+# 'zabbix_agent__api_delegate_to' (the Ansible Controller by default).
+
+- name: Look up existing Zabbix host groups
+  ansible.builtin.uri:
+    url: '{{ zabbix_agent__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_agent__api_token }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'hostgroup.get'
+      params:
+        output: [ 'groupid', 'name' ]
+        filter:
+          name: '{{ zabbix_agent__api_combined_host_groups }}'
+      id: 1
+    validate_certs: '{{ zabbix_agent__api_validate_certs }}'
+    return_content: True
+  delegate_to: '{{ zabbix_agent__api_delegate_to }}'
+  register: zabbix_agent__register_api_host_groups
+  failed_when: zabbix_agent__register_api_host_groups.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Create missing Zabbix host groups
+  ansible.builtin.uri:
+    url: '{{ zabbix_agent__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_agent__api_token }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'hostgroup.create'
+      params:
+        name: '{{ item }}'
+      id: 1
+    validate_certs: '{{ zabbix_agent__api_validate_certs }}'
+    return_content: True
+  delegate_to: '{{ zabbix_agent__api_delegate_to }}'
+  loop: '{{ zabbix_agent__api_combined_host_groups
+            | difference(zabbix_agent__register_api_host_groups.json.result
+                          | map(attribute="name") | list) }}'
+  register: zabbix_agent__register_api_new_host_groups
+  failed_when: zabbix_agent__register_api_new_host_groups.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Refresh known Zabbix host groups after creation  # noqa: no-handler
+  ansible.builtin.uri:
+    url: '{{ zabbix_agent__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_agent__api_token }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'hostgroup.get'
+      params:
+        output: [ 'groupid', 'name' ]
+        filter:
+          name: '{{ zabbix_agent__api_combined_host_groups }}'
+      id: 1
+    validate_certs: '{{ zabbix_agent__api_validate_certs }}'
+    return_content: True
+  delegate_to: '{{ zabbix_agent__api_delegate_to }}'
+  register: zabbix_agent__register_api_host_groups_refreshed
+  failed_when: zabbix_agent__register_api_host_groups_refreshed.json.error is defined
+  when: zabbix_agent__register_api_new_host_groups is changed
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Look up known Zabbix templates
+  ansible.builtin.uri:
+    url: '{{ zabbix_agent__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_agent__api_token }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'template.get'
+      params:
+        output: [ 'templateid', 'host' ]
+        filter:
+          host: '{{ zabbix_agent__api_combined_link_templates }}'
+      id: 1
+    validate_certs: '{{ zabbix_agent__api_validate_certs }}'
+    return_content: True
+  delegate_to: '{{ zabbix_agent__api_delegate_to }}'
+  register: zabbix_agent__register_api_templates
+  failed_when: zabbix_agent__register_api_templates.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Warn about Zabbix templates which do not exist yet
+  ansible.builtin.debug:
+    msg: >-
+      Templates not found in Zabbix, skipped: {{
+      zabbix_agent__api_combined_link_templates
+      | difference(zabbix_agent__register_api_templates.json.result
+                    | map(attribute='host') | list) | join(', ') }}
+  when: (zabbix_agent__api_combined_link_templates
+         | difference(zabbix_agent__register_api_templates.json.result
+                       | map(attribute='host') | list) | length > 0)
+
+- name: Look up existing Zabbix host entry
+  ansible.builtin.uri:
+    url: '{{ zabbix_agent__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_agent__api_token }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'host.get'
+      params:
+        output: 'extend'
+        filter:
+          host: [ '{{ zabbix_agent__api_host_name }}' ]
+        selectInterfaces: 'extend'
+      id: 1
+    validate_certs: '{{ zabbix_agent__api_validate_certs }}'
+    return_content: True
+  delegate_to: '{{ zabbix_agent__api_delegate_to }}'
+  register: zabbix_agent__register_api_host
+  failed_when: zabbix_agent__register_api_host.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Build Zabbix host object parameters
+  ansible.builtin.set_fact:
+    zabbix_agent__api_host_params: >-
+      {{ {
+        'host': zabbix_agent__api_host_name,
+        'name': zabbix_agent__api_visible_name,
+        'status': zabbix_agent__api_status,
+        'groups': (zabbix_agent__register_api_host_groups_refreshed.json.result
+                   if (zabbix_agent__register_api_host_groups_refreshed.json.result | d())
+                   else zabbix_agent__register_api_host_groups.json.result)
+                  | map(attribute='groupid') | map('community.general.dict_kv', 'groupid')
+                  | list,
+        'templates': zabbix_agent__register_api_templates.json.result
+                     | map(attribute='templateid') | map('community.general.dict_kv', 'templateid')
+                     | list,
+        'macros': zabbix_agent__api_combined_macros,
+        'tags': zabbix_agent__api_combined_tags,
+        'interfaces': [ ( {
+            'type': 1,
+            'main': 1,
+            'useip': zabbix_agent__api_interface_useip | int,
+            'ip': zabbix_agent__api_interface_ip,
+            'dns': zabbix_agent__api_interface_dns,
+            'port': zabbix_agent__api_interface_port | string,
+          } | combine(
+            {'interfaceid': zabbix_agent__register_api_host.json.result[0].interfaces[0].interfaceid}
+            if (zabbix_agent__register_api_host.json.result | d([]) | length > 0
+                and zabbix_agent__register_api_host.json.result[0].interfaces | d([]) | length > 0)
+            else {}
+          ) ) ],
+        'tls_connect': zabbix_agent__api_tls_connect_map[zabbix_agent__tls_mode],
+        'tls_accept': zabbix_agent__api_tls_connect_map[zabbix_agent__tls_mode],
+      }
+      | combine({'tls_psk_identity': zabbix_agent__tls_psk_identity,
+                 'tls_psk': zabbix_agent__tls_psk_secret}
+                if (zabbix_agent__tls_mode == 'psk') else {})
+      | combine({'tls_subject': zabbix_agent__api_tls_subject}
+                if (zabbix_agent__tls_mode == 'cert' and zabbix_agent__api_tls_subject | d())
+                else {})
+      | combine({'tls_issuer': zabbix_agent__api_tls_issuer}
+                if (zabbix_agent__tls_mode == 'cert' and zabbix_agent__api_tls_issuer | d())
+                else {})
+      | combine({'hostid': zabbix_agent__register_api_host.json.result[0].hostid}
+                if (zabbix_agent__register_api_host.json.result | d([]) | length > 0) else {})
+      }}
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Register or update Zabbix host entry
+  ansible.builtin.uri:
+    url: '{{ zabbix_agent__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_agent__api_token }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: '{{ "host.update" if (zabbix_agent__register_api_host.json.result | d([]) | length > 0) else "host.create" }}'
+      params: '{{ zabbix_agent__api_host_params }}'
+      id: 1
+    validate_certs: '{{ zabbix_agent__api_validate_certs }}'
+    return_content: True
+  delegate_to: '{{ zabbix_agent__api_delegate_to }}'
+  register: zabbix_agent__register_api_host_result
+  failed_when: zabbix_agent__register_api_host_result.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
