@@ -70,7 +70,19 @@
     state: '{{ item.state | d("link") }}'
   loop: '{{ q("flattened", (elasticsearch__ssl_default_symlinks + elasticsearch__ssl_symlinks)) }}'
   notify: [ 'Start elasticsearch' ]
-  when: elasticsearch__pki_enabled | bool
+  when: elasticsearch__pki_enabled | bool and elasticsearch__symlink_type == 'link'
+
+- name: Manage CA, private key and SSL certificates in Elasticsearch environment
+  ansible.builtin.copy:
+    dest: '{{ "/etc/elasticsearch/certs/" + item.link }}'
+    src:  '{{ item.src }}'
+    owner: 'root'
+    group: '{{ elasticsearch__group }}'
+    mode: '{{ item.mode }}'
+    remote_src: True
+  loop: '{{ q("flattened", (elasticsearch__ssl_default_symlinks + elasticsearch__ssl_symlinks)) }}'
+  notify: [ 'Start elasticsearch', 'Restart elasticsearch' ]
+  when: elasticsearch__pki_enabled | bool and elasticsearch__symlink_type == 'copy'
 
 - name: Check if the dependent config file exists
   ansible.builtin.stat:

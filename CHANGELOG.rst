@@ -115,9 +115,10 @@ General
 ''''''''''''''''''''''''''''''''
 
 - Since Elasticsearch v8.0.0, the service does not support a configurable Java
-  security policy. The role was updated to instead symlink private keys, X.509
-  certificates and CA certificates managed by the :ref:`debops.pki` role to the
-  :file:`/etc/elasticsearch/certs/` subdirectory to allow for TLS encryption.
+  security policy. The role was updated to instead copy (default) or symlink
+  private keys, X.509 certificates and CA certificates managed by the
+  :ref:`debops.pki` role to the :file:`/etc/elasticsearch/certs/` subdirectory
+  to allow for TLS encryption. The type of the integration is configurable.
 
   .. note:: Existing Elasticsearch installations should work correctly after
      the role has been applied (symlinks created, configuration file changed to
