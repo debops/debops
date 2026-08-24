@@ -1,0 +1,29 @@
+---
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Ensure Zabbix web frontend configuration directory exists
+  ansible.builtin.file:
+    path: '{{ zabbix_server__frontend_conf_path | dirname }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: zabbix_server__deploy_state != 'absent'
+
+- name: Generate Zabbix web frontend configuration
+  ansible.builtin.template:
+    src: 'etc/zabbix/web/zabbix.conf.php.j2'
+    dest: '{{ zabbix_server__frontend_conf_path }}'
+    owner: 'root'
+    group: 'www-data'
+    mode: '0640'
+    unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__deploy_state != 'absent'
+
+- name: Remove Zabbix web frontend configuration
+  ansible.builtin.file:
+    path: '{{ zabbix_server__frontend_conf_path }}'
+    state: 'absent'
+  when: zabbix_server__deploy_state == 'absent'

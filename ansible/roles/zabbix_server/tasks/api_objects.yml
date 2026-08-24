@@ -1,0 +1,296 @@
+---
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Manages global Zabbix objects (media types, actions, user groups, users,
+# custom templates, host item overrides) via the JSON-RPC API, using the
+# token bootstrapped in 'api_bootstrap.yml'. Each object list is a list of
+# raw API method parameters (see the Zabbix API reference), matched by its
+# natural key ('name', or 'username' for users) to decide between the
+# 'create' and 'update' API methods.
+
+# Media types [[[1
+- name: Look up existing Zabbix media types
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'mediatype.get'
+      params:
+        output: [ 'mediatypeid', 'name' ]
+        filter:
+          name: '{{ zabbix_server__media_types | map(attribute="name") | list }}'
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  register: zabbix_server__register_api_media_types
+  failed_when: zabbix_server__register_api_media_types.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__media_types | length > 0
+
+- name: Create or update Zabbix media types
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: >-
+        {{ "mediatype.update"
+           if (item.name in (zabbix_server__register_api_media_types.json.result | d([]) | map(attribute="name") | list))
+           else "mediatype.create" }}
+      params: >-
+        {{ item | combine(
+             {'mediatypeid': (zabbix_server__register_api_media_types.json.result
+                               | selectattr("name", "equalto", item.name)
+                               | map(attribute="mediatypeid") | first)}
+             if (item.name in (zabbix_server__register_api_media_types.json.result | d([]) | map(attribute="name") | list))
+             else {}) }}
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+  loop: '{{ zabbix_server__media_types }}'
+  loop_control:
+    label: '{{ item.name }}'
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  register: zabbix_server__register_api_media_type_result
+  failed_when: zabbix_server__register_api_media_type_result.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__media_types | length > 0
+
+# Actions [[[1
+- name: Look up existing Zabbix actions
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'action.get'
+      params:
+        output: [ 'actionid', 'name' ]
+        filter:
+          name: '{{ zabbix_server__actions | map(attribute="name") | list }}'
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  register: zabbix_server__register_api_actions
+  failed_when: zabbix_server__register_api_actions.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__actions | length > 0
+
+- name: Create or update Zabbix actions
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: >-
+        {{ "action.update"
+           if (item.name in (zabbix_server__register_api_actions.json.result | d([]) | map(attribute="name") | list))
+           else "action.create" }}
+      params: >-
+        {{ item | combine(
+             {'actionid': (zabbix_server__register_api_actions.json.result
+                            | selectattr("name", "equalto", item.name)
+                            | map(attribute="actionid") | first)}
+             if (item.name in (zabbix_server__register_api_actions.json.result | d([]) | map(attribute="name") | list))
+             else {}) }}
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+  loop: '{{ zabbix_server__actions }}'
+  loop_control:
+    label: '{{ item.name }}'
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  register: zabbix_server__register_api_action_result
+  failed_when: zabbix_server__register_api_action_result.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__actions | length > 0
+
+# User groups [[[1
+- name: Look up existing Zabbix user groups
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'usergroup.get'
+      params:
+        output: [ 'usrgrpid', 'name' ]
+        filter:
+          name: '{{ zabbix_server__user_groups | map(attribute="name") | list }}'
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  register: zabbix_server__register_api_user_groups
+  failed_when: zabbix_server__register_api_user_groups.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__user_groups | length > 0
+
+- name: Create or update Zabbix user groups
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: >-
+        {{ "usergroup.update"
+           if (item.name in (zabbix_server__register_api_user_groups.json.result | d([]) | map(attribute="name") | list))
+           else "usergroup.create" }}
+      params: >-
+        {{ item | combine(
+             {'usrgrpid': (zabbix_server__register_api_user_groups.json.result
+                            | selectattr("name", "equalto", item.name)
+                            | map(attribute="usrgrpid") | first)}
+             if (item.name in (zabbix_server__register_api_user_groups.json.result | d([]) | map(attribute="name") | list))
+             else {}) }}
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+  loop: '{{ zabbix_server__user_groups }}'
+  loop_control:
+    label: '{{ item.name }}'
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  register: zabbix_server__register_api_user_group_result
+  failed_when: zabbix_server__register_api_user_group_result.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__user_groups | length > 0
+
+# Users [[[1
+- name: Look up existing Zabbix users
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'user.get'
+      params:
+        output: [ 'userid', 'username' ]
+        filter:
+          username: '{{ zabbix_server__users | map(attribute="username") | list }}'
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  register: zabbix_server__register_api_users
+  failed_when: zabbix_server__register_api_users.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__users | length > 0
+
+- name: Create or update Zabbix users
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: >-
+        {{ "user.update"
+           if (item.username in (zabbix_server__register_api_users.json.result | d([]) | map(attribute="username") | list))
+           else "user.create" }}
+      params: >-
+        {{ item | combine(
+             {'userid': (zabbix_server__register_api_users.json.result
+                          | selectattr("username", "equalto", item.username)
+                          | map(attribute="userid") | first)}
+             if (item.username in (zabbix_server__register_api_users.json.result | d([]) | map(attribute="username") | list))
+             else {}) }}
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+  loop: '{{ zabbix_server__users }}'
+  loop_control:
+    label: '{{ item.username }}'
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  register: zabbix_server__register_api_user_result
+  failed_when: zabbix_server__register_api_user_result.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__users | length > 0
+
+# Custom templates [[[1
+- name: Import custom Zabbix templates
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'configuration.import'
+      params:
+        format: 'json'
+        source: '{{ item.source }}'
+        rules:
+          template_groups: { createMissing: True }
+          templates: { createMissing: True, updateExisting: True }
+          items: { createMissing: True, updateExisting: True }
+          triggers: { createMissing: True, updateExisting: True }
+          graphs: { createMissing: True, updateExisting: True }
+          templateDashboards: { createMissing: True, updateExisting: True }
+          templateLinkage: { createMissing: True }
+          valueMaps: { createMissing: True, updateExisting: True }
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+  loop: '{{ zabbix_server__templates }}'
+  loop_control:
+    label: '{{ item.name }}'
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  register: zabbix_server__register_api_template_result
+  failed_when: zabbix_server__register_api_template_result.json.error is defined
+  changed_when: (zabbix_server__register_api_template_result.json.result | d()) | bool
+  when: zabbix_server__templates | length > 0
+
+# Host item overrides [[[1
+- name: Apply host item overrides
+  ansible.builtin.include_tasks: 'host_item_override.yml'
+  loop: '{{ zabbix_server__host_item_overrides }}'
+  loop_control:
+    loop_var: 'zabbix_server__override'
+    label: '{{ zabbix_server__override.template }}'
+  when: zabbix_server__host_item_overrides | length > 0
