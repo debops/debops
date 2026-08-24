@@ -37,6 +37,13 @@ New DebOps roles
   for PXE network booting of Debian and Ubuntu installers, enabling easy
   installation of new hosts and virtual machines over the network.
 
+- The :ref:`debops.zabbix_server` role installs and configures Zabbix
+  Server, its PostgreSQL database schema and PHP web frontend, and manages
+  global Zabbix objects (media types, actions, users, custom templates) via
+  the JSON-RPC API. It is designed to bootstrap a complete installation
+  from an empty database without any manual steps through the web
+  interface, and complements the :ref:`debops.zabbix_agent` role.
+
 General
 '''''''
 
