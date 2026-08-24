@@ -273,7 +273,14 @@ elasticsearch__xpack_enabled: '{{ True
 # Enable or disable configuration of user authentication in the Elasticsearch
 # cluster. When disabled, the role will not try to configure user accounts
 # automatically on new installs.
-elasticsearch__authentication_enabled: True
+#
+# By default role tries to detect if a given ES node is included in the list of
+# initial master nodes, and if it is, configure authentication. Subsequent ES
+# nodes added to the cluster will not be configuring their own authentication.
+elasticsearch__authentication_enabled: '{{ True
+                                           if (elasticsearch__node_name
+                                               in elasticsearch__initial_master_nodes)
+                                           else False }}'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__authentication_anonymous_access [[[
