@@ -844,7 +844,7 @@ zabbix_agent__cgroup_metrics__user_parameters: '{{ [{"key": "ct.cpu.util", "comm
 # well together with :envvar:`zabbix_agent__tls_mode` set to ``cert``). This
 # requires network access from :envvar:`zabbix_agent__api_delegate_to` to the
 # Zabbix API, and an existing API token, usually bootstrapped by the
-# :ref:`debops.zabbix_server` role and stored in the DebOps ``secret/``
+# ``debops.zabbix_server`` role and stored in the DebOps ``secret/``
 # directory.
 
 # .. envvar:: zabbix_agent__api_register [[[
@@ -1001,11 +1001,14 @@ zabbix_agent__api_host_link_templates: []
 # Variable which combines all of the Zabbix template lists together,
 # including templates auto-detected for services running on the host (see
 # :envvar:`zabbix_agent__service_templates__combined_names`), and is used in
-# role tasks.
+# role tasks. Template names here must match the technical ``template``
+# name (Zabbix API ``host`` field), not the human-readable ``name`` shown in
+# the web interface - for example ``LXC CPU cgroup``, whose visible name is
+# "LXC container".
 zabbix_agent__api_combined_link_templates: '{{ (zabbix_agent__api_link_templates
                                               + zabbix_agent__api_group_link_templates
                                               + zabbix_agent__api_host_link_templates
-                                              + (["LXC container"] if zabbix_agent__cgroup_metrics__enabled else [])
+                                              + (["LXC CPU cgroup"] if zabbix_agent__cgroup_metrics__enabled else [])
                                               + zabbix_agent__service_templates__combined_names)
                                               | flatten | unique }}'
 
