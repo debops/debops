@@ -125,6 +125,11 @@ General
      point to the new file paths, service restarted). But it's best to test
      this change on a separate environment.
 
+- By default role will skip configuring authentication on Elasticsearch nodes
+  that are not specified as initial master nodes. This permits addition of more
+  ES nodes after initial cluster deployment with assumption that they will be
+  bootstrapped by the current Eleasticsearch master node.
+
 :ref:`debops.machine` role
 ''''''''''''''''''''''''''
 
