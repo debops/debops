@@ -39,6 +39,13 @@ General
   role-specific custom playbooks that are not part of the main :file:`site.yml`
   playbook.
 
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- The :file:`scope/elasticsearch/remove_node` playbook allows for a clean
+  removal of an Elasticsearch node from the ES cluster by migrating all shards
+  to other nodes and stopping the service.
+
 :ref:`debops.java` role
 '''''''''''''''''''''''
 
