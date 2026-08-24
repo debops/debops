@@ -33,6 +33,13 @@ New DebOps roles
   services using Docker containers, and can integrate with the
   :ref:`debops.nginx` role to manage the :command:`nginx` reverse proxy.
 
+- The :ref:`debops.zabbix_server` role installs and configures Zabbix
+  Server, its PostgreSQL database schema and PHP web frontend, and manages
+  global Zabbix objects (media types, actions, users, custom templates) via
+  the JSON-RPC API. It is designed to bootstrap a complete installation
+  from an empty database without any manual steps through the web
+  interface, and complements the :ref:`debops.zabbix_agent` role.
+
 General
 '''''''
 
