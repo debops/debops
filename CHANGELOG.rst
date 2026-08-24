@@ -101,6 +101,38 @@ General
 - Add support for post-quantum key exchange algorithms in OpenSSH v9.0+. The
   role will enable a specific set of key exchange algorithms where available.
 
+:ref:`debops.zabbix_agent` role
+'''''''''''''''''''''''''''''''
+
+- New :envvar:`zabbix_agent__tls_mode` variable (``psk``, ``cert`` or
+  ``unencrypted``) to select how the agent authenticates and encrypts its
+  connections. The ``cert`` mode integrates with the :ref:`debops.pki` role
+  to look up certificate files in a PKI realm, and automatically adds the
+  agent's UNIX account to the group that owns the realm's private files.
+
+- New :envvar:`zabbix_agent__user_parameters` and
+  :envvar:`zabbix_agent__scripts` variables to define custom
+  ``UserParameter`` checks and their helper scripts without templating a
+  whole configuration file.
+
+- New :envvar:`zabbix_agent__cgroup_metrics` variable (``auto`` by default)
+  which enables built-in ``ct.cpu.util``/``ct.memory.used``/``ct.memory.util``
+  UserParameters on LXC containers, based on the container's own cgroup
+  accounting instead of host-wide ``/proc`` values that reflect the whole
+  physical host and can be misleading when multiple containers share it.
+
+- New :envvar:`zabbix_agent__api_register` variable to self-register the
+  current host as a Zabbix host object via the JSON-RPC API, as an
+  alternative to the built-in "active agent auto-registration" mechanism
+  which cannot assign a TLS certificate to an automatically created host.
+  Designed to work together with the new ``debops.zabbix_server`` role.
+
+- New :envvar:`zabbix_agent__default_service_templates` mechanism which
+  detects well-known services running on the host (PostgreSQL, nginx,
+  Docker, Redis, Postfix) via Ansible inventory group membership, links the
+  matching official Zabbix template and configures the corresponding
+  Zabbix Agent 2 plugin automatically.
+
 Changed
 ~~~~~~~
 
