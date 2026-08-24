@@ -165,6 +165,17 @@ elasticsearch__pki_base_path: '{{ ansible_local.pki.base_path | d("/etc/pki/real
 elasticsearch__pki_realm: '{{ ansible_local.pki.realm | d("domain") }}'
 
                                                                    # ]]]
+# .. envvar:: elasticsearch__symlink_type [[[
+#
+# Some version combinations of Elasticsearch and Java do not support symlinked
+# X.509 certificates and keys located outside of the
+# :file:`/etc/elasticsearch/certs/` directory. By default the role will create
+# copies of the certificates and keys to circumvent that limitation.
+#
+# Supported values: ``link``, ``copy``.
+elasticsearch__symlink_type: 'copy'
+
+                                                                   # ]]]
 # .. envvar:: elasticsearch__ssl_default_symlinks [[[
 #
 # List of the symlinks to private key and X.509 certificate used by
@@ -174,14 +185,17 @@ elasticsearch__ssl_default_symlinks:
 
   - link: '{{ elasticsearch__pki_key_file }}'
     src: '{{ elasticsearch__pki_base_path + "/" + elasticsearch__pki_realm + "/private/key.pem" }}'
+    mode: '0640'
 
   - link: '{{ elasticsearch__pki_crt_file }}'
     # Java applications don't work well with Diffie-Hellman parameters
     # embedded in the certificate chain, so let's use the "plain" one instead.
     src: '{{ elasticsearch__pki_base_path + "/" + elasticsearch__pki_realm + "/public/cert_intermediate.pem" }}'
+    mode: '0644'
 
   - link: '{{ elasticsearch__pki_ca_file }}'
     src: '{{ elasticsearch__pki_base_path + "/" + elasticsearch__pki_realm + "/public/intermediate_root.pem" }}'
+    mode: '0644'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__ssl_symlinks [[[
