@@ -153,6 +153,72 @@
   when: not (zabbix_server__register_api_token_stat.stat.exists | bool) and
         zabbix_server__register_api_fresh_install | bool
 
+# 'user.update' of the Admin password invalidates every active Admin
+# session, including the one stored in
+# 'zabbix_server__register_api_bootstrap_session'. Without a new login,
+# 'token.create' / 'token.generate' below would fail on a fresh install
+# before the token is ever written to 'secret/'.
+- name: Re-authenticate after changing the Admin password
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'user.login'
+      params:
+        username: '{{ zabbix_server__api_admin_user }}'
+        password: '{{ zabbix_server__api_admin_password }}'
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+    status_code: [ 200 ]
+  register: zabbix_server__register_api_login_after_password
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  failed_when: zabbix_server__register_api_login_after_password.json.error is defined or
+               (zabbix_server__register_api_login_after_password.json.result | d('')) == ''
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: not (zabbix_server__register_api_token_stat.stat.exists | bool) and
+        zabbix_server__register_api_fresh_install | bool
+
+- name: Replace the invalidated bootstrap session
+  ansible.builtin.set_fact:
+    zabbix_server__register_api_bootstrap_session: '{{ zabbix_server__register_api_login_after_password.json.result }}'
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: not (zabbix_server__register_api_token_stat.stat.exists | bool) and
+        zabbix_server__register_api_fresh_install | bool
+
+# Look up by the configured name first: if a previous run created the
+# token object but then failed to write it into 'secret/', creating
+# another one would leave a second enabled, non-expiring token behind.
+- name: Look up an existing bootstrap API token by name
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_server__register_api_bootstrap_session }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'token.get'
+      params:
+        output: [ 'tokenid', 'name' ]
+        filter:
+          name: [ '{{ zabbix_server__api_token_name }}' ]
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+  register: zabbix_server__register_api_token_lookup
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  failed_when: zabbix_server__register_api_token_lookup.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: not (zabbix_server__register_api_token_stat.stat.exists | bool)
+
 - name: Create Zabbix API token for the Admin account
   ansible.builtin.uri:
     url: '{{ zabbix_server__api_url }}'
@@ -174,6 +240,15 @@
   become: False
   failed_when: zabbix_server__register_api_token_create.json.error is defined
   no_log: '{{ debops__no_log | d(True) }}'
+  when: not (zabbix_server__register_api_token_stat.stat.exists | bool) and
+        (zabbix_server__register_api_token_lookup.json.result | d([]) | length == 0)
+
+- name: Determine the bootstrap API token identifier
+  ansible.builtin.set_fact:
+    zabbix_server__register_api_tokenid: '{{ zabbix_server__register_api_token_lookup.json.result[0].tokenid
+                                              if (zabbix_server__register_api_token_lookup.json.result | d([]) | length > 0)
+                                              else zabbix_server__register_api_token_create.json.result.tokenids[0] }}'
+  no_log: '{{ debops__no_log | d(True) }}'
   when: not (zabbix_server__register_api_token_stat.stat.exists | bool)
 
 - name: Generate Zabbix API token string
@@ -188,7 +263,7 @@
       jsonrpc: '2.0'
       method: 'token.generate'
       params:
-        - '{{ zabbix_server__register_api_token_create.json.result.tokenids[0] }}'
+        - '{{ zabbix_server__register_api_tokenid }}'
       id: 1
     validate_certs: '{{ zabbix_server__api_validate_certs }}'
     return_content: True
