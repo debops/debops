@@ -122,6 +122,11 @@ interpret the entry using specific parameters:
   If ``append``, the given entry will be evaluated only if an entry with the
   same name already exists. The current state will not be changed.
 
+``need_restart``
+  Optional, boolean. If present and true, the handler to restart Postfix will
+  be used, rather than the default handler, which reloads it.
+  Some variables need this, for example: `inet_interfaces`.
+
 ``section``
   Optional. Name of the section of the :file:`/etc/postfix/main.cf`
   configuration file in which a given option should be placed. If it's no
