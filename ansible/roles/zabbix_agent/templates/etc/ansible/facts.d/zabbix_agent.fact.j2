@@ -39,16 +39,4 @@ if os.path.isfile("/etc/zabbix/secret.key"):
     except (FileNotFoundError, PermissionError):
         pass
 
-# Snapshot of the Agent 2 plugin drop-ins actually present on disk *before*
-# this Ansible run touches anything (facts are gathered at the start of the
-# play). Comparing this against the currently desired plugin list lets the
-# role remove configuration left behind by an integration that disappeared
-# from the inventory entirely, not just one explicitly disabled or marked
-# 'state: "absent"' while still declared somewhere.
-plugins_dir = "/etc/zabbix/zabbix_agent2.d/plugins.d"
-try:
-    output["configured_plugins"] = sorted(os.listdir(plugins_dir))
-except (FileNotFoundError, PermissionError):
-    output["configured_plugins"] = []
-
 print(dumps(output, sort_keys=True, indent=4))

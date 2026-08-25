@@ -187,11 +187,24 @@
   when: zabbix_agent__deploy_state != 'absent' and
         zabbix_agent__flavor == 'Go'
 
+# Discovered directly from disk in this same run, instead of relying on the
+# previous run's local facts snapshot: right after an upgrade from a role
+# version that did not track this, the fact would not exist yet and no
+# stale drop-in (including one with embedded credentials) would be removed
+# until a second run.
+- name: Discover existing Zabbix Agent 2 plugin configuration files
+  ansible.builtin.find:
+    paths: '/etc/zabbix/zabbix_agent2.d/plugins.d'
+    file_type: 'file'
+  register: zabbix_agent__register_existing_plugins
+  when: zabbix_agent__flavor == 'Go'
+
 - name: Remove Zabbix Agent 2 plugin configuration of disabled integrations
   ansible.builtin.file:
     path: '/etc/zabbix/zabbix_agent2.d/plugins.d/{{ item }}'
     state: 'absent'
-  loop: '{{ (ansible_local.zabbix_agent.configured_plugins | d([]))
+  loop: '{{ zabbix_agent__register_existing_plugins.files | d([])
+            | map(attribute="path") | map("basename") | list
             | difference(zabbix_agent__service_templates__combined_plugins
                           | map(attribute="plugin_name") | list
                           if (zabbix_agent__deploy_state != "absent" and
