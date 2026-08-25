@@ -189,3 +189,17 @@ For the PostgreSQL integration, the monitoring role/password referenced by
 automatically by this role - configure it on the database server host using
 the :ref:`debops.postgresql` role's ``postgresql__dependent_roles``
 variable, with a password sourced from the same ``secret/`` lookup path.
+
+
+Known limitations
+------------------
+
+Switching :envvar:`zabbix_agent__tls_mode` away from ``cert`` on a host
+which previously used it does not revoke the Zabbix agent UNIX account's
+membership in :envvar:`zabbix_agent__tls_pki_group` (usually ``ssl-cert``).
+The role only ever *adds* the account to that group (via
+``ansible.builtin.user`` with ``append: True``), and removing it safely
+would require tracking whether the role itself granted that specific
+membership in the first place, to avoid revoking access an administrator
+granted on purpose. If the group is dedicated to this purpose, remove the
+account from it manually after changing the TLS mode away from ``cert``.
