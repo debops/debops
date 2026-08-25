@@ -30,6 +30,7 @@
   delegate_to: '{{ zabbix_server__api_delegate_to }}'
   become: False
   register: zabbix_server__register_override_template
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Look up hosts linked to the template
   ansible.builtin.uri:
@@ -52,6 +53,7 @@
   delegate_to: '{{ zabbix_server__api_delegate_to }}'
   become: False
   register: zabbix_server__register_override_hosts
+  no_log: '{{ debops__no_log | d(True) }}'
   when: (zabbix_server__register_override_template.json.result | d([])) | length > 0
 
 - name: Look up items on the linked hosts
@@ -75,13 +77,14 @@
   delegate_to: '{{ zabbix_server__api_delegate_to }}'
   become: False
   register: zabbix_server__register_override_items
+  no_log: '{{ debops__no_log | d(True) }}'
   when: (zabbix_server__register_override_hosts.json.result | d([])) | length > 0
 
 - name: Determine items which should be disabled
   ansible.builtin.set_fact:
     zabbix_server__fact_override_itemids: '{{ zabbix_server__register_override_items.json.result
                                                | d([])
-                                               | selectattr("key_", "match", zabbix_server__override.key_regex)
+                                               | selectattr("key_", "search", zabbix_server__override.key_regex)
                                                | rejectattr("status", "equalto", "1")
                                                | map(attribute="itemid") | list }}'
   when: (zabbix_server__register_override_hosts.json.result | d([])) | length > 0
@@ -106,6 +109,7 @@
   delegate_to: '{{ zabbix_server__api_delegate_to }}'
   become: False
   register: zabbix_server__register_override_disable
+  no_log: '{{ debops__no_log | d(True) }}'
   failed_when: zabbix_server__register_override_disable.json.error is defined
   changed_when: (zabbix_server__fact_override_itemids | d([])) | length > 0
   when: (zabbix_server__fact_override_itemids | d([])) | length > 0
