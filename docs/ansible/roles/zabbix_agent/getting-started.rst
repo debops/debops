@@ -166,7 +166,10 @@ credentials, ...). The role automates this glue based on Ansible inventory
 group membership (or ``ansible_local`` facts), instead of requiring each
 project to duplicate it. See :envvar:`zabbix_agent__default_service_templates`
 for the full list of built-in integrations (PostgreSQL, nginx, Docker,
-Redis, Postfix) and their detection rules.
+Redis, Postfix) and their detection rules. Integrations that require an
+Agent 2 plugin (those with a ``plugin_name``) are skipped when
+:envvar:`zabbix_agent__flavor` is ``C``; integrations without a plugin
+(for example Postfix) stay active on both flavors.
 
 A detected integration can be disabled, or a custom one added, via
 :envvar:`zabbix_agent__host_service_templates` (or the ``group`` variant),
