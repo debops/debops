@@ -142,6 +142,33 @@
   failed_when: zabbix_agent__register_api_host.json.error is defined
   no_log: '{{ debops__no_log | d(True) }}'
 
+# 'host.update' also replaces the full 'interfaces' list wholesale (not just
+# the Zabbix Agent one managed by this role), so any other interface type
+# (SNMP, IPMI, JMX, ...) added manually or by another integration must be
+# preserved explicitly, not just whatever happens to be first in the list.
+- name: Determine existing Zabbix host interfaces
+  ansible.builtin.set_fact:
+    zabbix_agent__api_existing_interfaces: '{{ zabbix_agent__register_api_host.json.result[0].interfaces | d([])
+                                                if (zabbix_agent__register_api_host.json.result | d([]) | length > 0)
+                                                else [] }}'
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Identify the existing managed Zabbix Agent interface
+  ansible.builtin.set_fact:
+    zabbix_agent__api_existing_agent_interface: '{{ zabbix_agent__api_existing_interfaces
+                                                     | selectattr("type", "in", [1, "1"])
+                                                     | selectattr("main", "in", [1, "1"])
+                                                     | list | first | d({}) }}'
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Preserve non-managed Zabbix host interfaces
+  ansible.builtin.set_fact:
+    zabbix_agent__api_other_interfaces: '{{ zabbix_agent__api_existing_interfaces
+                                             | rejectattr("interfaceid", "equalto",
+                                                           zabbix_agent__api_existing_agent_interface.interfaceid | d(""))
+                                             | list }}'
+  no_log: '{{ debops__no_log | d(True) }}'
+
 # 'host.update' replaces the full set of linked templates with whatever is
 # passed in its 'templates' parameter (though without 'templates_clear', it
 # only unlinks the ones missing from the list, it does not remove their
@@ -170,7 +197,7 @@
                      | list,
         'macros': zabbix_agent__api_combined_macros,
         'tags': zabbix_agent__api_combined_tags,
-        'interfaces': [ ( {
+        'interfaces': zabbix_agent__api_other_interfaces + [ ( {
             'type': 1,
             'main': 1,
             'useip': zabbix_agent__api_interface_useip | int,
@@ -178,9 +205,8 @@
             'dns': zabbix_agent__api_interface_dns,
             'port': zabbix_agent__api_interface_port | string,
           } | combine(
-            {'interfaceid': zabbix_agent__register_api_host.json.result[0].interfaces[0].interfaceid}
-            if (zabbix_agent__register_api_host.json.result | d([]) | length > 0
-                and zabbix_agent__register_api_host.json.result[0].interfaces | d([]) | length > 0)
+            {'interfaceid': zabbix_agent__api_existing_agent_interface.interfaceid}
+            if zabbix_agent__api_existing_agent_interface.interfaceid | d()
             else {}
           ) ) ],
         'tls_connect': zabbix_agent__api_tls_connect_map[zabbix_agent__tls_mode],
