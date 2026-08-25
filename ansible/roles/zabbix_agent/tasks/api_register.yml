@@ -75,7 +75,11 @@
   delegate_to: '{{ zabbix_agent__api_delegate_to }}'
   register: zabbix_agent__register_api_host_groups_refreshed
   failed_when: zabbix_agent__register_api_host_groups_refreshed.json.error is defined
-  when: zabbix_agent__register_api_new_host_groups is changed
+  # 'ansible.builtin.uri' does not report 'changed' for a plain POST request
+  # (no 'dest'), regardless of HTTP method, so 'is changed' here would never
+  # be true and the refresh would always be skipped. Check directly whether
+  # the previous task actually created any group instead.
+  when: zabbix_agent__register_api_new_host_groups.results | d([]) | length > 0
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Look up known Zabbix templates
@@ -128,6 +132,7 @@
         filter:
           host: [ '{{ zabbix_agent__api_host_name }}' ]
         selectInterfaces: 'extend'
+        selectParentTemplates: [ 'templateid' ]
       id: 1
     validate_certs: '{{ zabbix_agent__api_validate_certs }}'
     return_content: True
@@ -136,6 +141,12 @@
   failed_when: zabbix_agent__register_api_host.json.error is defined
   no_log: '{{ debops__no_log | d(True) }}'
 
+# 'host.update' replaces the full set of linked templates with whatever is
+# passed in its 'templates' parameter (though without 'templates_clear', it
+# only unlinks the ones missing from the list, it does not remove their
+# inherited items/triggers). The fact block below merges in whatever is
+# already linked on the host so that templates linked by other means
+# (manually, or by another role) are not silently dropped on every run.
 - name: Build Zabbix host object parameters
   ansible.builtin.set_fact:
     zabbix_agent__api_host_params: >-
@@ -148,8 +159,13 @@
                    else zabbix_agent__register_api_host_groups.json.result)
                   | map(attribute='groupid') | map('community.general.dict_kv', 'groupid')
                   | list,
-        'templates': zabbix_agent__register_api_templates.json.result
-                     | map(attribute='templateid') | map('community.general.dict_kv', 'templateid')
+        'templates': (zabbix_agent__register_api_templates.json.result
+                      | map(attribute='templateid') | list
+                      + (zabbix_agent__register_api_host.json.result[0].parentTemplates
+                         | d([]) | map(attribute='templateid') | list
+                         if (zabbix_agent__register_api_host.json.result | d([]) | length > 0)
+                         else []))
+                     | unique | map('community.general.dict_kv', 'templateid')
                      | list,
         'macros': zabbix_agent__api_combined_macros,
         'tags': zabbix_agent__api_combined_tags,

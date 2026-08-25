@@ -11,6 +11,6 @@
 {%     if item.comment | d() %}
 # {{ item.comment }}
 {%     endif %}
-UserParameter={{ item.key }},{{ item.command }}
+UserParameter={{ item.key }}{{ "[*]" if (item.unsafe | d(False) | bool) else "" }},{{ item.command }}
 {%   endif %}
 {% endfor %}
