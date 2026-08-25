@@ -145,6 +145,8 @@
         selectInterfaces: 'extend'
         selectParentTemplates: [ 'templateid' ]
         selectHostGroups: [ 'groupid' ]
+        selectMacros: 'extend'
+        selectTags: 'extend'
       id: 1
     validate_certs: '{{ zabbix_agent__api_validate_certs }}'
     return_content: True
@@ -191,6 +193,32 @@
                                               else [] }}'
   no_log: '{{ debops__no_log | d(True) }}'
 
+# Same wholesale-replace behaviour for 'macros' and 'tags': an empty role
+# list (the default) would otherwise wipe anything added in the UI or by
+# another integration on every run. Role-defined entries win on the same
+# 'macro' / 'tag' key; everything else is kept.
+- name: Preserve non-managed Zabbix host macros
+  ansible.builtin.set_fact:
+    zabbix_agent__api_other_macros: '{{ (zabbix_agent__register_api_host.json.result[0].macros | d([])
+                                          if (zabbix_agent__register_api_host.json.result | d([]) | length > 0)
+                                          else [])
+                                         | rejectattr("macro", "in",
+                                                       zabbix_agent__api_combined_macros
+                                                       | map(attribute="macro") | list)
+                                         | list }}'
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Preserve non-managed Zabbix host tags
+  ansible.builtin.set_fact:
+    zabbix_agent__api_other_tags: '{{ (zabbix_agent__register_api_host.json.result[0].tags | d([])
+                                        if (zabbix_agent__register_api_host.json.result | d([]) | length > 0)
+                                        else [])
+                                       | rejectattr("tag", "in",
+                                                     zabbix_agent__api_combined_tags
+                                                     | map(attribute="tag") | list)
+                                       | list }}'
+  no_log: '{{ debops__no_log | d(True) }}'
+
 # 'host.update' replaces the full set of linked templates with whatever is
 # passed in its 'templates' parameter (though without 'templates_clear', it
 # only unlinks the ones missing from the list, it does not remove their
@@ -220,8 +248,8 @@
                          else []))
                      | unique | map('community.general.dict_kv', 'templateid')
                      | list,
-        'macros': zabbix_agent__api_combined_macros,
-        'tags': zabbix_agent__api_combined_tags,
+        'macros': zabbix_agent__api_other_macros + zabbix_agent__api_combined_macros,
+        'tags': zabbix_agent__api_other_tags + zabbix_agent__api_combined_tags,
         'interfaces': zabbix_agent__api_other_interfaces + [ ( {
             'type': 1,
             'main': 1,
@@ -240,6 +268,11 @@
       | combine({'tls_psk_identity': zabbix_agent__tls_psk_identity,
                  'tls_psk': zabbix_agent__tls_psk_secret}
                 if (zabbix_agent__tls_mode == 'psk') else {})
+      | combine({'tls_psk_identity': '',
+                 'tls_psk': ''}
+                if (zabbix_agent__tls_mode != 'psk' and
+                    zabbix_agent__register_api_host.json.result | d([]) | length > 0)
+                else {})
       | combine({'tls_subject': zabbix_agent__api_tls_subject}
                 if (zabbix_agent__tls_mode == 'cert' and zabbix_agent__api_tls_subject | d())
                 else {})

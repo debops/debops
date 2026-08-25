@@ -1288,15 +1288,33 @@ zabbix_agent__host_service_templates: []
 # the disabled ones, and is used in role tasks. Later entries with the same
 # ``name`` override earlier ones (via
 # :command:`debops.debops.parse_kv_config`), and ``state: 'absent'`` removes
-# a given integration completely.
-zabbix_agent__service_templates__combined: '{{
-    ((zabbix_agent__default_service_templates | selectattr("enabled") | list)
-     + zabbix_agent__service_templates
-     + zabbix_agent__group_service_templates
-     + zabbix_agent__host_service_templates)
-    | debops.debops.parse_kv_config
-    | selectattr("state", "equalto", "present")
-    | list }}'
+# a given integration completely. Integrations that ship an Agent 2
+# ``plugin_name`` are dropped when :envvar:`zabbix_agent__flavor` is not
+# ``Go``, so a C Agent host is not linked to templates such as
+# ``PostgreSQL by Zabbix agent 2`` (which need a plugin this flavor cannot
+# load). Integrations without a plugin (for example Postfix) stay active
+# on both flavors.
+zabbix_agent__service_templates__combined: >-
+  {{
+    (
+      ((zabbix_agent__default_service_templates | selectattr("enabled") | list)
+       + zabbix_agent__service_templates
+       + zabbix_agent__group_service_templates
+       + zabbix_agent__host_service_templates)
+      | debops.debops.parse_kv_config
+      | selectattr("state", "equalto", "present")
+      | rejectattr("plugin_name", "defined")
+      | list
+    ) if (zabbix_agent__flavor != "Go") else (
+      ((zabbix_agent__default_service_templates | selectattr("enabled") | list)
+       + zabbix_agent__service_templates
+       + zabbix_agent__group_service_templates
+       + zabbix_agent__host_service_templates)
+      | debops.debops.parse_kv_config
+      | selectattr("state", "equalto", "present")
+      | list
+    )
+  }}
 
                                                                    # ]]]
 # .. envvar:: zabbix_agent__service_templates__combined_names [[[
