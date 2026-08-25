@@ -118,6 +118,18 @@ zabbix_agent__additional_groups:
   # by the group configured in 'zabbix_agent__tls_pki_group' (usually
   # 'ssl-cert'). Without this, 'zabbix-agent2' fails to start with
   # "failed to initialize encryption" / permission denied on the key file.
+  #
+  # Known limitation: switching 'zabbix_agent__tls_mode' away from 'cert'
+  # removes this entry from the list, but does *not* revoke the Zabbix
+  # account's membership in 'zabbix_agent__tls_pki_group' on a host that
+  # previously had it -- 'ansible.builtin.user' is used with 'append: True'
+  # (see 'tasks/main.yml'), which only ever adds supplementary groups, never
+  # removes ones that are no longer listed. Revoking it safely would require
+  # tracking whether the role itself granted that specific membership (to
+  # avoid removing a group an administrator added on purpose), similar to
+  # the local-facts-based cleanup used for Agent 2 plugin drop-ins. If the
+  # PKI group is dedicated to this purpose (e.g. the default 'ssl-cert'),
+  # remove the account from it manually after changing the TLS mode.
   - '{{ zabbix_agent__tls_pki_group
         if (zabbix_agent__tls_mode == "cert")
         else [] }}'
@@ -814,10 +826,15 @@ zabbix_agent__cgroup_metrics__enabled: '{{ (ansible_virtualization_type | d("") 
 #
 # List of helper scripts required by the built-in cgroup metrics, added to
 # :envvar:`zabbix_agent__combined_scripts` when cgroup metrics are enabled.
+# Always includes all three entries, marked ``state: 'absent'`` when cgroup
+# metrics are disabled, instead of omitting them outright -- the "Remove
+# absent Zabbix agent helper scripts" task only ever sees what is in this
+# list, so a script would never be cleaned up after cgroup metrics are
+# turned off if it simply disappeared from here instead.
 zabbix_agent__cgroup_metrics__scripts: '{{ [{"name": "ct-cpu-util.sh", "src": "cgroup/ct-cpu-util.sh", "mode": "0755"},
     {"name": "ct-memory-used.sh", "src": "cgroup/ct-memory-used.sh", "mode": "0755"},
     {"name": "ct-memory-util.sh", "src": "cgroup/ct-memory-util.sh", "mode": "0755"}]
-  if zabbix_agent__cgroup_metrics__enabled else [] }}'
+  | map("combine", {} if zabbix_agent__cgroup_metrics__enabled else {"state": "absent"}) | list }}'
 
                                                                    # ]]]
 # .. envvar:: zabbix_agent__cgroup_metrics__user_parameters [[[
@@ -1301,6 +1318,26 @@ zabbix_agent__service_templates__combined_plugins: '{{ zabbix_agent__service_tem
                                                      | selectattr("plugin_name", "defined")
                                                      | selectattr("plugin_content", "defined")
                                                      | list }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__service_templates__known_plugin_names [[[
+#
+# Flat, deduplicated list of every Agent 2 plugin drop-in filename the role
+# is aware of, regardless of whether the corresponding integration is
+# currently enabled -- unlike
+# :envvar:`zabbix_agent__service_templates__combined_plugins`, which only
+# lists the ones that should be rendered *right now*. Used to scope the
+# cleanup of disabled integrations' drop-ins to files this role could
+# plausibly have created itself, instead of anything found in the shared
+# plugin configuration directory (which could include drop-ins managed by
+# an administrator or another tool).
+zabbix_agent__service_templates__known_plugin_names: '{{ (zabbix_agent__default_service_templates
+                                                         + zabbix_agent__service_templates
+                                                         + zabbix_agent__group_service_templates
+                                                         + zabbix_agent__host_service_templates)
+                                                         | debops.debops.parse_kv_config
+                                                         | selectattr("plugin_name", "defined")
+                                                         | map(attribute="plugin_name") | list | unique }}'
 
                                                                    # ]]]
 # .. envvar:: zabbix_agent__service_templates__combined_additional_groups [[[
