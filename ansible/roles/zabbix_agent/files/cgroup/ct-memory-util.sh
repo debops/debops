@@ -12,6 +12,12 @@
 set -euo pipefail
 export LC_ALL=C
 
+# See 'ct-memory-used.sh' for why an active LXCFS override is required here.
+awk '$5 == "/proc/meminfo" && /fuse\.lxcfs/ { found=1 } END { exit !found }' /proc/self/mountinfo || {
+    echo "ct-memory-util.sh: /proc/meminfo is not provided by lxcfs, refusing to report host-wide memory as container memory" >&2
+    exit 1
+}
+
 awk '
     /^MemTotal:/     { total = $2 }
     /^MemAvailable:/ { available = $2 }

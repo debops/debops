@@ -65,7 +65,15 @@
     mode: '0640'
   no_log: '{{ debops__no_log | d(True) }}'
   notify: [ 'Check zabbix-agent and restart', 'Check zabbix-agent2 and restart' ]
-  when: zabbix_agent__deploy_state != 'absent'
+  when: zabbix_agent__deploy_state != 'absent' and
+        zabbix_agent__tls_mode == 'psk'
+
+- name: Remove unused PSK secret key
+  ansible.builtin.file:
+    path: '/etc/zabbix/secret.key'
+    state: 'absent'
+  when: zabbix_agent__deploy_state == 'absent' or
+        zabbix_agent__tls_mode != 'psk'
 
 - name: Ensure configuration folder exists
   ansible.builtin.file:
@@ -178,6 +186,18 @@
   notify: [ 'Check zabbix-agent2 and restart' ]
   when: zabbix_agent__deploy_state != 'absent' and
         zabbix_agent__flavor == 'Go'
+
+- name: Remove Zabbix Agent 2 plugin configuration of disabled integrations
+  ansible.builtin.file:
+    path: '/etc/zabbix/zabbix_agent2.d/plugins.d/{{ item }}'
+    state: 'absent'
+  loop: '{{ (ansible_local.zabbix_agent.configured_plugins | d([]))
+            | difference(zabbix_agent__service_templates__combined_plugins
+                          | map(attribute="plugin_name") | list
+                          if (zabbix_agent__deploy_state != "absent" and
+                              zabbix_agent__flavor == "Go")
+                          else []) }}'
+  notify: [ 'Check zabbix-agent2 and restart' ]
 
 # Ansible facts [[[1
 - name: Make sure that Ansible local fact directory exists

@@ -19,12 +19,23 @@ set -euo pipefail
 export LC_ALL=C
 
 STAT=/sys/fs/cgroup/cpu.stat
+
+# A merely readable 'cpu.stat' is not enough: cgroup v1's own 'cpu.stat'
+# (nr_periods/nr_throttled/throttled_time) has no 'usage_usec' field, which
+# would silently turn into a bogus 'delta=0' -> '0.00%' reading below instead
+# of a loud failure. Require the cgroup v2 unified hierarchy explicitly.
+test -r /sys/fs/cgroup/cgroup.controllers || {
+    echo "ct-cpu-util.sh: cgroup v2 not detected (no /sys/fs/cgroup/cgroup.controllers), refusing to guess" >&2
+    exit 1
+}
 test -r "${STAT}"
 
 cpu_count=$(nproc)
 usage_1=$(awk '/^usage_usec/ {print $2; exit}' "${STAT}")
+: "${usage_1:?ct-cpu-util.sh: 'usage_usec' not found in ${STAT}}"
 sleep 1
 usage_2=$(awk '/^usage_usec/ {print $2; exit}' "${STAT}")
+: "${usage_2:?ct-cpu-util.sh: 'usage_usec' not found in ${STAT} on second read}"
 
 awk -v delta="$((usage_2 - usage_1))" -v cpus="${cpu_count}" 'BEGIN {
     if (cpus < 1) { cpus = 1 }
