@@ -25,7 +25,7 @@
     set -o pipefail
     zcat {{ zabbix_server__schema_file | quote }} \
       | PGPASSWORD={{ zabbix_server__database_password | quote }} \
-        psql -X -q -v ON_ERROR_STOP=1 \
+        psql -X -q -v ON_ERROR_STOP=1 --single-transaction \
         -h {{ zabbix_server__database_host | quote }} \
         -p {{ zabbix_server__database_port | quote }} \
         -U {{ zabbix_server__database_user | quote }} \
