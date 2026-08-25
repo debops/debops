@@ -17,6 +17,24 @@
     name: 'secret'
 
 # Package installation [[[1
+# Stop the service *before* the package removal below, since purging
+# 'zabbix-server-pgsql'/'zabbix-server-mysql' also removes the
+# 'zabbix-server.service' unit file -- stopping it afterwards would fail
+# with "Could not find the requested service".
+- name: Check if Zabbix Server systemd unit is present
+  ansible.builtin.stat:
+    path: '/lib/systemd/system/zabbix-server.service'
+  register: zabbix_server__register_systemd_unit
+  when: zabbix_server__deploy_state == 'absent'
+
+- name: Make sure Zabbix Server service is stopped and disabled before removal
+  ansible.builtin.systemd:
+    name: 'zabbix-server'
+    enabled: False
+    state: 'stopped'
+  when: zabbix_server__deploy_state == 'absent' and
+        zabbix_server__register_systemd_unit.stat.exists | d(False)
+
 - name: Install Zabbix Server packages
   ansible.builtin.apt:
     name: '{{ zabbix_server__combined_packages | flatten }}'
@@ -78,7 +96,7 @@
     dest: '/etc/ansible/facts.d/zabbix_server.fact'
     owner: 'root'
     group: 'root'
-    mode: '0755'
+    mode: '0644'
     unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   notify: [ 'Refresh host facts' ]
   tags: [ 'meta::facts' ]
@@ -94,25 +112,23 @@
   tags: [ 'role::zabbix_server:schema' ]
 
 # Web frontend [[[1
+# Always imported, even when 'zabbix_server__frontend_enabled' is False: the
+# task file itself decides between generating and removing the frontend
+# configuration, so that disabling the frontend actually cleans up a
+# previously generated 'zabbix.conf.php' instead of leaving it in place.
 - name: Configure Zabbix web frontend
   ansible.builtin.import_tasks: 'frontend.yml'
-  when: zabbix_server__frontend_enabled | bool
   tags: [ 'role::zabbix_server:frontend' ]
 
 # Service management [[[1
+# The 'absent' side of this is already handled above, before the package
+# holding the systemd unit is purged.
 - name: Make sure Zabbix Server service is enabled and started
   ansible.builtin.systemd:
     name: 'zabbix-server'
     enabled: True
     state: 'started'
   when: zabbix_server__deploy_state != 'absent'
-
-- name: Make sure Zabbix Server service is stopped and disabled
-  ansible.builtin.systemd:
-    name: 'zabbix-server'
-    enabled: False
-    state: 'stopped'
-  when: zabbix_server__deploy_state == 'absent'
 
 - name: Flush handlers before managing API objects
   ansible.builtin.meta: 'flush_handlers'
