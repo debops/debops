@@ -52,7 +52,17 @@
             | difference(zabbix_agent__register_api_host_groups.json.result
                           | map(attribute="name") | list) }}'
   register: zabbix_agent__register_api_new_host_groups
-  failed_when: zabbix_agent__register_api_new_host_groups.json.error is defined
+  # Ansible processes multiple hosts from the same play concurrently (up to
+  # 'forks', default 5), each with its own delegated call to this same API
+  # -- on a fresh Zabbix install, more than one host in the same batch can
+  # see a shared group (e.g. the default 'Linux servers') as missing and
+  # race to create it. Zabbix rejects the loser(s) with a "already exists"
+  # error; treat that specific case as an expected outcome of the race
+  # instead of failing the run, and let the refresh step below resolve its
+  # real ID regardless of which host's request actually created it.
+  failed_when: zabbix_agent__register_api_new_host_groups.json.error is defined and
+               not (zabbix_agent__register_api_new_host_groups.json.error.data | d('')
+                    is search('already exists'))
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Refresh known Zabbix host groups after creation  # noqa: no-handler
@@ -134,6 +144,7 @@
           host: [ '{{ zabbix_agent__api_host_name }}' ]
         selectInterfaces: 'extend'
         selectParentTemplates: [ 'templateid' ]
+        selectHostGroups: [ 'groupid' ]
       id: 1
     validate_certs: '{{ zabbix_agent__api_validate_certs }}'
     return_content: True
@@ -169,6 +180,17 @@
                                              | list }}'
   no_log: '{{ debops__no_log | d(True) }}'
 
+# 'host.update' also replaces the full 'groups' list wholesale, same as
+# 'interfaces' above -- membership in a group outside this role's own
+# configured list (added manually, or by another integration) would
+# otherwise be silently removed on every run.
+- name: Preserve non-managed Zabbix host group memberships
+  ansible.builtin.set_fact:
+    zabbix_agent__api_other_host_groups: '{{ zabbix_agent__register_api_host.json.result[0].hostgroups | d([])
+                                              if (zabbix_agent__register_api_host.json.result | d([]) | length > 0)
+                                              else [] }}'
+  no_log: '{{ debops__no_log | d(True) }}'
+
 # 'host.update' replaces the full set of linked templates with whatever is
 # passed in its 'templates' parameter (though without 'templates_clear', it
 # only unlinks the ones missing from the list, it does not remove their
@@ -182,10 +204,13 @@
         'host': zabbix_agent__api_host_name,
         'name': zabbix_agent__api_visible_name,
         'status': zabbix_agent__api_status,
-        'groups': (zabbix_agent__register_api_host_groups_refreshed.json.result
+        'groups': ((zabbix_agent__register_api_host_groups_refreshed.json.result
                    if (zabbix_agent__register_api_host_groups_refreshed.json.result | d())
                    else zabbix_agent__register_api_host_groups.json.result)
-                  | map(attribute='groupid') | map('community.general.dict_kv', 'groupid')
+                  | map(attribute='groupid') | list
+                  + (zabbix_agent__api_other_host_groups
+                     | map(attribute='groupid') | list))
+                  | unique | map('community.general.dict_kv', 'groupid')
                   | list,
         'templates': (zabbix_agent__register_api_templates.json.result
                       | map(attribute='templateid') | list
