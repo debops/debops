@@ -30,7 +30,6 @@
         name: 'php'
         tasks_from: 'main_env'
       tags: [ 'role::php', 'role::php:env', 'role::logrotate' ]
-      when: zabbix_server__frontend_enabled | d(True)
 
   roles:
 
@@ -63,8 +62,11 @@
       php__dependent_packages:
         - '{{ zabbix_server__php__dependent_packages }}'
       php__dependent_pools:
+        # 'zabbix_server__php__dependent_pools' already carries its own
+        # 'state: present/absent' based on 'zabbix_server__frontend_enabled',
+        # so the role must always run to converge that state -- skipping it
+        # here when the frontend is disabled would leave a stale pool.
         - '{{ zabbix_server__php__dependent_pools }}'
-      when: zabbix_server__frontend_enabled | d(True)
 
     - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
@@ -75,10 +77,12 @@
     - role: nginx
       tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_upstreams:
+        # Same reasoning as 'zabbix_server__php__dependent_pools' above:
+        # 'enabled' already reflects 'zabbix_server__frontend_enabled', the
+        # role must always run for it to take effect.
         - '{{ zabbix_server__nginx__dependent_upstreams }}'
       nginx__dependent_servers:
         - '{{ zabbix_server__nginx__dependent_servers }}'
-      when: zabbix_server__frontend_enabled | d(True)
 
     - role: postgresql
       tags: [ 'role::postgresql', 'skip::postgresql' ]

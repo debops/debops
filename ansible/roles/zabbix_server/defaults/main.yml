@@ -364,7 +364,7 @@ zabbix_server__default_configuration:
   - name: 'ListenPort'
     value: '{{ zabbix_server__trapper_port }}'
     comment: 'Listen port for trapper connections.'
-    state: 'comment'
+    state: '{{ "present" if (zabbix_server__trapper_port | string != "10051") else "comment" }}'
 
   - name: 'SourceIP'
     value: ''
@@ -938,7 +938,7 @@ zabbix_server__ferm__dependent_rules:
 
   - name: 'zabbix_server_trapper'
     type: 'accept'
-    dport: [ 'zabbix-trapper' ]
+    dport: [ '{{ zabbix_server__trapper_port }}' ]
     protocol: [ 'tcp' ]
     saddr: '{{ zabbix_server__combined_allow }}'
     weight: '50'

@@ -87,10 +87,21 @@ variables. Example:
      - username: 'jdoe'
        passwd: "{{ lookup('password', secret + '/zabbix/users/jdoe/password length=32') }}"
        roleid: 3
-       usrgrps: [ { usrgrpid: '{{ zabbix_server__register_api_usrgrpid_jdoe | d(omit) }}', name: 'Zabbix administrators' } ]
+       usrgrps: [ { usrgrpid: '7' } ]
        medias:
-         - mediatypeid: 'Email'
+         - mediatypeid: '1'
            sendto: [ 'jdoe@example.org' ]
+
+``usrgrps`` and ``medias`` are passed to the ``user.create``/``user.update``
+Zabbix API methods as-is, without any name-to-id lookup by the role, so they
+require real numeric IDs. ``7`` and ``1`` above are the well-known IDs of the
+built-in "Zabbix administrators" user group and "Email" media type present
+on every fresh Zabbix installation (the ``zabbix_server__user_groups`` and
+``zabbix_server__media_types`` entries above only update their existing
+configuration, they do not create new objects with new IDs). If you rename
+or recreate these objects, look up their current IDs first, for example with
+``debops exec HOSTNAME -m ansible.builtin.uri -a "url=https://.../api_jsonrpc.php ..."``
+or the Zabbix frontend, and use those values instead.
 
 See :ref:`zabbix_server__ref_media_types` for the full parameter reference
 (the media type, action and user list variables map directly onto the
