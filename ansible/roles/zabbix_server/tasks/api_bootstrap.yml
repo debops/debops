@@ -10,11 +10,16 @@
 # path (stock 'Admin'/'zabbix' credentials) without ever silently resetting
 # a password that might have already been changed through the Web UI.
 
+# The 'secret/' directory always lives on the Ansible Controller, regardless
+# of where 'zabbix_server__api_delegate_to' points the actual Zabbix API
+# calls -- delegating this to it as well would check/write the token on the
+# wrong host, while the 'lookup(\"file\", ...)' calls below always read it
+# from the Controller, leaving the two out of sync.
 - name: Check for existing Zabbix API token
   ansible.builtin.stat:
     path: '{{ secret + "/" + zabbix_server__api_token_path }}'
   register: zabbix_server__register_api_token_stat
-  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  delegate_to: 'localhost'
   become: False
 
 - name: Read existing Zabbix API token
@@ -199,7 +204,7 @@
     content: '{{ zabbix_server__register_api_token_generate.json.result[0].token }}'
     dest: '{{ secret + "/" + zabbix_server__api_token_path }}'
     mode: '0600'
-  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  delegate_to: 'localhost'
   become: False
   no_log: '{{ debops__no_log | d(True) }}'
   when: not (zabbix_server__register_api_token_stat.stat.exists | bool)
