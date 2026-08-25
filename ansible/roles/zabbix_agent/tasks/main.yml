@@ -199,12 +199,18 @@
   register: zabbix_agent__register_existing_plugins
   when: zabbix_agent__flavor == 'Go'
 
+# Restricted to 'zabbix_agent__service_templates__known_plugin_names' (every
+# plugin filename this role is aware of, enabled or not) via 'intersect', so
+# that a drop-in placed in the shared plugin directory by an administrator
+# or another tool is never touched, even though the directory listing above
+# has no way to tell them apart on its own.
 - name: Remove Zabbix Agent 2 plugin configuration of disabled integrations
   ansible.builtin.file:
     path: '/etc/zabbix/zabbix_agent2.d/plugins.d/{{ item }}'
     state: 'absent'
   loop: '{{ zabbix_agent__register_existing_plugins.files | d([])
             | map(attribute="path") | map("basename") | list
+            | intersect(zabbix_agent__service_templates__known_plugin_names)
             | difference(zabbix_agent__service_templates__combined_plugins
                           | map(attribute="plugin_name") | list
                           if (zabbix_agent__deploy_state != "absent" and
