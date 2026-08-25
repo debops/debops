@@ -8,7 +8,7 @@
 
 global $DB;
 
-$DB['TYPE']     = 'POSTGRESQL';
+$DB['TYPE']     = {{ ('POSTGRESQL' if (zabbix_server__database == 'postgresql') else 'MYSQL') | to_json }};
 $DB['SERVER']   = {{ zabbix_server__database_host | to_json }};
 $DB['PORT']     = {{ zabbix_server__database_port | to_json }};
 $DB['DATABASE'] = {{ zabbix_server__database_name | to_json }};
