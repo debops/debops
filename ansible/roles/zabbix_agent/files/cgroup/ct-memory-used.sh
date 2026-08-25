@@ -18,6 +18,15 @@
 set -euo pipefail
 export LC_ALL=C
 
+# Without an active LXCFS override, '/proc/meminfo' inside the container is
+# the plain kernel proc file, which reports the *host's* total/available
+# memory, not the container's. Refuse to report a number that would silently
+# look like a valid container reading in that case.
+awk '$5 == "/proc/meminfo" && /fuse\.lxcfs/ { found=1 } END { exit !found }' /proc/self/mountinfo || {
+    echo "ct-memory-used.sh: /proc/meminfo is not provided by lxcfs, refusing to report host-wide memory as container memory" >&2
+    exit 1
+}
+
 awk '
     /^MemTotal:/     { total = $2 }
     /^MemAvailable:/ { available = $2 }
