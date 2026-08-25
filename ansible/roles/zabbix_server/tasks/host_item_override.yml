@@ -31,6 +31,7 @@
   delegate_to: '{{ zabbix_server__api_delegate_to }}'
   become: False
   register: zabbix_server__register_override_template
+  failed_when: zabbix_server__register_override_template.json.error is defined
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Look up hosts linked to the template
@@ -54,6 +55,7 @@
   delegate_to: '{{ zabbix_server__api_delegate_to }}'
   become: False
   register: zabbix_server__register_override_hosts
+  failed_when: zabbix_server__register_override_hosts.json.error is defined
   no_log: '{{ debops__no_log | d(True) }}'
   when: (zabbix_server__register_override_template.json.result | d([])) | length > 0
 
@@ -78,9 +80,15 @@
   delegate_to: '{{ zabbix_server__api_delegate_to }}'
   become: False
   register: zabbix_server__register_override_items
+  failed_when: zabbix_server__register_override_items.json.error is defined
   no_log: '{{ debops__no_log | d(True) }}'
   when: (zabbix_server__register_override_hosts.json.result | d([])) | length > 0
 
+# Kept unconditional (no 'when') so that an override entry whose template
+# does not exist, or is not linked to any host, resets this to '[]' instead
+# of leaving the previous entry's item IDs in place -- otherwise "Disable
+# matching items" below would act on a stale list left over from a
+# different, unrelated override.
 - name: Determine items which should be disabled
   ansible.builtin.set_fact:
     zabbix_server__fact_override_itemids: '{{ zabbix_server__register_override_items.json.result
@@ -88,7 +96,6 @@
                                                | selectattr("key_", "search", zabbix_server__override.key_regex)
                                                | rejectattr("status", "equalto", "1")
                                                | map(attribute="itemid") | list }}'
-  when: (zabbix_server__register_override_hosts.json.result | d([])) | length > 0
 
 - name: Disable matching items
   ansible.builtin.uri:
