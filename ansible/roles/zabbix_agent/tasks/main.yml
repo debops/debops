@@ -187,6 +187,23 @@
   when: zabbix_agent__deploy_state != 'absent' and
         zabbix_agent__flavor == 'Go'
 
+# 'zabbix_agent__service_templates__known_plugin_names' only reflects
+# integrations still present in the current Ansible variables (even if
+# disabled via 'state: absent') -- a *custom* integration removed entirely
+# from the inventory (not just marked absent) leaves nothing in the role's
+# own configuration to recognize its drop-in as "ours" by.
+# 'ansible_local.zabbix_agent.managed_plugin_names', baked into the local
+# facts script below by the *previous* run, is merged in so a name is still
+# recognized for one more run after it disappears from the inventory
+# entirely, then aged out on the run after that once its drop-in has
+# actually been removed and the fact is refreshed with the smaller list.
+- name: Combine currently and previously known role-managed plugin names
+  ansible.builtin.set_fact:
+    zabbix_agent__fact_all_known_plugin_names: '{{ (zabbix_agent__service_templates__known_plugin_names
+                                                    + (ansible_local.zabbix_agent.managed_plugin_names | d([])))
+                                                    | unique }}'
+  when: zabbix_agent__flavor == 'Go'
+
 # Discovered directly from disk in this same run, instead of relying on the
 # previous run's local facts snapshot: right after an upgrade from a role
 # version that did not track this, the fact would not exist yet and no
@@ -199,18 +216,18 @@
   register: zabbix_agent__register_existing_plugins
   when: zabbix_agent__flavor == 'Go'
 
-# Restricted to 'zabbix_agent__service_templates__known_plugin_names' (every
-# plugin filename this role is aware of, enabled or not) via 'intersect', so
-# that a drop-in placed in the shared plugin directory by an administrator
-# or another tool is never touched, even though the directory listing above
-# has no way to tell them apart on its own.
+# Restricted to 'zabbix_agent__fact_all_known_plugin_names' (every plugin
+# filename this role is currently, or was as of last run, aware of) via
+# 'intersect', so that a drop-in placed in the shared plugin directory by
+# an administrator or another tool is never touched, even though the
+# directory listing above has no way to tell them apart on its own.
 - name: Remove Zabbix Agent 2 plugin configuration of disabled integrations
   ansible.builtin.file:
     path: '/etc/zabbix/zabbix_agent2.d/plugins.d/{{ item }}'
     state: 'absent'
   loop: '{{ zabbix_agent__register_existing_plugins.files | d([])
             | map(attribute="path") | map("basename") | list
-            | intersect(zabbix_agent__service_templates__known_plugin_names)
+            | intersect(zabbix_agent__fact_all_known_plugin_names | d(zabbix_agent__service_templates__known_plugin_names))
             | difference(zabbix_agent__service_templates__combined_plugins
                           | map(attribute="plugin_name") | list
                           if (zabbix_agent__deploy_state != "absent" and
