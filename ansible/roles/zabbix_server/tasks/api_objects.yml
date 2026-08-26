@@ -285,6 +285,7 @@
   register: zabbix_server__register_api_template_result
   failed_when: zabbix_server__register_api_template_result.json.error is defined
   changed_when: (zabbix_server__register_api_template_result.json.result | d()) | bool
+  no_log: '{{ debops__no_log | d(True) }}'
   when: zabbix_server__templates | length > 0
 
 # Host item overrides [[[1
