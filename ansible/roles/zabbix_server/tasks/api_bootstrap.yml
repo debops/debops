@@ -101,7 +101,10 @@
   no_log: '{{ debops__no_log | d(True) }}'
   when: not (zabbix_server__register_api_token_stat.stat.exists | bool)
 
-- name: Change Zabbix Admin password on a fresh installation
+# Needed on every no-token path: password change (fresh install) and
+# token.get recovery. Zabbix 7.0 allows the same token name on
+# different users, so recovery must be scoped to this account.
+- name: Look up the bootstrap Admin user ID
   ansible.builtin.uri:
     url: '{{ zabbix_server__api_url }}'
     method: 'POST'
@@ -122,10 +125,10 @@
   register: zabbix_server__register_api_admin_userid
   delegate_to: '{{ zabbix_server__api_delegate_to }}'
   become: False
-  failed_when: zabbix_server__register_api_admin_userid.json.error is defined
+  failed_when: zabbix_server__register_api_admin_userid.json.error is defined or
+               (zabbix_server__register_api_admin_userid.json.result | d([]) | length == 0)
   no_log: '{{ debops__no_log | d(True) }}'
-  when: not (zabbix_server__register_api_token_stat.stat.exists | bool) and
-        zabbix_server__register_api_fresh_install | bool
+  when: not (zabbix_server__register_api_token_stat.stat.exists | bool)
 
 - name: Set the new Zabbix Admin password
   ansible.builtin.uri:
@@ -194,6 +197,8 @@
 # Look up by the configured name first: if a previous run created the
 # token object but then failed to write it into 'secret/', creating
 # another one would leave a second enabled, non-expiring token behind.
+# Scope with userids so a same-named token on another account is not
+# regenerated and stored as the bootstrap credential.
 - name: Look up an existing bootstrap API token by name
   ansible.builtin.uri:
     url: '{{ zabbix_server__api_url }}'
@@ -207,6 +212,8 @@
       method: 'token.get'
       params:
         output: [ 'tokenid', 'name' ]
+        userids:
+          - '{{ zabbix_server__register_api_admin_userid.json.result[0].userid }}'
         filter:
           name: [ '{{ zabbix_server__api_token_name }}' ]
       id: 1
