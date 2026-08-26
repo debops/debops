@@ -1,0 +1,48 @@
+---
+# Copyright (C) 2025 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2025 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Create system UNIX group for remote pgBadger
+  ansible.builtin.group:
+    name: '{{ pgbadger__ssh_group }}'
+    state: 'present'
+    system: True
+  delegate_to: '{{ item }}'
+
+- name: Create system UNIX account for remote pgBadger
+  ansible.builtin.user:
+    name: '{{ pgbadger__ssh_user }}'
+    group: '{{ pgbadger__ssh_group }}'
+    groups: '{{ pgbadger__ssh_additional_groups }}'
+    append: True
+    home: '{{ pgbadger__ssh_home }}'
+    comment: '{{ pgbadger__comment }}'
+    shell: '/bin/bash'
+    state: 'present'
+    system: True
+  delegate_to: '{{ item }}'
+
+- name: Install public SSH key on remote host
+  ansible.posix.authorized_key:
+    key: '{{ pgbadger__register_ssh_public_key.content | b64decode }}'
+    user: '{{ pgbadger__ssh_user }}'
+    state: 'present'
+  delegate_to: '{{ item }}'
+
+- name: Scan SSH fingerprint of the remote host
+  ansible.builtin.shell: 'ssh-keyscan -H -T 10 {{ hostvars[item]["ansible_fqdn"] }} 2>/dev/null'
+  changed_when: False
+  check_mode: False
+  become: True
+  become_user: '{{ pgbadger__ssh_user }}'
+  register: pgbadger__register_ssh_keyscan
+
+- name: Register SSH host fingerprints on pgBadger host
+  ansible.builtin.known_hosts:
+    key: '{{ pgbadger__register_ssh_keyscan.stdout }}'
+    name: '{{ hostvars[item]["ansible_fqdn"] }}'
+    hash_host: True
+    state: 'present'
+  become: True
+  become_user: '{{ pgbadger__ssh_user }}'

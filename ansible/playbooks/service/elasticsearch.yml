@@ -6,8 +6,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Manage Elasticsearch cluster
-  collections: [ 'debops.debops', 'debops.roles01',
-                 'debops.roles02', 'debops.roles03' ]
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_elasticsearch',
            'debops_service_elasticsearch_master',
            'debops_service_elasticsearch_data',
@@ -33,6 +32,7 @@
       tags: [ 'role::extrepo', 'skip::extrepo', 'role::elasticsearch' ]
       extrepo__dependent_sources:
         - '{{ elasticsearch__extrepo__dependent_sources }}'
+        - '{{ java__extrepo__dependent_sources }}'
 
     - role: secret
       tags: [ 'role::secret', 'role::elasticsearch', 'role::elasticsearch:config' ]

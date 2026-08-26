@@ -1,6 +1,6 @@
 ---
 # Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2017 DebOps <https://debops.org/>
+# Copyright (C) 2017-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
@@ -35,16 +35,4 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: nsswitch__register_config
-  when: nsswitch__enabled | bool
-
-  # systemd-logind service needs to be restarted for authentication of users
-  # from remote sources (ldap, sss) to work correctly. The NSS configuration is
-  # not reloaded automatically on changes.
-  # Ref: https://bugzilla.redhat.com/show_bug.cgi?id=132608#c4
-- name: Restart systemd-logind to fix NSS lookups
-  ansible.builtin.service:  # noqa no-handler
-    name: 'systemd-logind'
-    state: 'restarted'
-  when: ansible_service_mgr == 'systemd' and nsswitch__register_config is changed and
-        ansible_connection != 'local'
+  when: nsswitch__enabled

@@ -4,6 +4,21 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Restart rabbitmq-server
-  ansible.builtin.service:
-    name: 'rabbitmq-server'
-    state: 'restarted'
+  ansible.builtin.shell:
+    cmd: |
+      set -e
+      if rabbitmqctl -q ping > /dev/null 2>&1; then
+        rabbitmqctl -q stop_app || true
+      fi
+      systemctl restart rabbitmq-server
+      rabbitmqctl -q await_startup --timeout 120
+  # 'throttle: 1' is a second line of defence for cases when the role is
+  # used outside of service/rabbitmq_server.yml (which already enforces
+  # 'serial: 1'). Parallel restarts of RabbitMQ 4.x nodes trigger a
+  # Khepri 'timeout_waiting_for_leader' boot deadlock and
+  # 'duplicate_node_name' EPMD races.
+  # DO NOT REMOVE without reading the "Rolling restart and cluster
+  # bootstrap" section in
+  # docs/ansible/roles/rabbitmq_server/getting-started.rst
+  throttle: 1
+  changed_when: true

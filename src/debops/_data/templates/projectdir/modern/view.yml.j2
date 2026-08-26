@@ -47,7 +47,9 @@ views:
         retry_files_enabled: {{ env["ANSIBLE_RETRY_FILES_ENABLED"] | d("false") }}
 
         # Make the default output of 'ansible-playbook' easier to read by a human.
-        stdout_callback: '{{ env["ANSIBLE_STDOUT_CALLBACK"] | d("yaml") }}'
+        # Use default callback with result_format=yaml (community.general.yaml is deprecated).
+        stdout_callback: '{{ env["ANSIBLE_STDOUT_CALLBACK"] | d("default") }}'
+        result_format: '{{ env["ANSIBLE_RESULT_FORMAT"] | d("yaml") }}'
 
         # Define the list of the built-in callback plugins enabled by default.
         callbacks_enabled: '{{ env["ANSIBLE_CALLBACKS_ENABLED"] | d("timer") }}'

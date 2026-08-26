@@ -41,7 +41,7 @@ cran__upstream_mirror: 'https://cloud.r-project.org/'
 # YAML dictionary that maps GPG keys of the upstream CRAN APT repositories to
 # the OS distributions.
 cran__upstream_apt_key_map:
-  'Debian': 'E19F5F87128899B192B1A2C2AD5F960A256A04AF'
+  'Debian': '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7'
   'Ubuntu': 'E298A3A825C0D65DFD57CBB651716619E084DAB9'
 
                                                                    # ]]]
@@ -56,8 +56,8 @@ cran__upstream_apt_key: '{{ cran__upstream_apt_key_map[ansible_distribution] }}'
 # YAML dictionary that maps APT suites of the CRAN APT repository to OS
 # distributions.
 cran__upstream_apt_suite_map:
-  'Debian': '{{ ansible_distribution_release + "-cran35/" }}'
-  'Ubuntu': '{{ ansible_distribution_release + "-cran35/" }}'
+  'Debian': '{{ ansible_distribution_release + "-cran40/" }}'
+  'Ubuntu': '{{ ansible_distribution_release + "-cran40/" }}'
 
                                                                    # ]]]
 # .. envvar:: cran__upstream_apt_suite [[[
@@ -69,7 +69,7 @@ cran__upstream_apt_suite: '{{ cran__upstream_apt_suite_map[ansible_distribution]
 # .. envvar:: cran__upstream_apt_repo [[[
 #
 # The URL of the upstream CRAN APT repository to configure on the host.
-cran__upstream_apt_repo: '{{ "deb " + cran__upstream_mirror + "bin/linux/"
+cran__upstream_apt_repo: '{{ "deb [signed-by=/etc/apt/keyrings/cran.asc] " + cran__upstream_mirror + "bin/linux/"
                              + ansible_distribution | lower + " "
                              + cran__upstream_apt_suite }}'
                                                                    # ]]]
@@ -185,6 +185,7 @@ cran__apt_preferences__dependent_list:
 cran__keyring__dependent_apt_keys:
 
   - id: '{{ cran__upstream_apt_key }}'
+    keyring: 'cran.asc'
     repo: '{{ cran__upstream_apt_repo }}'
     state: '{{ "present" if cran__upstream | bool else "absent" }}'
                                                                    # ]]]

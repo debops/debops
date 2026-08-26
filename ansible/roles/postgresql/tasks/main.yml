@@ -178,7 +178,7 @@
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
   when: (item.state | d('present') == 'present') and
-        item.owner | d()
+        item.owner is defined and item.owner is truthy
 
 - name: Grant PostgreSQL groups
   community.postgresql.postgresql_privs:
@@ -212,7 +212,7 @@
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
   when: (item.state | d('present') == 'present') and
-        (item.db | d() and item.priv | d())
+        (item.db is defined and item.db is truthy and item.priv is defined and item.priv is truthy)
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Grant or revoke extra privileges

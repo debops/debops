@@ -4,8 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Manage the Comprehensive R Archive Network packages
-  collections: [ 'debops.debops', 'debops.roles01',
-                 'debops.roles02', 'debops.roles03' ]
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_cran' ]
   become: True
 
@@ -24,6 +23,11 @@
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ cran__apt_preferences__dependent_list }}'
+
+    - role: extrepo
+      tags: [ 'role::extrepo', 'skip::extrepo', 'role::cran' ]
+      extrepo__dependent_sources:
+        - '{{ java__extrepo__dependent_sources }}'
 
     - role: java
       tags: [ 'role::java', 'skip::java' ]

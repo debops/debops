@@ -34,7 +34,7 @@
 
 - name: Configure PAM password history module
   ansible.builtin.include_tasks: pam_pwhistory.yml
-  when: auth_pwhistory_remember is defined and auth_pwhistory_remember
+  when: auth_pwhistory_remember is defined and auth_pwhistory_remember is truthy
 
 - name: DebOps post_tasks hook
   ansible.builtin.include_tasks: "{{ lookup('debops.debops.task_src', 'auth/post_main.yml') }}"

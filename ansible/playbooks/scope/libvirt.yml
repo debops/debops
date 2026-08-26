@@ -1,0 +1,21 @@
+---
+# Copyright (C) 2015-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2016 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2015-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage libvirt hosts
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_services', 'debops_service_libvirt' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Import libvirt role
+      ansible.builtin.import_role:
+        name: 'debops.debops.libvirt'
+      tags: [ 'role::libvirt', 'skip::libvirt' ]

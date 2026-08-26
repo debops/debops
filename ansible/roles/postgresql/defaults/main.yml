@@ -35,7 +35,7 @@ postgresql__upstream_key_id: 'B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8'
 # .. envvar:: postgresql__upstream_apt_repo [[[
 #
 # The upstream APT repository URL in the ``sources.list`` format.
-postgresql__upstream_apt_repo: 'deb http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main'
+postgresql__upstream_apt_repo: 'deb [signed-by=/etc/apt/keyrings/pgdg.asc] http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main'
 
                                                                    # ]]]
 # .. envvar:: postgresql__base_packages [[[
@@ -259,6 +259,7 @@ postgresql__dependent_pgpass: []
 postgresql__keyring__dependent_apt_keys:
 
   - id: '{{ postgresql__upstream_key_id }}'
+    keyring: 'pgdg.asc'
     repo: '{{ postgresql__upstream_apt_repo }}'
     state: '{{ "present" if postgresql__upstream | bool else "absent" }}'
 

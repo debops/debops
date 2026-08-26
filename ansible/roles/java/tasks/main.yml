@@ -24,7 +24,7 @@
   ansible.builtin.command: 'update-java-alternatives -s {{ java__alternatives }}'
   register: java__register_update_alternatives
   changed_when: java__register_update_alternatives.changed | bool
-  when: java__alternatives | d()
+  when: java__alternatives is truthy
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
@@ -54,6 +54,8 @@
 
 - name: Generate default Java security policy configuration
   ansible.builtin.template:
-    src: 'etc/java-x-openjdk/security/java.policy.j2'
+    src: '{{ "etc/java-x-openjdk/security/java.policy.j2"
+             if (java__flavor == "openjdk")
+             else "etc/java-x-temurin/security/java.policy.j2" }}'
     dest: '{{ java__security_policy_path }}'
     mode: '0644'

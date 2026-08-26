@@ -1,0 +1,28 @@
+---
+# Copyright (C) 2018-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2018-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage Redis Sentinel service
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_services', 'debops_service_redis_sentinel' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  pre_tasks:
+
+    - name: Prepare redis_sentinel environment
+      ansible.builtin.import_role:
+        name: 'debops.debops.redis_sentinel'
+        tasks_from: 'main_env'
+      tags: [ 'role::redis_sentinel', 'role::redis_sentinel:env' ]
+
+  tasks:
+
+    - name: Import redis_sentinel role
+      ansible.builtin.import_role:
+        name: 'debops.debops.redis_sentinel'
+      tags: [ 'role::redis_sentinel', 'skip::redis_sentinel' ]

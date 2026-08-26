@@ -33,6 +33,39 @@ can change the default Java package in :envvar:`java__base_packages` list to you
 preferred version.
 
 
+Support for Eclipse Temurin
+---------------------------
+
+`Eclipse Temurin <https://adoptium.net/>`_ (Adoptium) is an open-source Java
+distribution maintained by the Eclipse Foundation. It is based on the OpenJDK
+class libraries and is licensed under the GPLv2 with the Classpath Exception,
+making it suitable for redistribution in commercial products. Temurin provides
+binary builds for multiple platforms and Java versions that are not always
+available in the official Debian repositories, such as Java 8 on Debian
+Bookworm and later.
+
+To use Eclipse Temurin instead of the default OpenJDK packages, set in your
+Ansible inventory:
+
+.. code-block:: yaml
+
+   java__flavor: 'temurin'
+
+The :command:`extrepo` role is used to enable the official
+`Adoptium APT repository <https://packages.adoptium.net/>`_ before the
+Temurin packages are installed. Ensure that the service playbook includes the
+``extrepo`` role before ``java``.
+
+When you use this flavor, the :envvar:`java__temurin_version` variable is set
+automatically based on the Debian release (for example, version ``21`` on
+Trixie, ``17`` on Bookworm). You can override it to pin a specific version:
+
+.. code-block:: yaml
+
+   # For Elasticsearch 6.x compatibility
+   java__temurin_version: '8'
+
+
 Conditional installation of Java Development Kit (JDK)
 ------------------------------------------------------
 

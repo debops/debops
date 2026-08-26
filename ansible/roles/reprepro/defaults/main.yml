@@ -235,14 +235,14 @@ reprepro__default_instances:
 
       - name: 'incoming'
         Allow:
+          - 'forky'
+          - 'testing>forky'
           - 'trixie'
-          - 'testing>trixie'
+          - 'stable>trixie'
           - 'bookworm'
-          - 'stable>bookworm'
+          - 'oldstable>bookworm'
           - 'bullseye'
-          - 'oldstable>bullseye'
-          - 'buster'
-          - 'oldoldstable>buster'
+          - 'oldoldstable>bullseye'
         Options:
           - 'multiple_distributions'
         Cleanup:
@@ -251,20 +251,37 @@ reprepro__default_instances:
 
     distributions:
 
-      - name: 'trixie'
-        Description: 'Packages for Debian GNU/Linux 13 (Trixie)'
+      - name: 'forky'
+        Description: 'Packages for Debian GNU/Linux 14 (Forky)'
         Origin: '{{ reprepro__origin }}'
-        Codename: 'trixie'
+        Codename: 'forky'
         Suite: 'testing'
-        Architectures: [ 'source', 'amd64', 'arm64', 'armel', 'armhf', 'i386',
-                         'mips64el', 'mipsel', 'ppc64el', 's390x' ]
+        Architectures: [ 'source', 'amd64', 'arm64', 'armhf',
+                         'ppc64el', 'riscv64', 's390x' ]
         Components: [ 'main', 'contrib', 'non-free', 'non-free-firmware' ]
         Uploaders: 'uploaders/anybody'
         SignWith: 'default'
         DebIndices: [ 'Packages', 'Release', '.', '.gz', '.xz' ]
         DscIndices: [ 'Sources', 'Release', '.gz', '.xz' ]
         Log: |
-          packages.bookworm.log
+          packages.forky.log
+          --type=dsc email-changes.sh
+        state: 'present'
+
+      - name: 'trixie'
+        Description: 'Packages for Debian GNU/Linux 13 (Trixie)'
+        Origin: '{{ reprepro__origin }}'
+        Codename: 'trixie'
+        Suite: 'stable'
+        Architectures: [ 'source', 'amd64', 'arm64', 'armel', 'armhf',
+                         'ppc64el', 'riscv64', 's390x' ]
+        Components: [ 'main', 'contrib', 'non-free', 'non-free-firmware' ]
+        Uploaders: 'uploaders/anybody'
+        SignWith: 'default'
+        DebIndices: [ 'Packages', 'Release', '.', '.gz', '.xz' ]
+        DscIndices: [ 'Sources', 'Release', '.gz', '.xz' ]
+        Log: |
+          packages.trixie.log
           --type=dsc email-changes.sh
         state: 'present'
 
@@ -272,9 +289,9 @@ reprepro__default_instances:
         Description: 'Packages for Debian GNU/Linux 12 (Bookworm)'
         Origin: '{{ reprepro__origin }}'
         Codename: 'bookworm'
-        Suite: 'stable'
+        Suite: 'oldstable'
         Architectures: [ 'source', 'amd64', 'arm64', 'armel', 'armhf', 'i386',
-                         'mips64el', 'mipsel', 'ppc64el', 's390x' ]
+                         'mips64el', 'mipsel', 'ppc64el', 'riscv64', 's390x' ]
         Components: [ 'main', 'contrib', 'non-free', 'non-free-firmware' ]
         Uploaders: 'uploaders/anybody'
         SignWith: 'default'
@@ -289,7 +306,7 @@ reprepro__default_instances:
         Description: 'Packages for Debian GNU/Linux 11 (Bullseye)'
         Origin: '{{ reprepro__origin }}'
         Codename: 'bullseye'
-        Suite: 'oldstable'
+        Suite: 'oldoldstable'
         Architectures: [ 'source', 'amd64', 'arm64', 'armel', 'armhf', 'i386',
                          'mips64el', 'mipsel', 'ppc64el', 's390x' ]
         Components: [ 'main', 'contrib', 'non-free' ]
@@ -299,23 +316,6 @@ reprepro__default_instances:
         DscIndices: [ 'Sources', 'Release', '.gz', '.xz' ]
         Log: |
           packages.bullseye.log
-          --type=dsc email-changes.sh
-        state: 'present'
-
-      - name: 'buster'
-        Description: 'Packages for Debian GNU/Linux 10 (Buster)'
-        Origin: '{{ reprepro__origin }}'
-        Codename: 'buster'
-        Suite: 'oldoldstable'
-        Architectures: [ 'source', 'amd64', 'arm64', 'armel', 'armhf', 'i386',
-                         'mips', 'mips64el', 'mipsel', 'ppc64el', 's390x' ]
-        Components: [ 'main', 'contrib', 'non-free' ]
-        Uploaders: 'uploaders/anybody'
-        SignWith: 'default'
-        DebIndices: [ 'Packages', 'Release', '.', '.gz', '.xz' ]
-        DscIndices: [ 'Sources', 'Release', '.gz', '.xz' ]
-        Log: |
-          packages.buster.log
           --type=dsc email-changes.sh
         state: 'present'
 

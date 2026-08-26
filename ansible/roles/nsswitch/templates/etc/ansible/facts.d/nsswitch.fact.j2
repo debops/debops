@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2017 DebOps <https://debops.org/>
+# Copyright (C) 2017-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 # {{ ansible_managed }}
 
-from __future__ import print_function
 from json import loads, dumps
 from sys import exit
 import os
@@ -18,7 +17,7 @@ nss_databases = loads('''{{ nsswitch__combined_database_map
                             | list | sort | to_nice_json }}''')
 
 output = loads('''{{ ({
-    "enabled": nsswitch__enabled | bool
+    "enabled": nsswitch__enabled
 }) | to_nice_json }}''')
 
 output_conf = {}

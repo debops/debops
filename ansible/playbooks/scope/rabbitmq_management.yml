@@ -1,0 +1,20 @@
+---
+# Copyright (C) 2017-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2017-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Configure RabbitMQ Management Console
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_services', 'debops_service_rabbitmq_management' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Import rabbitmq_management role
+      ansible.builtin.import_role:
+        name: 'debops.debops.rabbitmq_management'
+      tags: [ 'role::rabbitmq_management', 'skip::rabbitmq_management' ]

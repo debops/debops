@@ -37,7 +37,7 @@ icinga__upstream_apt_key_id: 'DD3A F619 8ED0 00B4 C0B7 3956 CC11 6F55 AA7F 2382'
 # .. envvar:: icinga__upstream_apt_repo [[[
 #
 # The :file:`sources.list` entry of the upstream Icinga 2 APT repository.
-icinga__upstream_apt_repo: 'deb https://packages.icinga.com/{{ icinga__distribution | lower }} icinga-{{ icinga__distribution_release | lower }} main'
+icinga__upstream_apt_repo: 'deb [signed-by=/etc/apt/keyrings/icinga.asc] https://packages.icinga.com/{{ icinga__distribution | lower }} icinga-{{ icinga__distribution_release | lower }} main'
 
                                                                    # ]]]
 # .. envvar:: icinga__distribution [[[
@@ -875,6 +875,8 @@ icinga__etc_services__dependent_list:
 icinga__keyring__dependent_apt_keys:
 
   - id: '{{ icinga__upstream_apt_key_id }}'
+    keyring: 'icinga.asc'
+    checksum: 'sha256:e7be01542d2a3555a6a71a45bdb5414e10db1c0f33dee8d3faac027dc8e21b2d'
     repo: '{{ icinga__upstream_apt_repo }}'
     state: '{{ "present" if icinga__upstream | bool else "absent" }}'
 

@@ -5,8 +5,8 @@
 
 - name: Check samba config
   ansible.builtin.command: testparm -s
-  register: samba__register_test_config
-  changed_when: samba__register_test_config.changed | bool
+  register: global_handlers__samba_register_test_config
+  changed_when: global_handlers__samba_register_test_config.changed | bool
   notify: [ 'Reload nmbd', 'Reload smbd' ]
 
 - name: Reload nmbd

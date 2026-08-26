@@ -62,7 +62,7 @@
   ansible.builtin.slurp:  # noqa no-handler
     src: '{{ roundcube__git_dest + "/composer.json" }}'
   register: roundcube__register_composer_installed
-  when: (ansible_local | d() and ansible_local.roundcube | d() and
+  when: (ansible_local is defined and ansible_local.roundcube is defined and
          (ansible_local.roundcube.installed | d()) | bool and
         roundcube__register_git is changed)
 

@@ -37,9 +37,9 @@
   ansible.builtin.command: pg_dropcluster --stop {{ postgresql_server__version }} main
   register: postgresql_server__register_dropcluster
   changed_when: postgresql_server__register_dropcluster.changed | bool
-  when: ((postgresql_server__register_installed | d() and not postgresql_server__register_installed.stdout) and
-         (postgresql_server__register_installed_main | d() and postgresql_server__register_installed_main.stat.exists) and
+  when: ((postgresql_server__register_installed is defined and not postgresql_server__register_installed.stdout) and
+         (postgresql_server__register_installed_main is defined and postgresql_server__register_installed_main.stat.exists) and
           (ansible_local is undefined or
-           (ansible_local | d() and ansible_local.postgresql is undefined or
-            (ansible_local | d() and ansible_local.postgresql | d() and
+           (ansible_local is defined and ansible_local.postgresql is undefined or
+            (ansible_local is defined and ansible_local.postgresql is defined and
              ansible_local.postgresql.server != 'localhost'))))

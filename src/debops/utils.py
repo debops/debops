@@ -17,3 +17,15 @@ def unexpanduser(path):
         return path.replace(DEBOPS_USER_HOME_DIR, '~', 1)
     else:
         return path
+
+
+def strtobool(value):
+    """according to deprecated
+    https://docs.python.org/3.11/distutils/apiref.html#distutils.util.strtobool
+    """
+    value = value.lower()
+    if value in ("y", "yes", "on", "1", "true", "t"):
+        return True
+    elif value in ("n", "no", "f", "false", "off", "0"):
+        return False
+    raise ValueError

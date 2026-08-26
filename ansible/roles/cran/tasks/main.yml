@@ -23,7 +23,7 @@
   register: cran__register_java_reconf
   changed_when: cran__register_java_reconf.changed | bool
   when: (cran__java_integration | bool and
-         (ansible_local | d() and ansible_local.cran is undefined))
+         (ansible_local is defined and ansible_local.cran is undefined))
 
 - name: Manage R packages
   cran:  # noqa fqcn

@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+# Copyright (C) 2025 Maciej Delmanowski <drybjed@drybjed.net>
+# Copyright (C) 2025 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+# Restart GitLab Omnibus nginx service on a certificate state change
+
+set -o nounset -o pipefail -o errexit
+
+# Check if any GitLab Omnibus certificates are symlinked from the current PKI realm
+certificate="$(find /etc/gitlab/ssl -type l -exec readlink -f {} + | grep "/etc/pki/realms/${PKI_SCRIPT_REALM}" || true)"
+
+# Get list of current realm states
+read -r -a states <<< "$(echo "${PKI_SCRIPT_STATE:-}" | tr "," " ")"
+
+if [ -n "${certificate}" ] && [[ ${states[*]} ]] ; then
+
+    for state in "${states[@]}" ; do
+
+        if [ "${state}" = "changed-certificate" ] || [ "${state}" = "changed-dhparam" ] ; then
+
+            # Check if current init is systemd
+            if pidof systemd > /dev/null 2>&1 ; then
+
+                gitlab_state="$(systemctl is-active gitlab-runsvdir.service)"
+                if [ "${gitlab_state}" = "active" ] ; then
+                    gitlab-ctl restart nginx
+                fi
+
+            fi
+
+            break
+        fi
+
+    done
+
+fi

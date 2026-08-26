@@ -1,6 +1,7 @@
 ---
 # Copyright (C) 2016-2019 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2016-2019 DebOps <https://debops.org/>
+# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2016-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
@@ -15,10 +16,35 @@
   ansible.builtin.import_role:
     name: 'secret'
 
-- name: Prepare OpenLDAP installation to use the rfc2307bis schema
-  ansible.builtin.include_tasks: 'prepare_rfc2307bis.yml'
-  when: (slapd__rfc2307bis_enabled | bool and
-         (ansible_local is undefined or ansible_local.slapd is undefined))
+- name: Ensure that DebOps schema directory exists
+  ansible.builtin.file:
+    path: '{{ slapd__debops_schema_path }}'
+    state: 'directory'
+    mode: '0755'
+
+- name: Copy custom DebOps schemas to the OpenLDAP host
+  ansible.builtin.copy:
+    src: 'etc/ldap/schema/debops/'
+    dest: '{{ slapd__debops_schema_path + "/" }}'
+    mode: '0644'
+
+- name: Divert the original NIS schema included in Debian
+  debops.debops.dpkg_divert:
+    path: '/etc/ldap/schema/{{ item }}'
+  loop: [ 'nis.schema', 'nis.ldif' ]
+  when: slapd__rfc2307bis_enabled | bool and
+        not ansible_local.slapd | d(False) | bool
+
+- name: Symlink the new rfc2307bis schema in place of NIS schema
+  ansible.builtin.file:
+    state: 'link'
+    path: '/etc/ldap/schema/{{ item | replace("rfc2307bis", "nis") }}'
+    src: '{{ slapd__debops_schema_path + "/" + item }}'
+    mode: '0644'
+  loop: [ 'rfc2307bis.schema', 'rfc2307bis.ldif' ]
+  when: not ansible_check_mode | bool and
+        slapd__rfc2307bis_enabled | bool and
+        not ansible_local.slapd | d(False) | bool
 
 - name: Initialize BaseDN value in debconf using a DNS domain
   ansible.builtin.debconf:
@@ -78,23 +104,11 @@
     mode: '0755'
   tags: [ 'role::slapd:scripts' ]
 
-- name: Ensure that DebOps schema directory exists
-  ansible.builtin.file:
-    path: '{{ slapd__debops_schema_path }}'
-    state: 'directory'
-    mode: '0755'
-
-- name: Copy custom DebOps schemas to the OpenLDAP host
-  ansible.builtin.copy:
-    src: 'etc/ldap/schema/debops/'
-    dest: '{{ slapd__debops_schema_path + "/" }}'
-    mode: '0644'
-
 - name: Load custom LDAP schemas
   ansible.builtin.script: 'script/ldap-load-schema {{ item }}'
   loop: '{{ q("flattened", slapd__combined_schemas) }}'
   register: slapd__register_load_schemas
-  changed_when: (slapd__register_load_schemas.stdout | d() and
+  changed_when: (slapd__register_load_schemas.stdout is defined and slapd__register_load_schemas.stdout is truthy and
                  (item | basename | regex_replace('.schema$', '') + ' already exists in the LDAP, skipping…')
                  not in slapd__register_load_schemas.stdout_lines)
   tags: [ 'role::slapd:schema' ]
@@ -149,7 +163,7 @@
     label: '{{ {"state": item.state,
                 "dn": item.dn,
                 "attributes": item.attributes | d({})} }}'
-  when: item.name | d() and item.dn | d() and
+  when: item.name is defined and item.name is truthy and item.dn is defined and item.dn is truthy and
         item.state | d('present') not in [ 'init', 'ignore' ]
   tags: [ 'role::slapd:tasks' ]
   no_log: '{{ debops__no_log | d(item.no_log)
@@ -173,7 +187,7 @@
                 "dn": item.dn,
                 "attributes": item.attributes | d({})} }}'
   when: slapd__slapacl_deploy_state == 'present' and
-        item.name | d() and item.dn | d() and
+        item.name is defined and item.name is truthy and item.dn is defined and item.dn is truthy and
         item.state | d('present') not in [ 'init', 'ignore' ]
   tags: [ 'role::slapd:slapacl', 'role::slapd:tasks' ]
   no_log: '{{ debops__no_log | d(item.no_log)
@@ -201,5 +215,5 @@
   register: slapd__register_slapacl_test
   when: slapd__slapacl_deploy_state == 'present' and
         slapd__slapacl_run_tests | bool
-  changed_when: slapd__register_slapacl_test.stderr | d()
+  changed_when: slapd__register_slapacl_test.stderr is defined and slapd__register_slapacl_test.stderr is truthy
   tags: [ 'role::slapd:slapacl', 'role::slapd:tasks' ]

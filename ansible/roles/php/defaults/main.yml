@@ -57,7 +57,8 @@ php__sury_apt_repo: '{{ php__sury_apt_repo_map[ansible_distribution] }}'
 php__sury_apt_key_id_map:
   'Debian':
     - id: '1505 8500 A023 5D97 F5D1  0063 B188 E2B6 95BD 4743'
-      repo: 'deb https://packages.sury.org/php/ {{ ansible_distribution_release }} main'
+      keyring: 'php-sury.asc'
+      repo: 'deb [signed-by=/etc/apt/keyrings/php-sury.asc] https://packages.sury.org/php/ {{ ansible_distribution_release }} main'
       state: '{{ "present" if php__sury | bool else "absent" }}'
 
     # Key replaced due to security concerns

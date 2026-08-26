@@ -672,7 +672,7 @@ sshd__default_configuration:
   - name: 'Ciphers'
     comment: 'List of ciphers which are allowed for connections'
     raw: |
-      {% set sshd__tpl_ciphers_max_version = sshd__ciphers_map.keys() | select('version_compare', sshd__version, '<=') | max %}
+      {% set sshd__tpl_ciphers_max_version = sshd__ciphers_map.keys() | select('version_compare', sshd__version, '<=') | map("float") | max | string %}
       {% set sshd__tpl_ciphers = sshd__ciphers_map[sshd__tpl_ciphers_max_version] %}
       {% set sshd__tpl_ciphers = (sshd__tpl_ciphers + sshd__ciphers_additional) | unique %}
       {% if sshd__tpl_ciphers and sshd__paranoid | bool %}
@@ -686,8 +686,10 @@ sshd__default_configuration:
   - name: 'KexAlgorithms'
     comment: 'List of allowed key exchange algorithms'
     raw: |
-      {% set sshd__tpl_kex_algorithms_max_version = sshd__kex_algorithms_map.keys() | select('version_compare', sshd__version, '<=') | max %}
-      {% set sshd__tpl_kex_algorithms = sshd__kex_algorithms_map[sshd__tpl_kex_algorithms_max_version] %}
+      {% set sshd__tpl_kex_algorithms_max_version = sshd__kex_algorithms_map.keys() | select('version_compare', sshd__version, '<=') | map("float") | max | string %}
+      {% set sshd__tpl_kex_algorithms_base = sshd__kex_algorithms_map[sshd__tpl_kex_algorithms_max_version] %}
+      {% set sshd__tpl_kex_supported = sshd__register_supported_kex.stdout_lines | d([]) %}
+      {% set sshd__tpl_kex_algorithms = (sshd__tpl_kex_algorithms_base | select('in', sshd__tpl_kex_supported) | list) if sshd__tpl_kex_supported else sshd__tpl_kex_algorithms_base %}
       {% set sshd__tpl_kex_algorithms = (sshd__tpl_kex_algorithms + sshd__kex_algorithms_additional) | unique %}
       {% if sshd__tpl_kex_algorithms and sshd__paranoid | bool %}
       {{ 'KexAlgorithms {}'.format(([sshd__tpl_kex_algorithms | first] + sshd__kex_algorithms_additional) | unique | join(",")) }}
@@ -700,7 +702,7 @@ sshd__default_configuration:
   - name: 'MACs'
     comment: 'List of allowed Message Authentication Code algorithms'
     raw: |
-      {% set sshd__tpl_macs_max_version = sshd__macs_map.keys() | select('version_compare', sshd__version, '<=') | max %}
+      {% set sshd__tpl_macs_max_version = sshd__macs_map.keys() | select('version_compare', sshd__version, '<=') | map("float") | max | string %}
       {% set sshd__tpl_macs = sshd__macs_map[sshd__tpl_macs_max_version] %}
       {% set sshd__tpl_macs = (sshd__tpl_macs + sshd__macs_additional) | unique %}
       {% if sshd__tpl_macs and sshd__paranoid | bool %}
@@ -846,6 +848,19 @@ sshd__ciphers_additional: []
 # ``sshd`` server, depending on available version, ordered from strongest to
 # oldest. Newer version supersedes older version.
 sshd__kex_algorithms_map:
+
+  # https://www.openssh.org/pq.html
+  '9.9': [ 'mlkem768x25519-sha256',
+           'sntrup761x25519-sha512', 'sntrup761x25519-sha512@openssh.com',
+           'curve25519-sha256@libssh.org', 'ecdh-sha2-nistp521',
+           'ecdh-sha2-nistp384', 'ecdh-sha2-nistp256',
+           'diffie-hellman-group-exchange-sha256' ]
+
+  # https://www.openssh.org/pq.html
+  '9.0': [ 'sntrup761x25519-sha512', 'sntrup761x25519-sha512@openssh.com',
+           'curve25519-sha256@libssh.org', 'ecdh-sha2-nistp521',
+           'ecdh-sha2-nistp384', 'ecdh-sha2-nistp256',
+           'diffie-hellman-group-exchange-sha256' ]
 
   # Source: https://wiki.mozilla.org/Security/Guidelines/OpenSSH
   '6.5': [ 'curve25519-sha256@libssh.org', 'ecdh-sha2-nistp521',

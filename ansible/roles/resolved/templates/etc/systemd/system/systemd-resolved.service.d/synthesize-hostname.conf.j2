@@ -1,0 +1,16 @@
+{# Copyright (C) 2025 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2025 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+[Service]
+
+# Enable or disable synthesis of local hostname by systemd-resolved service.
+# If enabled, local hostname queries won't be sent to upstream DNS servers.
+# Ref: https://github.com/systemd/systemd/issues/34897
+{% if resolved__synthesize_hostname | bool %}
+Environment=SYSTEMD_RESOLVED_SYNTHESIZE_HOSTNAME=1
+{% else %}
+Environment=SYSTEMD_RESOLVED_SYNTHESIZE_HOSTNAME=0
+{% endif %}

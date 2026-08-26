@@ -11,7 +11,7 @@
     state: 'inactive'
   loop: '{{ q("flattened", libvirt__networks) }}'
   become: False
-  when: (item.name | d() and (item.state | d() in ['inactive', 'undefined', 'absent']))
+  when: (item.name is defined and item.name is truthy and (item.state | d() in ['inactive', 'undefined', 'absent']))
 
 - name: Undefine networks if requested
   community.libvirt.virt_net:
@@ -20,7 +20,7 @@
     state: 'absent'
   loop: '{{ q("flattened", libvirt__networks) }}'
   become: False
-  when: (item.name | d() and (item.state | d() in ['undefined', 'absent']))
+  when: (item.name is defined and item.name is truthy and (item.state | d() in ['undefined', 'absent']))
 
 - name: Define networks
   community.libvirt.virt_net:
@@ -30,7 +30,7 @@
     state: 'present'
   loop: '{{ q("flattened", libvirt__networks) }}'
   become: False
-  when: ((item.name | d()) and
+  when: ((item.name is defined and item.name is truthy) and
          (item.state | d("active") not in ['undefined', 'absent']) and
          (item.interface_present is undefined or
           (item.interface_present in ansible_interfaces and not item.uri | d())))
@@ -42,7 +42,7 @@
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
   loop: '{{ q("flattened", libvirt__networks) }}'
   become: False
-  when: ((item.name | d()) and
+  when: ((item.name is defined and item.name is truthy) and
          (item.state is undefined or item.state in ['active']) and
          (item.interface_present is undefined or
           (item.interface_present in ansible_interfaces and not item.uri | d())))
@@ -54,7 +54,7 @@
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
   loop: '{{ q("flattened", libvirt__networks) }}'
   become: False
-  when: ((item.name | d()) and
+  when: ((item.name is defined and item.name is truthy) and
          (item.state is undefined or item.state not in ['undefined', 'absent']) and
          (item.interface_present is undefined or
           (item.interface_present in ansible_interfaces and not item.uri | d())))

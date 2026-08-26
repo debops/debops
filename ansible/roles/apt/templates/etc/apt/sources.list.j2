@@ -68,9 +68,9 @@
 {%         for suite in suites %}
 {%           for type in types %}
 {%             if type == 'deb-src' and apt__archive_sources_disabled | bool %}
-{%                 set element_comment = '#' %}
+{%                 set element_comment = '# ' %}
 {%               else %}
-{%                 set element_comment = ('#' if (element.state == 'comment') else '') %}
+{%                 set element_comment = ('# ' if (element.state == 'comment') else '') %}
 {%             endif %}
 {{             '{}{}{} {} {} {}'.format(element_comment, type, source_options, uri, suite, components | join(' ')) }}
 {%           endfor %}

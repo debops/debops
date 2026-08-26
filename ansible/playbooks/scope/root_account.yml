@@ -1,0 +1,20 @@
+---
+# Copyright (C) 2017 Fabio Bonelli <fb@fabiobonelli.it>
+# Copyright (C) 2017-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage root system account
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_hosts', 'debops_all_services', 'debops_service_root_account' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Import root_account role
+      ansible.builtin.import_role:
+        name: 'debops.debops.root_account'
+      tags: [ 'role::root_account', 'skip::root_account' ]

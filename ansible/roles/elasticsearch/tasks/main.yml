@@ -31,7 +31,7 @@
     name: '{{ elasticsearch__user }}'
     groups: '{{ elasticsearch__additional_groups }}'
     append: True
-  when: elasticsearch__additional_groups | d()
+  when: elasticsearch__additional_groups is truthy
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
@@ -54,13 +54,43 @@
 - name: Update Ansible facts if they were modified
   ansible.builtin.meta: 'flush_handlers'
 
+- name: Make sure that required directories exist
+  ansible.builtin.file:
+    path: '/etc/elasticsearch/certs'
+    state: 'directory'
+    owner: 'root'
+    group: '{{ elasticsearch__user }}'
+    mode: '0750'
+  when: elasticsearch__pki_enabled | bool
+
+- name: Manage CA, private key and SSL certificate symlinks in Elasticsearch environment
+  ansible.builtin.file:  # noqa risky-file-permissions
+    path: '{{ "/etc/elasticsearch/certs/" + item.link }}'
+    src:  '{{ item.src }}'
+    state: '{{ item.state | d("link") }}'
+  loop: '{{ q("flattened", (elasticsearch__ssl_default_symlinks + elasticsearch__ssl_symlinks)) }}'
+  notify: [ 'Start elasticsearch' ]
+  when: elasticsearch__pki_enabled | bool and elasticsearch__symlink_type == 'link'
+
+- name: Manage CA, private key and SSL certificates in Elasticsearch environment
+  ansible.builtin.copy:
+    dest: '{{ "/etc/elasticsearch/certs/" + item.link }}'
+    src:  '{{ item.src }}'
+    owner: 'root'
+    group: '{{ elasticsearch__group }}'
+    mode: '{{ item.mode }}'
+    remote_src: True
+  loop: '{{ q("flattened", (elasticsearch__ssl_default_symlinks + elasticsearch__ssl_symlinks)) }}'
+  notify: [ 'Start elasticsearch', 'Restart elasticsearch' ]
+  when: elasticsearch__pki_enabled | bool and elasticsearch__symlink_type == 'copy'
+
 - name: Check if the dependent config file exists
   ansible.builtin.stat:
     path: '{{ secret + "/elasticsearch/dependent_config/" + inventory_hostname + "/config.json" }}'
   register: elasticsearch__register_dependent_config_file
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local.elasticsearch.installed | d())
+  when: (ansible_local.elasticsearch.installed is defined and ansible_local.elasticsearch.installed is truthy)
   tags: [ 'role::elasticsearch:config' ]
 
 - name: Load the dependent configuration from Ansible Controller
@@ -69,7 +99,7 @@
   register: elasticsearch__register_dependent_config
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local.elasticsearch.installed | d() and
+  when: (ansible_local.elasticsearch.installed is defined and ansible_local.elasticsearch.installed is truthy and
          elasticsearch__register_dependent_config_file.stat.exists | bool)
   tags: [ 'role::elasticsearch:config' ]
 
@@ -122,14 +152,6 @@
   when: elasticsearch__version is version("5.0.0", ">=")
   tags: [ 'role::elasticsearch:config' ]
 
-- name: Generate Java Policy configuration file
-  ansible.builtin.template:
-    src: 'usr/share/elasticsearch/jdk/conf/security/java.policy.j2'
-    dest: '/usr/share/elasticsearch/jdk/conf/security/java.policy'
-    mode: '0644'
-  notify: [ 'Restart elasticsearch' ]
-  when: elasticsearch__version is version("7.0.0", ">=")
-
 - name: Manage data paths
   ansible.builtin.file:
     path: '{{ item }}'
@@ -158,7 +180,7 @@
   loop: '{{ q("flattened", elasticsearch__combined_plugins) }}'
   register: elasticsearch__register_plugin_install
   changed_when: elasticsearch__register_plugin_install.changed | bool
-  when: (item.name | d() and item.state | d('present') != 'absent' and
+  when: (item.name is defined and item.name is truthy and item.state | d('present') != 'absent' and
          (item.name if ':' not in item.name else item.name.split(':')[1])
          not in elasticsearch__register_plugins.stdout_lines)
 
@@ -170,7 +192,7 @@
   loop: '{{ q("flattened", elasticsearch__combined_plugins) }}'
   register: elasticsearch__register_plugin_remove
   changed_when: elasticsearch__register_plugin_remove.changed | bool
-  when: (item.name | d() and item.state | d('present') == 'absent' and
+  when: (item.name is defined and item.name is truthy and item.state | d('present') == 'absent' and
          (item.name if ':' not in item.name else item.name.split(':')[1])
          in elasticsearch__register_plugins.stdout_lines)
 
@@ -190,15 +212,18 @@
   ansible.builtin.import_tasks: 'authentication.yml'
   run_once: True
   when: elasticsearch__version is version("8.0", "<") and
-        elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool
+        elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool and
+        elasticsearch__authentication_enabled | bool
 
 - name: Manage Elasticsearch authentication (new)
   ansible.builtin.import_tasks: 'authentication_v8.yml'
   run_once: True
   when: elasticsearch__version is version("8.0", ">=") and
-        elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool
+        elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool and
+        elasticsearch__authentication_enabled | bool
 
 - name: Manage Elasticsearch roles and users
   ansible.builtin.import_tasks: 'roles_users.yml'
   run_once: True
-  when: elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool
+  when: elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool and
+        elasticsearch__authentication_enabled | bool

@@ -103,7 +103,7 @@
   register: phpipam__register_mysql
 
 - name: Create phpIPAM database in local MySQL instance
-  community.mysql.mysql_db:
+  ansible.mysql.mysql_db:
     name: '{{ phpipam__database_name }}'
     state: 'present'
     login_unix_socket: '/run/mysqld/mysqld.sock'
@@ -111,7 +111,7 @@
   register: phpipam__register_database_status
 
 - name: Import initial database schema
-  community.mysql.mysql_db:  # noqa no-handler
+  ansible.mysql.mysql_db:  # noqa no-handler
     name: '{{ phpipam__database_name }}'
     state: 'import'
     target: '{{ phpipam__database_schema }}'

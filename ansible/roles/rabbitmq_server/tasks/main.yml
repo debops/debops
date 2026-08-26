@@ -81,7 +81,7 @@
   register: rabbitmq_server__register_dependent_config_file
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local | d() and ansible_local.rabbitmq_server | d() and
+  when: (ansible_local is defined and ansible_local.rabbitmq_server is defined and
          ansible_local.rabbitmq_server.installed is defined and
          ansible_local.rabbitmq_server.installed | bool)
   tags: [ 'role::rabbitmq_server:config' ]
@@ -92,7 +92,7 @@
   register: rabbitmq_server__register_dependent_config
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local | d() and ansible_local.rabbitmq_server | d() and
+  when: (ansible_local is defined and ansible_local.rabbitmq_server is defined and
          ansible_local.rabbitmq_server.installed is defined and
          ansible_local.rabbitmq_server.installed | bool and
          rabbitmq_server__register_dependent_config_file.stat.exists | bool)
@@ -136,7 +136,6 @@
     prefix: '{{ item.prefix | d(omit) }}'
     new_only: True
   loop: '{{ q("flattened", rabbitmq_server__combined_plugins) }}'
-  notify: [ 'Restart rabbitmq-server' ]
   tags: [ 'role::rabbitmq_server:config' ]
 
 - name: Manage RabbitMQ virtual hosts
@@ -149,6 +148,17 @@
   tags: [ 'role::rabbitmq_server:vhost', 'role::rabbitmq_server:parameter',
           'role::rabbitmq_server:policy', 'role::rabbitmq_server:user' ]
 
+- name: Set RabbitMQ virtual host default queue type
+  ansible.builtin.command:
+    cmd: >-
+      rabbitmqctl update_vhost_metadata {{ item.name | d(item) }}
+      --default-queue-type {{ item.default_queue_type }}
+  when: item.default_queue_type is defined and item.default_queue_type is truthy
+  loop: '{{ q("flattened", rabbitmq_server__combined_vhosts) }}'
+  register: rabbitmq_server__register_vhost_dqt
+  changed_when: rabbitmq_server__register_vhost_dqt.rc == 0
+  tags: [ 'role::rabbitmq_server:vhost' ]
+
 - name: Manage RabbitMQ virtual host limits
   community.rabbitmq.rabbitmq_vhost_limits:
     vhost: '{{ item.vhost }}'
@@ -159,11 +169,52 @@
   loop: '{{ q("flattened", rabbitmq_server__combined_vhost_limits) }}'
   tags: [ 'role::rabbitmq_server:vhost' ]
 
+- name: Get list of toggleable RabbitMQ feature flags
+  ansible.builtin.command:
+    cmd: 'rabbitmqctl -q list_feature_flags name state'
+  register: rabbitmq_server__register_feature_flags_list
+  check_mode: False
+  changed_when: False
+  when: rabbitmq_server__combined_feature_flags | length > 0
+
+- name: Manage RabbitMQ feature flags (opt-in)
+  ansible.builtin.command:
+    cmd: "rabbitmqctl -q enable_feature_flag --opt-in {{ item.name }}"
+  loop: '{{ q("flattened", rabbitmq_server__combined_feature_flags) }}'
+  loop_control:
+    label: '{{ item.name | d(item) }}'
+  vars:
+    # Idempotency is derived from the already-registered feature flag list
+    # because 'rabbitmqctl enable_feature_flag' produces no distinguishable
+    # output for no-op runs (both stdout and stderr stay empty for an
+    # already-enabled flag, verified at runtime on RabbitMQ 4.x).
+    _rabbitmq_server__enabled_feature_flags: '{{ rabbitmq_server__register_feature_flags_list.stdout_lines
+                                                 | default([])
+                                                 | select("search", "\tenabled$")
+                                                 | map("regex_replace", "\t.*$", "")
+                                                 | list }}'
+  changed_when: true
+  when:
+    - item.name is defined and item.name is truthy
+    - item.opt_in | d(False) | bool
+    - item.name not in _rabbitmq_server__enabled_feature_flags
+
+# Required feature flags (e.g. 'detailed_queues_endpoint' in RabbitMQ 4.x) are
+# not returned by 'rabbitmqctl list_feature_flags' - they are auto-enabled in
+# the running version and only had to be enabled before upgrading to the major
+# that made them required. Skip those silently so that inventories written for
+# older versions stay idempotent after a RabbitMQ major upgrade.
+# Genuinely unknown flag names (typos) still fail inside the module.
 - name: Manage RabbitMQ feature flags
   community.rabbitmq.rabbitmq_feature_flag:
     name: '{{ item.name }}'
     node: '{{ item.node | d(omit) }}'
   loop: '{{ q("flattened", rabbitmq_server__combined_feature_flags) }}'
+  when:
+    - item.name is defined and item.name is truthy
+    - not (item.opt_in | d(False) | bool)
+    - item.name in (rabbitmq_server__register_feature_flags_list.stdout_lines
+                    | default([]) | map('split', '\t') | map('first') | list)
 
 - name: Manage RabbitMQ global parameters
   community.rabbitmq.rabbitmq_global_parameter:
@@ -183,7 +234,7 @@
     value:     '{{ item.value | d(omit) }}'
     vhost:     '{{ item.vhost | d(omit) }}'
   loop: '{{ q("flattened", rabbitmq_server__combined_parameters) }}'
-  when: (item.name | d() and item.component | d())
+  when: (item.name is defined and item.name is truthy and item.component is defined and item.component is truthy)
   tags: [ 'role::rabbitmq_server:parameter' ]
 
 - name: Manage RabbitMQ policies
@@ -197,7 +248,7 @@
     state:    '{{ item.state | d("present") }}'
     vhost:    '{{ item.vhost | d(omit) }}'
   loop: '{{ q("flattened", rabbitmq_server__combined_policies) }}'
-  when: (item.name | d() and item.pattern | d() and item.tags | d())
+  when: (item.name is defined and item.name is truthy and item.pattern is defined and item.pattern is truthy and item.tags is defined and item.tags is truthy)
   tags: [ 'role::rabbitmq_server:policy' ]
 
 - name: Manage RabbitMQ user accounts
@@ -309,3 +360,10 @@
   become: False
   delegate_to: 'localhost'
   tags: [ 'role::rabbitmq_server:config' ]
+
+- name: Flush handlers before cluster auto-join
+  ansible.builtin.meta: flush_handlers
+
+- name: Bootstrap RabbitMQ cluster membership
+  ansible.builtin.import_tasks: 'cluster_autojoin.yml'
+  tags: [ 'role::rabbitmq_server', 'role::rabbitmq_server:cluster' ]

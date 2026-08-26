@@ -103,7 +103,7 @@ ipxe__debian_netboot_firmware_mirror: 'https://cdimage.debian.org/cdimage/unoffi
 #
 # Specify which Debian releases will be prepared for iPXE boot on a given host.
 # The releases need to be defined in the OS release map below.
-ipxe__debian_netboot_releases: [ 'buster', 'bullseye', 'bookworm' ]
+ipxe__debian_netboot_releases: [ 'bullseye', 'bookworm', 'trixie' ]
 
                                                                    # ]]]
 # .. envvar:: ipxe__debian_netboot_architectures [[[
@@ -125,23 +125,6 @@ ipxe__debian_netboot_architectures: [ 'amd64', 'i386', 'arm64' ]
 # The list of the default Debian Installer releases defined by the role.
 ipxe__debian_netboot_default_release_map:
 
-  - name: 'buster-amd64'
-    release: 'buster'
-    architecture: 'amd64'
-    netboot_version: '20190702+deb10u13'
-    netboot_checksum: 'sha256:b53335ff1737b810f1e963e8e2b248bdf8fb82ee25814566f6e69028fd6404d8'  # netboot.tar.gz
-    firmware_version: '20220910'
-    firmware_checksum: 'sha256:99a0fb05239940e3427ac25ea4ea0bd8a90b029c92facb058d74f9b1cf5a55bf'  # firmware.cpio.gz
-
-  - name: 'buster-amd64-gtk'
-    release: 'buster'
-    architecture: 'amd64'
-    netboot_subdir: '/gtk'
-    netboot_version: '20190702+deb10u13'
-    netboot_checksum: 'sha256:5ee7c015826be526a354b465359dad7ca5fd403f58bba3279ac4add760ed7336'  # netboot.tar.gz
-    firmware_version: '20220910'
-    firmware_checksum: 'sha256:99a0fb05239940e3427ac25ea4ea0bd8a90b029c92facb058d74f9b1cf5a55bf'  # firmware.cpio.gz
-
   - name: 'bullseye-amd64'
     release: 'bullseye'
     architecture: 'amd64'
@@ -162,19 +145,36 @@ ipxe__debian_netboot_default_release_map:
   - name: 'bookworm-amd64'
     release: 'bookworm'
     architecture: 'amd64'
-    netboot_version: '20230607+deb12u7'
-    netboot_checksum: 'sha256:473783b97387d2551b3c130a90b92041e8a5082a629f2a1b9960c7d7aae9dd96'  # netboot.tar.gz
-    firmware_version: '20240831'
-    firmware_checksum: 'sha256:9552ee09d0be7160d8c949907204b82e8b16c72fef89c8ea455a70fc5fef56c8'  # firmware.cpio.gz
+    netboot_version: '20230607+deb12u12'
+    netboot_checksum: 'sha256:2cc3a5c20f9605ac29ea3afb6376d55b14d827f1ac44c42c3d3eed464a3c255b'  # netboot.tar.gz
+    firmware_version: '20250906'
+    firmware_checksum: 'sha256:09a174c10ea816f1ea704be84005cc7af0a68c2121c282e7d8c89b73b355c36e'  # firmware.cpio.gz
 
   - name: 'bookworm-amd64-gtk'
     release: 'bookworm'
     architecture: 'amd64'
     netboot_subdir: '/gtk'
-    netboot_version: '20230607+deb12u7'
-    netboot_checksum: 'sha256:dcbb705aac84b33ad4a78c2f63ca7f00c8bd80bb89688a8fa34c8ef90dd8c647'  # netboot.tar.gz
-    firmware_version: '20240831'
-    firmware_checksum: 'sha256:9552ee09d0be7160d8c949907204b82e8b16c72fef89c8ea455a70fc5fef56c8'  # firmware.cpio.gz
+    netboot_version: '20230607+deb12u12'
+    netboot_checksum: 'sha256:130fd44c343e0fe5addbd0afcfc86b2fd3d5f8d77159f238609a6ab3f75ca07e'  # netboot.tar.gz
+    firmware_version: '20250906'
+    firmware_checksum: 'sha256:09a174c10ea816f1ea704be84005cc7af0a68c2121c282e7d8c89b73b355c36e'  # firmware.cpio.gz
+
+  - name: 'trixie-amd64'
+    release: 'trixie'
+    architecture: 'amd64'
+    netboot_version: '20250803+deb13u1'
+    netboot_checksum: 'sha256:a75870b27965ef67f13a2cdc9d4c574224e16b9b2764f88bf0ecc7c28b244fcb'  # netboot.tar.gz
+    firmware_version: '20250906'
+    firmware_checksum: 'sha256:e00d0f1c498932e0b8e86663701a96a9d3ad30c0f9200e21427b8db7ce2c900a'  # firmware.cpio.gz
+
+  - name: 'trixie-amd64-gtk'
+    release: 'trixie'
+    architecture: 'amd64'
+    netboot_subdir: '/gtk'
+    netboot_version: '20250803+deb13u1'
+    netboot_checksum: 'sha256:ac444dfe9f4e6d62aa54e8d33eae9c30984fb73ee78a15d115273c39026a08eb'  # netboot.tar.gz
+    firmware_version: '20250906'
+    firmware_checksum: 'sha256:e00d0f1c498932e0b8e86663701a96a9d3ad30c0f9200e21427b8db7ce2c900a'  # firmware.cpio.gz
 
                                                                    # ]]]
 # .. envvar:: ipxe__debian_netboot_release_map [[[
@@ -415,14 +415,14 @@ ipxe__default_scripts:
 
       menu Install Debian GNU/Linux / ${arch_a}
       item --gap Select suite:
-      item --key e bookworm ${space} Debian Stable (Bookworm) [e]
-      # Enable this when Debian Trixie gets an installer
-      #item trixie ${space} Debian Testing (Trixie)
+      item --key e trixie ${space} Debian Stable (Trixie) [e]
+      # Enable this when Debian Forky gets an installer
+      #item forky ${space} Debian Testing (Forky)
       item
       item --gap Select release:
+      item trixie ${space} Debian GNU/Linux 13 (Trixie)
       item bookworm ${space} Debian GNU/Linux 12 (Bookworm)
       item bullseye ${space} Debian GNU/Linux 11 (bullseye)
-      item buster ${space} Debian GNU/Linux 10 (buster)
       choose --default ${debian-installer-cursor} version || goto debian_exit
       set debian-installer-cursor ${version}
 

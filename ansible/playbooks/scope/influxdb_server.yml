@@ -1,0 +1,22 @@
+---
+# Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# Copyright (C) 2020 Innobyte Bechea Leonardo <https://www.innobyte.com/>
+# Copyright (C) 2020 Innobyte Alin Alexandru <https://www.innobyte.com/>
+# Copyright (C) 2020-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Manage InfluxDB server
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_services', 'debops_service_influxdb_server' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Import influxdb_server role
+      ansible.builtin.import_role:
+        name: 'debops.debops.influxdb_server'
+      tags: [ 'role::influxdb_server', 'skip::influxdb_server' ]

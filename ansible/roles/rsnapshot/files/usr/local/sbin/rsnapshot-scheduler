@@ -179,7 +179,7 @@ run_backup () {
             echo ${pid} > "${scheduler_pidfile}"
             sleep 1
 
-            if [ "x$(cat "${scheduler_pidfile}")" != "x"${pid} ] ; then
+            if [ "$(cat "${scheduler_pidfile}")" != "${pid}" ] ; then
                 log_message "Exit: Backup of ${host} at ${backup_level} level started by PID $(cat "${scheduler_pidfile}"), exiting"
                 exit 0
             fi
@@ -255,7 +255,7 @@ prepare_backup () {
             echo ${pid} > "${scheduler_pidfile}"
             sleep 1
 
-            if [ "x$(cat "${scheduler_pidfile}")" != "x"${pid} ] ; then
+            if [ "$(cat "${scheduler_pidfile}")" != "${pid}" ] ; then
                 log_message "Backup of ${host} at ${backup_level} level started by PID $(cat "${scheduler_pidfile}")"
                 return
             fi

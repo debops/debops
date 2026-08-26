@@ -120,7 +120,8 @@
   until: netbox__register_checkout is succeeded
   notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver', 'Restart netbox Request Queue Worker' ]
   when: (netbox__register_source.before is undefined or
-         (netbox__register_source.before | d() and netbox__register_target_branch.stdout | d() and
+         (netbox__register_source.before is defined and netbox__register_source.before is truthy and
+          netbox__register_target_branch.stdout is defined and netbox__register_target_branch.stdout is truthy and
           netbox__register_source.before != netbox__register_target_branch.stdout) or
           not netbox__register_installed.stat.exists | bool or
           netbox__register_virtalenv_deleted.changed | bool)
@@ -225,7 +226,7 @@
 - name: Generate static content
   ## Since we do not run the manage.py file on secondary sites
   ## we need to generate those files in an extra task.
-  shell:  # noqa no-handler
+  ansible.builtin.shell:  # noqa no-handler
     cmd: |
       set -o nounset -o pipefail -o errexit
       ./manage.py collectstatic --no-input
@@ -242,7 +243,7 @@
   changed_when: not netbox__register_collectstatic.stdout is search('0 static files copied')
 
 - name: Create local session directory
-  file:
+  ansible.builtin.file:
     path: '{{ netbox__data + "/sessions" }}'
     owner: '{{ netbox__user }}'
     group: '{{ netbox__group }}'
@@ -257,7 +258,7 @@
 - name: Cleanup stale contenttypes and sessions
   ## Since we do not run the manage.py file on secondary sites
   ## we need to run the cleanup in an extra task.
-  shell:  # noqa no-handler
+  ansible.builtin.shell:  # noqa no-handler
     cmd: |
       set -o nounset -o pipefail -o errexit
       ./manage.py remove_stale_contenttypes --no-input
@@ -283,9 +284,8 @@
   become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_django_superuser
-  failed_when: ('error' in netbox__register_django_superuser.msg.lower() and
-                'that username is already taken.' not in netbox__register_django_superuser.msg.lower()) or
-               ('error' not in netbox__register_django_superuser.msg.lower())
+  failed_when: ('error' in netbox__register_django_superuser.out.lower() and
+                'that username is already taken.' not in netbox__register_django_superuser.out.lower())
   when: (netbox__primary | bool and
          not netbox__register_installed.stat.exists | bool and
          not netbox__register_migration.stdout is search('No migrations to apply.'))

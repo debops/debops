@@ -15,6 +15,7 @@ DebOps Guidelines and Policies
    policy/distributed-development
    policy/code-signing-policy
    policy/security-policy
+   policy/ai-contributions
 
 ..
  Local Variables:

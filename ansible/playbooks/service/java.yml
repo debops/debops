@@ -5,8 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Manage Java environment
-  collections: [ 'debops.debops', 'debops.roles01',
-                 'debops.roles02', 'debops.roles03' ]
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_java' ]
   become: True
 
@@ -15,6 +14,11 @@
                    | combine(inventory__host_environment  | d({})) }}'
 
   roles:
+
+    - role: extrepo
+      tags: [ 'role::extrepo', 'skip::extrepo', 'role::java' ]
+      extrepo__dependent_sources:
+        - '{{ java__extrepo__dependent_sources }}'
 
     - role: java
       tags: [ 'role::java', 'skip::java' ]

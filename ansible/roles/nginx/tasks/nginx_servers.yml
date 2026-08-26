@@ -129,7 +129,7 @@
                             + nginx_internal_servers | d([]) + nginx_dependent_servers | d([]))[::-1]) }}'
   when: (item.state | d('present') != 'absent' and
          (item.enabled | d(True) | bool) and
-         (item.listen | d(True)) and
+         (item.listen is undefined or (item.listen is defined and item.listen is truthy)) and
          ((item.ssl is undefined or not item.ssl | bool) or not nginx_pki | bool))
   tags: [ 'role::nginx:servers' ]
 
@@ -140,7 +140,7 @@
                             + nginx_servers | d([]) + nginx_default_servers | d([])
                             + nginx_internal_servers | d([]) + nginx_dependent_servers | d([]))[::-1]) }}'
   when: (item.state | d('present') != 'absent' and (item.enabled is undefined or item.enabled | bool) and
-         (item.listen_ssl is undefined or item.listen_ssl | d()) and
+         (item.listen_ssl is undefined or (item.listen_ssl is defined and item.listen_ssl is truthy)) and
          ((item.ssl | d() and item.ssl | bool) or
           (item.ssl is undefined and nginx_pki | bool)))
   tags: [ 'role::nginx:servers' ]

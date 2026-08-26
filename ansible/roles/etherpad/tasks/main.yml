@@ -232,7 +232,7 @@
 - name: Display API call responses for debugging
   ansible.builtin.debug:
     var: etherpad_api_calls_exec
-  when: etherpad_api_calls_exec | d() and etherpad_api_calls_debug
+  when: etherpad_api_calls_exec is defined and etherpad_api_calls_debug
   tags: [ 'role::etherpad:api', 'role::etherpad:api:call' ]
 
 - name: Make sure that Ansible local facts directory exists

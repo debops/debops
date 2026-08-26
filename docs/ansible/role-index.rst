@@ -128,6 +128,7 @@ Databases
 - :ref:`debops.ldap`
 - :ref:`debops.mariadb`
 - :ref:`debops.mariadb_server`
+- :ref:`debops.pgbadger`
 - :ref:`debops.postgresql`
 - :ref:`debops.postgresql_server`
 - :ref:`debops.redis_server`
@@ -389,6 +390,7 @@ Virtualization
 - :ref:`debops.docker_gen`
 - :ref:`debops.docker_registry`
 - :ref:`debops.docker_server`
+- :ref:`debops.docker_service`
 - :ref:`debops.libvirt`
 - :ref:`debops.libvirtd`
 - :ref:`debops.libvirtd_qemu`

@@ -16,6 +16,12 @@ Unreleased
 ----------
 
 
+v3.3.0 (2026-03-13)
+-------------------
+
+No significant changes which require a manual intervention.
+
+
 v3.2.0 (2024-09-16)
 -------------------
 
@@ -1351,13 +1357,13 @@ Inventory variable changes
 - The :ref:`debops.netbox` role has been updated, some variable names were
   changed:
 
-  +------------------------------------+------------------------------------------+---------------+
-  | Old variable name                  | New variable name                        | Changed value |
-  +------------------------------------+------------------------------------------+---------------+
-  | ``netbox__config_netbox_username`` | :envvar:`netbox__config_napalm_username` | No            |
-  +------------------------------------+------------------------------------------+---------------+
-  | ``netbox__config_netbox_password`` | :envvar:`netbox__config_napalm_password` | No            |
-  +------------------------------------+------------------------------------------+---------------+
+  +------------------------------------+------------------------------------+---------------+
+  | Old variable name                  | New variable name                  | Changed value |
+  +------------------------------------+------------------------------------+---------------+
+  | ``netbox__config_netbox_username`` | ``netbox__config_napalm_username`` | No            |
+  +------------------------------------+------------------------------------+---------------+
+  | ``netbox__config_netbox_password`` | ``netbox__config_napalm_password`` | No            |
+  +------------------------------------+------------------------------------+---------------+
 
 - The variables that specify files to ignore in the new :ref:`debops.etckeeper`
   role have been renamed from their old versions in

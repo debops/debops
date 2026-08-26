@@ -1,0 +1,29 @@
+---
+# Copyright (C) 2016      Mariano Barcia <mariano.barcia@gmail.com>
+# Copyright (C) 2016-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2016-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Install and manage PHP environment
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_services', 'debops_service_php' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  pre_tasks:
+
+    - name: Prepare php environment
+      ansible.builtin.import_role:
+        name: 'debops.debops.php'
+        tasks_from: 'main_env'
+      tags: [ 'role::php', 'role::php:env' ]
+
+  tasks:
+
+    - name: Import php role
+      ansible.builtin.import_role:
+        name: 'debops.debops.php'
+      tags: [ 'role::php', 'skip::php' ]

@@ -76,7 +76,7 @@
                 "divert": freeradius__var_divert_divert,
                 "state": item.state | d("present")} }}'
   notify: [ 'Check freeradius configuration and restart' ]
-  when: (item.name | d() and item.divert | d(False) | bool and
+  when: (item.name is defined and item.name is truthy and item.divert | d(False) | bool and
          item.state | d('present') in ['present', 'absent'])
   no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
 
@@ -90,8 +90,8 @@
   with_items: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"path": ((freeradius__conf_base_path + "/" + (item.filename | d(item.name))) | dirname)} }}'
-  when: (item.name | d() and item.state | d('present') not in ['absent', 'ignore', 'init'] and
-         (item.link_src | d() or item.options | d() or item.raw | d()))
+  when: (item.name is defined and item.name is truthy and item.state | d('present') not in ['absent', 'ignore', 'init'] and
+         ((item.link_src is defined and item.link_src is truthy) or (item.options is defined and item.options is truthy) or (item.raw is defined and item.raw is truthy)))
   no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
 
 - name: Generate FreeRADIUS configuration files
@@ -103,8 +103,8 @@
     mode:  '{{ item.mode | d("0640") }}'
   with_items: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Check freeradius configuration and restart' ]
-  when: (item.name | d() and item.state | d('present') not in ['absent', 'ignore', 'init'] and
-         not item.link_src | d() and (item.options | d() or item.raw | d()))
+  when: (item.name is defined and item.name is truthy and item.state | d('present') not in ['absent', 'ignore', 'init'] and
+         not item.link_src | d() and ((item.options is defined and item.options is truthy) or (item.raw is defined and item.raw is truthy)))
   no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
 
 - name: Create configuration file symlinks
@@ -117,8 +117,8 @@
     mode:  '{{ item.mode | d("0640") }}'
   with_items: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Check freeradius configuration and restart' ]
-  when: (item.name | d() and item.state | d('present') not in ['absent', 'ignore', 'init'] and
-         item.link_src | d())
+  when: (item.name is defined and item.name is truthy and item.state | d('present') not in ['absent', 'ignore', 'init'] and
+         item.link_src is defined and item.link_src is truthy)
   no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
 
 - name: Remove FreeRADIUS configuration files
@@ -127,6 +127,6 @@
     state: 'absent'
   with_items: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Check freeradius configuration and restart' ]
-  when: (item.name | d() and not item.divert | d(False) | bool and
+  when: (item.name is defined and item.name is truthy and not item.divert | d(False) | bool and
          item.state | d('present') == 'absent')
   no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'

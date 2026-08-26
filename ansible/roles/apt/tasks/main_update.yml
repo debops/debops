@@ -1,0 +1,16 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Entry point playbook: scope/apt/update.yml
+
+- name: Update APT cache
+  ansible.builtin.apt:
+    update_cache: True
+    cache_valid_time: '{{ apt__cache_valid_time }}'
+  register: apt__register_apt_update
+  until: apt__register_apt_update is succeeded
+  when: apt__enabled | bool

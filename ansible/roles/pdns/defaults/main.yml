@@ -46,8 +46,13 @@ pdns__allow: [ '0.0.0.0/0', '::/0' ]
                                                                    # ]]]
 # .. envvar:: pdns__local_address [[[
 #
-# Local IPv4 and IPv6 addresses to bind to.
-pdns__local_address: [ '0.0.0.0', '::' ]
+# Local IPv4 and IPv6 addresses to bind to. By default bind only to external IP
+# addresses to avoid conflict with the :command:`systemd-resolved` service
+# listening on 127.0.0.53:53.
+pdns__local_address: '{{ (ansible_all_ipv4_addresses
+                          + ansible_all_ipv6_addresses)
+                         | difference(ansible_all_ipv6_addresses | d([])
+                                      | ansible.utils.ipaddr("link-local")) }}'
 
                                                                    # ]]]
 # .. envvar:: pdns__local_port [[[

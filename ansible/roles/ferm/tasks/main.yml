@@ -143,7 +143,7 @@
     label: '{{ item.item.key }}'
   register: ferm__register_unknown_rules
   changed_when: ferm__register_unknown_rules.changed | bool
-  when: (item.item.key | d() and item is changed)
+  when: item.item.key is defined and item.item.key is truthy and item is changed
   tags: [ 'role::ferm:rules' ]
 
 - name: Remove iptables INPUT rules if requested
@@ -156,7 +156,7 @@
                            + ferm_input_group_list
                            + ferm_input_host_list
                            + ferm_input_dependent_list) }}'
-  when: (ferm__enabled | bool and item.type | d() and (item.delete | d() | bool))
+  when: (ferm__enabled | bool and item.type is defined and item.type is truthy and (item.delete | d() | bool))
   register: ferm__register_input_rules_del
   tags: [ 'role::ferm:rules' ]
 
@@ -173,7 +173,7 @@
                            + ferm_input_group_list
                            + ferm_input_host_list
                            + ferm_input_dependent_list) }}'
-  when: (ferm__enabled | bool and item.type | d() and not (item.delete | d() | bool))
+  when: (ferm__enabled | bool and item.type is defined and item.type is truthy and not (item.delete | d() | bool))
   register: ferm__register_input_rules_add
   tags: [ 'role::ferm:rules' ]
 

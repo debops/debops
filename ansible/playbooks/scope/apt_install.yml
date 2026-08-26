@@ -1,0 +1,21 @@
+---
+# Copyright (C) 2016-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2016-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Install APT packages
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_hosts', 'debops_all_services', 'debops_service_apt_install' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Import apt_install role
+      ansible.builtin.import_role:
+        name: 'debops.debops.apt_install'
+      tags: [ 'role::apt_install', 'skip::apt_install' ]

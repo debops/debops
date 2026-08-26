@@ -17,6 +17,61 @@
 # .. include:: ../../../../includes/global.rst
 
 
+# Java distribution flavor [[[
+# ----------------------------
+
+# .. envvar:: java__flavor [[[
+#
+# The Java distribution flavor to install on the host. By default the
+# Debian-provided OpenJDK packages are used (``openjdk``). Set this to
+# ``temurin`` to install Eclipse Temurin (Adoptium) JDK/JRE instead.
+#
+# When ``temurin`` is selected, the :command:`extrepo` role is used to enable
+# the Adoptium APT repository before the Java packages are installed.
+java__flavor: 'openjdk'
+
+                                                                   # ]]]
+# .. envvar:: java__architecture_map [[[
+#
+# Mapping between Ansible architecture names and Debian architecture names
+# used in the Temurin package names and JDK installation paths.
+java__architecture_map:
+  x86_64: 'amd64'
+  aarch64: 'arm64'
+  armv7l: 'armhf'
+  ppc64le: 'ppc64el'
+  s390x: 's390x'
+
+                                                                   # ]]]
+# .. envvar:: java__architecture [[[
+#
+# The Debian architecture name corresponding to the target host's
+# architecture.
+java__architecture: '{{ java__architecture_map[ansible_architecture] | d("amd64") }}'
+
+                                                                   # ]]]
+# .. envvar:: java__temurin_version_map [[[
+#
+# Default Temurin major version per Debian release. When
+# :envvar:`java__flavor` is set to ``temurin`` and
+# :envvar:`java__temurin_version` is not overridden, the version appropriate for
+# the host's Debian release is used automatically.
+java__temurin_version_map:
+  buster: '11'
+  bullseye: '11'
+  bookworm: '17'
+  trixie: '21'
+
+                                                                   # ]]]
+# .. envvar:: java__temurin_version [[[
+#
+# The Temurin major version to install. Set this explicitly (e.g. ``8`` for
+# Elasticsearch 6.x, ``17``, ``21``) to pin a specific version regardless of
+# the Debian release default.
+java__temurin_version: '{{ java__temurin_version_map[ansible_distribution_release]
+                           | d("17") }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Java APT packages [[[
 # ---------------------
 
@@ -27,21 +82,33 @@
 # Development Kit (JDK) by enabling this variable.
 java__install_jdk: False
 
-                                                                   # ]]]
+                                                                    # ]]]
+# .. envvar:: java__temurin_package_type [[[
+#
+# Package type suffix used in Temurin package names and installation paths.
+# Resolves to ``jdk`` when :envvar:`java__install_jdk` is enabled, ``jre``
+# otherwise. Only applies when :envvar:`java__flavor` is ``temurin``.
+java__temurin_package_type: '{{ "jdk" if (java__install_jdk | bool) else "jre" }}'
+
+                                                                    # ]]]
 # .. envvar:: java__base_packages [[[
 #
 # List of default APT packages which should be installed for Java Runtime
 # Environment.
-java__base_packages: [ 'default-jre-headless', 'ca-certificates-java' ]
+java__base_packages: '{{ (["temurin-" + java__temurin_version + "-jre"]
+                          if (java__flavor == "temurin")
+                          else ["default-jre-headless", "ca-certificates-java"]) }}'
 
                                                                    # ]]]
 # .. envvar:: java__jdk_packages [[[
 #
 # List of default APT packages which should be installed for Java Development
 # Kit.
-java__jdk_packages: '{{ (["default-jdk"]
-                         if (ansible_distribution_release in ["trusty"])
-                         else ["default-jdk-headless"])
+java__jdk_packages: '{{ (["temurin-" + java__temurin_version + "-jdk"]
+                         if (java__flavor == "temurin")
+                         else (["default-jdk"]
+                               if (ansible_distribution_release in ["trusty"])
+                               else ["default-jdk-headless"]))
                         if java__install_jdk | bool else [] }}'
 
                                                                    # ]]]
@@ -93,8 +160,8 @@ java__major_version: '{{ ansible_local.java.major_version | d("0") }}'
 # by default. To find out what versions are available, use the
 # :command:`update-java-alternatives -l` command on the remote host.
 java__alternatives: ''
-                                                                   # ]]]
-                                                                   # ]]]
+                                                                    # ]]]
+                                                                    # ]]]
 # Java Security Policy configuration [[[
 # --------------------------------------
 
@@ -106,7 +173,23 @@ java__alternatives: ''
 # .. envvar:: java__security_policy_path [[[
 #
 # Path to the system-wide security policy used by all Java applications.
-java__security_policy_path: '{{ "/etc/java-" + java__major_version + "-openjdk/security/java.policy" }}'
+java__security_policy_path: '{{ ("/etc/java-" + java__major_version
+                                 + "-openjdk/security/java.policy")
+                                if (java__flavor == "openjdk")
+                                else ("/usr/lib/jvm/temurin-"
+                                       + java__major_version
+                                       + "-" + java__temurin_package_type
+                                       + "-" + java__architecture
+                                        + ("/jre"
+                                           if (java__install_jdk | bool)
+                                              and (java__major_version | int > 0)
+                                              and (java__major_version | int <= 8)
+                                           else "")
+                                        + ("/lib"
+                                           if (java__major_version | int > 0)
+                                              and (java__major_version | int <= 8)
+                                           else "/conf")
+                                        + "/security/java.policy") }}'
 
                                                                    # ]]]
 # .. envvar:: java__default_security_policy [[[
@@ -132,6 +215,8 @@ java__default_security_policy: |
       permission java.util.PropertyPermission "line.separator", "read";
       permission java.util.PropertyPermission
                      "java.specification.version", "read";
+      permission java.util.PropertyPermission
+                     "java.specification.maintenance.version", "read";
       permission java.util.PropertyPermission "java.specification.vendor", "read";
       permission java.util.PropertyPermission "java.specification.name", "read";
       permission java.util.PropertyPermission
@@ -152,3 +237,17 @@ java__default_security_policy: |
   };
 # ]]]
 # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: java__extrepo__dependent_sources [[[
+#
+# Configuration for the :ref:`debops.extrepo` role. When :envvar:`java__flavor`
+# is set to ``temurin``, the Adoptium APT repository is enabled to provide
+# the Eclipse Temurin packages. The repository is disabled when the flavor is
+# not ``temurin``.
+java__extrepo__dependent_sources:
+  - name: 'temurin'
+    state: '{{ "present" if (java__flavor == "temurin") else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]

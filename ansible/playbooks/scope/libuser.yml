@@ -1,0 +1,21 @@
+---
+# Copyright (C) 2019 Leonardo Bechea <leonardo.bechea@innobyte.com>
+# Copyright (C) 2019 Alin Alexandru <alin.alexandru@innobyte.com>
+# Copyright (C) 2019-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage local users and groups
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_hosts', 'debops_all_services', 'debops_service_libuser' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Import libuser role
+      ansible.builtin.import_role:
+        name: 'debops.debops.libuser'
+      tags: [ 'role::libuser', 'skip::libuser' ]

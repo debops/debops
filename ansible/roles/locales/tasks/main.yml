@@ -32,7 +32,7 @@
     vtype: 'string'
     value: '{{ locales__system_lang }}'
   register: locales__register_system_lang
-  when: ansible_pkg_mgr == 'apt' and locales__system_lang | d()
+  when: ansible_pkg_mgr == 'apt' and locales__system_lang is truthy
 
 - name: Update /etc/default/locale
   ansible.builtin.command: 'update-locale LANG={{ locales__system_lang }}'  # noqa no-handler

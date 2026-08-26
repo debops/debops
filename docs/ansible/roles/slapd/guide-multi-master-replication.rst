@@ -145,6 +145,12 @@ As a convenience, the above configuration is available as a separate file
 (:file:`examples/multi-master-replication.yml`) in the :ref:`debops.slapd`
 role documentation stored in the DebOps monorepo.
 
+.. warning::
+   The ``olcMultiProvider`` attribute was renamed from ``olcMirrorMode``
+   between OpenLDAP versions 2.4 and 2.5. Make sure to use the old name if
+   you are using an older release.
+
+
 Configuration notes
 ~~~~~~~~~~~~~~~~~~~
 

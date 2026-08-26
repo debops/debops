@@ -30,13 +30,13 @@
   until: phpmyadmin__register_packages is succeeded
 
 - name: Create database for PHPMyAdmin
-  community.mysql.mysql_db:
+  ansible.mysql.mysql_db:
     name: '{{ phpmyadmin_control_database | default("phpmyadmin") }}'
     state: 'present'
   register: phpmyadmin_database
 
 - name: Import PHPMyAdmin schema
-  community.mysql.mysql_db:  # noqa no-handler
+  ansible.mysql.mysql_db:  # noqa no-handler
     name: '{{ phpmyadmin_control_database | default("phpmyadmin") }}'
     state: 'import'
     target: '/usr/share/dbconfig-common/data/phpmyadmin/install/mysql'
@@ -44,7 +44,7 @@
   when: phpmyadmin_database is defined and phpmyadmin_database is changed
 
 - name: Create PHPMyAdmin control user
-  community.mysql.mysql_user:
+  ansible.mysql.mysql_user:
     name: "{{ phpmyadmin_control_user | default('phpmyadmin') }}"
     state: 'present'
     password: '{{ phpmyadmin_control_password }}'

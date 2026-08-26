@@ -1,0 +1,20 @@
+---
+# Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2016-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Install and manage the caching HTTP proxy Apt-Cacher NG.
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_services', 'debops_service_apt_cacher_ng' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Import apt_cacher_ng role
+      ansible.builtin.import_role:
+        name: 'debops.debops.apt_cacher_ng'
+      tags: [ 'role::apt_cacher_ng', 'skip::apt_cacher_ng' ]

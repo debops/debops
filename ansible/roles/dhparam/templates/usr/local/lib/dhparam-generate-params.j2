@@ -41,7 +41,7 @@ if [ "${command}" == "run" ] ; then
   echo $$ > "${pidfile_run}"
   sleep 1
 
-  if [ "x$(cat "${pidfile_run}")" != "x"$$ ] ; then
+  if [ "$(cat "${pidfile_run}")" != $$ ] ; then
     log_message "DH parameter generation started by PID $(cat "${pidfile_run}"), aborting"
     exit 0
   fi
@@ -61,7 +61,7 @@ elif [ "${command}" == "schedule" ] ; then
   echo $$ > "${pidfile_scheduler}"
   sleep 1
 
-  if [ "x$(cat "${pidfile_scheduler}")" != "x"$$ ] ; then
+  if [ "$(cat "${pidfile_scheduler}")" != $$ ] ; then
     log_message "DH generation scheduler started as PID $(cat "${pidfile_scheduler}"), aborting"
     exit 0
   fi

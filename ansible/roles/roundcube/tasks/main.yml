@@ -120,8 +120,8 @@
   become: True
   become_user: '{{ roundcube__user }}'
   register: roundcube__register_updatedb
-  changed_when: roundcube__register_updatedb.stdout | d()
-  when: (roundcube__register_version.stdout | d() and
+  changed_when: roundcube__register_updatedb.stdout is defined and roundcube__register_updatedb.stdout is truthy
+  when: (roundcube__register_version.stdout is defined and roundcube__register_version.stdout is truthy and
          (ansible_local.roundcube.version | d("0.0.0")) is version_compare(roundcube__register_version.stdout, '>'))
   tags: [ 'role::roundcube:database' ]
 

@@ -85,7 +85,7 @@
   delegate_to: 'localhost'
   become: False
   run_once: True
-  when: pki_authorities | d() and pki_dependent_authorities | d()
+  when: pki_authorities is truthy and pki_dependent_authorities is truthy
 # .. ]]]
 
 # Create scripts and library/secrets directory [[[
@@ -106,7 +106,7 @@
   become: False
   delegate_to: 'localhost'
   run_once: True
-  when: (pki_authorities or pki_dependent_authorities)
+  when: (pki_authorities is truthy or pki_dependent_authorities is truthy)
 
 - name: Install remote PKI scripts
   ansible.builtin.copy:
@@ -200,7 +200,7 @@
   ansible.builtin.template:
     src: 'etc/pki/realms/realm/config/environment.j2'
     dest: '{{ pki_root + "/realms/" + item.name + "/config/environment" }}'
-    mode: '0640'
+    mode: '0644'
   loop: '{{ q("flattened", pki_realms
                            + pki_group_realms
                            + pki_host_realms
@@ -212,7 +212,7 @@
 # ]]]
 
 # Download files [[[
-- name: Download private files to remove hosts
+- name: Download private files to remote hosts
   when: pki_download_extra | bool
   block:
     - name: Download custom private files
@@ -404,8 +404,8 @@
   register: pki_register_sign_by_host
   become: False
   run_once: True
-  when: (pki_authorities or pki_dependent_authorities)
-  changed_when: pki_register_sign_by_host.stdout | d()
+  when: (pki_authorities is truthy or pki_dependent_authorities is truthy)
+  changed_when: pki_register_sign_by_host.stdout is truthy
 # ]]]
 
 # Download files [[[
