@@ -36,9 +36,15 @@
   when: zabbix_server__deploy_state == 'absent' and
         zabbix_server__register_systemd_unit.stat.exists | d(False)
 
+# On removal, always purge the frontend package even if
+# 'zabbix_server__frontend_enabled' is currently False -- it may have
+# been installed on a previous run when the frontend was enabled.
 - name: Install Zabbix Server packages
   ansible.builtin.apt:
-    name: '{{ zabbix_server__combined_packages | flatten }}'
+    name: '{{ (zabbix_server__combined_packages
+               + (zabbix_server__frontend_packages
+                  if zabbix_server__deploy_state == "absent" else []))
+              | flatten | unique }}'
     state: '{{ "present" if zabbix_server__deploy_state != "absent" else "absent" }}'
     purge: '{{ True if zabbix_server__deploy_state == "absent" else omit }}'
   register: zabbix_server__register_packages

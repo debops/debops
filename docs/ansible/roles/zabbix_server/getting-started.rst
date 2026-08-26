@@ -27,7 +27,8 @@ interface. On the first run it will:
   detecting an already initialized database by checking for the
   ``dbversion`` table rather than a local marker file, so that the check
   stays correct even if the database is later restored from a backup,
-- configure the PHP-FPM pool and nginx vhost for the web frontend, with
+- when :envvar:`zabbix_server__frontend_enabled` is ``True`` (the default),
+  configure the PHP-FPM pool and nginx vhost for the web frontend, with
   a :file:`/etc/zabbix/web/zabbix.conf.php` file that skips the interactive
   setup wizard,
 - log in via the API using the stock ``Admin``/``zabbix`` credentials
@@ -95,14 +96,15 @@ variables. Example:
 
 ``usrgrps`` and ``medias`` are passed to the ``user.create``/``user.update``
 Zabbix API methods as-is, without any name-to-id lookup by the role, so they
-require real numeric IDs. ``7`` and ``1`` above are the well-known IDs of the
+require real numeric IDs. The :envvar:`zabbix_server__user_groups` and
+:envvar:`zabbix_server__media_types` lists create missing objects or update
+existing ones by name. ``7`` and ``1`` above are the well-known IDs of the
 built-in "Zabbix administrators" user group and "Email" media type present
-on every fresh Zabbix installation (the ``zabbix_server__user_groups`` and
-``zabbix_server__media_types`` entries above only update their existing
-configuration, they do not create new objects with new IDs). If you rename
-or recreate these objects, look up their current IDs first, for example with
+on every fresh Zabbix installation; the example entries use those names, so
+the role updates the built-in objects and the IDs stay stable. A new name
+creates a new object with a new ID -- look that ID up first, for example with
 ``debops exec HOSTNAME -m ansible.builtin.uri -a "url=https://.../api_jsonrpc.php ..."``
-or the Zabbix frontend, and use those values instead.
+or the Zabbix frontend, and use that value instead.
 
 See :ref:`zabbix_server__ref_media_types` for the full parameter reference
 (the media type, action and user list variables map directly onto the
