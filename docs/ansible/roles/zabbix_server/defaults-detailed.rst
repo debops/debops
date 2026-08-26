@@ -98,8 +98,11 @@ administrators" user group with Email notifications enabled:
    between the lists above (for example a user's ``usrgrps``/``medias``)
    currently need to use IDs that are stable in a fresh installation (Zabbix
    creates built-in user groups and media types with predictable IDs), or be
-   looked up separately with the ``zabbix_server__api_token_content``
-   variable and the ``ansible.builtin.uri`` module in a custom task.
+   looked up separately with the API token stored in the DebOps ``secret/``
+   directory at :envvar:`zabbix_server__api_token_path` and the
+   ``ansible.builtin.uri`` module in a custom task. After this role has
+   run, the same token is available in the current play as
+   ``zabbix_server__register_api_token_content``.
 
 .. _zabbix_server__ref_templates:
 
