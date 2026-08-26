@@ -104,10 +104,11 @@ General
 :ref:`debops.zabbix_agent` role
 '''''''''''''''''''''''''''''''
 
-- The role can now encrypt its connections with a PSK or a PKI realm
-  certificate instead of running unencrypted, and supports defining custom
-  ``UserParameter`` checks (including built-in LXC container cgroup
-  metrics) without templating a whole configuration file.
+- The connection encryption mode can now be selected: a pre-shared key
+  (the previous behaviour), an X.509 certificate from a PKI realm managed
+  by the :ref:`debops.pki` role, or unencrypted connections. The role also
+  supports defining custom ``UserParameter`` checks (including built-in LXC
+  container cgroup metrics) without templating a whole configuration file.
 
 - The agent can self-register as a Zabbix host via the JSON-RPC API,
   with official templates for well-known services running on the host
