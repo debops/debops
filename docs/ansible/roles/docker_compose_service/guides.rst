@@ -580,15 +580,21 @@ Service definition
          PAPERLESS_DBUSER:   'paperless'
          PAPERLESS_DBPASS:   '{{ paperless__postgresql_password }}'
          PAPERLESS_REDIS:    'unix:///var/run/redis/redis-server.sock'
+         PAPERLESS_TIKA_ENABLED:            'true'
+         PAPERLESS_TIKA_ENDPOINT:           'http://tika:9998'
+         PAPERLESS_TIKA_GOTENBERG_ENDPOINT: 'http://gotenberg:3000'
          PAPERLESS_SECRET_KEY:     '{{ paperless__secret_key }}'
          PAPERLESS_ADMIN_USER:     'admin'
          PAPERLESS_ADMIN_PASSWORD: '{{ paperless__admin_password }}'
          PAPERLESS_URL:            'https://paperless.example.com'
-         # nginx + proxy in front: trust the loopback proxy
+         # nginx + tunnel/CDN in front: trust the loopback proxy. Client IP
+         # for allauth comes from the tunnel header (see the note below),
+         # not from counting PAPERLESS_TRUSTED_PROXIES hops.
          PAPERLESS_TRUSTED_PROXIES:    '127.0.0.1,::1'
          PAPERLESS_USE_X_FORWARD_HOST: 'true'
          PAPERLESS_USE_X_FORWARD_PORT: 'true'
          PAPERLESS_PROXY_SSL_HEADER:   '["HTTP_X_FORWARDED_PROTO", "https"]'
+         PAPERLESS_ALLAUTH_TRUSTED_CLIENT_IP_HEADER: 'CF-Connecting-IP'
          USERMAP_UID: '800'
          USERMAP_GID: '800'
          # API token for the paperless-gpt sidecar (its own account, not admin)
@@ -612,6 +618,14 @@ Service definition
            proxy_http_version 1.1;
            proxy_set_header Upgrade $http_upgrade;
            proxy_set_header Connection $connection_upgrade;
+           # Tunnel sets CF-Connecting-IP; LAN clients that hit nginx
+           # directly have no such header, so allauth would 403 without
+           # a fallback to $remote_addr.
+           set $paperless_client_ip $http_cf_connecting_ip;
+           if ($paperless_client_ip = '') {
+             set $paperless_client_ip $remote_addr;
+           }
+           proxy_set_header CF-Connecting-IP $paperless_client_ip;
 
 .. note::
 
@@ -815,7 +829,16 @@ deployed:
 ``post_main.yml`` -- once the containers are up, create the account
 (idempotently) and fetch its token from the **database** on every run,
 overwriting the secret file (and re-injecting the ``.env``) only if it
-disagrees with what is actually stored there:
+disagrees with what is actually stored there.
+
+.. warning::
+
+   ``is_superuser=True`` means the sidecar token can read and modify every
+   Paperless document, regardless of owner. Treat that token as a secret
+   (``no_log`` on the tasks that handle it, mode ``0600`` on the file). The
+   Paperless UI can stay behind a tunnel or SSO; give the sidecar's own
+   HTTP port (if you expose one) only to a trusted network, not the public
+   Internet.
 
 .. code-block:: yaml
 
@@ -854,6 +877,10 @@ disagrees with what is actually stored there:
                defaults={'email': ''});
                u.is_superuser = True; u.is_staff = False; u.save()
          changed_when: false
+         register: paperless__register_gpt_account
+         retries: 30
+         delay: 5
+         until: paperless__register_gpt_account is succeeded
 
        # drf_create_token (without -r) is idempotent against the *database*:
        # it returns the existing token for the user, or creates a new one.
@@ -878,6 +905,7 @@ disagrees with what is actually stored there:
              - paperless-gpt
          register: paperless__register_gpt_token
          changed_when: false
+         no_log: true
 
        - name: Check current paperless-gpt token secret file
          ansible.builtin.slurp:
@@ -886,6 +914,7 @@ disagrees with what is actually stored there:
          delegate_to: localhost
          become: false
          failed_when: false
+         no_log: true
 
        - name: Save paperless-gpt API token to the secret store if it changed
          ansible.builtin.copy:
@@ -894,11 +923,32 @@ disagrees with what is actually stored there:
            mode: '0600'
          delegate_to: localhost
          become: false
+         diff: false
+         no_log: true
          when: >-
            paperless__slurp_gpt_token.content is not defined or
            (paperless__slurp_gpt_token.content | b64decode | trim)
              != paperless__register_gpt_token.stdout.split()[2]
          register: paperless__register_gpt_secret_updated
+
+       - name: Inject paperless-gpt token directly into compose .env
+         ansible.builtin.lineinfile:
+           path: /srv/docker/paperless/.env
+           regexp: '^PAPERLESS_GPT_API_TOKEN='
+           line: 'PAPERLESS_GPT_API_TOKEN={{ paperless__register_gpt_token.stdout.split()[2] }}'
+         diff: false
+         no_log: true
+         when: paperless__register_gpt_secret_updated is changed
+         register: paperless__register_gpt_env_updated
+
+       - name: Restart paperless-gpt to pick up new token
+         community.docker.docker_compose_v2:
+           project_src: /srv/docker/paperless
+           services:
+             - paperless-gpt
+           state: present
+           recreate: always
+         when: paperless__register_gpt_env_updated is changed
 
 .. note::
 
