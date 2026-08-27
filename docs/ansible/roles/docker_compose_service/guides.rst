@@ -213,8 +213,9 @@ Place the Compose file template in the DebOps resources directory:
      immich/docker-compose.yml
 
 The template is based on the official Immich ``docker-compose.yml`` with
-modifications for the DebOps environment (no external port mapping, GPU
-passthrough for ML):
+modifications for the DebOps environment (loopback-only port mapping).
+GPU passthrough for machine learning is optional and shown in the
+section below:
 
 .. code-block:: yaml
 

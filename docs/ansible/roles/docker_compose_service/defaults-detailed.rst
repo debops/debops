@@ -157,8 +157,10 @@ parameters:
     ``templates/`` search path.
 
   ``dest``
-    Optional, string. Destination filename within the project directory.
-    Defaults to the basename of ``src``.
+    Optional, string. Destination path within the project directory.
+    Defaults to the basename of ``src``. Nested paths such as
+    ``fragments/base.yml`` are supported; the role creates the parent
+    directory before rendering the file.
 
 ``env``
   Optional, dictionary. Environment variables written to the ``.env`` file
@@ -302,6 +304,11 @@ behaviour: no ``published_ports`` key → no change to existing behaviour).
    the container-side value. The :command:`ferm` role has no
    ``ctorigdstport`` match, so the generated ``dport`` uses
    ``container_port`` (defaulting to ``port``) on ``DOCKER-USER``.
+
+   Because of that, two mappings that share a container port (for example
+   ``8080:80`` and ``8081:80``) cannot have independent ``allow`` lists:
+   both rules match the same ``dport``. Give them the same ``allow`` list,
+   or publish distinct container ports.
 
 Examples
 ~~~~~~~~
