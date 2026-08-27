@@ -192,12 +192,17 @@ parameters:
     Required, string. Absolute path of the directory to create.
 
   ``owner``
-    Optional, string. Directory owner (name or UID). By default not
-    explicitly set (inherits from the parent directory).
+    Optional, string. Directory owner (name or UID). When omitted, the
+    ``ansible.builtin.file`` module leaves the parameter unset. A newly
+    created directory is owned by the effective user of the task (typically
+    ``root`` when the playbook uses privilege escalation). An already
+    existing directory keeps its current owner. Ownership is **not**
+    inherited from the parent directory.
 
   ``group``
-    Optional, string. Directory group (name or GID). By default not
-    explicitly set.
+    Optional, string. Directory group (name or GID). Same default behaviour
+    as ``owner``: a new directory uses the effective group, an existing
+    directory keeps its current group.
 
   ``mode``
     Optional, string. Directory permissions. Defaults to ``0755``.
@@ -291,6 +296,13 @@ behaviour: no ``published_ports`` key → no change to existing behaviour).
    container port. This integration uses the ``DOCKER-USER`` chain, which is
    the correct location for per-port filtering of container traffic.
 
+   After Docker's DNAT the destination port seen in ``DOCKER-USER`` is the
+   **container** port, not the host-side published port. When the Compose
+   mapping is not 1:1 (for example ``8080:80``), set ``container_port`` to
+   the container-side value. The :command:`ferm` role has no
+   ``ctorigdstport`` match, so the generated ``dport`` uses
+   ``container_port`` (defaulting to ``port``) on ``DOCKER-USER``.
+
 Examples
 ~~~~~~~~
 
@@ -342,8 +354,16 @@ Each entry in the ``published_ports`` list is a YAML dictionary with the
 following parameters:
 
 ``port``
-  Required, integer or string. The host-side port number. Used for both the
-  firewall ``dport`` match and as part of the generated rule name.
+  Required, integer or string. The host-side published port. Used in the
+  generated rule name. On the default ``DOCKER-USER`` chain this is also
+  the ``dport`` match unless ``container_port`` is set.
+
+``container_port``
+  Optional, integer or string. Destination port to match in ``DOCKER-USER``
+  after Docker DNAT (the container-side port). Defaults to ``port``. Set
+  this when the Compose mapping is not 1:1, for example ``port: 8080`` and
+  ``container_port: 80`` for ``8080:80``. Ignored when ``chain`` is
+  ``INPUT`` (host-network containers still match ``port``).
 
 ``protocol``
   Optional, string. IP protocol: ``tcp`` or ``udp``. Defaults to

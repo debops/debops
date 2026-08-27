@@ -97,8 +97,9 @@ docker_compose_service__combined_services: '{{ docker_compose_service__default_s
 # .. envvar:: docker_compose_service__python__dependent_packages3 [[[
 #
 # Configuration for the :ref:`debops.python` Ansible role.
-# The ``python3-docker`` package is required by the ``community.docker``
-# Ansible collection used to manage Compose projects.
+# ``python3-docker`` is installed for other ``community.docker`` modules on
+# the host; ``docker_compose_v2`` / ``docker_compose_v2_pull`` themselves
+# talk to the Docker CLI Compose plugin (2.18.0+) and do not use the SDK.
 docker_compose_service__python__dependent_packages3:
   - 'python3-docker'
 
