@@ -1,0 +1,95 @@
+{# Copyright (C) 2013-2023 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+ # Copyright (C) 2014-2023 DebOps <https://debops.org/>
+ # Copyright (C) 2025-2026 seven-beep <seven-beep@entreparentheses.xyz>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+{% for element in apt__combined_sources | debops.debops.parse_kv_items(merge_keys=['types', 'uris', 'suites', 'components']) %}
+{%   if element.state not in ['absent', 'ignore', 'init'] %}
+{%     set element_comment = ('#' if (element.state == 'comment') else '') %}
+{%     if element.comment | d() %}
+{{       element.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
+{%     endif %}
+{%     if element.raw | d() %}
+{%       if element_comment %}
+{{         element.raw | regex_replace('\n$', '') | comment(decoration='#', prefix='', postfix='') -}}
+{%       else %}
+{{         element.raw | regex_replace('\n$', '') }}
+{%       endif %}
+{%     else %}
+{%       set types = [] %}
+{%       set uris = [] %}
+{%       set suites = [] %}
+{%       set components = [] %}
+{%       if element.type | d() %}
+{%         set _ = types.append(element.type) %}
+{%       endif %}
+{%       if element.types | d() %}
+{%         set _ = types.extend(element.types | selectattr('state', 'equalto', 'present') | map(attribute='name') | list) %}
+{%       endif %}
+{%       if not types %}
+{%         set _ = types.extend(apt__archive_types) %}
+{%       endif %}
+{%       if element.uri | d() %}
+{%         set _ = uris.append(element.uri) %}
+{%       endif %}
+{%       if element.uris | d() %}
+{%         set _ = uris.extend(element.uris | selectattr('state', 'equalto', 'present') | map(attribute='name') | list) %}
+{%       endif %}
+{%       if element.suite | d() %}
+{%         set _ = suites.append(element.suite) %}
+{%       endif %}
+{%       if element.suites | d() %}
+{%         set suites = element.suites | selectattr('state', 'equalto', 'present') | map(attribute='name') | list %}
+{%       endif %}
+{%       if element.component | d() %}
+{%         set _ = components.append(element.component) %}
+{%       endif %}
+{%       if element.components | d() %}
+{%         set components = element.components | selectattr('state', 'equalto', 'present') | map(attribute='name') | list %}
+{%       endif %}
+{%       set source_options = '' %}
+{%       set parsed_options = [] %}
+{%       if element.options | d() %}
+{%         for option in element.options %}
+{%           if option.value is string %}
+{%             set option_string = option.name + '=' + option.value %}
+{%           else %}
+{%             set option_string = option.name + '=' + option.value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list | join(',') %}
+{%           endif %}
+{%           set _ = parsed_options.append(option_string) %}
+{%         endfor %}
+{%       endif %}
+{%       if parsed_options %}
+{%         set source_options = parsed_options | join(' ') %}
+{%       endif %}
+{%       for uri in uris %}
+{%         if element.state == 'comment' %}
+{%            set element_comment = '#' %}
+{%         else %}
+{%            set element_comment = '' %}
+{%         endif %}
+{%         if apt__archive_sources_disabled | bool and "deb-src" in types %}
+{%               set _ = types.remove("deb-src") %}
+{%         endif %}
+{{         '{}Types: {}'.format(element_comment, types | join(' ')) }}
+{% if source_options %}
+{{         '{}Options: {}'.format(element_comment, source_options) }}
+{% endif %}
+{{         '{}URIs: {}
+{}Suites: {}
+{}Components: {}
+{}Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg'.format(
+             element_comment, uri,
+             element_comment, suites | join(' '),
+             element_comment, components | join(' '),
+             element_comment) }}
+{%       endfor %}
+{%     endif %}
+{%     if element.separate | d(True) and not loop.last %}
+{{       '' }}
+{%     endif %}
+{%   endif %}
+{% endfor %}
