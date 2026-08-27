@@ -22,8 +22,10 @@ Docker before using this role. The host must be included in both the
 
 The role uses the ``community.docker`` Ansible collection (specifically the
 ``docker_compose_v2`` and ``docker_compose_v2_pull`` modules) to manage Compose
-projects. The ``python3-docker`` package is installed automatically to provide
-the required Python bindings.
+projects. Those modules call the Docker CLI Compose plugin and require
+**version 2.18.0 or later**; they do not use the Docker SDK for Python. The
+:ref:`debops.docker_server` role installs the Compose plugin with Docker
+Engine.
 
 The role imports the :ref:`debops.secret` role to provide access to the
 ``secret`` variable. This allows service definitions to use the
@@ -131,6 +133,10 @@ For each port entry with a non-empty ``allow`` list the role generates:
 
 If ``allow`` is absent or empty, no rules are emitted (the port is assumed to
 be on loopback behind :command:`nginx`, or intentionally open).
+
+After Docker DNAT, ``DOCKER-USER`` sees the container destination port. When
+the published mapping is not 1:1 (``8080:80``), set ``container_port`` to the
+container-side port; otherwise ``dport`` defaults to ``port``.
 
 See :ref:`docker_compose_service__ref_published_ports` for the full parameter
 reference and :ref:`docker_compose_service__guide_ollama` for a worked example.
