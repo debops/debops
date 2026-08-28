@@ -29,7 +29,8 @@ if output['installed']:
     try:
         ls_output = subprocess.check_output(
             ['docker', 'compose', 'ls', '--format', 'json'],
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.DEVNULL,
+            timeout=10
         ).decode('utf-8').strip()
 
         for project in loads(ls_output):
@@ -37,7 +38,10 @@ if output['installed']:
                 'status': project.get('Status', ''),
                 'config_files': project.get('ConfigFiles', ''),
             }
-    except Exception:
-        pass
+    except Exception as exc:
+        # Keep fact collection successful (DebOps convention) but surface
+        # why projects stayed empty — a hang or a daemon error must not
+        # look like "no Compose projects on this host".
+        output['projects_query_error'] = type(exc).__name__
 
 print(dumps(output, sort_keys=True, indent=4))

@@ -654,6 +654,11 @@ Service definition
       # ... in proxy_options:
       proxy_set_header CF-Connecting-IP $paperless_client_ip;
 
+   That forwards a client-supplied ``CF-Connecting-IP`` when present. Use
+   it only when the LAN is treated as trusted. A stricter variant trusts
+   the header only from the tunnel (typically loopback) and uses
+   ``$remote_addr`` for everyone else.
+
    The ``proxy_http_version``/``Upgrade``/``Connection`` lines above are
    unrelated but equally easy to miss: without them the system status page
    reports ``websocket_connected: ERROR`` because :command:`nginx` never
@@ -998,6 +1003,8 @@ after the ``Save ... token to the secret store`` step:
            path: /srv/docker/paperless/.env
            regexp: '^PAPERLESS_GPT_API_TOKEN='
            line: 'PAPERLESS_GPT_API_TOKEN={{ paperless__register_gpt_token.stdout.split()[2] }}'
+         diff: false
+         no_log: true
          when: paperless__register_gpt_secret_updated is changed
          register: paperless__register_gpt_env_updated
 

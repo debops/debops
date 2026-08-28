@@ -28,6 +28,9 @@
 {%       if nginx.deny_all | d(False) | bool %}
   location_allow: {{ nginx.allow | d([]) | to_json }}
 {%       endif %}
+{%       if nginx.ssl is defined %}
+  ssl: {{ nginx.ssl | bool }}
+{%       endif %}
 {%       if nginx.auth_basic | d(False) | bool %}
   auth_basic: True
 {%         if nginx.auth_basic_realm | d() %}
