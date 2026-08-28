@@ -525,8 +525,8 @@ Syntax
   directive is added after the allow rules. Defaults to ``False``.
 
 ``ssl``
-  Optional, boolean. Enable HTTPS through DebOps PKI. Defaults to ``True``
-  (handled by the :ref:`debops.nginx` role defaults).
+  Optional, boolean. Enable HTTPS through DebOps PKI. When omitted, the
+  :ref:`debops.nginx` role default applies (typically ``True``).
 
 ``auth_basic``
   Optional, boolean. Enable HTTP Basic Authentication. Defaults to ``False``.
