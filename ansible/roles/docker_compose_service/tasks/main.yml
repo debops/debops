@@ -130,7 +130,6 @@
     owner: 'root'
     group: 'root'
     mode: '0600'
-    diff: false
   loop: '{{ docker_compose_service__combined_services | d([]) }}'
   loop_control:
     label: '{{ item.name }}'
@@ -138,6 +137,7 @@
     - item.state | d('present') not in ['absent', 'ignore']
     - item.env_file_src is defined and item.env_file_src is truthy
   register: docker_compose_service__register_env_template
+  diff: false
   tags: [ 'role::docker_compose_service:config' ]
 
 - name: Generate .env file from env dictionary
@@ -151,7 +151,6 @@
     owner: 'root'
     group: 'root'
     mode: '0600'
-    diff: false
   loop: '{{ docker_compose_service__combined_services | d([]) }}'
   loop_control:
     label: '{{ item.name }}'
@@ -160,6 +159,7 @@
     - item.env | d({}) | length > 0
     - not (item.env_file_src is defined and item.env_file_src is truthy)
   register: docker_compose_service__register_env_dict
+  diff: false
   tags: [ 'role::docker_compose_service:config' ]
 
 - name: Create directories for config files
