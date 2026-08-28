@@ -31,7 +31,7 @@
 - name: Add Zabbix UNIX account to required groups
   ansible.builtin.user:
     name: '{{ zabbix_agent__user }}'
-    groups: '{{ zabbix_agent__additional_groups | flatten | join(",") }}'
+    groups: '{{ zabbix_agent__combined_additional_groups | join(",") }}'
     state: 'present'
     append: True
   notify: [ 'Check zabbix-agent and restart', 'Check zabbix-agent2 and restart' ]
@@ -65,7 +65,15 @@
     mode: '0640'
   no_log: '{{ debops__no_log | d(True) }}'
   notify: [ 'Check zabbix-agent and restart', 'Check zabbix-agent2 and restart' ]
-  when: zabbix_agent__deploy_state != 'absent'
+  when: zabbix_agent__deploy_state != 'absent' and
+        zabbix_agent__tls_mode == 'psk'
+
+- name: Remove unused PSK secret key
+  ansible.builtin.file:
+    path: '/etc/zabbix/secret.key'
+    state: 'absent'
+  when: zabbix_agent__deploy_state == 'absent' or
+        zabbix_agent__tls_mode != 'psk'
 
 - name: Ensure configuration folder exists
   ansible.builtin.file:
@@ -86,6 +94,146 @@
     mode: '0755'
   when: zabbix_agent__deploy_state != 'absent' and
         zabbix_agent__flavor == 'C'
+
+- name: Ensure Go agent configuration folder exists
+  ansible.builtin.file:
+    path: '/etc/zabbix/zabbix_agent2.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: zabbix_agent__deploy_state != 'absent' and
+        zabbix_agent__flavor == 'Go'
+
+# UserParameters and helper scripts [[[1
+- name: Ensure Zabbix agent scripts directory exists
+  ansible.builtin.file:
+    path: '{{ zabbix_agent__scripts_path }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: zabbix_agent__deploy_state != 'absent' and
+        zabbix_agent__combined_scripts | length > 0
+
+- name: Manage Zabbix agent helper scripts
+  ansible.builtin.copy:
+    dest: '{{ zabbix_agent__scripts_path + "/" + item.name }}'
+    src: '{{ item.src | d(omit) }}'
+    content: '{{ item.content | d(omit) }}'
+    owner: '{{ item.owner | d("root") }}'
+    group: '{{ item.group | d("root") }}'
+    mode: '{{ item.mode | d("0755") }}'
+  loop: '{{ zabbix_agent__combined_scripts }}'
+  loop_control:
+    label: '{{ item.name }}'
+  when: zabbix_agent__deploy_state != 'absent' and
+        (item.state | d('present') != 'absent')
+
+- name: Remove absent Zabbix agent helper scripts
+  ansible.builtin.file:
+    path: '{{ zabbix_agent__scripts_path + "/" + item.name }}'
+    state: 'absent'
+  loop: '{{ zabbix_agent__combined_scripts }}'
+  loop_control:
+    label: '{{ item.name }}'
+  when: (zabbix_agent__deploy_state == 'absent') or
+        (item.state | d('present') == 'absent')
+
+- name: Generate Zabbix agent UserParameter configuration
+  ansible.builtin.template:
+    src: 'etc/zabbix/ansible-userparams.conf.j2'
+    dest: '{{ zabbix_agent__user_parameters_conf_path }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+    unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
+  notify: [ 'Check zabbix-agent and restart', 'Check zabbix-agent2 and restart' ]
+  when: zabbix_agent__deploy_state != 'absent' and
+        zabbix_agent__combined_user_parameters | length > 0
+
+- name: Remove Zabbix agent UserParameter configuration if unused
+  ansible.builtin.file:
+    path: '{{ zabbix_agent__user_parameters_conf_path }}'
+    state: 'absent'
+  notify: [ 'Check zabbix-agent and restart', 'Check zabbix-agent2 and restart' ]
+  when: (zabbix_agent__deploy_state == 'absent') or
+        (zabbix_agent__combined_user_parameters | length == 0)
+
+# Automatic service monitoring [[[1
+- name: Ensure Zabbix Agent 2 plugin configuration directory exists
+  ansible.builtin.file:
+    path: '/etc/zabbix/zabbix_agent2.d/plugins.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: zabbix_agent__deploy_state != 'absent' and
+        zabbix_agent__flavor == 'Go' and
+        zabbix_agent__service_templates__combined_plugins | length > 0
+
+- name: Configure Zabbix Agent 2 plugins for detected services
+  ansible.builtin.copy:
+    dest: '/etc/zabbix/zabbix_agent2.d/plugins.d/{{ item.plugin_name }}'
+    content: '{{ item.plugin_content }}'
+    owner: 'root'
+    group: '{{ zabbix_agent__group }}'
+    mode: '0640'
+  loop: '{{ zabbix_agent__service_templates__combined_plugins }}'
+  loop_control:
+    label: '{{ item.name }}'
+  no_log: '{{ debops__no_log | d(True) }}'
+  notify: [ 'Check zabbix-agent2 and restart' ]
+  when: zabbix_agent__deploy_state != 'absent' and
+        zabbix_agent__flavor == 'Go'
+
+# 'zabbix_agent__service_templates__known_plugin_names' only reflects
+# integrations still present in the current Ansible variables (even if
+# disabled via 'state: absent') -- a *custom* integration removed entirely
+# from the inventory (not just marked absent) leaves nothing in the role's
+# own configuration to recognize its drop-in as "ours" by.
+# 'ansible_local.zabbix_agent.managed_plugin_names', baked into the local
+# facts script below by the *previous* run, is merged in so a name is still
+# recognized for one more run after it disappears from the inventory
+# entirely, then aged out on the run after that once its drop-in has
+# actually been removed and the fact is refreshed with the smaller list.
+- name: Combine currently and previously known role-managed plugin names
+  ansible.builtin.set_fact:
+    zabbix_agent__fact_all_known_plugin_names: '{{ (zabbix_agent__service_templates__known_plugin_names
+                                                    + (ansible_local.zabbix_agent.managed_plugin_names | d([])))
+                                                    | unique }}'
+  when: zabbix_agent__flavor == 'Go'
+
+# Discovered directly from disk in this same run, instead of relying on the
+# previous run's local facts snapshot: right after an upgrade from a role
+# version that did not track this, the fact would not exist yet and no
+# stale drop-in (including one with embedded credentials) would be removed
+# until a second run.
+- name: Discover existing Zabbix Agent 2 plugin configuration files
+  ansible.builtin.find:
+    paths: '/etc/zabbix/zabbix_agent2.d/plugins.d'
+    file_type: 'file'
+  register: zabbix_agent__register_existing_plugins
+  when: zabbix_agent__flavor == 'Go'
+
+# Restricted to 'zabbix_agent__fact_all_known_plugin_names' (every plugin
+# filename this role is currently, or was as of last run, aware of) via
+# 'intersect', so that a drop-in placed in the shared plugin directory by
+# an administrator or another tool is never touched, even though the
+# directory listing above has no way to tell them apart on its own.
+- name: Remove Zabbix Agent 2 plugin configuration of disabled integrations
+  ansible.builtin.file:
+    path: '/etc/zabbix/zabbix_agent2.d/plugins.d/{{ item }}'
+    state: 'absent'
+  loop: '{{ zabbix_agent__register_existing_plugins.files | d([])
+            | map(attribute="path") | map("basename") | list
+            | intersect(zabbix_agent__fact_all_known_plugin_names | d(zabbix_agent__service_templates__known_plugin_names))
+            | difference(zabbix_agent__service_templates__combined_plugins
+                          | map(attribute="plugin_name") | list
+                          if (zabbix_agent__deploy_state != "absent" and
+                              zabbix_agent__flavor == "Go")
+                          else []) }}'
+  notify: [ 'Check zabbix-agent2 and restart' ]
 
 # Ansible facts [[[1
 - name: Make sure that Ansible local fact directory exists
@@ -121,3 +269,10 @@
 
 - name: Reload facts if they were modified
   ansible.builtin.meta: 'flush_handlers'
+
+# API self-registration [[[1
+- name: Register host in Zabbix Server via API
+  ansible.builtin.import_tasks: 'api_register.yml'
+  when: zabbix_agent__deploy_state != 'absent' and
+        zabbix_agent__api_register | bool
+  tags: [ 'role::zabbix_agent:api_register' ]
