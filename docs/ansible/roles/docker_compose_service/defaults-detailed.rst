@@ -305,10 +305,12 @@ behaviour: no ``published_ports`` key → no change to existing behaviour).
    ``ctorigdstport`` match, so the generated ``dport`` uses
    ``container_port`` (defaulting to ``port``) on ``DOCKER-USER``.
 
-   Because of that, two mappings that share a container port (for example
-   ``8080:80`` and ``8081:80``) cannot have independent ``allow`` lists:
-   both rules match the same ``dport``. Give them the same ``allow`` list,
-   or publish distinct container ports.
+   Because of that, two mappings that share a container port **and** the
+   same protocol (for example TCP ``8080:80`` and TCP ``8081:80``) cannot
+   have independent ``allow`` lists: both rules match the same ``dport``.
+   Give them the same ``allow`` list, or publish distinct container ports.
+   TCP and UDP on the same container port can still use separate
+   ``allow`` lists.
 
 Examples
 ~~~~~~~~

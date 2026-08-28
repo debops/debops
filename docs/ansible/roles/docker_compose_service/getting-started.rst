@@ -137,7 +137,8 @@ be on loopback behind :command:`nginx`, or intentionally open).
 After Docker DNAT, ``DOCKER-USER`` sees the container destination port. When
 the published mapping is not 1:1 (``8080:80``), set ``container_port`` to the
 container-side port; otherwise ``dport`` defaults to ``port``. Mappings that
-share a container port cannot have independent ``allow`` lists.
+share a container port and protocol cannot have independent ``allow`` lists;
+TCP and UDP on the same container port can.
 
 See :ref:`docker_compose_service__ref_published_ports` for the full parameter
 reference and :ref:`docker_compose_service__guide_ollama` for a worked example.
