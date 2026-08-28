@@ -30,7 +30,8 @@ if output['installed']:
         ps_output = subprocess.check_output(
             ['docker', 'ps', '-a',
              '--format', '{% raw %}{{.Names}}\t{{.Image}}\t{{.Status}}{% endraw %}'],
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.DEVNULL,
+            timeout=10
         ).decode('utf-8').strip()
 
         for line in ps_output.split('\n'):
@@ -42,7 +43,10 @@ if output['installed']:
                         'image': parts[1],
                         'status': parts[2],
                     }
-    except Exception:
-        pass
+    except Exception as exc:
+        # Keep fact collection successful (DebOps convention) but surface
+        # why containers stayed empty — a hang or a daemon error must not
+        # look like "no containers on this host".
+        output['containers_query_error'] = type(exc).__name__
 
 print(dumps(output, sort_keys=True, indent=4))

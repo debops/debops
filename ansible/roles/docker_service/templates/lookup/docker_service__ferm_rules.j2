@@ -12,6 +12,12 @@
 {%         set chain   = p.chain | d(docker_service__ferm__default_chain) %}
 {%         set action  = p.action_default | d(docker_service__ferm__default_action) %}
 {%         set target  = 'REJECT' if action == 'reject' else 'DROP' %}
+{# After Docker DNAT, DOCKER-USER sees the container destination port. #}
+{%         if chain == 'DOCKER-USER' %}
+{%           set dport = (p.container_port | d(p.port)) | string %}
+{%         else %}
+{%           set dport = port %}
+{%         endif %}
 {%         set rule_name = 'docker_service_' + svc.name + '_' + port + '_' + proto %}
 {%         set comment = p.comment | d(svc.name + ' port ' + port + '/' + proto + ' (DOCKER-USER)') %}
 - name: '{{ rule_name }}'
@@ -22,7 +28,7 @@
     - chain: '{{ chain }}'
       type: 'accept'
       protocol: '{{ proto }}'
-      dport: [ '{{ port }}' ]
+      dport: [ '{{ dport }}' ]
       saddr: {{ p.allow | to_json }}
 
     - chain: '{{ chain }}'
@@ -30,7 +36,7 @@
       target: '{{ target }}'
       accept_any: True
       protocol: '{{ proto }}'
-      dport: [ '{{ port }}' ]
+      dport: [ '{{ dport }}' ]
 
 {%       endif %}
 {%     endfor %}
