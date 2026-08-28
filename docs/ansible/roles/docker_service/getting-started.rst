@@ -51,13 +51,15 @@ Persistent data directories
 ----------------------------
 
 For backward compatibility, the role automatically creates host directories
-for bind-mount sources listed in a service's ``volumes`` parameter. This is
-convenient for simple cases, but it is an *inference* -- the role has no way
-to know whether a given ``volumes`` entry is meant to be a directory or a
-file, so it always creates a directory. This works until a bind mount's
-source is legitimately a file or socket (e.g. ``/etc/localtime``, a UNIX
-socket), or a service needs specific ownership/permissions on the host
-directory that ``volumes`` cannot express.
+for bind-mount sources listed in a service's ``volumes`` parameter when the
+source path is missing. Existing non-directory sources (files, UNIX sockets
+such as ``/etc/localtime``) are detected with ``ansible.builtin.stat`` and
+skipped. The inference still cannot tell a *missing* file from a missing
+directory, so a bind-mount source that does not exist yet is created as a
+directory. Set ``create_volume_dirs: false`` (and declare the parent via
+``data_dirs``) when that source should be a file created later by the
+application, or when a service needs specific ownership/permissions on the
+host directory that ``volumes`` cannot express.
 
 Prefer declaring host directories explicitly with ``data_dirs`` instead:
 
@@ -135,6 +137,12 @@ For each port entry with a non-empty ``allow`` list the role generates:
 
 If ``allow`` is absent or empty, no rules are emitted (the port is assumed to
 be on loopback behind :command:`nginx`, or intentionally open).
+
+After Docker DNAT, ``DOCKER-USER`` sees the container destination port. When
+the published mapping is not 1:1 (``8080:80``), set ``container_port`` to the
+container-side port; otherwise ``dport`` defaults to ``port``. Mappings that
+share a container port and protocol cannot have independent ``allow`` lists;
+TCP and UDP on the same container port can.
 
 See :ref:`docker_service__ref_published_ports` for the full parameter
 reference.
@@ -268,8 +276,9 @@ resolves and the role behaves identically when no project override is present.
 .. note::
 
    Both ``include_tasks`` directives carry ``tags: [ 'always' ]``, so they are
-   evaluated even when Ansible is invoked with ``--tags`` or ``--skip-tags``.
-   Tag filtering is then applied to the individual tasks **inside** the hook
+   evaluated even when Ansible is invoked with ``--tags``. They are still
+   skipped when Ansible is invoked with ``--skip-tags always``. Tag
+   filtering is then applied to the individual tasks **inside** the hook
    file. This means you can assign your own tags to blocks or tasks in
    ``pre_main.yml`` / ``post_main.yml`` and target them directly with
    ``--tags``. For example, if the hook file contains:
