@@ -723,8 +723,11 @@ reaches Paperless through the Compose network name ``webserver`` (not
          - /mnt/paperless/media:/usr/src/paperless/media
          - /mnt/paperless/export:/usr/src/paperless/export
          - /mnt/paperless/consume:/usr/src/paperless/consume
-         # PostgreSQL socket read-only (peer auth only reads); Redis socket must
-         # be read-write -- connect(2) on an AF_UNIX socket needs write access.
+         # Host sockets: :ro does not block connect(2) on an existing
+         # AF_UNIX socket (the kernel checks the inode write bit, not
+         # MS_RDONLY). PostgreSQL is :ro so the container cannot create
+         # files beside the socket. Redis stays read-write to match the
+         # working deployment.
          - /var/run/postgresql:/var/run/postgresql:ro
          - /var/run/redis:/var/run/redis
        healthcheck:
