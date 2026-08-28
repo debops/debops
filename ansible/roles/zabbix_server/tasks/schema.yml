@@ -1,0 +1,38 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Idempotency is based on the actual state of the database (presence of the
+# "dbversion" table created by the Zabbix schema), not on a marker file -
+# a marker file on the Zabbix Server host would not reflect the real state
+# if the database is recreated, restored from a backup without it, or
+# shared with another delegate host.
+
+- name: Check if Zabbix database schema is already present
+  community.postgresql.postgresql_query:
+    login_host: '{{ zabbix_server__database_host }}'
+    login_port: '{{ zabbix_server__database_port }}'
+    login_user: '{{ zabbix_server__database_user }}'
+    login_password: '{{ zabbix_server__database_password }}'
+    login_db: '{{ zabbix_server__database_name }}'
+    query: "SELECT to_regclass('public.dbversion') IS NOT NULL AS schema_present"
+  register: zabbix_server__register_schema_check
+  changed_when: False
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Import Zabbix PostgreSQL database schema
+  ansible.builtin.shell: |
+    set -o pipefail
+    zcat {{ zabbix_server__schema_file | quote }} \
+      | PGPASSWORD={{ zabbix_server__database_password | quote }} \
+        psql -X -q -v ON_ERROR_STOP=1 --single-transaction \
+        -h {{ zabbix_server__database_host | quote }} \
+        -p {{ zabbix_server__database_port | quote }} \
+        -U {{ zabbix_server__database_user | quote }} \
+        -d {{ zabbix_server__database_name | quote }}
+  args:
+    executable: '/bin/bash'
+  changed_when: True
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: not (zabbix_server__register_schema_check.query_result[0].schema_present | d(False))

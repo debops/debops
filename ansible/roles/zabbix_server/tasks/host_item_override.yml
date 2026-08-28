@@ -1,0 +1,123 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Included once per entry of 'zabbix_server__host_item_overrides', with the
+# current entry available as 'zabbix_server__override'. Disables items
+# matching 'key_regex' on every host linked to 'template', which would
+# otherwise show misleading values once a more specific template covering
+# the same metric is linked (see the LXC container/cgroup example in
+# 'zabbix_server__host_item_overrides').
+
+- name: Look up template for host item override
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'template.get'
+      params:
+        output: [ 'templateid', 'host' ]
+        filter:
+          host: [ '{{ zabbix_server__override.template }}' ]
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  register: zabbix_server__register_override_template
+  failed_when: zabbix_server__register_override_template.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Look up hosts linked to the template
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'host.get'
+      params:
+        output: [ 'hostid', 'host' ]
+        templateids: '{{ zabbix_server__register_override_template.json.result
+                          | d([]) | map(attribute="templateid") | list }}'
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  register: zabbix_server__register_override_hosts
+  failed_when: zabbix_server__register_override_hosts.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: (zabbix_server__register_override_template.json.result | d([])) | length > 0
+
+- name: Look up items on the linked hosts
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'item.get'
+      params:
+        output: [ 'itemid', 'key_', 'status' ]
+        hostids: '{{ zabbix_server__register_override_hosts.json.result
+                      | d([]) | map(attribute="hostid") | list }}'
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  register: zabbix_server__register_override_items
+  failed_when: zabbix_server__register_override_items.json.error is defined
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: (zabbix_server__register_override_hosts.json.result | d([])) | length > 0
+
+# Kept unconditional (no 'when') so that an override entry whose template
+# does not exist, or is not linked to any host, resets this to '[]' instead
+# of leaving the previous entry's item IDs in place -- otherwise "Disable
+# matching items" below would act on a stale list left over from a
+# different, unrelated override.
+- name: Determine items which should be disabled
+  ansible.builtin.set_fact:
+    zabbix_server__fact_override_itemids: '{{ zabbix_server__register_override_items.json.result
+                                               | d([])
+                                               | selectattr("key_", "search", zabbix_server__override.key_regex)
+                                               | rejectattr("status", "equalto", "1")
+                                               | map(attribute="itemid") | list }}'
+
+- name: Disable matching items
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'item.update'
+      params: '{{ zabbix_server__fact_override_itemids
+                   | map("community.general.dict_kv", "itemid")
+                   | map("combine", {"status": 1}) | list }}'
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  register: zabbix_server__register_override_disable
+  no_log: '{{ debops__no_log | d(True) }}'
+  failed_when: zabbix_server__register_override_disable.json.error is defined
+  changed_when: (zabbix_server__fact_override_itemids | d([])) | length > 0
+  when: (zabbix_server__fact_override_itemids | d([])) | length > 0

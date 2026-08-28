@@ -1,0 +1,25 @@
+{# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+<?php
+// {{ ansible_managed }}
+// Zabbix GUI configuration file. Its presence skips the setup wizard.
+
+global $DB;
+
+$DB['TYPE']     = {{ ('POSTGRESQL' if (zabbix_server__database == 'postgresql') else 'MYSQL') | to_json }};
+$DB['SERVER']   = {{ zabbix_server__database_host | to_json }};
+$DB['PORT']     = {{ zabbix_server__database_port | to_json }};
+$DB['DATABASE'] = {{ zabbix_server__database_name | to_json }};
+$DB['USER']     = {{ zabbix_server__database_user | to_json }};
+$DB['PASSWORD'] = {{ zabbix_server__database_password | to_json }};
+
+// Schema name. Used for PostgreSQL.
+$DB['SCHEMA'] = '';
+
+$ZBX_SERVER      = 'localhost';
+$ZBX_SERVER_PORT = {{ zabbix_server__trapper_port | to_json }};
+$ZBX_SERVER_NAME = {{ zabbix_server__fqdn | to_json }};
+
+$IMAGE_FORMAT_DEFAULT = IMAGE_FORMAT_{{ zabbix_server__frontend_image_format }};
