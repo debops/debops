@@ -144,6 +144,11 @@ container-side port; otherwise ``dport`` defaults to ``port``. Mappings that
 share a container port and protocol cannot have independent ``allow`` lists;
 TCP and UDP on the same container port can.
 
+Without ``interface``, a default-deny on that container port also matches
+other forwarded traffic to the same port, including container egress. Set
+``interface`` to the host ingress NIC when the published container port is
+shared (for example ``80`` or ``443``).
+
 See :ref:`docker_service__ref_published_ports` for the full parameter
 reference.
 
