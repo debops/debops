@@ -557,6 +557,13 @@ following parameters:
   :command:`ferm` rule file. Defaults to
   ``<service-name> port <port>/<protocol> (DOCKER-USER)``.
 
+The generated :command:`ferm` rule ``name`` is
+``docker_service_<service>_<port>_<protocol>``. When ``chain``,
+``container_port``, or ``interface`` differ from the defaults, those
+values are appended so two entries that share the same host port do not
+overwrite each other (the :ref:`debops.ferm` dependent-rule list is
+keyed by ``name``).
+
 
 .. _docker_service__ref_ferm_defaults:
 
