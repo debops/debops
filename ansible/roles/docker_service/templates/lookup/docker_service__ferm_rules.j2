@@ -19,7 +19,27 @@
 {%           set dport = port %}
 {%         endif %}
 {%         set iface = p.interface | d(p.interfaces | d(None)) %}
-{%         set rule_name = 'docker_service_' + svc.name + '_' + port + '_' + proto %}
+{%         if iface is string %}
+{%           set iface_key = iface %}
+{%         elif iface %}
+{%           set iface_key = iface | join('-') %}
+{%         else %}
+{%           set iface_key = '' %}
+{%         endif %}
+{# ferm keys dependent rules by name; keep the common 1:1 default
+   unique, and suffix chain / post-DNAT port / interface when they
+   differ so later entries do not overwrite earlier ones. #}
+{%         set name_bits = ['docker_service', svc.name, port, proto] %}
+{%         if chain != docker_service__ferm__default_chain %}
+{%           set name_bits = name_bits + [chain] %}
+{%         endif %}
+{%         if dport != port %}
+{%           set name_bits = name_bits + ['dst' + dport] %}
+{%         endif %}
+{%         if iface_key %}
+{%           set name_bits = name_bits + [iface_key | regex_replace('[^A-Za-z0-9._-]', '_')] %}
+{%         endif %}
+{%         set rule_name = name_bits | join('_') %}
 {%         set comment = p.comment | d(svc.name + ' port ' + port + '/' + proto + ' (DOCKER-USER)') %}
 - name: {{ rule_name | to_json }}
   by_role: 'debops.docker_service'
