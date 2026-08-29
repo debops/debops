@@ -21,9 +21,9 @@
 {%         set iface = p.interface | d(p.interfaces | d(None)) %}
 {%         set rule_name = 'docker_service_' + svc.name + '_' + port + '_' + proto %}
 {%         set comment = p.comment | d(svc.name + ' port ' + port + '/' + proto + ' (DOCKER-USER)') %}
-- name: '{{ rule_name }}'
+- name: {{ rule_name | to_json }}
   by_role: 'debops.docker_service'
-  comment: '{{ comment }}'
+  comment: {{ comment | to_json }}
   rules:
 
     - chain: '{{ chain }}'
