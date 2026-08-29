@@ -216,7 +216,9 @@ parameters:
     ``config_files`` tasks create the parent directory and the file itself;
   - the source path matches a ``data_dirs`` path -- the ``data_dirs`` task
     already created it, possibly with a non-default ``owner``/``group``/
-    ``mode`` that this inference would not know about;
+    ``mode`` that this inference would not know about. Trailing slashes
+    are ignored, so ``/srv/app/`` and ``/srv/app`` compare as the same
+    path (``/`` itself is preserved);
   - the source path already exists on the host and is not a directory (e.g.
     ``/etc/localtime``, a UNIX socket) -- the role checks this with
     ``ansible.builtin.stat`` before attempting creation;
@@ -432,6 +434,15 @@ behaviour: no ``published_ports`` key → no change to existing behaviour).
    TCP and UDP on the same container port can still use separate
    ``allow`` lists.
 
+   Without an ``interface`` match these rules apply to every forwarded
+   packet whose post-DNAT destination port is that container port. That
+   includes container egress to the same port (for example publishing
+   ``80``/``443`` can reject outbound HTTP/HTTPS from other containers).
+   Set ``interface`` to the host ingress NIC so only traffic arriving
+   from the LAN is matched; egress leaves via the Docker bridge and
+   does not hit that match. The :command:`ferm` role has no
+   ``ctorigdstport`` match.
+
 Examples
 ~~~~~~~~
 
@@ -481,6 +492,18 @@ A container with ``network_mode: host`` (traffic lands in ``INPUT``):
            allow: [ '192.0.2.0/24' ]
            comment: 'node-exporter - monitoring VLAN only'
 
+Scope the match to LAN ingress (recommended when the published
+container port is a well-known port such as ``80`` or ``443``):
+
+.. code-block:: yaml
+
+       published_ports:
+         - port: 443
+           container_port: 8443
+           interface: 'eth0'
+           allow: [ '192.0.2.0/24' ]
+           comment: 'HTTPS - monitoring VLAN only'
+
 Syntax
 ~~~~~~
 
@@ -521,6 +544,13 @@ following parameters:
   (``DOCKER-USER``). Override to ``INPUT`` only for containers using
   ``network_mode: host``, where traffic genuinely traverses ``INPUT`` instead
   of ``FORWARD``.
+
+``interface`` / ``interfaces``
+  Optional, string or list of strings. Ingress interface(s) passed through
+  to :ref:`debops.ferm`. When set, both the ``ACCEPT`` and default-deny
+  rules match only packets arriving on those interfaces (typically the
+  host LAN NIC). Omit to keep the historical match (protocol + source +
+  destination port only). Ignored by :command:`ferm` when empty.
 
 ``comment``
   Optional, string. Human-readable comment embedded in the generated

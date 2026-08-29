@@ -18,6 +18,7 @@
 {%         else %}
 {%           set dport = port %}
 {%         endif %}
+{%         set iface = p.interface | d(p.interfaces | d(None)) %}
 {%         set rule_name = 'docker_service_' + svc.name + '_' + port + '_' + proto %}
 {%         set comment = p.comment | d(svc.name + ' port ' + port + '/' + proto + ' (DOCKER-USER)') %}
 - name: '{{ rule_name }}'
@@ -30,6 +31,9 @@
       protocol: '{{ proto }}'
       dport: [ '{{ dport }}' ]
       saddr: {{ p.allow | to_json }}
+{%         if iface %}
+      interface: {{ iface | to_json }}
+{%         endif %}
 
     - chain: '{{ chain }}'
       type: 'accept'
@@ -37,6 +41,9 @@
       accept_any: True
       protocol: '{{ proto }}'
       dport: [ '{{ dport }}' ]
+{%         if iface %}
+      interface: {{ iface | to_json }}
+{%         endif %}
 
 {%       endif %}
 {%     endfor %}
