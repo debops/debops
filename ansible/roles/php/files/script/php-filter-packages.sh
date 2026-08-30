@@ -2,7 +2,7 @@
 
 # Copyright (C) 2016      Mariano Barcia <mariano.barcia@gmail.com>
 # Copyright (C) 2016-2019 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2016-2019 DebOps <https://debops.org/>
+# Copyright (C) 2016-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 # Filter specified PHP package names to the corresponding APT package names
@@ -10,10 +10,10 @@
 # Homepage: https://github.com/debops/ansible-php/
 
 # Usage:
-# Specify the PHP version in the $PHP_VERSION environment variable, either '5'
-# or '7.0'. Only one PHP version is supported at a time.
+# Specify the PHP version in the $PHP_VERSION environment variable.
+# Only one PHP version is supported at a time.
 
-# Specify the list of package names without the 'php5-' or 'php7.0-' prefix
+# Specify the list of package names without the 'php<version>-' prefix
 # as script arguments.
 
 
