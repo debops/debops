@@ -3,6 +3,26 @@
 # Copyright (C) 2015-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Get autopostgresqlbackup package version
+  environment:
+    LC_MESSAGES: 'C'
+  ansible.builtin.command: dpkg-query -W -f='${Version}\n' autopostgresqlbackup
+  register: postgresql_server__register_autopostgresqlbackup_version
+  changed_when: False
+  failed_when: False
+  check_mode: False
+
+- name: Check if autopostgresqlbackup package ships systemd timer
+  environment:
+    LC_MESSAGES: 'C'
+  ansible.builtin.shell: |
+       HAS_TIMER='{{ postgresql_server__register_autopostgresqlbackup_version | d("0.0") | regex_replace("[^0-9.]", "") is version_compare("2.3", ">=") | bool | int }}'
+       if [ "$HAS_TIMER" -eq 1 ]; then true; else false; fi
+  register: postgresql_server__register_autopostgresqlbackup_has_timer
+  changed_when: False
+  failed_when: False
+  check_mode: False
+
 - name: Divert the original autopostgresqlbackup script
   debops.debops.dpkg_divert:
     path: '/usr/sbin/autopostgresqlbackup'
@@ -48,4 +68,52 @@
     group: 'root'
     mode: '0755'
   when: ((item.auto_backup is undefined or item.auto_backup | bool) and postgresql_server__auto_backup | bool)
+  loop: '{{ q("flattened", postgresql_server__clusters) }}'
+
+- name: Disable systemd autopostgresqlbackup timer
+  ansible.builtin.systemd:
+    daemon_reload: True
+    name: 'autopostgresqlbackup.timer'
+    enabled: False
+    state: 'stopped'
+  when: ((ansible_service_mgr == 'systemd' and not ansible_check_mode)
+         and (postgresql_server__register_autopostgresqlbackup_has_timer.rc | d(1) == 0))
+  notify:
+    - 'Reload systemd daemon'
+
+- name: Generate systemd autopostgresqlbackup service unit
+  ansible.builtin.template:
+    src: 'etc/systemd/system/autopostgresqlbackup.service.j2'
+    dest: '/etc/systemd/system/autopostgresqlbackup-{{ (item.version | d(postgresql_server__version))
+                                                   | replace(".", "_") }}-{{ item.name }}.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: postgresql_server__register_autopostgresqlbackup_has_timer.rc | d(1) == 0
+  loop: '{{ q("flattened", postgresql_server__clusters) }}'
+  notify:
+    - 'Reload systemd daemon'
+
+- name: Generate systemd autopostgresqlbackup timer unit
+  ansible.builtin.template:
+    src: 'etc/systemd/system/autopostgresqlbackup.timer.j2'
+    dest: '/etc/systemd/system/autopostgresqlbackup-{{ (item.version | d(postgresql_server__version))
+                                                   | replace(".", "_") }}-{{ item.name }}.timer'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: postgresql_server__register_autopostgresqlbackup_has_timer.rc | d(1) == 0
+  loop: '{{ q("flattened", postgresql_server__clusters) }}'
+  notify:
+    - 'Reload systemd daemon'
+
+- name: Enable systemd autopostgresqlbackup timer
+  ansible.builtin.systemd:
+    daemon_reload: True
+    name: 'autopostgresqlbackup-{{ (item.version | d(postgresql_server__version))
+                                                   | replace(".", "_") }}-{{ item.name }}.timer'
+    enabled: True
+    state: 'started'
+  when: ((ansible_service_mgr == 'systemd' and not ansible_check_mode)
+         and (postgresql_server__register_autopostgresqlbackup_has_timer.rc | d(1) == 0))
   loop: '{{ q("flattened", postgresql_server__clusters) }}'
