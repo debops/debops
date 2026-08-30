@@ -91,3 +91,5 @@ Available role tags:
   Limited to :command:`dovecot` user configuration tasks.
 ``role::dovecot:group``
   Limited to :command:`dovecot` group configuration tasks.
+``role::dovecot:backup``
+  Configuration tasks related to the management of backups.

@@ -14,6 +14,7 @@ debops.dovecot
    man_synopsis
    man_description
    getting-started
+   backup-restore
    defaults-detailed
 
 ..
