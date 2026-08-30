@@ -1,0 +1,79 @@
+---
+
+- name: Install required APT packages
+  apt:
+    name: "{{ query('flattened', [
+      discourse__base_packages,
+      discourse__release_packages[discourse__distribution_release] | d([]) ,
+      discourse__database_packages[discourse__distribution_release][discourse__database] | d([])
+       ] ) }}"
+    state: 'present'
+    install_recommends: False
+  register: discourse__register_packages
+  until: discourse__register_packages is succeeded
+
+- name: Install required node.js packages
+  npm:
+    name: '{{ item.key }}'
+    version: '{{ item.value or omit }}'
+    global: yes
+  with_dict: '{{ discourse__nodejs_packages }}'
+  register: discourse__register_nodes_packages
+  until: discourse__register_nodes_packages is succeeded
+
+- name: Create Discourse system group
+  group:
+    name: '{{ discourse_group }}'
+    system: True
+    state: 'present'
+
+- name: Create Discourse user
+  user:
+    name: '{{ discourse_user }}'
+    group: '{{ discourse_group }}'
+    home: '{{ discourse_home }}'
+    shell: '{{ discourse__shell }}'
+    comment: 'Discourse'
+    groups: '{{ discourse_user_append_groups | join(",") | default(omit) }}'
+    append: True
+    system: True
+    state: 'present'
+
+- name: Create .gemrc to avoid documention is generated
+  copy:
+    dest: '{{ discourse_home }}/.gemrc'
+    content: >
+      gem: --no-document
+    owner: '{{ discourse_user }}'
+    group: '{{ discourse_group }}'
+    mode: '0640'
+
+- name: Create Discourse application directory
+  file:
+    path: '{{ discourse_app_root_path }}'
+    state: 'directory'
+    owner: '{{ discourse_user }}'
+    group: '{{ discourse_group }}'
+    mode: '0750'
+
+- include: download_discourse.yml
+
+- include: configure_discourse.yml
+
+- include: start_discourse.yml
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save information about Discourse in Ansible Facts
+  template:
+    src: 'etc/ansible/facts.d/discourse.fact.j2'
+    dest: '/etc/ansible/facts.d/discourse.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
