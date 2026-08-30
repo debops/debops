@@ -1,0 +1,17 @@
+{# Copyright (C) 2024 Tasos Alvas <tasos.alvas@qwertyuiopia.com>
+ # Copyright (C) 2024 DebOps https://debops.org/
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+{% for item in borgbackup__server_combined_accounts | debops.debops.parse_kv_config %}
+- name: '{{ item.name }}'
+  state: '{{ item.state | d("present") }}'
+{%   if item.home | d() and not item.users_extra.home | d() %}
+  home: '{{ item.home }}'
+{%   endif %}
+  groups: {{ [ ansible_local.system_groups.local_prefix + "sshusers" ] + item.groups | d([]) }}
+  system: True
+  shell: '/bin/sh'
+{%   for extra in item.users_extra | d({}) | dict2items %}
+  {{ extra.key }}: {{ extra.value }}
+{%   endfor %}
+{% endfor %}
