@@ -388,8 +388,9 @@ netbox__ldap_binddn: '{{ ([netbox__ldap_self_rdn] + netbox__ldap_device_dn) | jo
 #
 # The password stored in the account LDAP object used by the NetBox service
 # to bind to the LDAP directory.
-netbox__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
-                                 + netbox__ldap_binddn | to_uuid + ".password length=32"))
+netbox__ldap_bindpw: '{{ (lookup("ldap_password",
+                                 secret + "/ldap/credentials/",
+                                 netbox__ldap_binddn, "length=32"))
                          if netbox__ldap_enabled | bool
                          else "" }}'
 
