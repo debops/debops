@@ -11,8 +11,8 @@ DebOps LLM-Generated Contributions Policy
 
 :Date drafted: 2026-07-02
 :Date effective: 2026-09-01
-:Last changed: 2026-08-05
-:Version: 0.2.0
+:Last changed: 2026-08-30
+:Version: 0.3.0
 :Authors: - drybjed_
 
 .. This version may not correspond directly to the debops-policy version.
@@ -229,6 +229,28 @@ Code review feedback that draws on LLM suggestions is subject to the same
 Core Principle: the reviewer MUST understand and stand behind the feedback
 they post.
 
+Large-Scale and Automated Actions
+---------------------------------
+
+The use of generative AI does not change the project's expectations regarding
+large-scale or automated actions. Contributors intending to perform actions
+with broad project impact SHOULD seek prior discussion and consensus through
+the appropriate project channel before proceeding. This includes, for example:
+
+- mass bug filing or patch submission
+- automated processes and tools that act on project infrastructure
+- bulk changes spanning multiple roles, playbooks, or other components
+- automated changes or requests affecting many components or contributors
+
+Automated processes SHOULD be overseen by a human who remains accountable for
+their behavior and output. This complements the prohibitions on unauthorized
+agents and proxy submissions above: those rules govern who or what may act,
+this section governs actions whose scope affects the project as a whole.
+
+A coordinated change that forms a single logical unit — for example a
+variable rename across several roles as part of one feature — remains subject
+to the normal review process and does not require prior consensus.
+
 Scope
 -----
 
@@ -256,7 +278,36 @@ This policy governs contributions to the DebOps Project. It does not govern
 the use of LLM output against live infrastructure — for example playbooks
 generated or modified by an LLM and executed against managed hosts. That
 use is covered by the project's operational safeguards and verification
-tooling, not by this document.
+tooling, not by this document. The "Confidentiality of Information" section
+below is the exception: its requirements apply to operational use as well.
+
+Confidentiality of Information
+------------------------------
+
+Third-party generative AI services collect and retain what they are given;
+treat them as what they are — external parties. Contributors MUST NOT disclose
+confidential or non-public material relating to the DebOps Project, its
+managed infrastructure, or its community to such services unless the
+disclosure has been explicitly authorized. This includes, for example:
+
+- Ansible vault contents and other encrypted secrets
+- inventory files, ``group_vars``, and ``host_vars`` data
+- cryptographic keys, certificates, and credentials
+- internal hostnames, IP addresses, and network topology
+- private communications between contributors
+- security-sensitive information, including embargoed or not-yet-public
+  details of security issues
+- personal data relating to the DebOps Project community
+
+This requirement applies to operational use of generative AI tools in
+addition to contributions. The carve-out in the "Scope" section above
+excludes most operational use from this policy; the confidentiality rules
+are the exception and apply regardless of how the tools are used.
+
+Before sending project or infrastructure material to a generative AI service,
+contributors SHOULD check the service's data-retention and privacy settings,
+and SHOULD replace real values — credentials, hostnames, IP addresses — with
+the reserved example values used elsewhere in the project's documentation.
 
 Transition
 ----------
@@ -339,6 +390,8 @@ Additional References
 - Rust Project, `LLM Usage Policy <https://forge.rust-lang.org/policies/llm-usage.html>`__
 - Jynn Nelson, `rust-lang/rust is adopting an LLM policy <https://blog.rust-lang.org/inside-rust/2026/08/05/rust-langrust-is-adopting-an-llm-policy/>`__
 - rustc-dev-guide, `LLM Guidance <https://rustc-dev-guide.rust-lang.org/llm-guidance.html>`__
+- Debian Project, `General Resolution 2026-002: LLM usage in Debian <https://www.debian.org/vote/2026/vote_002>`__
+- LWN.net, `Debian votes to allow "responsible use of generative AI" <https://lwn.net/Articles/1091231/>`__
 
 .. _REUSE: https://reuse.software/
 .. _SPDX: https://spdx.dev/
