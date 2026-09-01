@@ -70,6 +70,17 @@
   when: vmagent__deploy_state != 'absent' and
         not (vmagent__skip_install | bool)
 
+- name: Assert host architecture is supported by vmagent
+  ansible.builtin.assert:
+    that:
+      - ansible_architecture in vmagent__arch_map
+    fail_msg: >-
+      vmagent has no release archive for architecture
+      '{{ ansible_architecture }}'. Supported uname architectures:
+      {{ vmagent__arch_map.keys() | list | sort }}.
+  when: vmagent__deploy_state != 'absent' and
+        not (vmagent__skip_install | bool)
+
 - name: Install vmagent binary
   ansible.builtin.include_tasks: 'install_binary.yml'
   when: vmagent__deploy_state != 'absent' and
@@ -96,6 +107,90 @@
   notify: [ 'Reload service manager' ]
   when: vmagent__deploy_state != 'absent'
 
+- name: Remove leftover vmagent instances
+  when: vmagent__deploy_state == 'absent'
+  block:
+
+    - name: List leftover vmagent systemd instances
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - list-units
+          - --all
+          - --no-legend
+          - --plain
+          - 'vmagent@*.service'
+      register: vmagent__register_units
+      changed_when: false
+      failed_when: false
+
+    - name: Find leftover role-managed instance files
+      ansible.builtin.find:
+        paths:
+          - '{{ vmagent__config_dir }}'
+          - '{{ vmagent__home }}'
+        patterns:
+          - '*.yml'
+          - '*.env'
+        file_type: file
+      register: vmagent__register_instance_files
+      failed_when: false
+
+    - name: Find leftover persistent queue directories
+      ansible.builtin.find:
+        paths:
+          - '{{ vmagent__home }}'
+        file_type: directory
+        recurse: false
+      register: vmagent__register_queue_dirs
+      failed_when: false
+
+    - name: Stop and disable leftover vmagent instances
+      ansible.builtin.systemd:
+        name: 'vmagent@{{ item }}.service'
+        enabled: false
+        state: 'stopped'
+      register: vmagent__register_stop_leftover
+      failed_when:
+        - vmagent__register_stop_leftover is failed
+        - "'Could not find the requested service' not in (vmagent__register_stop_leftover.msg | d(''))"
+        - (vmagent__register_stop_leftover.status.LoadState | d('')) != 'not-found'
+      loop: '{{
+          (
+            (vmagent__register_units.stdout_lines | d([]))
+            | map("split") | map("first")
+            | select("match", "^vmagent@.+\.service$")
+            | map("regex_replace", "^vmagent@(.+)\\.service$", "\\1") | list
+          )
+          +
+          (
+            (vmagent__register_instance_files.files | d([]))
+            | map(attribute="path") | map("basename")
+            | map("regex_replace", "\\.(yml|env)$", "") | list
+          )
+          +
+          (
+            (vmagent__register_queue_dirs.files | d([]))
+            | map(attribute="path") | map("basename") | list
+          )
+        ) | unique }}'
+
+    - name: Remove leftover instance files
+      ansible.builtin.file:
+        path: '{{ item.path }}'
+        state: 'absent'
+      loop: '{{ vmagent__register_instance_files.files | d([]) }}'
+      loop_control:
+        label: '{{ item.path }}'
+
+    - name: Remove leftover persistent queue directories
+      ansible.builtin.file:
+        path: '{{ item.path }}'
+        state: 'absent'
+      loop: '{{ vmagent__register_queue_dirs.files | d([]) }}'
+      loop_control:
+        label: '{{ item.path }}'
+
 - name: Remove vmagent systemd template unit
   ansible.builtin.file:
     path: '/etc/systemd/system/vmagent@.service'
@@ -112,6 +207,7 @@
   loop_control:
     loop_var: 'instance'
     label: '{{ instance.name }}'
+  when: vmagent__deploy_state != 'absent'
 
 - name: Remove vmagent binary when deploy state is absent
   ansible.builtin.file:

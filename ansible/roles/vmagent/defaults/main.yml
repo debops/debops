@@ -53,8 +53,9 @@ vmagent__arch_map:
 # .. envvar:: vmagent__arch [[[
 #
 # Architecture suffix used in the release archive name for the current host.
-vmagent__arch: '{{ vmagent__arch_map[ansible_architecture]
-                   | d("amd64") }}'
+# The role fails when ``ansible_architecture`` is not a key in
+# :envvar:`vmagent__arch_map` instead of silently selecting ``amd64``.
+vmagent__arch: '{{ vmagent__arch_map[ansible_architecture] }}'
 
                                                                    # ]]]
 # .. envvar:: vmagent__archive_sha256_map [[[

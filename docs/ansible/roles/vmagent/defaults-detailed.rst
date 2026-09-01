@@ -118,9 +118,12 @@ Binary source selection (waterfall)
 -----------------------------------
 
 The role evaluates the following sources, in order, and uses the first
-one that resolves successfully. The detailed mechanics live in
-:file:`tasks/install_binary.yml`; the rules below summarize the user
-contract.
+one that is configured. A non-empty
+:envvar:`vmagent__local_archive_path` or
+:envvar:`vmagent__controller_archive_path` wins even if the archive is
+missing on disk; there is no fall-through to the next source. The
+detailed mechanics live in :file:`tasks/install_binary.yml`; the rules
+below summarize the user contract.
 
 #. ``vmagent__skip_install: True`` - the role does not touch
    :envvar:`vmagent__bin_path`. Useful when the binary is provided by
@@ -176,4 +179,6 @@ To add further restrictions without forking the template, append
      - 'SystemCallFilter=~@privileged @resources'
 
 The directives are emitted verbatim at the end of the ``[Service]``
-block, so any ``systemd`` directive is supported.
+block, so any directive valid in ``[Service]`` is supported.
+``[Unit]`` and ``[Install]`` keys are not accepted here and would
+produce an invalid unit.

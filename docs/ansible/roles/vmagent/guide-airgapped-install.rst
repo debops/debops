@@ -34,12 +34,14 @@ in a strict waterfall (first match wins) inside
    :command:`ansible.builtin.get_url` from
    :envvar:`vmagent__release_base_url` (GitHub by default).
 
-The expected SHA256 checksum is enforced in every code path -
-:command:`get_url` enforces it inline, while local-host and
+The expected SHA256 checksum is enforced on every archive-installation
+path - :command:`get_url` enforces it inline, while local-host and
 controller-side archives are checked via a separate
 :command:`ansible.builtin.stat` task with
 ``checksum_algorithm: sha256`` followed by an :command:`assert`. A
 mismatched archive aborts the play before unpacking.
+:envvar:`vmagent__skip_install` bypasses binary management entirely, so
+no archive checksum is checked in that path.
 
 
 Pattern 1: internal HTTP(S) mirror (Nexus / Artifactory / MinIO)
