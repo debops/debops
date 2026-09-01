@@ -107,13 +107,33 @@
         name: '{{ prometheus_exporter__fact_service }}'
         enabled: False
         state: 'stopped'
-      failed_when: False
+      register: prometheus_exporter__register_stop
+      failed_when:
+        - prometheus_exporter__register_stop is failed
+        - "'Could not find the requested service' not in (prometheus_exporter__register_stop.msg | d(''))"
+        - (prometheus_exporter__register_stop.status.LoadState | d('')) != 'not-found'
 
     - name: Remove drop-in for exporter {{ exporter.name }}
       ansible.builtin.file:
         path: '{{ prometheus_exporter__dropin_dir }}/{{ prometheus_exporter__fact_service }}.service.d/override.conf'
         state: 'absent'
       register: prometheus_exporter__register_absent_dropin
+
+    - name: Remove config file for exporter {{ exporter.name }}
+      ansible.builtin.file:
+        path: '{{ prometheus_exporter__fact_config_path }}'
+        state: 'absent'
+      no_log: '{{ exporter.config_no_log | d(False) | bool }}'
+      when: exporter.config is defined
+
+    - name: Remove extra config files for exporter {{ exporter.name }}
+      ansible.builtin.file:
+        path: '{{ item.path }}'
+        state: 'absent'
+      loop: '{{ exporter.config_files | d([]) }}'
+      loop_control:
+        label: '{{ item.path }}'
+      no_log: '{{ exporter.config_no_log | d(False) | bool }}'
 
     - name: Reload systemd after removing drop-in {{ exporter.name }}
       ansible.builtin.systemd:
