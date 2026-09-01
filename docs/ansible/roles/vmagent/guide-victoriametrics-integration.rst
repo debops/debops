@@ -91,7 +91,7 @@ When vmagent runs on the same host as VictoriaMetrics, point it at
 
 .. code-block:: yaml
 
-   vmagent__remote_write_urls:
+   vmagent__default_remote_write_urls:
      - 'http://localhost:8428/api/v1/write'
 
 

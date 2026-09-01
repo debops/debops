@@ -41,6 +41,8 @@
         group: '{{ vmagent__group }}'
         mode: '0400'
       register: vmagent__register_secret
+      no_log: '{{ debops__no_log | d(True) }}'
+      diff: false
       when: instance.bearer_token | d(False) | bool
 
     - name: Deploy scrape configuration for vmagent instance {{ instance.name }}
@@ -91,7 +93,11 @@
         name: 'vmagent@{{ instance.name }}.service'
         enabled: False
         state: 'stopped'
-      failed_when: False
+      register: vmagent__register_stop
+      failed_when:
+        - vmagent__register_stop is failed
+        - "'Could not find the requested service' not in (vmagent__register_stop.msg | d(''))"
+        - (vmagent__register_stop.status.LoadState | d('')) != 'not-found'
 
     - name: Remove scrape configuration for vmagent instance {{ instance.name }}
       ansible.builtin.file:
