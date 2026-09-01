@@ -46,6 +46,14 @@ Before using this role, you need:
 3. The tunnel token or credentials file placed on the Ansible Controller
    in the appropriate ``secret/`` directory (see below).
 
+The upstream Cloudflare APT key is identified by
+:envvar:`cloudflared__apt_key_id` and downloaded from
+:envvar:`cloudflared__apt_key_url` via :ref:`debops.keyring`. To pin a
+reviewed copy of the key on the Ansible Controller, place an ASCII-armored
+file named :file:`0x<FINGERPRINT>.asc` in :envvar:`keyring__local_path`
+(see :ref:`debops.keyring`). That local file is used instead of the
+vendor URL.
+
 
 Tunnel modes
 ------------
@@ -63,8 +71,9 @@ The role supports two tunnel management modes:
 
 **Local mode** (``mode: 'local'``)
   The tunnel configuration (ingress rules, origin request settings, WARP
-  routing) is managed locally via Ansible. The role generates a ``config.yml``
-  for each tunnel.
+  routing) is managed locally via Ansible. The role generates a per-tunnel
+  YAML file named :file:`<tunnel-name>.yml` under
+  :envvar:`cloudflared__config_dir`.
 
   Place the credentials JSON (from ``cloudflared tunnel create``) in::
 

@@ -69,6 +69,9 @@ cloudflared__apt_key_url: 'https://pkg.cloudflare.com/cloudflare-public-v2.gpg'
 # .. envvar:: cloudflared__apt_key_id [[[
 #
 # The fingerprint of the GPG key used to sign the Cloudflare APT repository.
+# Passed to :ref:`debops.keyring` as ``id``. When the same fingerprint is
+# present in :envvar:`keyring__local_path` as :file:`0xFINGERPRINT.asc`,
+# that local key is used instead of downloading the vendor URL.
 cloudflared__apt_key_id: 'CC94B39C77AE7342A68B89628A682D308D4E5E73'
 
                                                                    # ]]]
@@ -300,7 +303,8 @@ cloudflared__etc_services__dependent_list:
 # Configuration for the :ref:`debops.keyring` Ansible role.
 cloudflared__keyring__dependent_apt_keys:
 
-  - url: '{{ cloudflared__apt_key_url }}'
+  - id: '{{ cloudflared__apt_key_id }}'
+    url: '{{ cloudflared__apt_key_url }}'
     keyring: 'cloudflare-public-v2.gpg'
     repo: '{{ cloudflared__apt_repo_url }}'
     state: '{{ "present"

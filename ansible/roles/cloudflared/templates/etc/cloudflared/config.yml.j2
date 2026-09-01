@@ -78,11 +78,11 @@ warp-routing:
 
 ingress:
 {%   for rule in tunnel.ingress %}
-  - hostname: {{ rule.hostname }}
+  - hostname: {{ rule.hostname | to_json }}
 {%     if rule.path | d() %}
-    path: {{ rule.path }}
+    path: {{ rule.path | to_json }}
 {%     endif %}
-    service: {{ rule.service }}
+    service: {{ rule.service | to_json }}
 {%     if rule.originRequest | d({}) %}
     originRequest:
 {%       for key, value in rule.originRequest.items() %}
@@ -96,5 +96,5 @@ ingress:
 {%       endfor %}
 {%     endif %}
 {%   endfor %}
-  - service: {{ tunnel.catch_all_service | d(cloudflared__catch_all_service) }}
+  - service: {{ tunnel.catch_all_service | d(cloudflared__catch_all_service) | to_json }}
 {% endif %}

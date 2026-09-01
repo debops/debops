@@ -19,6 +19,8 @@
         group: '{{ cloudflared__group }}'
         mode: '0600'
       register: cloudflared__register_credentials
+      no_log: '{{ debops__no_log | d(True) }}'
+      diff: false
       when: tunnel.mode | d('token') == 'local'
 
     - name: Deploy tunnel configuration file for cloudflared tunnel {{ tunnel.name }}
@@ -38,6 +40,8 @@
         group: '{{ cloudflared__group }}'
         mode: '0640'
       register: cloudflared__register_env
+      no_log: '{{ debops__no_log | d(True) }}'
+      diff: false
       when: tunnel.mode | d('token') == 'token'
 
     - name: Remove unneeded tunnel environment file for cloudflared tunnel {{ tunnel.name }}

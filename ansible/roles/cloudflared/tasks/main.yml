@@ -101,6 +101,74 @@
     - 'Reload service manager'
   when: cloudflared__deploy_state != 'absent'
 
+- name: Remove leftover cloudflared tunnels
+  when: cloudflared__deploy_state == 'absent'
+  block:
+
+    - name: List leftover cloudflared systemd instances
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - list-units
+          - --all
+          - --no-legend
+          - --plain
+          - 'cloudflared@*.service'
+      register: cloudflared__register_units
+      changed_when: false
+      failed_when: false
+
+    - name: Find leftover role-managed tunnel files
+      ansible.builtin.find:
+        paths:
+          - '{{ cloudflared__config_dir }}'
+          - '{{ cloudflared__credentials_dir }}'
+        patterns:
+          - '*.yml'
+          - '*.env'
+          - '*.json'
+        file_type: file
+      register: cloudflared__register_tunnel_files
+      failed_when: false
+
+    - name: Stop and disable leftover cloudflared instances
+      ansible.builtin.systemd:
+        name: 'cloudflared@{{ item }}.service'
+        enabled: false
+        state: 'stopped'
+      failed_when: false
+      loop: '{{
+          (
+            (cloudflared__register_units.stdout_lines | d([]))
+            | map("split") | map("first")
+            | select("match", "^cloudflared@.+\.service$")
+            | map("regex_replace", "^cloudflared@(.+)\\.service$", "\\1") | list
+          )
+          +
+          (
+            (cloudflared__register_tunnel_files.files | d([]))
+            | map(attribute="path") | map("basename")
+            | map("regex_replace", "\\.(yml|env|json)$", "") | list
+          )
+        ) | unique }}'
+
+    - name: Remove leftover tunnel files
+      ansible.builtin.file:
+        path: '{{ item.path }}'
+        state: 'absent'
+      loop: '{{ cloudflared__register_tunnel_files.files | d([]) }}'
+      loop_control:
+        label: '{{ item.path }}'
+
+    - name: Remove cloudflared directories
+      ansible.builtin.file:
+        path: '{{ item }}'
+        state: 'absent'
+      loop:
+        - '{{ cloudflared__config_dir }}'
+        - '{{ cloudflared__credentials_dir }}'
+        - '{{ cloudflared__log_dir }}'
+
 - name: Remove cloudflared systemd template unit
   ansible.builtin.file:
     path: '/etc/systemd/system/cloudflared@.service'
@@ -117,6 +185,7 @@
   loop_control:
     loop_var: 'tunnel'
     label: '{{ tunnel.name }}'
+  when: cloudflared__deploy_state != 'absent'
 
 - name: Post hooks
   ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "cloudflared/post_main.yml") }}'
