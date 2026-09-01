@@ -161,6 +161,10 @@ you can configure nginx to listen with TLS and point cloudflared to HTTPS:
          - hostname: 'secure.example.com'
            service: 'https://127.0.0.1:443'
 
-Note: ``noTLSVerify: true`` is needed if nginx uses a self-signed certificate.
-For production, consider using the :ref:`debops.pki` role to manage origin
-certificates.
+``noTLSVerify: true`` disables certificate validation. The loopback
+connection is still encrypted, but cloudflared does not authenticate
+nginx. Treat this as an exception, not a secure default.
+
+Prefer a certificate that cloudflared trusts (for example one issued by
+:ref:`debops.pki`) and set ``originServerName`` in ``origin_request``
+when the certificate Common Name or SAN is not ``127.0.0.1``.
