@@ -27,7 +27,8 @@ output['installed'] = cmd_exists('cloudflared')
 try:
     version_stdout = subprocess.check_output(
             ["cloudflared", "--version"],
-            stderr=subprocess.STDOUT
+            stderr=subprocess.STDOUT,
+            timeout=10
             ).decode('utf-8').strip()
 
     version_match = re.search(r'(\d+\.\d+\.\d+)', version_stdout)
@@ -37,12 +38,22 @@ try:
 except Exception:
     pass
 
+config_dir = '{{ cloudflared__config_dir }}'
 tunnels = []
+seen = set()
+
 try:
+    if os.path.isdir(config_dir):
+        for name in sorted(os.listdir(config_dir)):
+            if name.endswith('.yml'):
+                seen.add(name[:-4])
+
     units_stdout = subprocess.check_output(
-            ["systemctl", "list-units", "cloudflared@*.service",
+            ["systemctl", "list-units", "--all",
+             "cloudflared@*.service",
              "--no-legend", "--plain"],
-            stderr=subprocess.STDOUT
+            stderr=subprocess.STDOUT,
+            timeout=10
             ).decode('utf-8').strip()
 
     for line in units_stdout.split('\n'):
@@ -50,24 +61,30 @@ try:
             unit_name = line.split()[0]
             match = re.search(r'cloudflared@(.+)\.service', unit_name)
             if match:
-                tunnel_name = match.group(1)
-                active_state = 'unknown'
-                try:
-                    active_state = subprocess.check_output(
-                            ["systemctl", "is-active",
-                             "cloudflared@{}.service".format(tunnel_name)],
-                            stderr=subprocess.STDOUT
-                            ).decode('utf-8').strip()
-                except subprocess.CalledProcessError as e:
-                    active_state = e.output.decode('utf-8').strip()
+                seen.add(match.group(1))
 
-                tunnels.append({
-                    'name': tunnel_name,
-                    'active': active_state
-                })
+    for tunnel_name in sorted(seen):
+        active_state = 'unknown'
+        try:
+            active_state = subprocess.check_output(
+                    ["systemctl", "is-active",
+                     "cloudflared@{}.service".format(tunnel_name)],
+                    stderr=subprocess.STDOUT,
+                    timeout=10
+                    ).decode('utf-8').strip()
+        except subprocess.CalledProcessError as e:
+            active_state = e.output.decode('utf-8').strip()
 
-except Exception:
-    pass
+        tunnels.append({
+            'name': tunnel_name,
+            'active': active_state
+        })
+
+except Exception as exc:
+    # Keep fact collection successful (DebOps convention) but surface
+    # why tunnels stayed empty — a hang or a daemon error must not
+    # look like "no tunnels on this host".
+    output['tunnels_query_error'] = type(exc).__name__
 
 output['tunnels'] = tunnels
 
