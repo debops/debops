@@ -7,8 +7,11 @@
 Guide: scraping exporters with vmagent
 ======================================
 
-Exporters managed by this role listen on ``127.0.0.1``. Add a matching
-scrape job to the local :ref:`debops.vmagent` instance, for example:
+By default exporters listen on ``127.0.0.1``. Scrape targets must match
+each exporter's ``listen_address`` (or the default
+:envvar:`prometheus_exporter__default_listen_host` plus the known port).
+Add a matching scrape job to the local :ref:`debops.vmagent` instance,
+for example:
 
 .. code-block:: yaml
 
