@@ -90,9 +90,13 @@ prometheus_exporter__host_exporters: []
                                                                    # ]]]
 # .. envvar:: prometheus_exporter__combined_exporters [[[
 #
-# Combined list consumed by the role tasks.
-prometheus_exporter__combined_exporters: '{{ prometheus_exporter__exporters
+# Combined list consumed by the role tasks. Entries with the same ``name``
+# are merged via :ref:`universal_configuration`; later lists win
+# (``host_exporters`` over ``group_exporters`` over ``exporters``).
+prometheus_exporter__combined_exporters: '{{ (prometheus_exporter__exporters
                                              + prometheus_exporter__group_exporters
-                                             + prometheus_exporter__host_exporters }}'
+                                             + prometheus_exporter__host_exporters)
+                                             | flatten
+                                             | debops.debops.parse_kv_items }}'
                                                                    # ]]]
                                                                    # ]]]

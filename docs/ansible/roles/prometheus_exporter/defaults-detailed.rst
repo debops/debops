@@ -25,7 +25,13 @@ The :envvar:`prometheus_exporter__exporters`,
 :envvar:`prometheus_exporter__group_exporters` and
 :envvar:`prometheus_exporter__host_exporters` lists define the managed
 exporters. They are combined into
-:envvar:`prometheus_exporter__combined_exporters`.
+:envvar:`prometheus_exporter__combined_exporters` using
+:ref:`Universal Configuration <universal_configuration>`. Entries with
+the same ``name`` are merged; later lists override earlier ones
+(``host_exporters`` over ``group_exporters`` over ``exporters``). The
+role tasks and the local fact use this normalized list, so a host-level
+``state: absent`` disables a globally defined exporter instead of
+deploying it and then removing it.
 
 Each entry is a dict with the following keys:
 
@@ -35,9 +41,10 @@ Each entry is a dict with the following keys:
   listen port.
 
 ``state``
-  Optional, default ``present``. ``absent`` stops/disables the service and
-  removes the drop-in (and purges the package when
-  :envvar:`prometheus_exporter__purge_on_absent` is True).
+  Optional, default ``present``. ``absent`` stops/disables the service,
+  removes the drop-in and any role-managed configuration files
+  (``config`` / ``config_files``), and purges the package when
+  :envvar:`prometheus_exporter__purge_on_absent` is True.
 
 ``package`` / ``packages``
   Optional. APT package (default ``prometheus-<name>-exporter``) and a list

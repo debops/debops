@@ -15,8 +15,9 @@ What does this role do?
 -----------------------
 
 The role installs Prometheus exporters from Debian packages and manages
-each one via a systemd drop-in override. Exporters listen on the loopback
-interface; a local :ref:`debops.vmagent` instance scrapes them.
+each one via a systemd drop-in override. By default exporters listen on
+the loopback interface (see ``listen_address``); a local
+:ref:`debops.vmagent` instance scrapes them.
 
 
 Minimal inventory
