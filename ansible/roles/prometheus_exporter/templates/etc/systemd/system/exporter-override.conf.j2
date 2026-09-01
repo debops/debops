@@ -16,11 +16,11 @@ EnvironmentFile=
 {% if exporter.environment | d({}) | length > 0 %}
 Environment=
 {% for key, value in exporter.environment | dictsort %}
-Environment="{{ key }}={{ value }}"
+Environment={{ (key ~ '=' ~ (value | string)) | to_json }}
 {% endfor %}
 {% endif %}
 ExecStart=
-ExecStart={{ prometheus_exporter__fact_bin }} {{ pe_args | join(' ') }}
+ExecStart={{ ([prometheus_exporter__fact_bin] + pe_args) | map('to_json') | join(' ') }}
 {% for line in exporter.systemd_overrides | d([]) %}
 {{ line }}
 {% endfor %}
