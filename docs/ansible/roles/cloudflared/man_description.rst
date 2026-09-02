@@ -1,5 +1,4 @@
 .. Copyright (C) 2025-2026 Patryk Ściborek <patryk@sciborek.com>
-.. Copyright (C) 2025-2026 Patryk Ściborek <patryk@sciborek.com>
 .. Copyright (C) 2025-2026 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 

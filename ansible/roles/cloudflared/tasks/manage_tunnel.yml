@@ -50,6 +50,12 @@
         state: 'absent'
       when: tunnel.mode | d('token') != 'token'
 
+    - name: Remove unneeded tunnel credentials file for cloudflared tunnel {{ tunnel.name }}
+      ansible.builtin.file:
+        path: '{{ cloudflared__credentials_dir }}/{{ tunnel.name }}.json'
+        state: 'absent'
+      when: tunnel.mode | d('token') != 'local'
+
     - name: Enable cloudflared tunnel {{ tunnel.name }}
       ansible.builtin.systemd:
         name: 'cloudflared@{{ tunnel.name }}.service'
