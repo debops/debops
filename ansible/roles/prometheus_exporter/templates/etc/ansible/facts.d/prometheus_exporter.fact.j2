@@ -4,6 +4,6 @@
  #}
 {{ {'managed_by': 'debops.prometheus_exporter',
     'configured': prometheus_exporter__combined_exporters
-                  | selectattr('state', 'equalto', 'present')
+                  | rejectattr('state', 'equalto', 'absent')
                   | map(attribute='name') | list}
    | to_nice_json }}
