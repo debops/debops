@@ -55,9 +55,12 @@ Each entry is a dict with the following keys:
   path (default ``/usr/bin/<service>``).
 
 ``listen_address``
-  Optional. ``host:port`` for ``--web.listen-address``. Defaults to
-  ``prometheus_exporter__default_listen_host`` plus the port from
-  :envvar:`prometheus_exporter__known_ports` for this ``name``.
+  Optional when ``name`` is in
+  :envvar:`prometheus_exporter__known_ports`. ``host:port`` for
+  ``--web.listen-address``. Defaults to
+  ``prometheus_exporter__default_listen_host`` plus the known port.
+  Required for any other ``name`` — the role asserts this before
+  deploying, so an unmapped exporter cannot start on ``127.0.0.1:``.
 
 ``web_listen_flag``
   Optional, default ``--web.listen-address``. Override for exporters that use
