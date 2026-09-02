@@ -78,8 +78,12 @@ Each entry is a dict with the following keys:
   Optional. When ``config`` (a dict) is set, it is rendered as YAML to
   ``config_path`` (default ``/etc/prometheus/<name>.yml``) and
   ``<config_flag>=<config_path>`` (default ``--config.file``) is added to
-  the command line. Use ``config_mode: '0600'`` and ``config_no_log: true``
-  when the file contains secrets (e.g. ``prometheus-sql-exporter`` DSN).
+  the command line. Debian exporter units typically run as an
+  unprivileged user, so the default file mode is ``0644``. Do not
+  default secrets to ``0600`` owned by ``root`` unless that user can
+  read the file. Prefer ``environment`` (the drop-in is ``0600``) or
+  set ``config_mode: '0640'`` plus a group the exporter can read, and
+  ``config_no_log: true``.
 
 ``config_files``
   Optional list of extra files (``{ path, content|src, mode }``) for
