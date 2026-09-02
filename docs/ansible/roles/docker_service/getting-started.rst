@@ -113,7 +113,15 @@ for :envvar:`ferm__host_rules` -- silently fails to filter a published port.
 
 The ``published_ports`` integration in this role places rules in
 ``DOCKER-USER`` automatically, so the correct chain is used without requiring
-per-host :file:`ferm.yml` files:
+per-host :file:`ferm.yml` files.
+
+These rules need Docker's **iptables** firewall backend. Docker's native
+nftables backend does not provide ``DOCKER-USER``, so published ports are
+not filtered in that mode. Keep the default iptables integration (the
+:ref:`debops.docker_server` default) when using ``published_ports``.
+
+``--tags role::docker_service`` also selects the :ref:`debops.ferm` role
+so the generated rules are applied on the same run.
 
 .. code-block:: yaml
 
@@ -325,7 +333,8 @@ Available role tags:
 
 ``role::docker_service``
   Main role tag, should be used in the playbook to execute all of the role
-  tasks as well as role dependencies.
+  tasks as well as role dependencies. Also selects :ref:`debops.ferm` so
+  ``published_ports`` firewall rules are reconciled.
 
 ``role::docker_service:config``
   Tasks related to creating persistent data directories, generating
