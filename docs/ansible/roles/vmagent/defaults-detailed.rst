@@ -39,6 +39,8 @@ Each list entry is a dictionary with the following supported keys:
   identifier (``vmagent@<name>.service``) and as the base name for
   configuration files (``<name>.yml``, ``<name>.env``) and the
   persistent queue directory (:file:`{vmagent__home}/{name}/`).
+  Must be a single path component matching
+  ``[A-Za-z0-9][A-Za-z0-9._-]*`` (no slashes or ``..``).
 
 ``state``
   Optional, default: ``present``. If ``absent``, the instance is

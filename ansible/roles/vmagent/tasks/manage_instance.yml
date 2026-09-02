@@ -11,14 +11,16 @@
     that:
       - instance.name is defined
       - instance.name | length > 0
+      - instance.name is match('^[A-Za-z0-9][A-Za-z0-9._-]*$')
       - instance.state | d('present') in ['present', 'absent']
       - (instance.state | d('present') == 'absent')
         or (instance.remote_write_urls | d([]) | length > 0)
     quiet: True
     fail_msg: >-
-      vmagent instance must define a non-empty 'name', a 'state' of either
-      'present' or 'absent' (default 'present'), and for present instances
-      at least one 'remote_write_urls' entry.
+      vmagent instance must define a non-empty 'name' that is a single
+      systemd/filesystem component ([A-Za-z0-9][A-Za-z0-9._-]*), a
+      'state' of either 'present' or 'absent' (default 'present'), and
+      for present instances at least one 'remote_write_urls' entry.
 
 - name: Deploy vmagent instance {{ instance.name }}
   when: instance.state | d('present') == 'present'
