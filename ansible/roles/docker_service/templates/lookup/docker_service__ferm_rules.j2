@@ -12,11 +12,13 @@
 {%         set chain   = p.chain | d(docker_service__ferm__default_chain) %}
 {%         set action  = p.action_default | d(docker_service__ferm__default_action) %}
 {%         set target  = 'REJECT' if action == 'reject' else 'DROP' %}
-{# After Docker DNAT, DOCKER-USER sees the container destination port. #}
-{%         if chain == 'DOCKER-USER' %}
-{%           set dport = (p.container_port | d(p.port)) | string %}
-{%         else %}
+{# After Docker DNAT, filter chains other than INPUT see the
+   container destination port. INPUT (host network) still matches
+   the host-side port. #}
+{%         if chain == 'INPUT' %}
 {%           set dport = port %}
+{%         else %}
+{%           set dport = (p.container_port | d(p.port)) | string %}
 {%         endif %}
 {%         set iface = p.interface | d(p.interfaces | d(None)) %}
 {%         if iface is string %}
