@@ -140,6 +140,15 @@ HTTP traffic goes through nginx:
 In this example, HTTP traffic goes through nginx while SSH and PostgreSQL
 traffic is routed directly to the respective daemons.
 
+SSH and TCP hostnames are reached with a Cloudflare Access client, not
+by opening the origin port. Typical commands::
+
+   cloudflared access ssh --hostname ssh.example.com
+   cloudflared access tcp --hostname db.example.com --url localhost:5432
+
+Create an Access application and policy for each hostname if the tunnel
+is reachable outside a trusted network.
+
 
 TLS between cloudflared and nginx
 ----------------------------------
