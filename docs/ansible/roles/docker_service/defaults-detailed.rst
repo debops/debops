@@ -204,6 +204,12 @@ parameters:
 ``hostname``
   Optional, string. Hostname to set inside the container.
 
+``network_mode``
+  Optional, string. Docker network mode passed to
+  :command:`docker_container` (for example ``host`` or ``bridge``).
+  Use ``host`` together with ``published_ports[].chain: INPUT``;
+  published bridge traffic still goes through ``DOCKER-USER``.
+
 ``volumes``
   Optional, list of strings. Volume mounts in standard Docker format:
   ``host_path:container_path[:options]``. The role automatically creates host
@@ -486,6 +492,9 @@ A container with ``network_mode: host`` (traffic lands in ``INPUT``):
 
 .. code-block:: yaml
 
+     - name: 'node-exporter'
+       image: 'prom/node-exporter:latest'
+       network_mode: 'host'
        published_ports:
          - port: 9100
            chain: 'INPUT'
@@ -516,11 +525,12 @@ following parameters:
   the ``dport`` match unless ``container_port`` is set.
 
 ``container_port``
-  Optional, integer or string. Destination port to match in ``DOCKER-USER``
-  after Docker DNAT (the container-side port). Defaults to ``port``. Set
-  this when the Docker mapping is not 1:1, for example ``port: 8080`` and
-  ``container_port: 80`` for ``8080:80``. Ignored when ``chain`` is
-  ``INPUT`` (host-network containers still match ``port``).
+  Optional, integer or string. Destination port to match in filter
+  chains after Docker DNAT (``DOCKER-USER``, ``FORWARD``, …). Defaults
+  to ``port``. Set this when the Docker mapping is not 1:1, for example
+  ``port: 8080`` and ``container_port: 80`` for ``8080:80``. Ignored
+  when ``chain`` is ``INPUT`` (host-network containers still match
+  ``port``).
 
 ``protocol``
   Optional, string. IP protocol: ``tcp`` or ``udp``. Defaults to
