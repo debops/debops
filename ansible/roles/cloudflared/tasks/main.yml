@@ -24,17 +24,6 @@
     state: 'directory'
     mode: '0755'
 
-- name: Save cloudflared local facts
-  ansible.builtin.template:
-    src: 'etc/ansible/facts.d/cloudflared.fact.j2'
-    dest: '/etc/ansible/facts.d/cloudflared.fact'
-    mode: '0755'
-  notify: [ 'Refresh host facts' ]
-  tags: [ 'meta::facts' ]
-
-- name: Reload Ansible local facts
-  ansible.builtin.meta: 'flush_handlers'
-
 - name: Create cloudflared system group
   ansible.builtin.group:
     name: '{{ cloudflared__group }}'
@@ -186,6 +175,17 @@
     loop_var: 'tunnel'
     label: '{{ tunnel.name }}'
   when: cloudflared__deploy_state != 'absent'
+
+- name: Save cloudflared local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/cloudflared.fact.j2'
+    dest: '/etc/ansible/facts.d/cloudflared.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Reload Ansible local facts
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Post hooks
   ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "cloudflared/post_main.yml") }}'
