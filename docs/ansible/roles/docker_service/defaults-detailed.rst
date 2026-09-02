@@ -301,6 +301,8 @@ parameters:
 
 ``device_cgroup_rules``
   Optional, list of strings. Device cgroup rules for the container.
+  Requires ``community.docker`` 3.11.0 or newer; older collection
+  versions reject this parameter.
 
 ``device_requests``
   Optional, list of dictionaries. Device requests (for example a GPU).

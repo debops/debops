@@ -3,6 +3,7 @@
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 ---
+{% set ns = namespace(names=[]) %}
 {% for svc in docker_service__combined_services | d([]) %}
 {%   if svc.state | d('present') not in ['absent', 'ignore'] %}
 {%     for p in svc.published_ports | d([]) %}
@@ -42,6 +43,7 @@
 {%           set name_bits = name_bits + [iface_key | regex_replace('[^A-Za-z0-9._-]', '_')] %}
 {%         endif %}
 {%         set rule_name = name_bits | join('_') %}
+{%         set ns.names = ns.names + [rule_name] %}
 {%         set comment = p.comment | d(svc.name + ' port ' + port + '/' + proto + ' (DOCKER-USER)') %}
 - name: {{ rule_name | to_json }}
   by_role: 'debops.docker_service'
@@ -69,5 +71,12 @@
 
 {%       endif %}
 {%     endfor %}
+{%   endif %}
+{% endfor %}
+{% for old_name in (ansible_local.docker_service.ferm_rule_names | d([])) %}
+{%   if old_name not in ns.names %}
+- name: {{ old_name | to_json }}
+  state: 'absent'
+  by_role: 'debops.docker_service'
 {%   endif %}
 {% endfor %}

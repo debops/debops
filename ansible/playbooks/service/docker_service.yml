@@ -56,7 +56,8 @@
       when: docker_service__nginx__dependent_servers | d([]) | length > 0
 
     - role: ferm
-      tags: [ 'role::ferm', 'skip::ferm' ]
+      tags: [ 'role::ferm', 'skip::ferm',
+              'role::docker_service' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules
               if (docker_service__nginx__dependent_servers | d([]) | length > 0)
