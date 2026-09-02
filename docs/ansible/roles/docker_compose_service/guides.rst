@@ -295,7 +295,7 @@ For **machine learning** (AMD ROCm/OpenCL):
 
      immich-machine-learning:
        container_name: immich_machine_learning
-       image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}-openvino
+       image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}-rocm
        devices:
          - /dev/dri:/dev/dri
        volumes:
