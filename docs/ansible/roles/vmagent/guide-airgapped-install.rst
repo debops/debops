@@ -147,7 +147,7 @@ obtain the new checksums is to read them from the GitHub Releases API::
 
    curl -fsSL https://api.github.com/repos/VictoriaMetrics/VictoriaMetrics/releases/tags/v<NEW> \
        | jq -r '.assets[] | select(.name | test("vmutils-linux-(amd64|arm64)-v[0-9.]+\\.tar\\.gz$"))
-                          | "\(.name) \(.digest)"'
+                          | "\(.name) \(.digest | sub("^sha256:"; ""))"'
 
 Mirror operators should also re-fetch and re-publish the new archives
 to their internal store at the same time, otherwise the mirror's URL
