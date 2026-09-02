@@ -13,13 +13,7 @@ credentials-file: {{ cloudflared__credentials_dir }}/{{ tunnel.name }}.json
 {% endif %}
 {% if tunnel.config | d({}) %}
 {%   for key, value in (tunnel.config | d({})).items() %}
-{%     if value is sameas true %}
-{{ key }}: true
-{%     elif value is sameas false %}
-{{ key }}: false
-{%     else %}
-{{ key }}: {{ value }}
-{%     endif %}
+{{ key }}: {{ value | to_json }}
 {%   endfor %}
 {% endif %}
 {% if tunnel.config is not defined or 'protocol' not in tunnel.config | d({}) %}
@@ -53,17 +47,13 @@ post-quantum: true
 
 originRequest:
 {%   for key, value in tunnel.origin_request.items() %}
-{%     if value is sameas true %}
-  {{ key }}: true
-{%     elif value is sameas false %}
-  {{ key }}: false
-{%     elif value is mapping %}
+{%     if value is mapping %}
   {{ key }}:
 {%       for subkey, subvalue in value.items() %}
-    {{ subkey }}: {{ subvalue }}
+    {{ subkey }}: {{ subvalue | to_json }}
 {%       endfor %}
 {%     else %}
-  {{ key }}: {{ value }}
+  {{ key }}: {{ value | to_json }}
 {%     endif %}
 {%   endfor %}
 {% endif %}
@@ -86,13 +76,7 @@ ingress:
 {%     if rule.originRequest | d({}) %}
     originRequest:
 {%       for key, value in rule.originRequest.items() %}
-{%         if value is sameas true %}
-      {{ key }}: true
-{%         elif value is sameas false %}
-      {{ key }}: false
-{%         else %}
-      {{ key }}: {{ value }}
-{%         endif %}
+      {{ key }}: {{ value | to_json }}
 {%       endfor %}
 {%     endif %}
 {%   endfor %}
