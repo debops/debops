@@ -74,20 +74,23 @@ Each entry is a dict with the following keys:
   ``DATA_SOURCE_NAME``). When non-empty, the drop-in is written with mode
   ``0600`` and ``no_log``.
 
-``config`` / ``config_path`` / ``config_flag`` / ``config_mode`` / ``config_no_log``
+``config`` / ``config_path`` / ``config_flag`` / ``config_mode`` / ``config_group`` / ``config_no_log``
   Optional. When ``config`` (a dict) is set, it is rendered as YAML to
   ``config_path`` (default ``/etc/prometheus/<name>.yml``) and
   ``<config_flag>=<config_path>`` (default ``--config.file``) is added to
-  the command line. Debian exporter units typically run as an
-  unprivileged user, so the default file mode is ``0644``. Do not
-  default secrets to ``0600`` owned by ``root`` unless that user can
-  read the file. Prefer ``environment`` (the drop-in is ``0600``) or
-  set ``config_mode: '0640'`` plus a group the exporter can read, and
-  ``config_no_log: true``.
+  the command line. Files are owned by ``root`` and
+  ``config_group`` (default ``root``). Debian exporter units typically
+  run as an unprivileged user, so the default file mode is ``0644``.
+  Prefer ``environment`` for secrets (the drop-in is ``0600``). To keep
+  a YAML config readable only by the exporter, set
+  ``config_mode: '0640'``, ``config_group`` to that unit's group
+  (commonly ``prometheus``), and ``config_no_log: true``. ``0600``
+  works only when the process can read a root-owned file.
 
 ``config_files``
-  Optional list of extra files (``{ path, content|src, mode }``) for
-  exporters split across multiple files.
+  Optional list of extra files
+  (``{ path, content|src, mode, group }``) for exporters split across
+  multiple files. ``group`` defaults to ``config_group``.
 
 ``systemd_overrides``
   Optional list of extra ``[Service]`` lines, e.g.
