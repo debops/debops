@@ -45,7 +45,7 @@
         src: 'etc/prometheus/exporter-config.yml.j2'
         dest: '{{ prometheus_exporter__fact_config_path }}'
         owner: 'root'
-        group: 'root'
+        group: '{{ exporter.config_group | d("root") }}'
         mode: '{{ exporter.config_mode | d("0644") }}'
       no_log: '{{ exporter.config_no_log | d(False) | bool }}'
       register: prometheus_exporter__register_config
@@ -57,7 +57,7 @@
         src: '{{ item.src | d(omit) }}'
         dest: '{{ item.path }}'
         owner: 'root'
-        group: 'root'
+        group: '{{ item.group | d(exporter.config_group | d("root")) }}'
         mode: '{{ item.mode | d("0644") }}'
       loop: '{{ exporter.config_files | d([]) }}'
       loop_control:
