@@ -448,6 +448,98 @@ The container binds to ``127.0.0.1`` only -- external access is provided by
 infrastructure.
 
 
+.. _docker_service__guide_victoriametrics_lan_firewall:
+
+VictoriaMetrics with LAN firewall (DOCKER-USER)
+------------------------------------------------
+
+This example publishes the VictoriaMetrics port directly to the network
+(rather than binding to ``127.0.0.1`` behind :command:`nginx`) and restricts
+access to a single VLAN, explaining why ``DOCKER-USER`` -- not ``INPUT`` -- is
+the correct :command:`iptables` chain.
+
+Why ``INPUT`` does not work
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Docker-published ports use DNAT: incoming packets are rewritten in
+``nat/PREROUTING`` and then travel through the ``FORWARD`` chain, where
+Docker's own rules accept them. They **never reach the** ``INPUT`` **chain**.
+An ``iptables`` rule in ``INPUT`` such as::
+
+    -A INPUT -p tcp --dport 8428 -j REJECT
+
+appears correct and passes review, but has zero effect on published container
+traffic. The correct location is ``DOCKER-USER``, which is inserted at the
+**top** of the ``FORWARD`` chain by Docker specifically for user-defined
+rules.
+
+Service definition
+~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: yaml
+
+   # ansible/inventory/host_vars/srv.example.com/docker_service.yml
+   docker_service__host_services:
+
+     - name: 'victoriametrics'
+       image: 'victoriametrics/victoria-metrics:v1.93.0'
+       ports:
+         - '0.0.0.0:8428:8428'
+       volumes:
+         - '/srv/docker/victoriametrics/data:/victoria-metrics-data'
+       command: '-retentionPeriod=12 -selfScrapeInterval=10s'
+       published_ports:
+         - port: 8428
+           protocol: 'tcp'
+           allow: [ '192.0.2.0/24' ]
+           comment: 'VictoriaMetrics API - monitoring VLAN only'
+
+Note that the port is bound to ``0.0.0.0`` (all interfaces), so it is
+reachable from the LAN. The ``published_ports`` firewall entry restricts
+access to the monitoring VLAN only. The role emits two :command:`ferm`
+rules into ``DOCKER-USER`` for port ``8428/tcp``: an ``ACCEPT`` for source
+``192.0.2.0/24``, and a trailing ``REJECT`` (default) for all other
+sources.
+
+Verification
+~~~~~~~~~~~~~
+
+After running the playbook, verify the rules are in place:
+
+.. code-block:: console
+
+   $ iptables -L DOCKER-USER -n -v --line-numbers
+
+The output should include:
+
+.. code-block:: none
+
+   Chain DOCKER-USER (1 references)
+   num  target  prot opt source         destination
+   1    ACCEPT  tcp  --  192.0.2.0/24   0.0.0.0/0    tcp dpt:8428
+   2    REJECT  tcp  --  0.0.0.0/0      0.0.0.0/0    tcp dpt:8428 reject-with icmp-admin-prohibited
+   3    RETURN  all  --  0.0.0.0/0      0.0.0.0/0
+
+.. important::
+
+   Rules **1** and **2** must appear **above** the ``RETURN`` terminator (rule
+   **3**). The role's generated rules are applied via :command:`ferm`, which
+   manages the complete ``DOCKER-USER`` chain, so ordering is correct by
+   default.
+
+Rule persistence after Docker restart
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The :ref:`debops.docker_server` role installs a :command:`ferm` post-hook
+(``/etc/ferm/hooks/post.d/restart-docker``, controlled by
+:envvar:`docker_server__ferm_post_hook`) that restarts Docker after every
+:command:`ferm` reload, so Docker's ``FORWARD`` jumps are always present
+after :command:`ferm` rebuilds the ``filter`` table. When Docker itself
+restarts, it only ensures the ``DOCKER-USER`` chain exists -- it does not
+flush its contents, so rules placed there by :command:`ferm` survive a
+Docker restart.
+
+
 .. _docker_service__guide_victoriametrics_vmauth:
 
 VictoriaMetrics with vmauth
