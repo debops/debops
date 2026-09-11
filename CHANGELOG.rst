@@ -29,6 +29,14 @@ Added
 General
 '''''''
 
+- The :command:`debops` command supports an opt-in check for new project
+  versions at CLI startup. When enabled in the global DebOps configuration
+  using the ``[version_check]`` configuration section, the check detects the
+  installation type and periodically verifies the corresponding upstream
+  source for updates, printing a notice on the standard error stream with an
+  install-specific hint. Network failures are ignored and the result is
+  cached for the configured interval.
+
 - The :file:`CREDITS` file with the list of project contributors is now
   generated from the git commit history using the :command:`make credits`
   command and is included in the Python packages and the DebOps Ansible
