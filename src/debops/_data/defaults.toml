@@ -88,3 +88,34 @@ facility = "user"
 # at the command line increases log level. Supported levels are:
 # DEBUG, INFO, NOTICE, WARNING, ERROR, CRITICAL
 level = "WARNING"
+
+[version_check]
+
+# Enable checking for new DebOps versions at startup. When enabled,
+# DebOps periodically checks a configured source and displays a notice
+# on stderr if an update is available. This option is opt-in only.
+enabled = false
+
+# How often to check for updates, in hours. The result is cached locally,
+# so network calls only happen once per interval.
+check_interval = 24
+
+# Timeout in seconds for network requests (PyPI) and git subprocess calls.
+timeout = 5
+
+# PyPI package name to query when installed via pip/pipx.
+pypi_package = "debops"
+
+# PyPI JSON API URL template. The {package} placeholder is replaced with
+# the value of pypi_package.
+pypi_url = "https://pypi.org/pypi/{package}/json"
+
+# Name of the git remote to fetch and compare against for git checkouts.
+git_remote = "origin"
+
+# Optional URL of the canonical DebOps git repository to check against.
+# When set, the check fetches from this URL directly instead of the
+# configured git_remote. Use this when the local 'origin' is a fork, or
+# for self-hosted mirrors. When empty, the git_remote name is used and
+# the user's existing git credentials and configuration are respected.
+git_repo_url = ""
