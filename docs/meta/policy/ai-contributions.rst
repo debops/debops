@@ -11,7 +11,7 @@ DebOps LLM-Generated Contributions Policy
 
 :Date drafted: 2026-07-02
 :Date effective: 2026-09-01
-:Last changed: 2026-08-30
+:Last changed: 2026-09-11
 :Version: 0.3.0
 :Authors: - drybjed_
 
@@ -58,12 +58,21 @@ Submitting unreviewed AI-generated content wastes scarce maintainer time and
 is unacceptable. Contributions that lack thoughtfulness and care may be
 declined outright.
 
-Contributors MUST review their work and not submit content they recognize
-as a verbatim copy of copyrighted sources. Contributors MUST apply the same
-license-compatibility diligence to AI-generated content as to any other
-third-party code. Contributors MUST NOT use AI tools whose terms of service
-place restrictions on generated output that conflict with the project's
-licensing or the ability to OpenPGP-sign the resulting commits.
+Contributors MUST review their work and MUST NOT knowingly submit content
+that infringes third-party copyright or licensing terms. Contributors MUST
+apply the same license-compatibility diligence to AI-generated content as
+to any other third-party code. Reproducing or regenerating copyrighted
+material with an AI tool does not remove its copyright. Contributors MUST
+NOT assume that generated content is original solely because an AI tool
+produced it; where they recognize generated output as third-party material,
+or tooling flags substantial similarity, they MUST establish the applicable
+license and their right to submit it before proceeding. Contributors are
+not required to audit output against unknown sources; they are required to
+act on what they can reasonably know, investigate, and recognize.
+
+Contributors MUST NOT use AI tools whose terms of service place restrictions
+on generated output that conflict with the project's licensing or the
+ability to OpenPGP-sign the resulting commits.
 
 Meaning of "originally created by an LLM"
 -----------------------------------------
@@ -130,7 +139,10 @@ This trailer lives in the Git metadata, not in file content. It is compatible
 with REUSE_ and SPDX_ file-level license and copyright headers — the trailer
 makes no statement about file-level licensing. It provides a machine-parseable
 record of provenance that automated tooling can use to evaluate compliance
-with this policy.
+with this policy. Because LLM output can carry provenance uncertainty that a
+contributor cannot fully resolve, the trailer lets maintainers identify where
+the diligence obligations described in the Core Principle section apply and
+where extra review is warranted.
 
 Maintainers MUST preserve the ``Generated-By: LLM`` trailer during merge. If
 a PR branch is squashed, the committer SHALL add the trailer to the resulting
