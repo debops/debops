@@ -261,6 +261,12 @@ General
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
+- The :command:`pki-realm` script now runs :command:`certbot` with the
+  ``--quiet`` option for DNS-01 and manual ACME flows, and creates realm
+  symlinks without :command:`ln` ``-v``. Periodic ``batch``/``at`` jobs no
+  longer mail root on successful renewals or when a certificate is not yet
+  due; errors still produce mail.
+
 - Don't include the content of the Subject field in the list of domains in
   a certificate request. This fixes potential issues with the
   :command:`certbot` command setting wrong certificate name and signature.
