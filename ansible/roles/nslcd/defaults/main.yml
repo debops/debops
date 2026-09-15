@@ -127,8 +127,9 @@ nslcd__ldap_binddn: '{{ ([nslcd__ldap_self_rdn] + nslcd__ldap_device_dn) | join(
 #
 # The password stored in the account LDAP object used by the :command:`nslcd`
 # service to bind to the LDAP directory.
-nslcd__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
-                                + nslcd__ldap_binddn | to_uuid + ".password length=32"))
+nslcd__ldap_bindpw: '{{ (lookup("ldap_password",
+                                secret + "/ldap/credentials/",
+                                nslcd__ldap_binddn, "length=32"))
                         if nslcd__ldap_enabled | bool
                         else "" }}'
 
