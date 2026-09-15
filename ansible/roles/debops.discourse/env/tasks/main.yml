@@ -1,0 +1,60 @@
+---
+
+- name: Ensure that a SQL database is available
+  assert:
+    that:
+      - 'discourse__database == "postgresql"'
+  tags: [ 'role::discourse:env', 'role::discourse:assert' ]
+
+
+# Checks taken from discoure_docker's discourse-setup
+
+- name: Ensure there is at least 1GB free memory
+  assert:
+    that:
+      - 'ansible_memory_mb.real.total >= 1024'
+    fail_msg: >-
+      Discourse requires 1GB RAM to run. This system does not appear to
+      have sufficient memory.
+
+      Your site may not work properly, or future upgrades of Discourse
+      may not complete successfully.
+  tags: [ 'role::discourse:env', 'role::discourse:assert' ]
+
+- name: Ensure there is enough swap space im free memory is below 2GB
+  assert:
+    that:
+      - >
+        ansible_memory_mb.real.total >= 2000
+        or ansible_memory_mb.swap.total >= 2000
+    fail_msg: >-
+      Discourse requires at least 2GB of swap when running with 2GB of
+      RAM or less. This system does not appear to have sufficient swap space.
+
+      Without sufficient swap space, your site may not work properly,
+      and future upgrades of Discourse may not complete successfully.
+
+      To enable swap when using debops:
+        - set `swapfile__size: 2048` (or higher) for this host
+        - add this host to the `debops_service_swapfile` group
+        - run playbook `service/swapfile`
+  tags: [ 'role::discourse:env', 'role::discourse:assert' ]
+
+- name: Get free space on /var
+  shell: df /var | tail -n 1 | awk '{print $4}'
+  register: free_space_on_var
+
+- name: Ensure /var has enough free disk space
+  assert:
+    that:
+      # I doubt "5000" here really checks for 5GB, but this is what
+      # discourse-setup does.
+      - '{{ (free_space_on_var.stdout | int ) >= 5000 }}'
+    fail_msg: >-
+      Discourse requires at least 5GB free disk space. This system does
+      not appear to have sufficient disk space.
+
+      Insufficient disk space may result in problems running your site, and
+      may not even allow Discourse installation to complete successfully.
+
+      Please free up some space, or expand your disk, before continuing.
