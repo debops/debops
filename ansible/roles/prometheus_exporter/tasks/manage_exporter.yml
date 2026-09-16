@@ -5,7 +5,7 @@
 
 # Manage one exporter. Included in a loop with loop_var 'exporter'.
 
-- name: Validate exporter {{ exporter.name | d("<unnamed>") }} definition
+- name: Validate exporter definition {{ exporter.name | d("<unnamed>") }}
   ansible.builtin.assert:
     that:
       - exporter.name is defined
@@ -90,7 +90,7 @@
         state: 'started'
         daemon_reload: True
 
-    - name: Restart exporter {{ exporter.name }} on configuration change
+    - name: Restart exporter on configuration change {{ exporter.name }}
       ansible.builtin.systemd:  # noqa no-handler
         name: '{{ prometheus_exporter__fact_service }}'
         state: 'restarted'
@@ -136,7 +136,7 @@
       no_log: '{{ exporter.config_no_log | d(False) | bool }}'
 
     - name: Reload systemd after removing drop-in {{ exporter.name }}
-      ansible.builtin.systemd:
+      ansible.builtin.systemd:  # noqa no-handler
         daemon_reload: True
       when: prometheus_exporter__register_absent_dropin is changed
 
