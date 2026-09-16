@@ -23,6 +23,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.2: https://github.com/debops/debops/compare/v3.2.0...stable-3.2
 
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- Updates to the :ref:`debops_policy__ai_contributions` policy that define how
+  mixed human/LLM content should be handled within the project and clarify the
+  copyright status of the LLM-generated content.
+
 
 `debops v3.2.7`_ - 2026-09-14
 -----------------------------
