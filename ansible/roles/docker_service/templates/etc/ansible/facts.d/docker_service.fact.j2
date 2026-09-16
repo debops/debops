@@ -8,7 +8,7 @@
 # {{ ansible_managed }}
 
 from __future__ import print_function
-from json import dumps
+from json import dumps, loads
 import subprocess
 import os
 
@@ -23,9 +23,9 @@ def cmd_exists(cmd):
 output = {
     'installed': cmd_exists('docker'),
     'containers': {},
-    'ferm_rule_names': {{ docker_service__ferm__dependent_rules | d([])
+    'ferm_rule_names': loads('''{{ docker_service__ferm__dependent_rules | d([])
                          | rejectattr('state', 'equalto', 'absent')
-                         | map(attribute='name') | list | to_json }},
+                         | map(attribute='name') | list | to_json }}'''),
 }
 
 if output['installed']:
