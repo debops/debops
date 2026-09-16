@@ -19,7 +19,8 @@ output = {
     # recognize Agent 2 plugin drop-ins as role-managed even after their
     # integration has been removed entirely from the inventory (not just
     # marked 'state: absent'), see 'tasks/main.yml'.
-    'managed_plugin_names': {{ zabbix_agent__service_templates__known_plugin_names | to_json }}
+    'managed_plugin_names': loads(
+        '''{{ zabbix_agent__service_templates__known_plugin_names | to_json }}'''),
 }
 
 if os.path.isfile("/etc/zabbix/zabbix_agentd.conf"):
