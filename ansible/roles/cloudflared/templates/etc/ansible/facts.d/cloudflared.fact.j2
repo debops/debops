@@ -8,7 +8,7 @@
 # {{ ansible_managed }}
 
 from __future__ import print_function
-from json import dumps
+from json import dumps, loads
 import subprocess
 import os
 import re
@@ -38,7 +38,7 @@ try:
 except Exception:
     pass
 
-config_dir = {{ cloudflared__config_dir | to_json }}
+config_dir = loads('''{{ cloudflared__config_dir | to_json }}''')
 tunnels = []
 seen = set()
 
