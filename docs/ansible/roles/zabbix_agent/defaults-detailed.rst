@@ -72,3 +72,96 @@ used, can be defined using specific parameters:
 
 ``comment``
   Optional. A comment about a given configuration option.
+
+.. _zabbix_agent__ref_scripts:
+
+zabbix_agent__scripts
+------------------------
+
+List of helper scripts installed by the role in
+:envvar:`zabbix_agent__scripts_path` (``/usr/local/lib/zabbix/`` by
+default), usually referenced by commands in
+:envvar:`zabbix_agent__user_parameters`. Each list item is a dictionary
+with:
+
+``name``
+  Required. Filename of the script, relative to
+  :envvar:`zabbix_agent__scripts_path`.
+
+``src``
+  Path to the script file relative to the role's or playbook project's
+  ``files/`` directory, used as the ``ansible.builtin.copy`` module's
+  ``src`` parameter.
+
+``content``
+  Alternative to ``src``, literal content of the script.
+
+``mode``
+  Optional. File mode of the installed script, ``'0755'`` by default.
+
+``state``
+  Optional. If not specified or ``present``, the script is installed. If
+  ``absent``, the script is removed.
+
+Example, installing a custom script and referencing it in a UserParameter:
+
+.. code-block:: yaml
+
+   zabbix_agent__host_scripts:
+
+     - name: 'check-example.sh'
+       src: 'files/zabbix/check-example.sh'
+       mode: '0755'
+
+   zabbix_agent__host_user_parameters:
+
+     - key: 'example.check'
+       command: '{{ zabbix_agent__scripts_path }}/check-example.sh'
+       comment: 'Custom example check'
+
+.. _zabbix_agent__ref_user_parameters:
+
+zabbix_agent__user_parameters
+--------------------------------
+
+List of Zabbix Agent ``UserParameter`` entries rendered into
+:envvar:`zabbix_agent__user_parameters_conf_path` (a drop-in file included
+by the main agent configuration, separate from
+:envvar:`zabbix_agent__configuration` to keep custom checks manageable on
+their own). Each list item is a dictionary with:
+
+``key``
+  Required. The item key used to reference this check in Zabbix, for
+  example ``example.check``.
+
+``command``
+  Required unless ``state`` is ``absent``. The shell command executed by
+  the agent when the item is polled. Usually points at a script installed
+  via :envvar:`zabbix_agent__scripts` in
+  :envvar:`zabbix_agent__scripts_path`.
+
+``unsafe``
+  Optional, boolean. If ``True``, renders the entry as ``UserParameter``
+  with the flexible/unsafe syntax accepting parameters
+  (``key[*],command``) instead of a plain fixed key.
+
+``comment``
+  Optional. A comment rendered above the entry.
+
+``state``
+  Optional. If not specified or ``present``, the entry is included in the
+  generated file. If ``absent``, it is skipped.
+
+Example, defining a custom UserParameter directly without a separate
+script:
+
+.. code-block:: yaml
+
+   zabbix_agent__host_user_parameters:
+
+     - key: 'example.uptime_days'
+       command: "awk '{print int($1/86400)}' /proc/uptime"
+       comment: 'System uptime in days'
+
+The role uses this mechanism internally to implement the built-in LXC
+cgroup metrics, see :envvar:`zabbix_agent__cgroup_metrics`.

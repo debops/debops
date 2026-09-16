@@ -101,7 +101,10 @@ zabbix_agent__group: 'zabbix'
                                                                    # ]]]
 # .. envvar:: zabbix_agent__additional_groups [[[
 #
-# List of additional UNIX groups which should include the Zabbix agent account.
+# List of additional UNIX groups which should include the Zabbix agent
+# account, defined by the role itself. See
+# :envvar:`zabbix_agent__combined_additional_groups` for the variable used in
+# role tasks.
 zabbix_agent__additional_groups:
 
   # Integration with the 'debops.proc_hidepid' role to provide system-wide
@@ -110,6 +113,52 @@ zabbix_agent__additional_groups:
         if (ansible_local.proc_hidepid.enabled | d()) | bool
         else [] }}'
 
+  # Integration with the 'debops.pki' role. In 'cert' TLS mode the Zabbix
+  # Agent needs read access to the private key stored in a PKI realm, owned
+  # by the group configured in 'zabbix_agent__tls_pki_group' (usually
+  # 'ssl-cert'). Without this, 'zabbix-agent2' fails to start with
+  # "failed to initialize encryption" / permission denied on the key file.
+  #
+  # Known limitation: switching 'zabbix_agent__tls_mode' away from 'cert'
+  # removes this entry from the list, but does *not* revoke the Zabbix
+  # account's membership in 'zabbix_agent__tls_pki_group' on a host that
+  # previously had it -- 'ansible.builtin.user' is used with 'append: True'
+  # (see 'tasks/main.yml'), which only ever adds supplementary groups, never
+  # removes ones that are no longer listed. Revoking it safely would require
+  # tracking whether the role itself granted that specific membership (to
+  # avoid removing a group an administrator added on purpose), similar to
+  # the local-facts-based cleanup used for Agent 2 plugin drop-ins. If the
+  # PKI group is dedicated to this purpose (e.g. the default 'ssl-cert'),
+  # remove the account from it manually after changing the TLS mode.
+  - '{{ zabbix_agent__tls_pki_group
+        if (zabbix_agent__tls_mode == "cert")
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__group_additional_groups [[[
+#
+# List of additional UNIX groups which should include the Zabbix agent
+# account, defined on hosts in a specific Ansible inventory group.
+zabbix_agent__group_additional_groups: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__host_additional_groups [[[
+#
+# List of additional UNIX groups which should include the Zabbix agent
+# account, defined on specific hosts in the Ansible inventory.
+zabbix_agent__host_additional_groups: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__combined_additional_groups [[[
+#
+# Variable which combines the lists of additional UNIX groups and is used in
+# role tasks. Hosts and groups only need to specify additional entries,
+# instead of repeating the role defaults.
+zabbix_agent__combined_additional_groups: '{{ (zabbix_agent__additional_groups
+                                             + zabbix_agent__group_additional_groups
+                                             + zabbix_agent__host_additional_groups
+                                             + zabbix_agent__service_templates__combined_additional_groups)
+                                             | flatten | unique }}'
                                                                    # ]]]
 # .. envvar:: zabbix_agent__conf_file_path [[[
 #
@@ -125,9 +174,35 @@ zabbix_agent__conf_file_path: '{{ "/etc/zabbix/zabbix_agentd.conf"
 # These variables define the contents of the main Zabbix Agent configuration
 # file.
 
+# .. envvar:: zabbix_agent__tls_mode [[[
+#
+# Selects how the Zabbix Agent encrypts and authenticates its connections to
+# and from the Zabbix Server or Proxy. This defines the ``TLSConnect`` and
+# ``TLSAccept`` configuration options, and the related certificate/PSK
+# parameters. Available choices:
+#
+# - ``psk``: use a pre-shared key generated and stored using the DebOps
+#   :command:`secret` mechanism. This is the default, kept for backwards
+#   compatibility with existing installations.
+#
+# - ``cert``: use a host certificate managed by the :ref:`debops.pki` Ansible
+#   role. The role will look up the certificate, private key and CA bundle
+#   paths in the PKI realm selected by
+#   :envvar:`zabbix_agent__tls_pki_realm`, and will automatically add the
+#   :envvar:`zabbix_agent__user` UNIX account to the UNIX group that owns the
+#   PKI realm private files (see :envvar:`zabbix_agent__tls_pki_group`), so
+#   that the agent daemon can read its private key at startup. Without this,
+#   ``zabbix-agent2`` fails to start with a permission error while trying to
+#   initialize encryption.
+#
+# - ``unencrypted``: disable TLS support and use plain-text connections.
+zabbix_agent__tls_mode: 'psk'
+
+                                                                   # ]]]
 # .. envvar:: zabbix_agent__tls_psk_identity [[[
 #
-# Unique, case sensitive string used to identify the pre-shared key.
+# Unique, case sensitive string used to identify the pre-shared key. Used
+# only when :envvar:`zabbix_agent__tls_mode` is ``psk``.
 zabbix_agent__tls_psk_identity: '{{ lookup("password", secret
                                     + "/zabbix/identities/" + inventory_hostname
                                     + "/identity.key length=32 chars=ascii_letters,digits") }}'
@@ -136,10 +211,84 @@ zabbix_agent__tls_psk_identity: '{{ lookup("password", secret
 # .. envvar:: zabbix_agent__tls_psk_secret [[[
 #
 # Case sensitive secret key stored in a file and used
-# with the pre-shared key.
+# with the pre-shared key. Used only when :envvar:`zabbix_agent__tls_mode` is
+# ``psk``.
 zabbix_agent__tls_psk_secret: '{{ lookup("password", secret
                                   + "/zabbix/identities/" + inventory_hostname
                                   + "/secret.key length=64 chars=abcdef,digits") }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_pki_realm [[[
+#
+# Name of the PKI realm configured by the :ref:`debops.pki` Ansible role
+# which will be used to look up the host certificate files when
+# :envvar:`zabbix_agent__tls_mode` is ``cert``. By default the role will use
+# the system-wide PKI realm detected via Ansible local facts.
+zabbix_agent__tls_pki_realm: '{{ ansible_local.pki.realm
+                                  if (ansible_local.pki.realm | d())
+                                  else (pki_system_realm | d("domain")) }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_pki_path [[[
+#
+# Base path to the directory which holds the PKI realms, as configured by
+# the :ref:`debops.pki` Ansible role.
+zabbix_agent__tls_pki_path: '{{ ansible_local.pki.base_path
+                                 if (ansible_local.pki.base_path | d())
+                                 else ((pki_root | d("/etc/pki")) + "/realms") }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_pki_group [[[
+#
+# Name of the UNIX group which owns the private files of the PKI realm
+# selected above (usually ``ssl-cert``). The Zabbix Agent UNIX account is
+# added to this group automatically when :envvar:`zabbix_agent__tls_mode` is
+# ``cert``, see :envvar:`zabbix_agent__additional_groups`.
+zabbix_agent__tls_pki_group: '{{ pki_private_group | d("ssl-cert") }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_cert_file [[[
+#
+# Full path to the file with the host certificate or certificate chain, used
+# when :envvar:`zabbix_agent__tls_mode` is ``cert``.
+zabbix_agent__tls_cert_file: '{{ zabbix_agent__tls_pki_path + "/"
+                                  + zabbix_agent__tls_pki_realm + "/"
+                                  + (ansible_local.pki.crt | d("default.crt")) }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_key_file [[[
+#
+# Full path to the file with the host private key, used when
+# :envvar:`zabbix_agent__tls_mode` is ``cert``.
+zabbix_agent__tls_key_file: '{{ zabbix_agent__tls_pki_path + "/"
+                                 + zabbix_agent__tls_pki_realm + "/"
+                                 + (ansible_local.pki.key | d("default.key")) }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_ca_file [[[
+#
+# Full path to the file with the top-level CA certificate(s) used to verify
+# the Zabbix Server/Proxy certificate, used when
+# :envvar:`zabbix_agent__tls_mode` is ``cert``.
+zabbix_agent__tls_ca_file: '{{ zabbix_agent__tls_pki_path + "/"
+                                + zabbix_agent__tls_pki_realm + "/"
+                                + (ansible_local.pki.ca | d("CA.crt")) }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_server_cert_subject [[[
+#
+# Expected TLS certificate subject of the Zabbix Server/Proxy, checked by the
+# agent when :envvar:`zabbix_agent__tls_mode` is ``cert``. If empty, the
+# check is skipped. Example: ``CN=zabbix.example.org``.
+zabbix_agent__tls_server_cert_subject: ''
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_server_cert_issuer [[[
+#
+# Expected TLS certificate issuer of the Zabbix Server/Proxy, checked by the
+# agent when :envvar:`zabbix_agent__tls_mode` is ``cert``. If empty, the
+# check is skipped.
+zabbix_agent__tls_server_cert_issuer: ''
 
                                                                    # ]]]
 # .. envvar:: zabbix_agent__original_configuration [[[
@@ -487,25 +636,45 @@ zabbix_agent__original_configuration:
 # List of the default configuration options defined by the role.
 zabbix_agent__default_configuration:
 
-  - name: 'TLSPSKIdentity'
-    value: '{{ zabbix_agent__tls_psk_identity | d() }}'
-    state: 'present'
-
-  - name: 'TLSPSKFile'
-    value: '/etc/zabbix/secret.key'
-    state: 'present'
-
   - name: 'User'
     value: '{{ zabbix_agent__user }}'
     state: '{{ "present" if zabbix_agent__flavor == "C" else "ignore" }}'
 
   - name: 'TLSConnect'
-    value: 'psk'
-    state: 'present'
+    value: '{{ zabbix_agent__tls_mode }}'
+    state: '{{ "comment" if (zabbix_agent__tls_mode == "unencrypted") else "present" }}'
 
   - name: 'TLSAccept'
-    value: 'psk'
-    state: 'present'
+    value: '{{ zabbix_agent__tls_mode }}'
+    state: '{{ "comment" if (zabbix_agent__tls_mode == "unencrypted") else "present" }}'
+
+  - name: 'TLSPSKIdentity'
+    value: '{{ zabbix_agent__tls_psk_identity | d() }}'
+    state: '{{ "present" if (zabbix_agent__tls_mode == "psk") else "comment" }}'
+
+  - name: 'TLSPSKFile'
+    value: '/etc/zabbix/secret.key'
+    state: '{{ "present" if (zabbix_agent__tls_mode == "psk") else "comment" }}'
+
+  - name: 'TLSCAFile'
+    value: '{{ zabbix_agent__tls_ca_file }}'
+    state: '{{ "present" if (zabbix_agent__tls_mode == "cert") else "comment" }}'
+
+  - name: 'TLSCertFile'
+    value: '{{ zabbix_agent__tls_cert_file }}'
+    state: '{{ "present" if (zabbix_agent__tls_mode == "cert") else "comment" }}'
+
+  - name: 'TLSKeyFile'
+    value: '{{ zabbix_agent__tls_key_file }}'
+    state: '{{ "present" if (zabbix_agent__tls_mode == "cert") else "comment" }}'
+
+  - name: 'TLSServerCertSubject'
+    value: '{{ zabbix_agent__tls_server_cert_subject }}'
+    state: '{{ "present" if (zabbix_agent__tls_mode == "cert" and zabbix_agent__tls_server_cert_subject | d()) else "comment" }}'
+
+  - name: 'TLSServerCertIssuer'
+    value: '{{ zabbix_agent__tls_server_cert_issuer }}'
+    state: '{{ "present" if (zabbix_agent__tls_mode == "cert" and zabbix_agent__tls_server_cert_issuer | d()) else "comment" }}'
 
                                                                    # ]]]
 # .. envvar:: zabbix_agent__configuration [[[
@@ -538,6 +707,664 @@ zabbix_agent__combined_configuration: '{{ zabbix_agent__original_configuration
                                       + zabbix_agent__configuration
                                       + zabbix_agent__group_configuration
                                       + zabbix_agent__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# UserParameters and helper scripts [[[
+# -------------------------------------
+
+# .. envvar:: zabbix_agent__scripts_path [[[
+#
+# Absolute path to the directory where helper scripts referenced by
+# UserParameters are installed.
+zabbix_agent__scripts_path: '/usr/local/lib/zabbix'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__scripts [[[
+#
+# List of helper scripts installed by the role in
+# :envvar:`zabbix_agent__scripts_path`, usually referenced by commands in
+# :envvar:`zabbix_agent__user_parameters`. See
+# :ref:`zabbix_agent__ref_scripts` for more details. This variable should
+# not be modified directly, see the ``group``/``host`` variables below.
+zabbix_agent__scripts: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__group_scripts [[[
+#
+# Additional list of helper scripts, defined on hosts in a specific Ansible
+# inventory group. See :envvar:`zabbix_agent__scripts` for more details.
+zabbix_agent__group_scripts: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__host_scripts [[[
+#
+# Additional list of helper scripts, defined on specific hosts in the
+# Ansible inventory. See :envvar:`zabbix_agent__scripts` for more details.
+zabbix_agent__host_scripts: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__combined_scripts [[[
+#
+# Variable which combines all helper script lists together and is used in
+# role tasks.
+zabbix_agent__combined_scripts: '{{ zabbix_agent__scripts
+                                  + zabbix_agent__group_scripts
+                                  + zabbix_agent__host_scripts
+                                  + zabbix_agent__cgroup_metrics__scripts }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__user_parameters_conf_path [[[
+#
+# Absolute path to the configuration file which holds the UserParameters
+# defined by this role.
+zabbix_agent__user_parameters_conf_path: '{{ "/etc/zabbix/zabbix_agentd.conf.d/ansible-userparams.conf"
+                                             if (zabbix_agent__flavor == "C")
+                                             else "/etc/zabbix/zabbix_agent2.d/ansible-userparams.conf" }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__user_parameters [[[
+#
+# List of UserParameters configured on all hosts in the Ansible inventory.
+# See :ref:`zabbix_agent__ref_user_parameters` for more details. This
+# variable should not be modified directly, see the ``group``/``host``
+# variables below.
+zabbix_agent__user_parameters: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__group_user_parameters [[[
+#
+# Additional list of UserParameters, defined on hosts in a specific Ansible
+# inventory group. See :envvar:`zabbix_agent__user_parameters` for more
+# details.
+zabbix_agent__group_user_parameters: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__host_user_parameters [[[
+#
+# Additional list of UserParameters, defined on specific hosts in the
+# Ansible inventory. See :envvar:`zabbix_agent__user_parameters` for more
+# details.
+zabbix_agent__host_user_parameters: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__combined_user_parameters [[[
+#
+# Variable which combines all UserParameter lists together and is used in
+# role tasks and templates.
+zabbix_agent__combined_user_parameters: '{{ zabbix_agent__user_parameters
+                                          + zabbix_agent__group_user_parameters
+                                          + zabbix_agent__host_user_parameters
+                                          + zabbix_agent__cgroup_metrics__user_parameters }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__cgroup_metrics [[[
+#
+# Enable built-in UserParameters (``ct.cpu.util``, ``ct.memory.used``,
+# ``ct.memory.util``) which report resource usage of an LXC container based
+# on its cgroup, instead of the host-wide values that LXCFS exposes for
+# items like ``system.cpu.load`` or ``system.cpu.util`` inside a container
+# (a noisy neighbour container will otherwise trigger identical alerts on
+# every container on the same host). Can be one of:
+#
+# - ``auto``: enable automatically when :command:`ansible_virtualization_type`
+#   fact is ``lxc`` (default)
+# - ``True``: always enable
+# - ``False``: always disable
+zabbix_agent__cgroup_metrics: 'auto'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__cgroup_metrics__enabled [[[
+#
+# Variable which controls if the built-in cgroup metrics are enabled on
+# a given host, based on :envvar:`zabbix_agent__cgroup_metrics`.
+zabbix_agent__cgroup_metrics__enabled: '{{ (ansible_virtualization_type | d("") == "lxc")
+                                            if (zabbix_agent__cgroup_metrics == "auto")
+                                            else (zabbix_agent__cgroup_metrics | bool) }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__cgroup_metrics__scripts [[[
+#
+# List of helper scripts required by the built-in cgroup metrics, added to
+# :envvar:`zabbix_agent__combined_scripts` when cgroup metrics are enabled.
+# Always includes all three entries, marked ``state: 'absent'`` when cgroup
+# metrics are disabled, instead of omitting them outright -- the "Remove
+# absent Zabbix agent helper scripts" task only ever sees what is in this
+# list, so a script would never be cleaned up after cgroup metrics are
+# turned off if it simply disappeared from here instead.
+zabbix_agent__cgroup_metrics__scripts: '{{ [{"name": "ct-cpu-util.sh", "src": "cgroup/ct-cpu-util.sh", "mode": "0755"},
+    {"name": "ct-memory-used.sh", "src": "cgroup/ct-memory-used.sh", "mode": "0755"},
+    {"name": "ct-memory-util.sh", "src": "cgroup/ct-memory-util.sh", "mode": "0755"}]
+  | map("combine", {} if zabbix_agent__cgroup_metrics__enabled else {"state": "absent"}) | list }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__cgroup_metrics__user_parameters [[[
+#
+# List of UserParameters required by the built-in cgroup metrics, added to
+# :envvar:`zabbix_agent__combined_user_parameters` when cgroup metrics are
+# enabled.
+zabbix_agent__cgroup_metrics__user_parameters: '{{ [{"key": "ct.cpu.util", "command": (zabbix_agent__scripts_path + "/ct-cpu-util.sh"),
+     "comment": "LXC container CPU utilization based on cgroup usage_usec"},
+    {"key": "ct.memory.used", "command": (zabbix_agent__scripts_path + "/ct-memory-used.sh"),
+     "comment": "LXC container memory pressure in bytes (MemTotal - MemAvailable)"},
+    {"key": "ct.memory.util", "command": (zabbix_agent__scripts_path + "/ct-memory-util.sh"),
+     "comment": "LXC container memory pressure in percent (MemTotal - MemAvailable)"}]
+  if zabbix_agent__cgroup_metrics__enabled else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# API self-registration [[[
+# -------------------------
+
+# These variables configure optional self-registration of the current host
+# in Zabbix Server via its JSON-RPC API, as an alternative to the built-in
+# Zabbix "active agent auto-registration" mechanism (which cannot assign
+# a TLS certificate to a newly created host, and therefore does not work
+# well together with :envvar:`zabbix_agent__tls_mode` set to ``cert``). This
+# requires network access from :envvar:`zabbix_agent__api_delegate_to` to the
+# Zabbix API, and an existing API token, usually bootstrapped by the
+# ``debops.zabbix_server`` role and stored in the DebOps ``secret/``
+# directory.
+
+# .. envvar:: zabbix_agent__api_register [[[
+#
+# Enable or disable self-registration of the current host in Zabbix Server
+# via its API.
+zabbix_agent__api_register: False
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_url [[[
+#
+# URL of the Zabbix Server API endpoint, for example
+# ``https://zabbix.example.org/api_jsonrpc.php``. Required when
+# :envvar:`zabbix_agent__api_register` is enabled.
+zabbix_agent__api_url: ''
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_delegate_to [[[
+#
+# Host on which the Ansible tasks that communicate with the Zabbix API will
+# be executed. By default this is the Ansible Controller (``localhost``),
+# since the API is reachable over the network and the managed host itself
+# might not have (or need) outgoing access to it. Change this if the API
+# should be reached through a specific jump host instead.
+zabbix_agent__api_delegate_to: 'localhost'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_validate_certs [[[
+#
+# Verify the TLS certificate of the Zabbix API endpoint when set to ``True``.
+zabbix_agent__api_validate_certs: True
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_token_path [[[
+#
+# Relative path, within the DebOps ``secret/`` directory, to the file which
+# holds the Zabbix API token used for authentication.
+zabbix_agent__api_token_path: 'zabbix/api_token'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_token [[[
+#
+# Zabbix API token read from the DebOps ``secret/`` directory. See
+# :envvar:`zabbix_agent__api_token_path` for the file location.
+zabbix_agent__api_token: '{{ (lookup("file", secret + "/" + zabbix_agent__api_token_path))
+                              | trim }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_host_name [[[
+#
+# Technical name of the host object created in Zabbix. Should match the
+# ``Hostname`` configuration option, if it's defined.
+zabbix_agent__api_host_name: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_visible_name [[[
+#
+# Human readable name of the host object created in Zabbix, shown in the web
+# interface.
+zabbix_agent__api_visible_name: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_status [[[
+#
+# Status of the created host: ``0`` - monitored, ``1`` - unmonitored.
+zabbix_agent__api_status: 0
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_interface_useip [[[
+#
+# Whether the Zabbix Server should connect to the agent using its IP address
+# (``1``) or DNS name (``0``) for passive checks.
+zabbix_agent__api_interface_useip: 0
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_interface_ip [[[
+#
+# IP address used in the host interface definition.
+zabbix_agent__api_interface_ip: '{{ ansible_default_ipv4.address
+                                     if (ansible_default_ipv4.address | d())
+                                     else (ansible_host | d(ansible_fqdn)) }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_interface_dns [[[
+#
+# DNS name used in the host interface definition.
+zabbix_agent__api_interface_dns: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_interface_port [[[
+#
+# Port used in the host interface definition, for passive checks.
+zabbix_agent__api_interface_port: '10050'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_host_groups [[[
+#
+# List of Zabbix host group names the host should be a member of, defined on
+# all hosts in the Ansible inventory. Missing host groups will be created
+# automatically. This variable should not be modified directly, see the
+# ``group``/``host`` variables below.
+zabbix_agent__api_host_groups: [ 'Linux servers' ]
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_group_host_groups [[[
+#
+# Additional list of Zabbix host group names, defined on hosts in a specific
+# Ansible inventory group.
+zabbix_agent__api_group_host_groups: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_host_host_groups [[[
+#
+# Additional list of Zabbix host group names, defined on specific hosts in
+# the Ansible inventory.
+zabbix_agent__api_host_host_groups: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_combined_host_groups [[[
+#
+# Variable which combines all of the Zabbix host group lists together and is
+# used in role tasks.
+zabbix_agent__api_combined_host_groups: '{{ (zabbix_agent__api_host_groups
+                                           + zabbix_agent__api_group_host_groups
+                                           + zabbix_agent__api_host_host_groups)
+                                           | flatten | unique }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_link_templates [[[
+#
+# List of Zabbix template names linked to the host, defined on all hosts in
+# the Ansible inventory. Templates which do not exist in Zabbix are silently
+# skipped. This variable should not be modified directly, see the
+# ``group``/``host`` variables below.
+zabbix_agent__api_link_templates: [ 'Linux by Zabbix agent' ]
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_group_link_templates [[[
+#
+# Additional list of Zabbix template names, defined on hosts in a specific
+# Ansible inventory group.
+zabbix_agent__api_group_link_templates: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_host_link_templates [[[
+#
+# Additional list of Zabbix template names, defined on specific hosts in the
+# Ansible inventory.
+zabbix_agent__api_host_link_templates: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_combined_link_templates [[[
+#
+# Variable which combines all of the Zabbix template lists together,
+# including templates auto-detected for services running on the host (see
+# :envvar:`zabbix_agent__service_templates__combined_names`), and is used in
+# role tasks. Template names here must match the technical ``template``
+# name (Zabbix API ``host`` field), not the human-readable ``name`` shown in
+# the web interface - for example ``LXC CPU cgroup``, whose visible name is
+# "LXC container".
+zabbix_agent__api_combined_link_templates: '{{ (zabbix_agent__api_link_templates
+                                              + zabbix_agent__api_group_link_templates
+                                              + zabbix_agent__api_host_link_templates
+                                              + (["LXC CPU cgroup"] if zabbix_agent__cgroup_metrics__enabled else [])
+                                              + zabbix_agent__service_templates__combined_names)
+                                              | flatten | unique }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_macros [[[
+#
+# List of user macros configured on the host object, defined on all hosts in
+# the Ansible inventory. Each list item should be a dict with ``macro``,
+# ``value`` and optionally ``description`` keys. This variable should not be
+# modified directly, see the ``group``/``host`` variables below.
+zabbix_agent__api_macros: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_group_macros [[[
+#
+# Additional list of user macros, defined on hosts in a specific Ansible
+# inventory group.
+zabbix_agent__api_group_macros: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_host_macros [[[
+#
+# Additional list of user macros, defined on specific hosts in the Ansible
+# inventory.
+zabbix_agent__api_host_macros: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_combined_macros [[[
+#
+# Variable which combines all of the user macro lists together and is used
+# in role tasks.
+zabbix_agent__api_combined_macros: '{{ zabbix_agent__api_macros
+                                     + zabbix_agent__api_group_macros
+                                     + zabbix_agent__api_host_macros }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_tags [[[
+#
+# List of tags configured on the host object, defined on all hosts in the
+# Ansible inventory. Each list item should be a dict with ``tag`` and
+# ``value`` keys. This variable should not be modified directly, see the
+# ``group``/``host`` variables below.
+zabbix_agent__api_tags: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_group_tags [[[
+#
+# Additional list of tags, defined on hosts in a specific Ansible inventory
+# group.
+zabbix_agent__api_group_tags: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_host_tags [[[
+#
+# Additional list of tags, defined on specific hosts in the Ansible
+# inventory.
+zabbix_agent__api_host_tags: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_combined_tags [[[
+#
+# Variable which combines all of the tag lists together and is used in role
+# tasks.
+zabbix_agent__api_combined_tags: '{{ zabbix_agent__api_tags
+                                   + zabbix_agent__api_group_tags
+                                   + zabbix_agent__api_host_tags }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_tls_connect_map [[[
+#
+# Internal mapping between :envvar:`zabbix_agent__tls_mode` values and the
+# numeric bitmask expected by the Zabbix API ``tls_connect``/``tls_accept``
+# host fields.
+zabbix_agent__api_tls_connect_map:
+  'unencrypted': 1
+  'psk': 2
+  'cert': 4
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_tls_subject [[[
+#
+# Expected Distinguished Name of the agent's own TLS certificate, checked by
+# the Zabbix Server when :envvar:`zabbix_agent__tls_mode` is ``cert``. If
+# empty, the check is skipped. Example: ``CN=host.example.org``.
+zabbix_agent__api_tls_subject: ''
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_tls_issuer [[[
+#
+# Expected issuer of the agent's own TLS certificate, checked by the Zabbix
+# Server when :envvar:`zabbix_agent__tls_mode` is ``cert``. If empty, the
+# check is skipped.
+zabbix_agent__api_tls_issuer: ''
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
+# Automatic service monitoring [[[
+# --------------------------------
+
+# The Zabbix Agent 2 daemon ships with a set of built-in plugins which can
+# monitor common services (PostgreSQL, Docker, Redis, ...) directly, without
+# any external scripts. Zabbix Server also ships official templates for
+# these plugins. This role can detect well-known DebOps service roles
+# applied to the current host (based on Ansible inventory group membership)
+# and automatically link the matching template and configure the plugin,
+# instead of requiring each project to duplicate this glue code.
+#
+# .. envvar:: zabbix_agent__default_service_templates [[[
+#
+# List of known service integrations autodetected by the role. Each item is
+# a dict which can contain:
+#
+# ``name``
+#   Unique identifier of the service integration, used to enable, disable or
+#   override it via :envvar:`zabbix_agent__service_templates`,
+#   :envvar:`zabbix_agent__group_service_templates` and
+#   :envvar:`zabbix_agent__host_service_templates`.
+#
+# ``enabled``
+#   Boolean which decides if the integration should be active on the current
+#   host. By default based on Ansible inventory group membership.
+#
+# ``templates``
+#   List of Zabbix template names to link to the host when the integration
+#   is enabled.
+#
+# ``plugin_name``
+#   Optional filename (without a path) of the Zabbix Agent 2 plugin
+#   configuration drop-in file, relative to
+#   ``/etc/zabbix/zabbix_agent2.d/plugins.d/``.
+#
+# ``plugin_content``
+#   Optional contents of the plugin configuration drop-in file.
+#
+# ``additional_groups``
+#   Optional list of extra UNIX groups the Zabbix Agent account should be
+#   added to (for example ``docker``), required for the plugin to access
+#   the monitored service.
+#
+# This variable should not be modified directly; disable or override
+# a specific integration using the ``group``/``host`` variables below
+# instead, for example::
+#
+#     zabbix_agent__host_service_templates:
+#       - name: 'nginx'
+#         state: 'absent'
+zabbix_agent__default_service_templates:
+
+  - name: 'postgresql'
+    enabled: '{{ ("debops_service_postgresql_server" in group_names)
+                 or (ansible_local.postgresql_server.installed | d() | bool) }}'
+    templates: [ 'PostgreSQL by Zabbix agent 2' ]
+    plugin_name: 'ansible-postgresql.conf'
+    plugin_content: |
+      Plugins.PostgreSQL.Uri=tcp://127.0.0.1:{{ zabbix_agent__service_templates__postgresql_port }}
+      Plugins.PostgreSQL.User={{ zabbix_agent__service_templates__postgresql_user }}
+      Plugins.PostgreSQL.Password={{ zabbix_agent__service_templates__postgresql_password }}
+
+  - name: 'nginx'
+    enabled: '{{ "debops_service_nginx" in group_names }}'
+    templates: [ 'Nginx by Zabbix agent 2' ]
+    plugin_name: 'ansible-nginx.conf'
+    plugin_content: |
+      Plugins.Nginx.Uri={{ zabbix_agent__service_templates__nginx_status_url }}
+
+  - name: 'docker'
+    enabled: '{{ ("debops_service_docker_server" in group_names)
+                 or ("debops_service_docker_compose_service" in group_names) }}'
+    templates: [ 'Docker by Zabbix agent 2' ]
+    plugin_name: 'ansible-docker.conf'
+    plugin_content: |
+      Plugins.Docker.Endpoint=unix:///var/run/docker.sock
+    additional_groups: [ 'docker' ]
+
+  - name: 'redis'
+    enabled: '{{ "debops_service_redis_server" in group_names }}'
+    templates: [ 'Redis by Zabbix agent 2' ]
+    plugin_name: 'ansible-redis.conf'
+    plugin_content: |
+      Plugins.Redis.Uri=tcp://127.0.0.1:{{ zabbix_agent__service_templates__redis_port }}
+
+  - name: 'postfix'
+    enabled: '{{ "debops_service_postfix" in group_names }}'
+    templates: [ 'Postfix by Zabbix agent' ]
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__service_templates__postgresql_port [[[
+#
+# TCP port used by the PostgreSQL monitoring plugin.
+zabbix_agent__service_templates__postgresql_port: '5432'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__service_templates__postgresql_user [[[
+#
+# Name of the read-only PostgreSQL role used by the monitoring plugin. This
+# role is not created automatically; it should be configured using the
+# :ref:`debops.postgresql` role's dependent variables on the database server
+# host, for example via ``postgresql__dependent_roles``.
+zabbix_agent__service_templates__postgresql_user: 'zabbix_monitor'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__service_templates__postgresql_password [[[
+#
+# Password of the PostgreSQL monitoring role, read from the DebOps
+# ``secret/`` directory. The same lookup path should be used when defining
+# the role's password on the database server.
+zabbix_agent__service_templates__postgresql_password: '{{ lookup("password", secret
+                                                            + "/zabbix/postgresql/"
+                                                            + inventory_hostname
+                                                            + "/" + zabbix_agent__service_templates__postgresql_user
+                                                            + ".password length=32") }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__service_templates__nginx_status_url [[[
+#
+# URL of the nginx ``stub_status`` endpoint used by the Nginx monitoring
+# plugin. The corresponding ``location`` block has to be configured
+# separately in the relevant nginx server/vhost (restricted to
+# ``127.0.0.1``), since this role has no way of knowing which vhost should
+# expose it.
+zabbix_agent__service_templates__nginx_status_url: 'http://127.0.0.1/basic_status'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__service_templates__redis_port [[[
+#
+# TCP port used by the Redis monitoring plugin.
+zabbix_agent__service_templates__redis_port: '6379'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__service_templates [[[
+#
+# List of service integration overrides, defined on all hosts in the
+# Ansible inventory. Each item should at least contain a ``name`` matching
+# an entry in :envvar:`zabbix_agent__default_service_templates` (to
+# enable/disable/reconfigure it) or a new ``name`` with its own
+# ``templates``/``plugin_name``/``plugin_content`` (to add a custom
+# integration). This variable should not be modified directly, see the
+# ``group``/``host`` variables below.
+zabbix_agent__service_templates: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__group_service_templates [[[
+#
+# Additional list of service integration overrides, defined on hosts in
+# a specific Ansible inventory group.
+zabbix_agent__group_service_templates: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__host_service_templates [[[
+#
+# Additional list of service integration overrides, defined on specific
+# hosts in the Ansible inventory.
+zabbix_agent__host_service_templates: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__service_templates__all [[[
+#
+# Merged service-integration list before the Agent flavor filter. Combines
+# the default, autodetected integrations with the ``group``/``host``
+# overrides (matched by ``name``) and drops disabled entries. Later entries
+# with the same ``name`` override earlier ones (via
+# :command:`debops.debops.parse_kv_config`), and ``state: 'absent'`` removes
+# a given integration completely. Used by
+# :envvar:`zabbix_agent__service_templates__combined`.
+zabbix_agent__service_templates__all: >-
+  {{ ((zabbix_agent__default_service_templates | selectattr("enabled") | list)
+      + zabbix_agent__service_templates
+      + zabbix_agent__group_service_templates
+      + zabbix_agent__host_service_templates)
+     | debops.debops.parse_kv_config
+     | selectattr("state", "equalto", "present") | list }}
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__service_templates__combined [[[
+#
+# Flavor-filtered view of
+# :envvar:`zabbix_agent__service_templates__all`, used in role tasks.
+# Integrations that ship an Agent 2 ``plugin_name`` are dropped when
+# :envvar:`zabbix_agent__flavor` is not ``Go``, so a C Agent host is not
+# linked to templates such as ``PostgreSQL by Zabbix agent 2`` (which need
+# a plugin this flavor cannot load). Integrations without a plugin (for
+# example Postfix) stay active on both flavors.
+zabbix_agent__service_templates__combined: >-
+  {{ (zabbix_agent__service_templates__all
+      | rejectattr("plugin_name", "defined") | list)
+     if (zabbix_agent__flavor != "Go")
+     else zabbix_agent__service_templates__all }}
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__service_templates__combined_names [[[
+#
+# Flat, deduplicated list of Zabbix template names linked based on detected
+# service integrations. Included automatically in
+# :envvar:`zabbix_agent__api_combined_link_templates`.
+zabbix_agent__service_templates__combined_names: '{{ zabbix_agent__service_templates__combined
+                                                   | selectattr("templates", "defined")
+                                                   | map(attribute="templates")
+                                                   | list | flatten | unique }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__service_templates__combined_plugins [[[
+#
+# List of Zabbix Agent 2 plugin configuration drop-in files to render, based
+# on detected service integrations.
+zabbix_agent__service_templates__combined_plugins: '{{ zabbix_agent__service_templates__combined
+                                                     | selectattr("plugin_name", "defined")
+                                                     | selectattr("plugin_content", "defined")
+                                                     | list }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__service_templates__known_plugin_names [[[
+#
+# Flat, deduplicated list of every Agent 2 plugin drop-in filename the role
+# is aware of, regardless of whether the corresponding integration is
+# currently enabled -- unlike
+# :envvar:`zabbix_agent__service_templates__combined_plugins`, which only
+# lists the ones that should be rendered *right now*. Used to scope the
+# cleanup of disabled integrations' drop-ins to files this role could
+# plausibly have created itself, instead of anything found in the shared
+# plugin configuration directory (which could include drop-ins managed by
+# an administrator or another tool).
+zabbix_agent__service_templates__known_plugin_names: '{{ (zabbix_agent__default_service_templates
+                                                         + zabbix_agent__service_templates
+                                                         + zabbix_agent__group_service_templates
+                                                         + zabbix_agent__host_service_templates)
+                                                         | debops.debops.parse_kv_config
+                                                         | selectattr("plugin_name", "defined")
+                                                         | map(attribute="plugin_name") | list | unique }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__service_templates__combined_additional_groups [[[
+#
+# Flat, deduplicated list of extra UNIX groups required by the detected
+# service integrations. Included automatically in
+# :envvar:`zabbix_agent__combined_additional_groups`.
+zabbix_agent__service_templates__combined_additional_groups: '{{ zabbix_agent__service_templates__combined
+                                                               | selectattr("additional_groups", "defined")
+                                                               | map(attribute="additional_groups")
+                                                               | list | flatten | unique }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
