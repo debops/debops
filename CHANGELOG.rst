@@ -38,7 +38,7 @@ New DebOps roles
   family). Each exporter is managed via a systemd drop-in that rewrites
   ``ExecStart``/``Environment``, so the role works uniformly across
   exporters and Debian releases. Exporters bind to loopback and are meant to
-  be scraped by :ref:`debops.vmagent`.
+  be scraped by ``debops.vmagent``.
 
 General
 '''''''
