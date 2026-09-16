@@ -213,6 +213,20 @@ Changes to security-critical roles (for example ``secret``, ``pki``, and
 ``auth``) that carry the ``Generated-By: LLM`` trailer receive heightened
 scrutiny from the maintainers during review.
 
+Contributions that mix hand-written content with content produced by an
+LLM — for example a role written by hand that includes LLM-generated helper
+scripts — SHOULD separate the two at the commit level. Contributors SHOULD
+place the LLM-generated files in their own commit(s), apart from the
+hand-written files, so that the ``Generated-By: LLM`` trailer marks only the
+commits it applies to. Each such commit MUST carry the trailer required by
+the LLM Commit Trailer section and SHOULD describe in its message how the
+contributor designed the work and directed the LLM across one or more
+sessions. The trailer requirement is evaluated per commit: mixing
+hand-written and LLM-generated files in a single commit extends the trailer
+to content that does not need it. Separate commits let maintainers see
+exactly which parts of a contribution require the extra attention described
+in this section.
+
 Prohibited Practices
 --------------------
 
