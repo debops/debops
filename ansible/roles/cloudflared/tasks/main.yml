@@ -120,26 +120,34 @@
       register: cloudflared__register_tunnel_files
       failed_when: false
 
+    - name: Collect leftover cloudflared unit instance names
+      ansible.builtin.set_fact:
+        cloudflared__fact_leftover_units: '{{
+          (cloudflared__register_units.stdout_lines | d([]))
+          | map("split") | map("first")
+          | select("match", "^cloudflared@.+\.service$")
+          | map("regex_replace", "^cloudflared@", "")
+          | map("regex_replace", "\\.service$", "")
+          | list }}'
+
+    - name: Collect leftover cloudflared file instance names
+      ansible.builtin.set_fact:
+        cloudflared__fact_leftover_files: '{{
+          (cloudflared__register_tunnel_files.files | d([]))
+          | map(attribute="path") | map("basename")
+          | map("regex_replace", "\\.yml$", "")
+          | map("regex_replace", "\\.env$", "")
+          | map("regex_replace", "\\.json$", "")
+          | list }}'
+
     - name: Stop and disable leftover cloudflared instances
       ansible.builtin.systemd:
         name: 'cloudflared@{{ item }}.service'
         enabled: false
         state: 'stopped'
       failed_when: false
-      loop: '{{
-          (
-            (cloudflared__register_units.stdout_lines | d([]))
-            | map("split") | map("first")
-            | select("match", "^cloudflared@.+\.service$")
-            | map("regex_replace", "^cloudflared@(.+)\\.service$", "\\1") | list
-          )
-          +
-          (
-            (cloudflared__register_tunnel_files.files | d([]))
-            | map(attribute="path") | map("basename")
-            | map("regex_replace", "\\.(yml|env|json)$", "") | list
-          )
-        ) | unique }}'
+      loop: '{{ cloudflared__fact_leftover_units
+                | union(cloudflared__fact_leftover_files) }}'
 
     - name: Remove leftover tunnel files
       ansible.builtin.file:
