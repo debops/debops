@@ -146,6 +146,32 @@
       register: vmagent__register_queue_dirs
       failed_when: false
 
+    - name: Collect leftover vmagent unit instance names
+      ansible.builtin.set_fact:
+        vmagent__fact_leftover_units: '{{
+          (vmagent__register_units.stdout_lines | d([]))
+          | map("split") | map("first")
+          | select("match", "^vmagent@.+\.service$")
+          | map("regex_replace", "^vmagent@", "")
+          | map("regex_replace", "\\.service$", "")
+          | list }}'
+
+    - name: Collect leftover vmagent file instance names
+      ansible.builtin.set_fact:
+        vmagent__fact_leftover_files: '{{
+          (vmagent__register_instance_files.files | d([]))
+          | map(attribute="path") | map("basename")
+          | map("regex_replace", "\\.yml$", "")
+          | map("regex_replace", "\\.env$", "")
+          | list }}'
+
+    - name: Collect leftover vmagent queue directory names
+      ansible.builtin.set_fact:
+        vmagent__fact_leftover_queues: '{{
+          (vmagent__register_queue_dirs.files | d([]))
+          | map(attribute="path") | map("basename")
+          | list }}'
+
     - name: Stop and disable leftover vmagent instances
       ansible.builtin.systemd:
         name: 'vmagent@{{ item }}.service'
@@ -156,25 +182,9 @@
         - vmagent__register_stop_leftover is failed
         - "'Could not find the requested service' not in (vmagent__register_stop_leftover.msg | d(''))"
         - (vmagent__register_stop_leftover.status.LoadState | d('')) != 'not-found'
-      loop: '{{
-          (
-            (vmagent__register_units.stdout_lines | d([]))
-            | map("split") | map("first")
-            | select("match", "^vmagent@.+\.service$")
-            | map("regex_replace", "^vmagent@(.+)\\.service$", "\\1") | list
-          )
-          +
-          (
-            (vmagent__register_instance_files.files | d([]))
-            | map(attribute="path") | map("basename")
-            | map("regex_replace", "\\.(yml|env)$", "") | list
-          )
-          +
-          (
-            (vmagent__register_queue_dirs.files | d([]))
-            | map(attribute="path") | map("basename") | list
-          )
-        ) | unique }}'
+      loop: '{{ vmagent__fact_leftover_units
+                | union(vmagent__fact_leftover_files)
+                | union(vmagent__fact_leftover_queues) }}'
 
     - name: Remove leftover instance files
       ansible.builtin.file:
