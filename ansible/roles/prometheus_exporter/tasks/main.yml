@@ -1,0 +1,54 @@
+---
+# Copyright (C) 2026 Patryk Sciborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  ansible.builtin.import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  ansible.builtin.import_role:
+    name: 'secret'
+
+- name: Pre hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "prometheus_exporter/pre_main.yml") }}'
+
+- name: Make sure that Ansible local fact directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Ensure Prometheus configuration directory exists
+  ansible.builtin.file:
+    path: '{{ prometheus_exporter__config_dir }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Manage Prometheus exporters
+  ansible.builtin.include_tasks: 'manage_exporter.yml'
+  loop: '{{ prometheus_exporter__combined_exporters }}'
+  loop_control:
+    loop_var: 'exporter'
+    label: '{{ exporter.name | d("<unnamed>") }}'
+
+- name: Save prometheus_exporter local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/prometheus_exporter.fact.j2'
+    dest: '/etc/ansible/facts.d/prometheus_exporter.fact'
+    mode: '0644'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Reload Ansible local facts
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Post hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "prometheus_exporter/post_main.yml") }}'
