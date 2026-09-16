@@ -154,6 +154,11 @@ contributor cannot fully resolve, the trailer lets maintainers identify where
 the diligence obligations described in the Core Principle section apply and
 where extra review is warranted.
 
+``Generated-By: LLM`` records provenance; it does not determine whether the
+content is copyrightable or who holds authorship. Under applicable law those
+questions turn on the human creative contribution to the final content, which
+this policy does not attempt to assess.
+
 Maintainers MUST preserve the ``Generated-By: LLM`` trailer during merge. If
 a PR branch is squashed, the committer SHALL add the trailer to the resulting
 commit. If the merged result of a squashed branch exceeds the threshold in
@@ -430,6 +435,7 @@ Additional References
 - LWN.net, `Debian votes to allow "responsible use of generative AI" <https://lwn.net/Articles/1091231/>`__
 - Software Freedom Conservancy, `Recommendations When Using LLM-backed Generative AI Systems for FOSS Contributions <https://sfconservancy.org/llm-gen-ai/llm-backed-generative-ai-recommendations.html>`__
 - Free Software Foundation Europe, `Copyrightability of LLM-generated code: Can we license "vibe code" into Free Software? <https://fsfe.org/news/2026/news-20260825-01.html>`__
+- European Parliament, `Generative AI and Copyright: Training, Creation, Regulation <https://www.europarl.europa.eu/RegData/etudes/STUD/2025/774095/IUST_STU(2025)774095_EN.pdf>`__
 
 .. _REUSE: https://reuse.software/
 .. _SPDX: https://spdx.dev/
