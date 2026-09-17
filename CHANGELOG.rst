@@ -322,6 +322,10 @@ Removed
   certificates symlinked in the :file:`/etc/elasticsearch/certs/` directory
   instead.
 
+- In the :command:`pki-realm` script, ensure that certain :command:`certbot`
+  command options and their arguments are separated with a spaca. This fixes an
+  issue with ACME DNS-01 challenge not being processed correctly.
+
 
 `debops v3.3.0`_ - 2026-03-13
 -----------------------------
