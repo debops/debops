@@ -11,8 +11,8 @@ DebOps LLM-Generated Contributions Policy
 
 :Date drafted: 2026-07-02
 :Date effective: 2026-09-01
-:Last changed: 2026-09-16
-:Version: 0.3.1
+:Last changed: 2026-09-17
+:Version: 0.3.2
 :Authors: - drybjed_
 
 .. This version may not correspond directly to the debops-policy version.
@@ -218,19 +218,31 @@ Changes to security-critical roles (for example ``secret``, ``pki``, and
 ``auth``) that carry the ``Generated-By: LLM`` trailer receive heightened
 scrutiny from the maintainers during review.
 
-Contributions that mix hand-written content with content produced by an
-LLM — for example a role written by hand that includes LLM-generated helper
-scripts — SHOULD separate the two at the commit level. Contributors SHOULD
-place the LLM-generated files in their own commit(s), apart from the
-hand-written files, so that the ``Generated-By: LLM`` trailer marks only the
-commits it applies to. Each such commit MUST carry the trailer required by
-the LLM Commit Trailer section and SHOULD describe in its message how the
-contributor designed the work and directed the LLM across one or more
-sessions. The trailer requirement is evaluated per commit: mixing
-hand-written and LLM-generated files in a single commit extends the trailer
-to content that does not need it. Separate commits let maintainers see
-exactly which parts of a contribution require the extra attention described
-in this section.
+Contributors MAY keep hand-written content and LLM-generated content in
+separate commits when they are cleanly separable — for example a role
+written by hand that includes LLM-generated helper scripts. Separating them
+keeps the ``Generated-By: LLM`` trailer required by the LLM Commit Trailer
+section on the commits that need it, instead of extending it to hand-written
+content. Commits that add the LLM-generated content still need the trailer
+regardless of how they are organized.
+
+Separation applies only where the LLM content and the human content are
+distinct, typically in different files. When the two are intertwined in a
+single piece of content — for example an LLM-generated skeleton that a
+contributor then corrected and extended — the content as a whole counts as
+originally created by an LLM, as defined above. No separation of its edits
+into LLM and human commits is expected: one commit per prompt or per edit is
+not required, and the trailer is decided by the threshold in the LLM Commit
+Trailer section alone.
+
+Contributors SHOULD describe how the LLM was used to produce the content —
+for example how they directed the LLM, which generated parts they kept or
+changed, and how they verified the result. The description is part of the
+Git history, not the pull request: it SHOULD appear in a commit message
+within the contribution, typically the commit that introduces or completes
+the work. Commits in a multi-commit contribution need not repeat the
+description; each still carries the ``Generated-By: LLM`` trailer required
+by the LLM Commit Trailer section.
 
 Prohibited Practices
 --------------------
