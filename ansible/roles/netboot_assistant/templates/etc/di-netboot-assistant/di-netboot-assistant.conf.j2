@@ -1,0 +1,35 @@
+{# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# {{ ansible_managed }}
+
+# Configuration file for di-netboot-assistant
+{% for item in netboot_assistant__combined_configuration | debops.debops.parse_kv_config() %}
+{%   if item.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%     if item.comment | d() %}
+{{       item.comment | regex_replace('\n$', '') | comment(prefix='\n', decoration='# ', postfix='') -}}
+{%     endif %}
+{%     if item.raw | d() %}
+{%       if item.state | d('present') == 'comment' %}
+{{         '{}'.format(item.raw | regex_replace('\n$', '')) | comment(prefix='', decoration='#', postfix='') -}}
+{%       else %}
+{{         '{}'.format(item.raw | regex_replace('\n$', '')) }}
+{%       endif %}
+{%     else %}
+{%       if item.single_quotes is defined and item.single_quotes | bool %}
+{%         if item.state | d('present') == 'comment' %}
+{{           "{}='{}'".format(item.name | upper, item.value) | comment(prefix='', decoration='#', postfix='') -}}
+{%         else %}
+{{           "{}='{}'".format(item.name | upper, item.value) }}
+{%         endif %}
+{%       else %}
+{%         if item.state | d('present') == 'comment' %}
+{{           '{}="{}"'.format(item.name | upper, item.value) | comment(prefix='', decoration='#', postfix='') -}}
+{%         else %}
+{{           '{}="{}"'.format(item.name | upper, item.value) }}
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endfor %}

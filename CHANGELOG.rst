@@ -23,6 +23,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.1: https://github.com/debops/debops/compare/v3.1.0...stable-3.1
 
+Added
+~~~~~
+
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.netboot_assistant` role allows management of netinst images
+  for PXE network booting of Debian and Ubuntu installers, enabling easy
+  installation of new hosts and virtual machines over the network.
+
 Changed
 ~~~~~~~
 

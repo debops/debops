@@ -204,6 +204,7 @@ Host provisioning
 - :ref:`debops.dropbear_initramfs`
 - :ref:`debops.grub`
 - :ref:`debops.ipxe`
+- :ref:`debops.netboot_assistant`
 - :ref:`debops.preseed`
 - :ref:`debops.tftpd`
 

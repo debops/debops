@@ -1,0 +1,316 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _netboot_assistant__ref_defaults:
+
+# debops.netboot_assistant default variables
+# ==========================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: netboot_assistant__deploy_state [[[
+#
+# This variable controls the state of the customizations added by the role (d-i
+# n-a configuration file and custom scripts). They will be installed when set
+# to ``present``, and removed when set to ``absent``. This does not affect
+# already installed D-I Netboot Assistant installation itself.
+netboot_assistant__deploy_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: netboot_assistant__base_packages [[[
+#
+# List of base APT packages to install for D-I Netboot Assistant service.
+netboot_assistant__base_packages:
+  - 'di-netboot-assistant'
+  - '{{ [] if (ansible_distribution == "Debian" and
+               ansible_distribution_major_version is version("13", "<"))
+           else "ubuntu-keyring" }}'
+
+                                                                   # ]]]
+# .. envvar:: netboot_assistant__packages [[[
+#
+# List of additional APT packages to install with D-I Netboot Assistant.
+netboot_assistant__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# TFTP server configuration [[[
+# -----------------------------
+
+# .. envvar:: netboot_assistant__tftp_root [[[
+#
+# The absolute path of the TFTP root directory. If the :ref:`debops.tftpd` or
+# :ref:`debops.dnsmasq` roles are installed, they will be automatically
+# configured via Ansible local facts.
+# D-I Netboot Assistant will manage the netboot images in the :file:`d-i/n-a/`
+# subdirectory of this directory.
+netboot_assistant__tftp_root: '{{ ansible_local.tftpd.directory
+                                  | d(ansible_local.dnsmasq.boot_tftp_root
+                                      | d("/var/lib/tftpboot")) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Automatic netboot refresh [[[
+# -----------------------------
+
+# .. envvar:: netboot_assistant__refresh [[[
+#
+# Enable or disable an automatic refresh of the netboot tarballs using a custom
+# Python script and :command:`systemd` timer. The script will check if the
+# upstream netboot images have changed and will redownload them, adding the
+# firmware when needed.
+netboot_assistant__refresh: True
+
+                                                                   # ]]]
+# .. envvar:: netboot_assistant__refresh_releases [[[
+#
+# The list of ``OnCalendar=`` expressions that define the time of the refresh
+# script being run. Debian point releases are done on Saturdays and are planned
+# in advance, the list can be found on https://release.debian.org/. Only the
+# dates set in the future will be included in the generated :command:`systemd`
+# timer unit.
+netboot_assistant__refresh_releases:
+
+  # Debian Stable point releases
+  - '2026-11-15 06:00:00'  # 13.8
+  - '2027-01-10 06:00:00'  # 13.9
+  - '2027-03-14 06:00:00'  # 13.10
+  - '2027-05-09 06:00:00'  # 13.11
+  - '2027-07-11 06:00:00'  # 13.12
+  - '2027-09-12 06:00:00'  # 13.13
+
+                                                                   # ]]]
+# .. envvar:: netboot_assistant__refresh_recurrence [[[
+#
+# The list of ``OnCalendar=`` expressions used if no dates of the planned point
+# releases are set in the future. The role will configure the
+# :command:`systemd` timer to check the netboot tarballs on recurring days.
+# This is only configured when the role is applied on the host.
+netboot_assistant__refresh_recurrence:
+
+  # Every second Sunday of each month
+  - 'Sun *-*-08..14 06:00:00'
+                                                                   # ]]]
+                                                                   # ]]]
+# Global options for default netboot installs [[[
+# -----------------------------------------------
+
+# .. envvar:: netboot_assistant__architecture [[[
+#
+# The default Debian architecture to install, by default based on the host's
+# architecture. This can be configured per-install.
+netboot_assistant__architecture: '{{ ansible_local.apt.architecture | d("amd64") }}'
+
+                                                                   # ]]]
+# .. envvar:: netboot_assistant__nonfree_firmware [[[
+#
+# Enable or disable automatic inclusion of non-free firmware in netboot images.
+# This can be configured per-install.
+netboot_assistant__nonfree_firmware: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Debian-Installer netboot installs [[[
+# -------------------------------------
+
+# The variables below define what netboot installs will be maintained by the
+# D-I Netboot Assistant service. See the :ref:`netboot_assistant__ref_installs`
+# documentation for more details.
+
+# .. envvar:: netboot_assistant__default_installs [[[
+#
+# List of D-I netboot definitions set in the role by default.
+netboot_assistant__default_installs:
+
+  - name: '{{ "forky-" + netboot_assistant__architecture }}'
+    image: 'forky'
+    arch: '{{ netboot_assistant__architecture }}'
+    firmware: '{{ netboot_assistant__nonfree_firmware }}'
+
+  - name: '{{ "forky-" + netboot_assistant__architecture + "-gtk" }}'
+    image: 'forky-gtk'
+    arch: '{{ netboot_assistant__architecture }}'
+    firmware: False  # No firmware for gtk install
+
+  - name: '{{ "trixie-" + netboot_assistant__architecture }}'
+    image: 'trixie'
+    arch: '{{ netboot_assistant__architecture }}'
+    firmware: '{{ netboot_assistant__nonfree_firmware }}'
+
+  - name: '{{ "trixie-" + netboot_assistant__architecture + "-gtk" }}'
+    image: 'trixie-gtk'
+    arch: '{{ netboot_assistant__architecture }}'
+    firmware: False  # No firmware for gtk install
+
+  - name: '{{ "bookworm-" + netboot_assistant__architecture }}'
+    image: 'bookworm'
+    arch: '{{ netboot_assistant__architecture }}'
+    firmware: '{{ netboot_assistant__nonfree_firmware }}'
+
+  - name: '{{ "bookworm-" + netboot_assistant__architecture + "-gtk" }}'
+    image: 'bookworm-gtk'
+    arch: '{{ netboot_assistant__architecture }}'
+    firmware: False  # No firmware for gtk install
+
+  - name: '{{ "bullseye-" + netboot_assistant__architecture }}'
+    image: 'bullseye'
+    arch: '{{ netboot_assistant__architecture }}'
+    firmware: '{{ netboot_assistant__nonfree_firmware }}'
+
+  - name: '{{ "bullseye-" + netboot_assistant__architecture + "-gtk" }}'
+    image: 'bullseye-gtk'
+    arch: '{{ netboot_assistant__architecture }}'
+    firmware: False  # No firmware for gtk install
+
+                                                                   # ]]]
+# .. envvar:: netboot_assistant__installs [[[
+#
+# List of D-I netboot definitions configured on all hosts in the Ansible
+# inventory.
+netboot_assistant__installs: []
+
+                                                                   # ]]]
+# .. envvar:: netboot_assistant__group_installs [[[
+#
+# List of D-I netboot definitions configured on a specific Ansible inventory
+# group.
+netboot_assistant__group_installs: []
+
+                                                                   # ]]]
+# .. envvar:: netboot_assistant__host_installs [[[
+#
+# List of D-I netboot definitions configured on specific hosts in the Ansible
+# inventory.
+netboot_assistant__host_installs: []
+
+                                                                   # ]]]
+# .. envvar:: netboot_assistant__combined_installs [[[
+#
+# Variable which combines all D-I netboot definitions and is used in role tasks
+# and templates.
+netboot_assistant__combined_installs: '{{ netboot_assistant__default_installs
+                                          + netboot_assistant__installs
+                                          + netboot_assistant__group_installs
+                                          + netboot_assistant__host_installs }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# D-I Netboot Assistant configuration [[[
+# ---------------------------------------
+
+# These variables define the contents of the
+# :file:`/etc/di-netboot-assistant/di-netboot-assistant.conf` configuration
+# file. See :ref:`netboot_assistant__ref_configuration` documentation for more
+# details.
+
+# .. envvar:: netboot_assistant__original_configuration [[[
+#
+# The original contents of the D-I Netboot Assistant main configuration file in
+# YAML format.
+netboot_assistant__original_configuration:
+
+  - name: 'tftp_root'
+    comment: |
+      TFTP root directory (for netboot).
+       You will have to adjust the directory according to the tftp server setting.
+       Use option '--tftproot=DIR' to overwrite temporarily.
+    value: '/var/lib/tftpboot'
+
+  - name: 'mirror_regexps'
+    comment: |
+      Download Mirror
+       The variable MIRROR_REGEXPS contain a list of space separated sed
+       regular expression, to rewrite di-sources.list URLs, to match your
+       preferred mirror.  For example, in older releases the following has
+       been used (adapted in di-sources.list now):
+    value: 's=://deb.debian.org/dists/=://deb.debian.org/debian/dists/='
+
+  - name: 'nonfree_fw'
+    comment: 'non-free firmware base URL:'
+    value: 'https://cdimage.debian.org/cdimage/unofficial/non-free/firmware/'
+
+  - name: 'debian_keyring'
+    comment: |
+      Location of the keyring to verify the signature of the downloaded
+      images:
+    value: '/usr/share/keyrings/debian-archive-keyring.gpg'
+
+  - name: 'ubuntu_keyring'
+    value: '/usr/share/keyrings/ubuntu-archive-keyring.gpg'
+
+  - name: 'di_args'
+    comment: |
+      Debian-installer arguments.
+       The arguments listed here will be appended to the one provided by
+       the debian-installer pristine images (see di-netboot-assistant manpage).
+    value: 'locale=en_US console-keymaps-at/keymap=fr-latin1 mirror/country=manual mirror/http/hostname=http.de.debian.org mirror/http/directory=/debian mirror/http/proxy='
+    state: 'comment'
+
+  - name: 'target_args'
+    comment: |
+      Boot arguments for installed (target) system.
+      The arguments listed here will be appended to the one provided by
+      the debian-installer pristine images (see di-netboot-assistant manpage).
+    value: 'vga=791'
+    state: 'comment'
+
+  - name: 'squashimg'
+    comment: |
+      URL to fetch the squashfs image of the root file system from for Debian Live.
+       Default is the TFTP-server, however, you might want to provide a faster way.
+       SQUASHIMG='tftp://10.0.2.2/${LIVE_DIR}/${ISO_NAME}/live/filesystem.squashfs'
+       SQUASHIMG="http://192.168.0.10/${ISO_NAME}/live/filesystem.squashfs"
+       For GRUB, the ${pxe_default_server} variable can be used:
+    value: 'tftp://\${pxe_default_server}/${LIVE_DIR}/${ISO_NAME}/live/filesystem.squashfs'
+    single_quotes: True
+
+                                                                   # ]]]
+# .. envvar:: netboot_assistant__default_configuration [[[
+#
+# The D-I Netboot Assistant configuration changed by the role by default.
+netboot_assistant__default_configuration:
+
+  # Override the default TFTP root path
+  - name: 'tftp_root'
+    value: '{{ netboot_assistant__tftp_root }}'
+
+                                                                   # ]]]
+# .. envvar:: netboot_assistant__configuration [[[
+#
+# The D-I Netboot Assistant configuration set on all hosts in the Ansible
+# inventory.
+netboot_assistant__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: netboot_assistant__group_configuration [[[
+#
+# The D-I Netboot Assistant configuration set on hosts in a specific Ansible
+# inventory group.
+netboot_assistant__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: netboot_assistant__host_configuration [[[
+#
+# The D-I Netboot Assistant configuration set on specific hosts in the Ansible
+# inventory.
+netboot_assistant__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: netboot_assistant__combined_configuration [[[
+#
+# Variable which combines all D-I configuration lists and is used in role tasks
+# and templates.
+netboot_assistant__combined_configuration: '{{ netboot_assistant__original_configuration
+                                               + netboot_assistant__default_configuration
+                                               + netboot_assistant__configuration
+                                               + netboot_assistant__group_configuration
+                                               + netboot_assistant__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
