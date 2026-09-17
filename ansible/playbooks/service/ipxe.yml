@@ -1,6 +1,6 @@
 ---
-# Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2015-2019 DebOps <https://debops.org/>
+# Copyright (C) 2015-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Manage iPXE configuration files
@@ -13,6 +13,9 @@
                    | combine(inventory__host_environment  | d({})) }}'
 
   roles:
+
+    - role: netboot_assistant
+      tags: [ 'role::netboot_assistant', 'skip::netboot_assistant' ]
 
     - role: ipxe
       tags: [ 'role::ipxe', 'skip::ipxe' ]
