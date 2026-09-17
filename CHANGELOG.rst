@@ -52,6 +52,16 @@ General
   needed. The old Debian netinst management code has been removed from the
   :ref:`debops.ipxe` role.
 
+- The iPXE Boot Menu directory and network bootloader install location has been
+  changed to accommodate D-I Netboot Assistant environment. The files will be
+  placed in the :file:`/srv/tftp/ipxe/` directory, that is the :file:`ipxe/`
+  subdirectory of the TFTP root directory. To access them correctly during
+  boot, the DHCP server needs to point to the :file:`ipxe/menu.ipxe` file.
+
+  Existing installations will not be modified to avoid collisions and
+  accidental deletion of data. A fresh installation of the PXE netboot server
+  is recommended in this case.
+
 Removed
 ~~~~~~~
 
