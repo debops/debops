@@ -1,0 +1,21 @@
+{# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# {{ ansible_managed }}
+
+[Unit]
+Description=Refresh di-netboot-assistant installed images
+Documentation=https://docs.debops.org/en/latest/ansible/roles/netboot_assistant/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/netboot-assistant-refresh
+TimeoutStartSec=1800
+Nice=10
+# Optional overrides
+#Environment="DI_NBA_MIN_FREE_BYTES=1073741824"
+#Environment="DI_NBA_EXTRACT_FACTOR=4"
+#Environment="DI_NBA_DEFAULT_TARBALL_BYTES=314572800"

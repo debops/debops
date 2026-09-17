@@ -1635,6 +1635,15 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/netbase/.*'
     JANE_LOG_PATTERN: '\[netbase\]'
 
+'netboot_assistant role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'netboot_assistant.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/netboot_assistant.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_netboot_assistant'
+    JANE_DIFF_PATTERN: '.*/roles/netboot_assistant/.*'
+    JANE_LOG_PATTERN: '\[netboot_assistant\]'
+
 'netbox role':
   <<: *test_role_3rd_deps
   needs:
