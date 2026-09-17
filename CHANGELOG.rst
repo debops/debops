@@ -43,6 +43,16 @@ General
   mixed human/LLM content should be handled within the project and clarify the
   copyright status of the LLM-generated content.
 
+Removed
+~~~~~~~
+
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- The support for managing Debian netinst images has been removed from the
+  role. It will be instead done using the :ref:`debops.netboot_assistant` role,
+  with automated refresh of the netinst images.
+
 
 `debops v3.2.7`_ - 2026-09-14
 -----------------------------

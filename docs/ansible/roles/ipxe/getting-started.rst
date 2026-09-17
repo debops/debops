@@ -1,5 +1,5 @@
-.. Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2015-2019 DebOps <https://debops.org/>
+.. Copyright (C) 2015-2026 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2026 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
@@ -14,17 +14,9 @@ Getting started
 Debian netboot installer support
 --------------------------------
 
-By default the role will download and prepare a set of Debian netboot
-installers for various OS releases. The Debian installers will be available via
-the boot menu, with a possibility to boot into the text, graphical or expert
-install. A preseeded configuration is also available for larger environments.
-
-Optionally, the role can include the non-free firmware required by certain
-devices (for example network cards) for convenience.The installation of the
-non-free firmware is disabled by default, you can enable it using the
-:envvar:`ipxe__debian_netboot_firmware` variable. The firmware will also be
-enabled automatically if non-free repositories are configured on the host in
-APT.
+The :ref:`debops.netboot_assistant` role provides support for installation of
+local Debian or Ubuntu netinst images, which can be used via the iPXE boot menu
+to launch Debian Installer over the network. See its documentation for details.
 
 
 Additional services required
@@ -94,14 +86,6 @@ List of other useful resources related to the ``debops.ipxe`` Ansible role:
 - `Installing Debian using network booting`__
 
   .. __: https://wiki.debian.org/PXEBootInstall
-
-- `Non-free firmware in Debian`__ documentation page
-
-  .. __: https://wiki.debian.org/Firmware
-
-- `How to include non-free firmware in Debian netboot installer`__
-
-  .. __: https://wiki.debian.org/DebianInstaller/NetbootFirmware
 
 - `netboot.xyz`__ - public network boot server, available from DebOps Boot Menu
 
