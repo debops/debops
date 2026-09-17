@@ -38,7 +38,14 @@ ipxe__packages: []
 # .. envvar:: ipxe__tftp_root [[[
 #
 # Absolute path to the TFTP root directory.
-ipxe__tftp_root: '{{ ansible_local.tftpd.directory | d(ansible_local.dnsmasq.boot_tftp_root | d("/srv/tftp")) }}'
+ipxe__tftp_root: '{{ ansible_local.tftpd.directory | d(ansible_local.dnsmasq.boot_tftp_root | d("/var/lib/tftpboot")) }}'
+
+                                                                   # ]]]
+# .. envvar:: ipxe__tftp_subdir [[[
+#
+# Subdirectory inside of the TFTP root directory where the role should place
+# its files. Make sure that the value starts with ``/`` to ensure correct path.
+ipxe__tftp_subdir: '/ipxe'
 
                                                                    # ]]]
 # .. envvar:: ipxe__bootloaders [[[
@@ -49,7 +56,7 @@ ipxe__tftp_root: '{{ ansible_local.tftpd.directory | d(ansible_local.dnsmasq.boo
 ipxe__bootloaders:
   - '/usr/lib/syslinux/memdisk'
   - '/usr/lib/ipxe/undionly.kpxe'
-  - '/boot/ipxe.efi'
+  - '/usr/lib/ipxe/ipxe-amd64.efi'
                                                                    # ]]]
                                                                    # ]]]
 # iPXE scripts [[[
