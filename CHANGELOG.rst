@@ -326,6 +326,13 @@ Removed
   certificates symlinked in the :file:`/etc/elasticsearch/certs/` directory
   instead.
 
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- The support for managing Debian netinst images has been removed from the
+  role. It will be instead done using the :ref:`debops.netboot_assistant` role,
+  with automated refresh of the netinst images.
+
 
 `debops v3.3.0`_ - 2026-03-13
 -----------------------------
