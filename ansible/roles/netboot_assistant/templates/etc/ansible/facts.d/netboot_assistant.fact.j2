@@ -1,0 +1,87 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+import os
+from json import dumps
+
+STATUS_LIB = os.environ.get('DI_NBA_STATUS_LIB', '/var/lib/di-netboot-assistant')
+CONF_DIR = os.environ.get('DI_NBA_CONF_DIR', '/etc/di-netboot-assistant')
+CONF_DIVERT = CONF_DIR + '/di-netboot-assistant.conf.dpkg-divert'
+CONF_FILE = CONF_DIR + '/di-netboot-assistant.conf'
+BINARY = os.environ.get('DI_NBA_BINARY', '/usr/bin/di-netboot-assistant')
+REFRESH_SCRIPT = os.environ.get('DI_NBA_REFRESH_SCRIPT',
+                                '/usr/local/lib/netboot-assistant-refresh')
+N_A_DIR = 'd-i/n-a'
+
+
+def get_config_value(path, key):
+    value = None
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith(key + '='):
+                    value = line.split('=', 1)[1].strip()
+                    if (len(value) >= 2 and value[0] == value[-1]
+                            and value[0] in ('"', "'")):
+                        value = value[1:-1]
+                    break
+    except OSError:
+        pass
+    return value
+
+
+def firmware_enabled(expand_dir):
+    initrd = os.path.join(expand_dir, 'initrd.gz')
+    initrd_orig = os.path.join(expand_dir, 'initrd.gz.orig')
+    initrd_fw = os.path.join(expand_dir, 'initrd.gz.fw')
+
+    if not (os.path.isfile(initrd_orig) and os.path.isfile(initrd_fw)):
+        return False
+
+    try:
+        return os.path.getsize(initrd) == os.path.getsize(initrd_fw)
+    except OSError:
+        return False
+
+
+output = {}
+
+output['installed'] = os.path.isfile(BINARY)
+
+if output['installed']:
+    output['configured'] = os.path.isfile(CONF_DIVERT)
+    output['refresh'] = os.path.isfile(REFRESH_SCRIPT)
+    output['tftp_root'] = get_config_value(CONF_FILE, 'TFTP_ROOT') or '/var/lib/tftpboot'
+
+    installs = {}
+    try:
+        conf_files = os.listdir(STATUS_LIB)
+    except OSError:
+        conf_files = []
+
+    for name in conf_files:
+        if not name.endswith('.conf'):
+            continue
+        base = name[:-len('.conf')]
+        if '--' not in base:
+            continue
+        repo, arch = base.split('--', 1)
+        conf_path = os.path.join(STATUS_LIB, name)
+        expand_dir = get_config_value(conf_path, 'expand_dir')
+        fetch_date = get_config_value(conf_path, 'fetch_date')
+        installs.setdefault(repo, {})[arch] = {
+            'firmware': firmware_enabled(expand_dir) if expand_dir else False,
+            'fetch_date': fetch_date,
+        }
+
+    output['installs'] = installs
+
+print(dumps(output, sort_keys=True, indent=4))
