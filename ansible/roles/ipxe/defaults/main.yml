@@ -91,6 +91,10 @@ ipxe__default_scripts:
         comment: 'Subdirectory with boot configuration files'
         value: 'boot/'
 
+      - name: 'netboot_assistant_root'
+        comment: 'URL to the Netboot Assistant directory root'
+        value: 'tftp://${next-server}/d-i/n-a'
+
   - name: 'boot.ipxe'
     raw: |
       # iPXE configuration based on https://gist.github.com/robinsmidsrod/2234639
@@ -173,9 +177,11 @@ ipxe__default_scripts:
 
       - name: 'main-menu-footer'
         raw: |
+          item --gap Other Boot Menus:
           item netboot_xyz_boot_menu ${space} -> Netboot.xyz Boot Menu
           item sal_boot_menu         ${space} -> SAL Boot Menu
           item rackspace_boot_menu   ${space} -> Rackspace Boot Menu
+          item netboot_assistant_boot_menu ${space} -> D-I Netboot Assistant Boot Menu
           item
           item --gap Tools:
           item sysinfo ${space} System info
@@ -209,6 +215,10 @@ ipxe__default_scripts:
 
           :rackspace_boot_menu
           chain http://boot.rackspace.com/menu.ipxe || goto error
+          goto main_menu
+
+          :netboot_assistant_boot_menu
+          chain ${netboot_assistant_root}/menu.ipxe || goto error
           goto main_menu
 
           :netboot_xyz_boot_menu
@@ -383,11 +393,11 @@ ipxe__default_scripts:
       goto deb_boot_type
 
       :deb_text
-      set dir ${dir}/debian-installer/${arch_a}
+      set dir ${netboot_assistant_root}/${version}/${arch_a}
       goto deb_boot
 
       :deb_graphical
-      set dir ${dir}/gtk/debian-installer/${arch_a}
+      set dir ${netboot_assistant_root}/${version}-gtk/${arch_a}
       set install_params vga=788
       goto deb_boot
 

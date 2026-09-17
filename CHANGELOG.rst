@@ -144,6 +144,15 @@ General
   ES nodes after initial cluster deployment with assumption that they will be
   bootstrapped by the current Eleasticsearch master node.
 
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- The role will use the :ref:`debops.netboot_assistant` role as a dependency to
+  manage Debian and Ubuntu netinst images used by the iPXE Boot Menu. The D-I
+  Netboot Assistant Boot Menu can be accessed from the iPXE boot menu if
+  needed. The old Debian netinst management code has been removed from the
+  :ref:`debops.ipxe` role.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
