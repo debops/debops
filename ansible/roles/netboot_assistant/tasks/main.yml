@@ -1,0 +1,188 @@
+---
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Import custom Ansible plugins
+  ansible.builtin.import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Validate configuration of netboot images
+  ansible.builtin.assert:
+    that:
+      - 'item.name is defined and item.name is truthy'
+      - 'item.image is defined and item.image is truthy or item.raw is defined'
+      - 'item.arch is defined and item.arch is truthy or item.raw is defined'
+    fail_msg: 'Issues with image configuration entries'
+    quiet: True
+  loop: '{{ netboot_assistant__combined_installs | debops.debops.parse_kv_config }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+
+- name: Install required packages
+  ansible.builtin.package:
+    name: '{{ q("flattened", (netboot_assistant__base_packages + netboot_assistant__packages)) }}'
+    state: 'present'
+  register: netboot_assistant__register_packages
+  until: netboot_assistant__register_packages is succeeded
+  when: netboot_assistant__deploy_state == 'present'
+
+- name: Ensure that TFTP root directory exists
+  ansible.builtin.file:
+    path: '{{ netboot_assistant__tftp_root }}'
+    state: 'directory'
+    mode: '0755'
+  when: netboot_assistant__deploy_state == 'present'
+
+- name: Manage diversion of the original configuration file
+  debops.debops.dpkg_divert:
+    path: '/etc/di-netboot-assistant/di-netboot-assistant.conf'
+    state: '{{ netboot_assistant__deploy_state }}'
+    delete: True
+  when: ansible_pkg_mgr == 'apt'
+
+- name: Generate D-I Netboot Assistant configuration
+  ansible.builtin.template:
+    src: 'etc/di-netboot-assistant/di-netboot-assistant.conf.j2'
+    dest: '/etc/di-netboot-assistant/di-netboot-assistant.conf'
+    mode: '0644'
+  when: netboot_assistant__deploy_state == 'present'
+
+- name: Remove netboot-assistant-refresh script when requested
+  ansible.builtin.file:
+    path: '/usr/local/lib/netboot-assistant-refresh'
+    state: 'absent'
+  when: netboot_assistant__deploy_state == 'absent' or
+        netboot_assistant__refresh is falsy
+
+- name: Install netboot-assistant-refresh script
+  ansible.builtin.copy:
+    src: 'usr/local/lib/netboot-assistant-refresh'
+    dest: '/usr/local/lib/netboot-assistant-refresh'
+    mode: '0755'
+  when: netboot_assistant__deploy_state == 'present' and
+        netboot_assistant__refresh is truthy
+
+- name: Install netboot-assistant-refresh service and timer
+  ansible.builtin.template:
+    src: '{{ "etc/systemd/system/" + item + ".j2" }}'
+    dest: '{{ "/etc/systemd/system/" + item }}'
+    mode: '0644'
+  loop:
+    - 'netboot-assistant-refresh.service'
+    - 'netboot-assistant-refresh.timer'
+  notify: [ 'Reload systemd daemon' ]
+  when: netboot_assistant__deploy_state == 'present' and
+        netboot_assistant__refresh is truthy
+
+- name: Update Ansible facts if systemd services were modified
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Check state of host services
+  ansible.builtin.service_facts:
+
+- name: Manage state of the refresh timer
+  ansible.builtin.systemd:
+    name: 'netboot-assistant-refresh.timer'
+    state: '{{ "started"
+                 if (netboot_assistant__refresh is truthy)
+                 else "stopped" }}'
+    enabled: '{{ True
+                 if (netboot_assistant__refresh is truthy)
+                 else False }}'
+  when: (netboot_assistant__deploy_state == 'present' and
+         'netboot-assistant-refresh.service' in ansible_facts.services)
+
+- name: Stop and disable the refresh timer when requested
+  ansible.builtin.systemd:
+    name: 'netboot-assistant-refresh.timer'
+    state: 'stopped'
+    enabled: False
+  when: (netboot_assistant__deploy_state == 'absent' and
+         (ansible_local.netboot_assistant.configured | d(True)) is truthy) or
+         (netboot_assistant__refresh is falsy and
+          (ansible_local.netboot_assistant.refresh | d(True)) is truthy)
+
+- name: Uninstall netboot-assistant-refresh service and timer
+  ansible.builtin.file:
+    path: '{{ "/etc/systemd/system/" + item }}'
+    state: 'absent'
+  loop:
+    - 'netboot-assistant-refresh.service'
+    - 'netboot-assistant-refresh.timer'
+  notify: [ 'Reload systemd daemon' ]
+  when: netboot_assistant__deploy_state == 'absent' or
+        netboot_assistant__refresh is falsy
+
+- name: Make sure that Ansible local facts directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save netboot_assistant local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/netboot_assistant.fact.j2'
+    dest: '/etc/ansible/facts.d/netboot_assistant.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Update Ansible facts if they were modified
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Manage di-netboot-assistant images
+  when: netboot_assistant__deploy_state == 'present'
+  block:
+
+    - name: Uninstall netboot images
+      ansible.builtin.command: 'di-netboot-assistant uninstall {{ item.image }} --arch={{ item.arch }}'
+      loop: '{{ netboot_assistant__combined_installs | debops.debops.parse_kv_config }}'
+      loop_control:
+        label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+      register: netboot_assistant__register_uninstall
+      changed_when: netboot_assistant__register_uninstall.rc == 0
+      when: item.state | d('present') in [ 'absent' ] and
+            item.image is defined and item.image is truthy and
+            item.arch is defined and item.arch is truthy and
+            ansible_local.netboot_assistant.installs[item.image][item.arch] is defined
+
+    - name: Install netboot images
+      ansible.builtin.command: 'di-netboot-assistant install {{ item.image }} --arch={{ item.arch }}'
+      loop: '{{ netboot_assistant__combined_installs | debops.debops.parse_kv_config }}'
+      loop_control:
+        label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+      register: netboot_assistant__register_install
+      changed_when: netboot_assistant__register_install.rc == 0
+      when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and
+            item.image is defined and item.image is truthy and
+            item.arch is defined and item.arch is truthy and
+            ansible_local.netboot_assistant.installs[item.image][item.arch] is undefined
+
+    - name: Add non-free firmware to netboot images
+      ansible.builtin.command: 'di-netboot-assistant fw-toggle {{ item.item.image }} --arch={{ item.item.arch }} --ignore-sig'
+      loop: '{{ netboot_assistant__register_install.results }}'
+      loop_control:
+        label: '{{ {"name": item.item.name, "state": item.item.state | d("present")} }}'
+      register: netboot_assistant__register_add_nonfree
+      changed_when: netboot_assistant__register_add_nonfree.rc == 0
+      when: item.item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and
+            item.item.image is defined and item.item.image is truthy and
+            item.item.arch is defined and item.item.arch is truthy and
+            ansible_local.netboot_assistant.installs[item.item.image][item.item.arch] is undefined and
+            item.item.firmware is defined and item.item.firmware is truthy
+
+    - name: Execute raw di-netboot-assistant commands
+      ansible.builtin.command: 'di-netboot-assistant {{ item.raw }}'
+      args:
+        creates: '{{ item.creates | d(omit) }}'
+        removes: '{{ item.removes | d(omit) }}'
+      loop: '{{ netboot_assistant__combined_installs | debops.debops.parse_kv_config }}'
+      loop_control:
+        label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+      when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and
+            item.raw is defined and item.raw is truthy

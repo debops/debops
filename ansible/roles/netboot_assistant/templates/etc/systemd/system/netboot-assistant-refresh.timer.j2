@@ -1,0 +1,33 @@
+{# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# {{ ansible_managed }}
+
+[Unit]
+Description=Refresh di-netboot-assistant installed images
+Documentation=https://docs.debops.org/en/latest/ansible/roles/netboot_assistant/
+After=network-online.target
+Wants=network-online.target
+
+[Timer]
+{% set expressions = [] %}
+{% for date in netboot_assistant__refresh_releases %}
+{%   if (date | to_datetime()).date() > now().date() %}
+{%     set _ = expressions.append(date) %}
+{%   endif %}
+{% endfor %}
+{% if expressions %}
+{%   for expression in expressions %}
+{{     'OnCalendar=' + expression }}
+{%   endfor %}
+{% else %}
+{%   for expression in netboot_assistant__refresh_recurrence %}
+{{     'OnCalendar=' + expression }}
+{%   endfor %}
+{% endif %}
+RandomizedDelaySec=1h
+Persistent=true
+
+[Install]
+WantedBy=timers.target
