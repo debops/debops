@@ -1,5 +1,5 @@
-.. Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2015-2019 DebOps <https://debops.org/>
+.. Copyright (C) 2015-2026 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2026 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Default variables: configuration
@@ -14,101 +14,6 @@ them.
    .. contents::
       :local:
       :depth: 1
-
-.. _ipxe__ref_debian_netboot_release_map:
-
-ipxe__debian_netboot_release_map
---------------------------------
-
-The ``ipxe__debian_netboot_*_release_map`` variables define a list of Debian
-Installer releases known to the role. These releases will be downloaded and
-prepared by the :ref:`debops.ipxe` Ansible role for use on the local network.
-
-The Debian netboot installers are prepared in an elaborate directory structure
-inside of the :envvar:`ipxe__debian_netboot_pxe_root` directory, which supports
-multiple OS releases, architectures and installation flavors. Each installer
-optionally can be supplemented by a set of non-free firmware packages provided
-by Debian to allow use of hardware that requires it.
-
-Examples
-~~~~~~~~
-
-See the :envvar:`ipxe__debian_netboot_default_release_map` variable for an
-example configuration.
-
-Syntax
-~~~~~~
-
-Each list entry is a YAML dictionary with specific parameters:
-
-``name``
-  Required. An identifier for a particular configuration entry, not used
-  otherwise. Configuration entries with the same ``name`` parameter are merged
-  together, this can be used to modify entries from the role defaults using
-  Ansible inventory.
-
-``state``
-  Optional. If not specified or ``present``, a given Debian Installer release
-  will be downloaded and prepared by the role. If ``absent``, a given release
-  will be skipped; existing configuration will not be modified or removed.
-  If ``ignore``, a given configuration entry will not be evaluated by the role.
-  This can be used to modify the configuration conditionally.
-
-``release``
-  Required. Name of the OS release a given entry defines. The OS releases which
-  will be prepared are filtered by the :envvar:`ipxe__debian_netboot_releases`
-  list variable.
-
-``architecture``
-  Required. Name of the OS architecture a given entry defines. The OS
-  architectures which will be prepared are filtered by the
-  :envvar:`ipxe__debian_netboot_architectures` list variable.
-
-``netboot_url``
-  Optional. An URL to the :file:`netboot.tar.gz` tarball which contains the
-  installer files. If not specified, the URL will be generated automatically
-  based on the selected Debian mirror, release and architecture.
-
-``netboot_subdir``
-  Optional. Normally empty, this parameter can be used to specify
-  a subdirectory in the installer directory which will be included in the URL
-  to the installer tarball. Currently this is only useful to define
-  a "gtk-based" installer entry which provides the graphical installer. At the
-  moment the only sensible value is ``/gtk``.
-
-``netboot_version``
-  Required. Specify the version of the installer to download and prepare. This
-  parameter will be changed over time as the new installer version are
-  released; the :file:`current` symlink will be updated to match the selected
-  version. The current and upstream versions can be checked in the DebOps
-  monorepo root directory by running the :command:`make versions` command.
-
-``netboot_checksum``
-  Optional. Specify the checksum of the installer tarball, usually a SHA256. If
-  not specified, the file checksum will not be verified. The checksum should be
-  updated on any version changes to match the new tarball.
-
-``netboot_current``
-  Optional, boolean. If not specified or ``True``, the role will update the
-  :file:`current` symlink to the specified installer version. If ``False``,
-  existing symlink will not be updated.
-
-``firmware_url``
-  Optional. An URL to the :file:`firmware.cpio.gz` file which contains the
-  firmware packages. If not specified and the ``firmware_version`` parameter is
-  specified, the URL will be generated automatically based on the firmware
-  mirror URL, OS release and firmware version.
-
-``firmware_version``
-  Optional. Specify the version of the firmware file to download and add to the
-  Debian installer :file:`initrd.gz` file. If not specified, the firmware will
-  not be downloaded.
-
-``firmware_checksum``
-  Optional. Specify the checksum of the firmware file, usually a SHA256. If not
-  specified, the file checksum will not be verified. The checksum should be
-  updated on any firmware version changes to match the new file.
-
 
 .. _ipxe__ref_scripts:
 

@@ -1,0 +1,447 @@
+#!/usr/bin/env python3
+
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+"""Weekly refresh of di-netboot-assistant installed images.
+
+Detect drift between the Debian mirror and the images cached by
+``di-netboot-assistant``: the cached ``netboot.tar.gz`` tarballs are compared
+against the ``SHA256SUMS`` currently published on the mirror. A missing or
+mismatched cached tarball triggers ``di-netboot-assistant install`` (and
+re-application of non-free firmware). ``install`` re-extracts the image and
+wipes the firmware markers on every run, so we must not call it blindly on a
+schedule -- otherwise firmware would be destroyed each week.
+
+Before installing an image the target filesystems (TFTP root and download
+cache) are checked for free space and writability; a failed check aborts the
+run with a non-zero exit status.  The run is serialized with a lock file, so
+a manual invocation cannot race the timer.
+"""
+
+import argparse
+import fcntl
+import hashlib
+import logging
+import os
+import re
+import subprocess
+import sys
+import urllib.request
+
+logger = logging.getLogger('netboot-assistant-refresh')
+
+CONF_DIR = os.environ.get('DI_NBA_CONF_DIR', '/etc/di-netboot-assistant')
+CONF_FILE = CONF_DIR + '/di-netboot-assistant.conf'
+STATUS_LIB = os.environ.get('DI_NBA_STATUS_LIB', '/var/lib/di-netboot-assistant')
+CACHE_DIR = os.environ.get('DI_NBA_CACHE_DIR', '/var/cache/di-netboot-assistant')
+BINARY = os.environ.get('DI_NBA_BINARY', '/usr/bin/di-netboot-assistant')
+LOCKFILE = os.environ.get('DI_NBA_LOCKFILE', '/run/netboot-assistant-refresh.lock')
+
+
+def env_int(name, default):
+    try:
+        return int(os.environ[name])
+    except (KeyError, ValueError):
+        return default
+
+
+# Minimum free bytes that must remain on the affected filesystems after an
+# install.  Overridable via the DI_NBA_* environment variables (systemd).
+MIN_FREE_BYTES = env_int('DI_NBA_MIN_FREE_BYTES', 1024 ** 3)
+EXTRACT_FACTOR = env_int('DI_NBA_EXTRACT_FACTOR', 4)
+DEFAULT_TARBALL_BYTES = env_int('DI_NBA_DEFAULT_TARBALL_BYTES', 300 * 1024 ** 2)
+
+
+def setup_logging(verbose, quiet):
+    if quiet:
+        level = logging.WARNING
+    elif verbose:
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
+    logging.basicConfig(
+        level=level,
+        format='%(levelname)s: %(message)s',
+        stream=sys.stderr,
+    )
+
+
+def get_config_value(path, key):
+    value = None
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith(key + '='):
+                    value = line.split('=', 1)[1].strip()
+                    if (len(value) >= 2 and value[0] == value[-1]
+                            and value[0] in ('"', "'")):
+                        value = value[1:-1]
+                    break
+    except OSError:
+        pass
+    return value
+
+
+def iter_installed():
+    """Yield (name, arch, expand_dir, repo, dl_file) for each installed image.
+
+    Reads the ``<name>--<arch>.conf`` metadata written by di-netboot-assistant
+    in the status library.  ``repo`` is the base URL used to fetch the image
+    (after mirror rewriting), ``dl_file`` the path of the downloaded archive
+    (for example ``netboot/netboot.tar.gz``).
+    """
+    try:
+        for name in sorted(os.listdir(STATUS_LIB)):
+            if not name.endswith('.conf'):
+                continue
+            base = name[:-len('.conf')]
+            if '--' not in base:
+                continue
+            name_rep, arch = base.split('--', 1)
+            conf = os.path.join(STATUS_LIB, name)
+            expand_dir = get_config_value(conf, 'expand_dir')
+            repo = get_config_value(conf, 'repo')
+            dl_file = get_config_value(conf, 'dl_file')
+            if expand_dir and repo and dl_file:
+                yield name_rep, arch, expand_dir, repo, dl_file
+    except OSError as e:
+        logger.error('Cannot read %s: %s', STATUS_LIB, e)
+
+
+def firmware_enabled(expand_dir):
+    logger.debug('Checking state of the firmware at %s', expand_dir)
+    initrd = os.path.join(expand_dir, 'initrd.gz')
+    initrd_orig = os.path.join(expand_dir, 'initrd.gz.orig')
+    initrd_fw = os.path.join(expand_dir, 'initrd.gz.fw')
+
+    if not (os.path.isfile(initrd_orig) and os.path.isfile(initrd_fw)):
+        logger.debug('No firmware found')
+        return False
+    try:
+        return os.path.getsize(initrd) == os.path.getsize(initrd_fw)
+    except OSError:
+        return False
+
+
+def url2filename(url):
+    """Mirror di-netboot-assistant's ``url2filename()`` cache-name rule.
+
+    The package stores cached downloads under ``$DL_CACHE`` using the
+    ``sed`` rule implemented here: collapse runs of slashes, then replace
+    anything outside ``[A-Za-z0-9@+_~.-]`` with an underscore.
+    """
+    url = re.sub(r'//+', '/', url)
+    return re.sub(r'[^A-Za-z0-9@+_~.\-]', '_', url)
+
+
+def cache_file_path(repo, dl_file):
+    """Return the path of the cached download for the given repo and file."""
+    repo_loc = repo.split('://', 1)[-1]
+    return os.path.join(CACHE_DIR, url2filename(repo_loc + '/' + dl_file))
+
+
+def fetch(url):
+    """Fetch a URL, honoring proxy env vars; return bytes or None."""
+    try:
+        with urllib.request.urlopen(url, timeout=60) as resp:
+            return resp.read()
+    except Exception as e:
+        logger.debug('Failed to fetch %s: %s', url, e)
+        return None
+
+
+def parse_sha256sums(data):
+    """Return {relative_path: hexdigest} from SHA256SUMS content."""
+    result = {}
+    for raw in data.decode('utf-8', 'replace').splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        parts = line.split(None, 1)
+        if len(parts) != 2:
+            continue
+        digest, path = parts
+        path = os.path.normpath(path.strip())
+        result[path] = digest
+    return result
+
+
+def sha256_of_file(path):
+    h = hashlib.sha256()
+    try:
+        with open(path, 'rb') as f:
+            for chunk in iter(lambda: f.read(65536), b''):
+                h.update(chunk)
+        return h.hexdigest()
+    except OSError as e:
+        logger.debug('Cannot read %s: %s', path, e)
+        return None
+
+
+def is_fresh(repo, dl_file):
+    """Return True if the cached image matches the current mirror.
+
+    Compare the checksum of the cached ``dl_file`` tarball against the entry
+    for that file in the mirror's ``SHA256SUMS``.  A missing cached tarball --
+    a clean cache -- is treated as stale so the image gets (re-)installed.
+    When the mirror state cannot be determined, assume fresh (no churn).
+    """
+    base = repo.rstrip('/')
+    cache_path = cache_file_path(repo, dl_file)
+
+    if not os.path.isfile(cache_path):
+        logger.info('%s: no cached copy, refreshing.', base + '/' + dl_file)
+        return False
+
+    data = fetch(base + '/SHA256SUMS')
+    if data is None:
+        logger.warning('Cannot fetch %s/SHA256SUMS, assuming fresh.', base)
+        return True
+    sums = parse_sha256sums(data)
+    if dl_file not in sums:
+        logger.warning('%s missing from %s/SHA256SUMS, assuming fresh.',
+                       dl_file, base)
+        return True
+    return sha256_of_file(cache_path) == sums[dl_file]
+
+
+def existing_ancestor(path):
+    """Return ``path`` itself or the nearest existing parent directory."""
+    p = path
+    while p and not os.path.exists(p):
+        parent = os.path.dirname(p)
+        if parent == p:
+            break
+        p = parent
+    return p or '/'
+
+
+def fs_free_bytes(path):
+    st = os.statvfs(existing_ancestor(path))
+    return st.f_bavail * st.f_frsize
+
+
+def fs_device(path):
+    return os.stat(existing_ancestor(path)).st_dev
+
+
+def is_readonly(path):
+    st = os.statvfs(existing_ancestor(path))
+    return bool(st.f_flag & os.ST_RDONLY)
+
+
+def dir_size_bytes(path):
+    """Return apparent size of ``path`` in bytes, or None if unmeasurable."""
+    if not os.path.isdir(path):
+        return None
+    try:
+        out = subprocess.run(['du', '-sb', path],
+                             capture_output=True, text=True, check=True)
+        return int(out.stdout.split(None, 1)[0])
+    except (OSError, ValueError) as e:
+        logger.debug('Cannot measure %s: %s', path, e)
+        return None
+
+
+def tarball_size_bytes(repo, dl_file, cache_path):
+    """Return the size of the archive to download, in bytes.
+
+    Use the cached copy when present, else ask the mirror for the
+    ``Content-Length``, else fall back to a configurable default.
+    """
+    try:
+        if os.path.isfile(cache_path):
+            return os.path.getsize(cache_path)
+    except OSError:
+        pass
+    url = repo.rstrip('/') + '/' + dl_file
+    try:
+        req = urllib.request.Request(url, method='HEAD')
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            length = resp.headers.get('Content-Length')
+            if length:
+                return int(length)
+    except Exception as e:
+        logger.debug('Cannot determine size of %s: %s', url, e)
+    return DEFAULT_TARBALL_BYTES
+
+
+def check_disk(repo, dl_file, expand_dir):
+    """Verify writability and free space before an install.
+
+    Return a ``(ok, message)`` tuple; ``ok`` is False when the install should
+    be aborted.  The download peaks at ``tarball`` bytes in the cache while
+    the old image tree is still in place, and the fresh extraction needs
+    ``expand`` bytes in the TFTP root; the larger of these is checked on the
+    shared filesystem when cache and TFTP root live on the same device.
+    """
+    cache_path = cache_file_path(repo, dl_file)
+
+    if is_readonly(expand_dir):
+        return False, 'TFTP root is mounted read-only: %s' % expand_dir
+    if is_readonly(cache_path):
+        return False, 'cache is mounted read-only: %s' % cache_path
+
+    tarball = tarball_size_bytes(repo, dl_file, cache_path)
+
+    measured = dir_size_bytes(expand_dir)
+    estimated = measured is None
+    if measured is not None:
+        expand = measured
+    else:
+        expand = tarball * EXTRACT_FACTOR
+
+    if fs_device(cache_path) == fs_device(expand_dir):
+        # Same filesystem: at some point both the cached tarball and the
+        # freshly extracted tree exist, plus the reserved headroom.
+        free = fs_free_bytes(expand_dir)
+        needed = tarball + expand + MIN_FREE_BYTES
+        location = ''
+    else:
+        # Separate filesystems: the cache needs the tarball, the TFTP root
+        # needs the extracted tree, each with its own headroom.
+        cache_free = fs_free_bytes(cache_path)
+        if cache_free < tarball + MIN_FREE_BYTES:
+            return (False,
+                    'insufficient space in %s: need %d bytes, have %d free'
+                    % (cache_path, tarball + MIN_FREE_BYTES, cache_free))
+        free = fs_free_bytes(expand_dir)
+        needed = expand + MIN_FREE_BYTES
+        location = ' in the TFTP root'
+
+    if free < needed:
+        return (False,
+                'insufficient disk space%s: need at least %d bytes, have %d free%s'
+                % (location, needed, free,
+                   ' (estimate based on %dx compression)' % EXTRACT_FACTOR
+                   if estimated else ''))
+    return (True,
+            'disk check passed (%d bytes tarball, %d bytes%s expanded, %d free)'
+            % (tarball, expand, ' (estimated)' if estimated else '', free))
+
+
+def sanity_check(expand_dir):
+    """Verify that an installed image is complete and not empty."""
+    problems = []
+    for name in ('linux', 'initrd.gz'):
+        path = os.path.join(expand_dir, name)
+        try:
+            if os.path.getsize(path) <= 0:
+                problems.append(name)
+        except OSError:
+            problems.append(name)
+    if problems:
+        logger.error('Sanity check failed in %s: missing or empty %s.',
+                     expand_dir, ', '.join(problems))
+        return False
+    logger.debug('Sanity check passed in %s.', expand_dir)
+    return True
+
+
+def run(cmd, dry_run):
+    logger.debug('$ %s', ' '.join(cmd))
+    if dry_run:
+        logger.info('Dry run, not executing: %s', ' '.join(cmd))
+        return 0
+    return subprocess.run(cmd).returncode
+
+
+def acquire_lock(dry_run):
+    """Serialize runs with a non-blocking lock; bypassed in dry runs.
+
+    Return True if the run may proceed (lock held, or dry run), False if
+    another instance is running or the lockfile cannot be opened.
+    """
+    if dry_run:
+        logger.debug('Dry run, not locking %s.', LOCKFILE)
+        return True
+    try:
+        fd = os.open(LOCKFILE, os.O_CREAT | os.O_WRONLY, 0o644)
+    except OSError as e:
+        logger.error('Cannot open lockfile %s: %s', LOCKFILE, e)
+        return False
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        logger.error('Another instance is running (%s is locked).', LOCKFILE)
+        os.close(fd)
+        return False
+    logger.debug('Locked %s.', LOCKFILE)
+    return True
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description='Refresh di-netboot-assistant netboot images when drifted.')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='print debug messages')
+    parser.add_argument('-q', '--quiet', action='store_true',
+                        help='only print warnings and errors')
+    parser.add_argument('-n', '--dry-run', action='store_true',
+                        help='report what would be done without executing it; '
+                             'still exits non-zero when a check would fail')
+    args = parser.parse_args(argv)
+
+    setup_logging(args.verbose, args.quiet)
+    logger.debug('Starting refresh.')
+
+    if not os.path.isfile(BINARY):
+        logger.error('di-netboot-assistant not installed at %s.', BINARY)
+        return 1
+
+    if not acquire_lock(args.dry_run):
+        return 1
+
+    changes = 0
+
+    for name, arch, expand_dir, repo, dl_file in iter_installed():
+        if not os.path.isdir(expand_dir):
+            logger.debug('%s: no install dir, skipping.', name + '/' + arch)
+            continue
+
+        if is_fresh(repo, dl_file):
+            logger.debug('%s: fresh, no action.', name + '/' + arch)
+            continue
+
+        ok, msg = check_disk(repo, dl_file, expand_dir)
+        if not ok:
+            logger.error('%s: %s', name + '/' + arch, msg)
+            return 1
+        logger.debug('%s: %s', name + '/' + arch, msg)
+
+        logger.info('%s: image drifted, refreshing.', name + '/' + arch)
+
+        # Check the state of the firmware before clobbering the installation
+        apply_firmware = firmware_enabled(expand_dir)
+
+        # --ignore-sig: d-i image signatures have not been verifiable so far,
+        # and without it install would block on an interactive prompt.
+        if run([BINARY, 'install', name, '--arch=' + arch, '--ignore-sig'],
+               args.dry_run) != 0:
+            logger.error('Failed to install %s for %s.', name, arch)
+            return 1
+
+        if apply_firmware:
+            logger.info('%s: re-applying firmware.', name + '/' + arch)
+            # --ignore-sig: firmware signatures have not been verifiable so far,
+            # and without it fw-toggle would block on an interactive prompt.
+            if run([BINARY, 'fw-toggle', name, '--arch=' + arch, '--ignore-sig'],
+                   args.dry_run) != 0:
+                logger.error('Failed to re-apply firmware for %s.',
+                             name + '/' + arch)
+                return 1
+
+        if not sanity_check(expand_dir):
+            return 1
+
+        changes += 1
+
+    logger.info('%d image(s) refreshed.', changes)
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

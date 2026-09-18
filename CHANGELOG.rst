@@ -33,6 +33,10 @@ New DebOps roles
   services using Docker containers, and can integrate with the
   :ref:`debops.nginx` role to manage the :command:`nginx` reverse proxy.
 
+- The :ref:`debops.netboot_assistant` role allows management of netinst images
+  for PXE network booting of Debian and Ubuntu installers, enabling easy
+  installation of new hosts and virtual machines over the network.
+
 General
 '''''''
 
@@ -139,6 +143,25 @@ General
   that are not specified as initial master nodes. This permits addition of more
   ES nodes after initial cluster deployment with assumption that they will be
   bootstrapped by the current Eleasticsearch master node.
+
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- The role will use the :ref:`debops.netboot_assistant` role as a dependency to
+  manage Debian and Ubuntu netinst images used by the iPXE Boot Menu. The D-I
+  Netboot Assistant Boot Menu can be accessed from the iPXE boot menu if
+  needed. The old Debian netinst management code has been removed from the
+  :ref:`debops.ipxe` role.
+
+- The iPXE Boot Menu directory and network bootloader install location has been
+  changed to accommodate D-I Netboot Assistant environment. The files will be
+  placed in the :file:`/srv/tftp/ipxe/` directory, that is the :file:`ipxe/`
+  subdirectory of the TFTP root directory. To access them correctly during
+  boot, the DHCP server needs to point to the :file:`ipxe/menu.ipxe` file.
+
+  Existing installations will not be modified to avoid collisions and
+  accidental deletion of data. A fresh installation of the PXE netboot server
+  is recommended in this case.
 
 :ref:`debops.pki` role
 ''''''''''''''''''''''
@@ -321,6 +344,13 @@ Removed
   from the role. Elasticsearch installation will use private keys and X.509
   certificates symlinked in the :file:`/etc/elasticsearch/certs/` directory
   instead.
+
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- The support for managing Debian netinst images has been removed from the
+  role. It will be instead done using the :ref:`debops.netboot_assistant` role,
+  with automated refresh of the netinst images.
 
 
 `debops v3.3.0`_ - 2026-03-13

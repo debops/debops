@@ -1,6 +1,6 @@
 ---
-# Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2015-2019 DebOps <https://debops.org/>
+# Copyright (C) 2015-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
@@ -16,20 +16,20 @@
 
 - name: Ensure that iPXE script directories exist
   ansible.builtin.file:
-    path: '{{ ipxe__tftp_root + "/" + (((item.name | regex_replace("\.ipxe$", "")) + ".ipxe") | dirname) }}'
+    path: '{{ ipxe__tftp_root + ipxe__tftp_subdir + "/" + (((item.name | regex_replace("\.ipxe$", "")) + ".ipxe") | dirname) }}'
     state: 'directory'
     mode: '0755'
   loop: '{{ ipxe__combined_scripts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
-                "path": (ipxe__tftp_root + "/" + ((item.name | regex_replace("\.ipxe$", "") + ".ipxe") | dirname)),
+                "path": (ipxe__tftp_root + ipxe__tftp_subdir + "/" + ((item.name | regex_replace("\.ipxe$", "") + ".ipxe") | dirname)),
                 "state": item.state | d("present")} }}'
   when: item.name is defined and item.name is truthy and item.state | d('present') not in ['absent', 'ignore', 'init']
 
 - name: Generate iPXE scripts
   ansible.builtin.template:
     src: 'srv/tftp/template.ipxe.j2'
-    dest: '{{ ipxe__tftp_root + "/" + (item.name | regex_replace("\.ipxe$", "")) + ".ipxe" }}'
+    dest: '{{ ipxe__tftp_root + ipxe__tftp_subdir + "/" + (item.name | regex_replace("\.ipxe$", "")) + ".ipxe" }}'
     mode: '0644'
   loop: '{{ ipxe__combined_scripts | debops.debops.parse_kv_items }}'
   loop_control:
@@ -39,7 +39,7 @@
 
 - name: Remove iPXE scripts if requested
   ansible.builtin.file:
-    path: '{{ ipxe__tftp_root + "/" + (item.name | regex_replace("\.ipxe$", "")) + ".ipxe" }}'
+    path: '{{ ipxe__tftp_root + ipxe__tftp_subdir + "/" + (item.name | regex_replace("\.ipxe$", "")) + ".ipxe" }}'
     state: 'absent'
   loop: '{{ ipxe__combined_scripts | debops.debops.parse_kv_items }}'
   loop_control:
@@ -50,14 +50,10 @@
 - name: Install bootloader files in the TFTP root directory
   ansible.builtin.copy:
     src: '{{ item }}'
-    dest: '{{ ipxe__tftp_root + "/" + (item | basename) }}'
+    dest: '{{ ipxe__tftp_root + ipxe__tftp_subdir + "/" + (item | basename) }}'
     remote_src: True
     mode: '0644'
   loop: '{{ ipxe__bootloaders }}'
-
-- name: Configure Debian netboot installers
-  ansible.builtin.include_tasks: debian_netboot.yml
-  when: ipxe__debian_netboot_enabled | bool
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
