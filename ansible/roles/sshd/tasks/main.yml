@@ -19,23 +19,6 @@
 - name: Pre hooks
   ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "sshd/pre_main.yml") }}'
 
-- name: Make sure that Ansible local fact directory exists
-  ansible.builtin.file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    mode: '0755'
-
-- name: Save Ansible local fact script
-  ansible.builtin.template:
-    src: 'etc/ansible/facts.d/sshd.fact.j2'
-    dest: '/etc/ansible/facts.d/sshd.fact'
-    mode: '0755'
-  notify: [ 'Refresh host facts' ]
-  tags: [ 'meta::facts' ]
-
-- name: Reload Ansible local facts
-  ansible.builtin.meta: 'flush_handlers'
-
 - name: Make sure that OpenSSH configuration directory exists
   ansible.builtin.file:
     path: '/etc/ssh'
@@ -169,7 +152,7 @@
 
 - name: Configuration of additional SSH ports with socket activation
   when: (sshd__ports | length > 1 and ansible_service_mgr == 'systemd' and
-         (ansible_local.sshd.socket_activation | d('disabled')) == 'enabled')
+         sshd__socket_activation == 'enabled')
   block:
 
     - name: Create systemd override directory if needed
