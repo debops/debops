@@ -62,6 +62,19 @@ General
   accidental deletion of data. A fresh installation of the PXE netboot server
   is recommended in this case.
 
+Fixed
+~~~~~
+
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- Fixed an issue with incorrect handling of socket-activated :command:`sshd`
+  service when the ``ssh.socket`` :command:`systemd` unit was configured to use
+  a single ``ssh.service`` daemon instead of separate ``ssh@.service``
+  instances. In such case, the role did not reestart the daemon on
+  configuration changes; now the role will detect the socket configuration and
+  restart the service when it's configured in a single daemon mode.
+
 Removed
 ~~~~~~~
 
