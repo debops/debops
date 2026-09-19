@@ -1,0 +1,306 @@
+#!/usr/bin/env bash
+
+# This file is managed remotely, all changes will be lost
+
+# Copyright (C) 2026 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Poor man's replicator for Dovecot 2.4+
+#
+# Continuously syncs all users' mailboxes to a remote Dovecot server
+# using doveadm sync with stateful (-s) synchronization, mimicking
+# what the removed replicator did.
+#
+# Runs as a daemon by default (designed for systemd). Use --oneshot
+# to sync once and exit.
+
+
+set -o nounset -o pipefail -o errexit
+
+umask 027
+
+SCRIPT="${0##*/}"
+readonly SCRIPT
+readonly PID="$$"
+readonly PIDFILE="/run/${SCRIPT}.pid"
+
+# A bashism to create a CLOEXEC pipe
+exec {SLEEP_FD}<> <(:)
+readonly SLEEP_FD
+
+# Trap for clean shutdown
+RUNNING=1
+trap 'RUNNING=0' SIGTERM SIGINT
+
+# Action to take, either backup or sync
+#
+# backup performs one-way synchronization. If there are any changes in the
+# destination they will be reverted, so the destination will look exactly
+# like the source.
+#
+# sync performs two-way synchronization. It merges all changes without losing
+# anything. Both the mailboxes will end up looking identical after the
+# synchronization is finished.
+ACTION="backup"
+
+# Whether to do a reverse backup/sync (i.e. pull instead of push)
+REVERSE=0
+
+# Whether to run once or in daemon mode
+ONESHOT=0
+
+# The username of a single user to sync
+SINGLE_USER=""
+
+# Whether to force a full sync
+FORCE_FULL=0
+
+# Remote host to sync with, specified in the form ``tcp[s]:host[:port]``.
+REMOTE_HOST="tcps://imap2.example.com:12345"
+
+# Seconds to sleep between sync runs
+SYNC_INTERVAL=300
+
+# Where to store per-user dsync state for incremental syncs
+STATE_DIR="/var/lib/dovecot/debops-dovecot-sync"
+
+# Timeout per user sync in seconds
+TIMEOUT=300
+
+# Full sync interval in seconds (default: 6 hours)
+FULL_SYNC_INTERVAL=21600
+
+# Exclude these mailbox patterns (space-separated)
+EXCLUDE_MAILBOXES=""
+
+if [ -f "/etc/default/debops-dovecot-sync" ] ; then
+    # shellcheck disable=SC1091
+    . "/etc/default/debops-dovecot-sync"
+fi
+
+
+# Interruptible sleep without spawning subprocesses
+bash_sleep() {
+    local secs="${1:-1}"
+    local slept=0
+
+    while [ "${RUNNING}" -eq 1 ] && (( slept < secs )); do
+        read -r -u "${SLEEP_FD}" -t "${secs}" || true
+        slept=$((slept + 1))
+    done
+}
+
+
+print_usage() {
+    cat <<EOF
+Usage: ${SCRIPT} [options]
+
+Continuously syncs all users' mailboxes to a remote Dovecot server
+using doveadm sync with stateful (-s) synchronization, mimicking
+what the removed replicator did.
+
+Available options:
+            --oneshot		Run once, then exit
+            --full		Perform a full sync
+            --user <user>	Sync a single user
+            --help		This text
+
+EOF
+}
+
+
+sync_user() {
+    local user="${1:-}"
+    local state_file="${STATE_DIR}/${user}.state"
+    local full_stamp_file="${STATE_DIR}/${user}.full"
+    local now
+    printf -v now '%(%s)T' -1
+
+    mkdir -p "${STATE_DIR}"
+
+    # Determine if we need a full sync
+    local do_full=0
+    if [ ! -f "${full_stamp_file}" ]; then
+        do_full=1
+    elif [ "${FORCE_FULL}" -eq 1 ]; then
+        do_full=1
+    else
+        local last_full=""
+        if [ -r "${full_stamp_file}" ]; then
+            last_full=$(< "${full_stamp_file}")
+        fi
+        last_full="${last_full:-0}"
+        if (( now - last_full > FULL_SYNC_INTERVAL )); then
+            do_full=1
+        fi
+    fi
+
+    local -a cmd=(doveadm "${ACTION}" -u "${user}" -N -l "${TIMEOUT}")
+
+    if [ "${REVERSE}" -eq 1 ]; then
+        cmd+=(-R)
+    fi
+
+    for pattern in ${EXCLUDE_MAILBOXES}; do
+        cmd+=(-x "${pattern}")
+    done
+
+    if [ "${do_full}" -eq 1 ]; then
+        cmd+=(-f)
+    else
+        local prev_state=""
+        if [ -f "${state_file}" ]; then
+            prev_state="$(< "${state_file}")"
+        fi
+        cmd+=(-s "${prev_state}")
+    fi
+
+    cmd+=("${REMOTE_HOST}")
+
+    local output rc=0
+    output=$("${cmd[@]}" 2>&1) || rc=$?
+
+    case $rc in
+        0)
+            if [ "${do_full}" -eq 1 ]; then
+                echo "${now}" > "${full_stamp_file}"
+            else
+                echo "${output}" > "${state_file}"
+            fi
+            SYNC_RESULT="ok"
+            ;;
+        2)
+            if [ "${do_full}" -eq 0 ] && [ -n "${output}" ]; then
+                echo -n "${output}" > "${state_file}"
+            fi
+            SYNC_RESULT="partial"
+            ;;
+        *)
+            echo "  ${user}: rc=${rc} ${output}" >&2
+            SYNC_RESULT="error"
+            ;;
+    esac
+}
+
+
+run_sync() {
+    local users
+    if [ -n "${SINGLE_USER}" ]; then
+        users="$SINGLE_USER"
+    else
+        users="$(doveadm user '*' 2>/dev/null)" || { echo "Failed to list users" >&2; return 1; }
+    fi
+
+    if [ -z "${users}" ]; then
+        echo "No users found, nothing to do."
+        return 0
+    fi
+
+    local total=0 ok=0 partial=0 errors=0
+
+    while IFS= read -r user; do
+        [ -z "${user}" ] && continue
+        total=$((total + 1))
+
+        sync_user "${user}"
+        case "${SYNC_RESULT}" in
+            ok)      ok=$((ok + 1)) ;;
+            partial) partial=$((partial + 1)) ;;
+            *)       errors=$((errors + 1)) ;;
+        esac
+    done <<< "${users}"
+
+    local summary="Synced ${total} user(s): ${ok} ok"
+    [ ${partial} -gt 0 ] && summary+=", ${partial} partial"
+    [ ${errors} -gt 0 ]  && summary+=", ${errors} failed"
+    echo "${summary}"
+}
+
+
+clean_up() {
+    # Clean up pidfile
+    local pidfile="${1:-}"
+
+    if [ -n "${pidfile}" ] && [ -r "${pidfile}" ] ; then
+        rm -f "${pidfile}"
+    fi
+    exit 0
+}
+
+
+wait_for_pid() {
+    # Wait for the specified process to exit
+    local pidfile="${1:-}"
+
+    if [ -n "${pidfile}" ] && [ -r "${pidfile}" ] ; then
+        local wait_pid
+        wait_pid="$(< "${pidfile}")"
+        while kill -0 "${wait_pid}" > /dev/null 2>&1 ; do
+            echo "Waiting for PID ${wait_pid} to finish"
+            bash_sleep $(( ( RANDOM % 30 ) + 5 ))
+            [ "${RUNNING}" -eq 0 ] && exit 0
+        done
+        if [ -f "${pidfile}" ] ; then
+            rm -f "${pidfile}"
+        fi
+    fi
+}
+
+
+create_lock() {
+    local pidfile="${1:-}"
+    local pid="${PID}"
+
+    # Try and lock the script operation
+    echo "${pid}" > "${pidfile}"
+    bash_sleep 1
+
+    # Exclusive lock failed
+    if [ "$(< "${pidfile}")" != "${pid}" ] ; then
+        echo "dovecot backup procedure started by $(< "${pidfile}")"
+        exit 0
+    fi
+
+    # Exclusive lock succeeded
+    # shellcheck disable=SC2064
+    trap "clean_up ${pidfile}" EXIT
+}
+
+
+main() {
+    wait_for_pid "${PIDFILE}"
+    create_lock "${PIDFILE}"
+
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --oneshot)  ONESHOT=1; shift;;
+            --full)     FORCE_FULL=1; shift;;
+            --user)     SINGLE_USER="${2:-}"; shift 2;;
+            --help)     print_usage; exit 0;;
+            *)          echo "Unknown argument: $1" >&2; exit 1;;
+        esac
+    done
+
+    if [ "${ONESHOT}" -eq 1 ]; then
+        run_sync
+        exit 0
+    fi
+
+    echo "Starting debops-dovecot-sync daemon (interval=${SYNC_INTERVAL}s)"
+
+    while [ "${RUNNING}" -eq 1 ]; do
+        run_sync || true
+
+        # Interruptible sleep
+        local slept=0
+        while [ "${RUNNING}" -eq 1 ] && (( slept < SYNC_INTERVAL )); do
+            bash_sleep 1
+            slept=$((slept + 1))
+        done
+    done
+
+    echo "Shutting down."
+}
+
+main "$@"

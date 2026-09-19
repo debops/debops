@@ -1,0 +1,27 @@
+{# Copyright (C) 2026 David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+# Action to take, either backup or sync
+ACTION="{{ dovecot__dsync_script_action }}"
+
+# Whether to do a reverse backup/sync (i.e. pull instead of push)
+REVERSE={{ "1" if dovecot__dsync_script_reverse | bool else "0" }}
+
+# Remote host to sync with, specified in the form ``tcp[s]:host[:port]``.
+REMOTE_HOST="{{ dovecot__dsync_replica }}"
+
+# Seconds to sleep between sync runs
+SYNC_INTERVAL={{ dovecot__dsync_script_interval }}
+
+# Timeout per user sync in seconds
+TIMEOUT={{ dovecot__dsync_script_timeout }}
+
+# Full sync interval in seconds (default: 6 hours)
+FULL_SYNC_INTERVAL={{ dovecot__dsync_script_full_interval }}
+
+# Exclude these mailbox patterns (space-separated)
+EXCLUDE_MAILBOXES="{{ dovecot__dsync_script_exclude_mailboxes | d([])
+                      | flatten | join (" ") }}"
