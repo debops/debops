@@ -176,7 +176,7 @@ sshd__ferm_limit_target: 'REJECT'
 # port numbers or service names from :file:`/etc/services`.
 # If you use socket activation, remember to define firewall ports separately.
 sshd__ferm_ports: '{{ sshd__ports
-                      if ((ansible_local.sshd.socket_activation | d("disabled")) == "disabled")
+                      if (sshd__socket_activation == "disabled")
                       else ["22"] }}'
 
                                                                    # ]]]
@@ -187,6 +187,28 @@ sshd__ferm_ports: '{{ sshd__ports
 # for example if the host has multiple network interfaces like when it is
 # running a VPN.
 sshd__ferm_interface: []
+                                                                   # ]]]
+                                                                   # ]]]
+# OpenSSH server context [[[
+# --------------------------
+
+# .. envvar:: sshd__socket_activation [[[
+#
+# This variable defines the state of the :command:`sshd` socket activation
+# configuration used in other parts of the role. By default the state is
+# detected by the Ansible local facts, but can be overridden via the Ansible
+# inventory if needed. Supported values: ``enabled``, ``disabled``.
+sshd__socket_activation: '{{ ansible_local.sshd.socket_activation | d("disabled") }}'
+
+                                                                   # ]]]
+# .. envvar:: sshd__socket_activation_instanced [[[
+#
+# When socket activation is enabled, the ``ssh.socket`` :command:`systemd` unit
+# can be configured in two modes:
+# - ``Accept=no``: single instance, needs a restat on config changes;
+# - ``Accept=yes``: multiple instances, doesn't need restart on config changes.
+# This boolean variable can be used to override the detected behaviour if needed.
+sshd__socket_activation_instanced: '{{ ansible_local.sshd.socket_activation_instanced | d(False) }}'
                                                                    # ]]]
                                                                    # ]]]
 # OpenSSH server configuration [[[
@@ -552,7 +574,7 @@ sshd__default_configuration:
                if (sshd__ports | length == 1 and
                    sshd__ports | first | string == "22")
                else ("ignore"
-                     if ((ansible_local.sshd.socket_activation | d("disabled")) == "enabled")
+                     if (sshd__socket_activation == "enabled")
                      else "present") }}'
 
   # Generate a set of "HostKey" configuration options based on the list of
