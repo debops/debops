@@ -4,6 +4,23 @@
 # Copyright (C) 2014-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Make sure that Ansible local fact directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Ansible local fact script
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/sshd.fact.j2'
+    dest: '/etc/ansible/facts.d/sshd.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Reload Ansible local facts
+  ansible.builtin.meta: 'flush_handlers'
+
 # The SSH host keys gathered by Ansible facts don't contain the full
 # information, therefore we should grab them by ourselves
 - name: Gather SSH host public keys
