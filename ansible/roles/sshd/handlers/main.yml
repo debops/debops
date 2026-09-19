@@ -1,7 +1,7 @@
 ---
-# Copyright (C) 2013-2016 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2013-2026 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-# Copyright (C) 2014-2017 DebOps <https://debops.org/>
+# Copyright (C) 2014-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Test sshd configuration and restart
@@ -14,4 +14,4 @@
   ansible.builtin.service:
     name: 'ssh'
     state: 'restarted'
-  when: (ansible_local.sshd.socket_activation | d('disabled')) == 'disabled'
+  when: sshd__socket_activation_instanced is falsy
