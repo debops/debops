@@ -71,6 +71,13 @@ try:
     socket_activation = subprocess.check_output(
             ["systemctl", "is-enabled", "ssh.socket"]).decode('utf-8')
     output['socket_activation'] = socket_activation.strip()
+    socket_activation_instanced = subprocess.check_output(
+            ["systemctl", "show", "ssh.socket",
+             "--property=Accept"]).decode('utf-8').strip()
+    if socket_activation_instanced == 'Accept=yes':
+        output['socket_activation_instanced'] = True
+    else:
+        output['socket_activation_instanced'] = False
 
 except subprocess.CalledProcessError:
     output['socket_activation'] = 'disabled'

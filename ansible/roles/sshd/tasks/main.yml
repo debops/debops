@@ -152,7 +152,7 @@
 
 - name: Configuration of additional SSH ports with socket activation
   when: (sshd__ports | length > 1 and ansible_service_mgr == 'systemd' and
-         (ansible_local.sshd.socket_activation | d('disabled')) == 'enabled')
+         sshd__socket_activation == 'enabled')
   block:
 
     - name: Create systemd override directory if needed
