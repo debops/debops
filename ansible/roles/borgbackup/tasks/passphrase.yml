@@ -1,0 +1,107 @@
+---
+# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2023 DebOps https://debops.org/
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Check if borgbackup systemd credential exists
+  ansible.builtin.stat:
+    path: '{{ borgbackup__passphrase_base_path + "/"
+              + item.name + ".cred" }}'
+  register: borgbackup__register_systemd_cred
+  when: item.state | d('present') == 'present'
+        and ansible_service_mgr == 'systemd'
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Create borgbackup passphrase file
+  ansible.builtin.copy:
+    dest: '{{ borgbackup__passphrase_base_path + "/" + item.name + ".txt" }}'
+    mode: '0400'
+    content: '{{ lookup("password", borgbackup__secret_base_path
+                 + "/clients/" + inventory_hostname + "/"
+                 + item.name + "_passphrase.txt"
+                 + " length=" + borgbackup__passphrase_length | string
+                 + " chars=ascii_letters,digits") }}'
+  when: item.state | d('present') == 'present'
+        and (ansible_service_mgr != 'systemd' or
+             (ansible_service_mgr == 'systemd' and
+              not borgbackup__register_systemd_cred.stat.exists | d(False)))
+  no_log: '{{ debops__no_log | d(True) }}'
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Create borgbackup systemd credential from passphrase
+  ansible.builtin.command:
+    argv:
+      - 'systemd-creds'
+      - 'encrypt'
+      - '--name={{ item.name }}'
+      - '{{ item.name }}.txt'
+      - '{{ item.name }}.cred'
+    chdir: '{{ borgbackup__passphrase_base_path }}'
+    creates: '{{ borgbackup__passphrase_base_path + "/" + item.name + ".cred" }}'
+  when: item.state | d('present') == 'present'
+        and ansible_service_mgr == 'systemd'
+        and not ansible_check_mode
+  no_log: '{{ debops__no_log | d(True) }}'
+  tags: [ 'role::borgbackup:config' ]
+
+# Note: while the previous task could've been executed with shell and setting
+#       umask, and will create a readable file, that's acceptable because
+#       the directory is root-only and the file content is already encrypted
+#       with keys that are only available to root
+- name: Set borgbackup systemd credential permissions
+  ansible.builtin.file:
+    path: '{{ borgbackup__passphrase_base_path + "/" + item.name + ".cred" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0400'
+  when: item.state | d('present') == 'present'
+        and ansible_service_mgr == 'systemd'
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Check if borgbackup passphrase exists
+  ansible.builtin.stat:
+    path: '{{ borgbackup__passphrase_base_path + "/" + item.name + ".txt" }}'
+  register: borgbackup__register_passphrase
+  when: item.state | d('present') == 'present'
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Initialize borgbackup repository
+  ansible.builtin.command:
+    argv:
+      - 'borgmatic'
+      - 'rcreate'
+      - '--encryption'
+      - '{{ borgbackup__encryption }}'
+      - '--config'
+      - '{{ item.path | d("/etc/borgmatic.d/" + item.name + ".yaml") }}'
+      - '--override'
+      - 'storage.encryption_passcommand="cat {{
+           borgbackup__passphrase_base_path + "/" + item.name + ".txt" }}"'
+    chdir: '{{ borgbackup__configuration_base_path }}'
+  when: item.state | d('present') == 'present'
+        and borgbackup__register_passphrase.stat.exists | d(False)
+        and not ansible_check_mode
+  register: borgbackup__register_repo_create
+  changed_when: borgbackup__register_repo_create is success
+                and borgbackup__register_repo_create.stdout | d()
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Delete borgbackup passphrase file
+  ansible.builtin.command:
+    cmd: shred -u {{ (item.name + ".txt") | quote }}
+    chdir: '{{ borgbackup__passphrase_base_path }}'
+    removes: '{{ borgbackup__passphrase_base_path + "/" + item.name + ".txt" }}'
+  when: (item.state | d('present') == 'absent'
+         or ansible_service_mgr == 'systemd')
+        and not ansible_check_mode
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Delete borgbackup systemd credential
+  ansible.builtin.command:
+    cmd: shred -u {{ (item.name + ".cred") | quote }}
+    chdir: '{{ borgbackup__passphrase_base_path }}'
+    removes: '{{ borgbackup__passphrase_base_path + "/" + item.name + ".cred" }}'
+  when: (item.state | d('present') == 'absent'
+         or ansible_service_mgr != 'systemd')
+        and not ansible_check_mode
+  tags: [ 'role::borgbackup:config' ]
