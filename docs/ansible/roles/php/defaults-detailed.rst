@@ -21,19 +21,18 @@ simple strings or lists, here you can find documentation and examples for them.
 php__packages
 -------------
 
-The :envvar:`php__packages`, :envvar:`php__group_packages`, :envvar:`php__host_packages` and
-:envvar:`php__dependent_packages` lists can be used to install APT packages. The role
-automatically prepends the package names with correct prefix (``php5-`` or
-``php7.0-``) to install packages for currently active PHP version. Because of
-that you should only use these lists to install PHP-related packages.
+The :envvar:`php__packages`, :envvar:`php__group_packages`,
+:envvar:`php__host_packages` and :envvar:`php__dependent_packages` lists can be
+used to install APT packages. The role automatically prepends the package names
+with correct prefix (``php<version>-``) to install packages for currently
+active PHP version. Because of that you should only use these lists to install
+PHP-related packages.
 
-The packages with names in the form:
+Packages with names in the form:
 
 - ``php-*``
 
-- ``php5-*``
-
-- ``php7.0-*``
+- ``php<version>-*``
 
 will be detected correctly. Any other package names will have the current PHP
 version prepended to their name, which might result in incorrect installation
@@ -62,16 +61,16 @@ php__configuration
 ------------------
 
 The management of the :file:`php.ini` configuration is done using a set of YAML
-lists, named :envvar:`php__configuration`, :envvar:`php__group_configuration` and
-:envvar:`php__host_configuration`. Each element of a list is a YAML dictionary with
-certain parameters.
+lists, named :envvar:`php__configuration`, :envvar:`php__group_configuration`
+and :envvar:`php__host_configuration`. Each element of a list is a YAML
+dictionary with certain parameters.
 
 The configuration is designed to allow easy creation of multiple configuration
-files located in :file:`/etc/php{5,/7.0}/` directories. By default, all files are
-created in the :file:`/etc/php{5,/7.0}/ansible/` directory with the ``.ini``
-extension, and symlinked to the respective PHP SAPI configuration directories.
-If you need, you can create the configuration files directly in the PHP SAPI
-directories as well.
+files located in :file:`/etc/php<version>/` directories. By default, all files
+are created in the :file:`/etc/php<version>/ansible/` directory with the
+``.ini`` extension, and symlinked to the respective PHP SAPI configuration
+directories.  If you need, you can create the configuration files directly in
+the PHP SAPI directories as well.
 
 The role recognizes the parameters below:
 
@@ -81,9 +80,9 @@ The role recognizes the parameters below:
 
 ``path``
   Optional. Change the default path where a given configuration file should be
-  created, relative to :file:`/etc/php{5,/7.0}/`. By default this value is
-  :command:`ansible/`. You need to add the ``/`` character at the end of the path for
-  the role to work correctly.
+  created, relative to :file:`/etc/php<version>/`. By default this value is
+  :command:`ansible/`. You need to add the ``/`` character at the end of the
+  path for the role to work correctly.
 
 ``sections``
   Optional. List of YAML dictionaries, each one describing a part of the given
@@ -97,8 +96,8 @@ one of the YAML dictionaries on the ``sections`` list:
   ``[PHP]`` in the configuration file.
 
 ``options``
-  A YAML text block with :file:`php.ini` configuration options specified in the INI
-  configuration file format.
+  A YAML text block with :file:`php.ini` configuration options specified in the
+  INI configuration file format.
 
 ``comment``
   Optional. A custom comment added before a specified configuration.
@@ -111,7 +110,7 @@ one of the YAML dictionaries on the ``sections`` list:
 Examples
 ~~~~~~~~
 
-Create custom configuration file symlinked to all PHP SAPI directories:
+Create a custom configuration file symlinked to all PHP SAPI directories:
 
 .. code-block:: yaml
 
@@ -121,7 +120,7 @@ Create custom configuration file symlinked to all PHP SAPI directories:
        options: |
          display_errors = On
 
-Create custom configuration file with multiple sections directly in PHP-FPM
+Create a custom configuration file with multiple sections directly in PHP-FPM
 directory:
 
 .. code-block:: yaml
@@ -146,11 +145,11 @@ directory:
 php__pools
 ----------
 
-The :envvar:`php__pools`, :envvar:`php__group_pools`, :envvar:`php__host_pools` and
-:envvar:`php__dependent_pools` lists can be used to create PHP-FPM pools. Each list
-entry is a YAML dictionary with keys and values that represent options in the
-pool configuration file (with some additional parameters used by the role
-itself).
+The :envvar:`php__pools`, :envvar:`php__group_pools`, :envvar:`php__host_pools`
+and :envvar:`php__dependent_pools` lists can be used to create PHP-FPM pools.
+Each list entry is a YAML dictionary with keys and values that represent
+options in the pool configuration file (with some additional parameters used by
+the role itself).
 
 Most of the pool parameters have their corresponding default variables in the
 ``php__fpm_*`` namespace. To use them in the pool configuration, strip the
@@ -198,7 +197,7 @@ otherwise different:
 ``listen``
   Optional. Path to the PHP-FPM socket or IP:port on which a given pool should
   listen for connections. By default it's autogenerated in the format:
-  :file:`/run/php{5,7.0}-fpm-{{ item.name }}.sock`.
+  :file:`/run/php<version>-fpm-{{ item.name }}.sock`.
 
 ``listen_owner``
   Optional. The system user that will be the owner of the PHP-FPM socket. This
@@ -251,14 +250,14 @@ otherwise different:
   dictionary value is the value contents.
 
 ``php_admin_flags``
-  Optional. A YAML dictionary with custom :file:`php.ini` admin flags that should
-  be defined in the PHP-FPM pool. Each dictionary key is the admin flag name,
-  and each dictionary value is the admin flag value.
+  Optional. A YAML dictionary with custom :file:`php.ini` admin flags that
+  should be defined in the PHP-FPM pool. Each dictionary key is the admin flag
+  name, and each dictionary value is the admin flag value.
 
 ``php_admin_values``
-  Optional. A YAML dictionary with custom :file:`php.ini` admin values that should
-  be defined in the PHP-FPM pool. Each dictionary key is the admin value name,
-  and each dictionary value is the admin value contents.
+  Optional. A YAML dictionary with custom :file:`php.ini` admin values that
+  should be defined in the PHP-FPM pool. Each dictionary key is the admin value
+  name, and each dictionary value is the admin value contents.
 
 ``open_basedir``
   Optional. String or list of paths which can be accessed by the PHP
