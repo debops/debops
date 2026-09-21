@@ -91,7 +91,10 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  notify: [ 'Check postfix and reload' ]
+  notify: |-
+    {{ postfix__combined_maincf |
+       map(attribute="need_restart", default=false) is any |
+       ternary("Check postfix and restart", "Check postfix and reload") }}
 
 - name: Generate Postfix 'master.cf' configuration
   ansible.builtin.template:
