@@ -244,6 +244,9 @@ General
   configuration of the APT repositories and their GPG keys. The ``gnupg``
   package will be installed early to ensure its availability.
 
+- The role will update APT cache if APT repositories in the ``deb822`` format
+  are added or modified.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 
