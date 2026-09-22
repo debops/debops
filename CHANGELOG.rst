@@ -43,6 +43,12 @@ General
   mixed human/LLM content should be handled within the project and clarify the
   copyright status of the LLM-generated content.
 
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- The role can set new Runner options for GPU management, concurrency limits
+  and privileged Docker services.
+
 :ref:`debops.ipxe` role
 '''''''''''''''''''''''
 
