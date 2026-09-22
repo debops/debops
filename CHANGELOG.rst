@@ -115,6 +115,16 @@ General
   files with the correct variant depending on the version of the installed
   ``nginx`` package.
 
+:ref:`debops.root_account` role
+'''''''''''''''''''''''''''''''
+
+- Fixed an issue where the role created the ``root`` password via the
+  ``lookup("password")`` Ansible plugin even when password update was
+  explicitly disabled, and the role did not update the ``root`` UNIX account
+  password on the host itself. Now the lookup plugin will be used conditionally
+  and when password update is disabled via the inventory, passwords for the
+  ``root`` UNIX accounts will not be generated.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
