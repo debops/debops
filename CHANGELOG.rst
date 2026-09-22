@@ -77,6 +77,13 @@ Fixed
 - Fixed Jinja issues and AppArmor install detection logic in the
   :command:`apparmor.fact` Python script.
 
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- Fixed an issue with ``item.raw`` parameter not rendering properly in the
+  generated :file:`/etc/elasitcsearch/elasticsearch.yml` configuration file due
+  to wrong order of parameter checks in the template.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 

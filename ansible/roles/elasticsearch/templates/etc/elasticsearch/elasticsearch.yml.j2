@@ -24,7 +24,19 @@
 {%   if item is mapping %}
 {%     if item.name | d() %}
 {%       if item.state | d('present') != 'absent' %}
-{%         if item.value is defined %}
+{%         if item.raw is defined %}
+{%           set name_exploded = item.name.split('.') %}
+{%           set current_dict = elasticsearch__tpl_config[name_exploded[0]] | d({}) %}
+{%           if item.state | d('present') == 'comment' %}
+{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'comment': item.raw, 'raw': item.raw } }) %}
+{%           else %}
+{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'raw': item.raw } }) %}
+{%           endif %}
+{%           set _ = elasticsearch__tpl_config.update({ name_exploded[0]: current_dict }) %}
+{%           if item.comment | d() %}
+{%             set _ = elasticsearch__tpl_comment.update({ item.name: item.comment }) %}
+{%           endif %}
+{%         elif item.value is defined %}
 {%           set name_exploded = item.name.split('.') %}
 {%           set current_dict = elasticsearch__tpl_config[name_exploded[0]] | d({}) %}
 {%           if item.state | d('present') == 'comment' %}
@@ -56,18 +68,6 @@
 {%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'comment': item.empty, 'empty': item.empty } }) %}
 {%           else %}
 {%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'empty': item.empty } }) %}
-{%           endif %}
-{%           set _ = elasticsearch__tpl_config.update({ name_exploded[0]: current_dict }) %}
-{%           if item.comment | d() %}
-{%             set _ = elasticsearch__tpl_comment.update({ item.name: item.comment }) %}
-{%           endif %}
-{%         elif item.raw is defined %}
-{%           set name_exploded = item.name.split('.') %}
-{%           set current_dict = elasticsearch__tpl_config[name_exploded[0]] | d({}) %}
-{%           if item.state | d('present') == 'comment' %}
-{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'comment': item.raw, 'raw': item.raw } }) %}
-{%           else %}
-{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'raw': item.raw } }) %}
 {%           endif %}
 {%           set _ = elasticsearch__tpl_config.update({ name_exploded[0]: current_dict }) %}
 {%           if item.comment | d() %}
