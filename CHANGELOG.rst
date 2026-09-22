@@ -334,6 +334,16 @@ General
   intermediate X.509 certificates directly from the issuer URI, the script
   extracts them from the full certificate chain received from the ACME issuer.
 
+:ref:`debops.root_account` role
+'''''''''''''''''''''''''''''''
+
+- Fixed an issue where the role created the ``root`` password via the
+  ``lookup("password")`` Ansible plugin even when password update was
+  explicitly disabled, and the role did not update the ``root`` UNIX account
+  password on the host itself. Now the lookup plugin will be used conditionally
+  and when password update is disabled via the inventory, passwords for the
+  ``root`` UNIX accounts will not be generated.
+
 :ref:`debops.nsswitch` role
 '''''''''''''''''''''''''''
 
