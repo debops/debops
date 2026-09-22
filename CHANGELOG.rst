@@ -257,6 +257,10 @@ General
   be explicitly present in the configuration when any related SSL options are
   configured.
 
+- Fixed an issue with ``item.raw`` parameter not rendering properly in the
+  generated :file:`/etc/elasitcsearch/elasticsearch.yml` configuration file due
+  to wrong order of parameter checks in the template.
+
 :ref:`debops.libvirt` role
 ''''''''''''''''''''''''''
 
