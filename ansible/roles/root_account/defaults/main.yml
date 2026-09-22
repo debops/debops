@@ -63,8 +63,9 @@ root_account__password: '{{ lookup("password", secret
                             + "/credentials/" + inventory_hostname
                             + "/root_account/password encrypt=sha512_crypt length="
                             + root_account__password_length | string)
-                            if root_account__enabled
-                            and root_account__password_update }}'
+                            if (root_account__enabled and
+                                root_account__password_update is truthy)
+                            else "" }}'
 
                                                                    # ]]]
 # .. envvar:: root_account__password_length [[[
