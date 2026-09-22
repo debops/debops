@@ -293,6 +293,15 @@ General
   parameter in the :command:`ansible.mysql.mysql_user` module, required since
   the rename to the ``ansible.mysql`` collection.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Fixed an issue with the ``http2`` configuration changing from a ``listen``
+  option to a main configuration directive in the :command:`nginx` v1.25.1
+  version or newer. The role should generate the :command:`nginx` configuration
+  files with the correct variant depending on the version of the installed
+  ``nginx`` package.
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
