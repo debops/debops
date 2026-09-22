@@ -90,6 +90,9 @@ General
 - The role will update APT cache if APT repositories in the ``deb822`` format
   are added or modified.
 
+- The "Ubuntu Partner" repository has been removed in Ubuntu v24.04 and won't
+  be configured on this or newer Ubuntu releases.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
