@@ -97,6 +97,12 @@ General
   generated :file:`/etc/elasitcsearch/elasticsearch.yml` configuration file due
   to wrong order of parameter checks in the template.
 
+:ref:`debops.libvirt` role
+''''''''''''''''''''''''''
+
+- Fixed an issue where the role tried to install the ``virt-goodies`` and
+  ``virt-top`` APT packages on Debian releases which didn't provide them.
+
 :ref:`debops.libvirtd` role
 '''''''''''''''''''''''''''
 
@@ -105,6 +111,9 @@ General
   database. Now the ``libvirt`` and ``libvirt_guest`` NSS providers will be
   queried before normal DNS services, if they are installed on the hypervisor
   host.
+
+- Fixed an issue where the role tried to install the ``virt-top`` APT package
+  on Debian releases which didn't provide it.
 
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
