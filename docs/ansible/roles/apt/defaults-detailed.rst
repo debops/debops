@@ -417,7 +417,7 @@ authentication.
 
    .. code-block:: console
 
-      $ debops run service/python_raw service/pki -l <host> -u root
+      $ debops run scope/python/raw service/pki -l <host> -u root
 
    This command will prepare the host for use via Ansible and set up PKI
    environment, including custom Root CA certificates.

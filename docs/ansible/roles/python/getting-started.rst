@@ -65,9 +65,29 @@ role in a "raw" mode, without fact gathering. This can be used to bootstrap
 Python support on a host, so that normal Ansible modules can be used
 afterwards:
 
-.. literalinclude:: ../../../../ansible/playbooks/service/python_raw.yml
+.. literalinclude:: ../../../../ansible/playbooks/scope/python/raw.yml
    :language: yaml
    :lines: 1,5-
+
+
+Role entry points
+-----------------
+
+The ``debops.python`` role supports multiple entry points, utilized by the
+playbooks provided with the role:
+
+``service/python`` | ``scope/python``
+  The main playbook which configures a Python runtime environment. Tags can be
+  used to apply specific roles or exclude roles that are not needed in a given
+  Ansible playbook run.
+
+  The :file:`service/python` playbook is included in the main DebOps
+  :file:`site.yml` playbook.
+
+``scope/python/raw``
+  This playbook can be used to update APT cache and install base Python runtime
+  environment that will support Ansible task execution on a Debian/Ubuntu host
+  using raw Ansible commands.
 
 
 Ansible tags

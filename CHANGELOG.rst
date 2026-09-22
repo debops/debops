@@ -170,6 +170,13 @@ General
   can now be handled by other PKI providers than Let's Encrypt by providing the
   relevant API URL endpoints. Check the role documentation for details.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- The :file:`service/python_raw.yml` Ansible playbook has been renamed to
+  :file:`scope/python/raw.yml` playbook, to be uniform with the new system of
+  :ref:`scoped playbooks <scoped_playbooks>`.
+
 :ref:`debops.rabbitmq_server` role
 ''''''''''''''''''''''''''''''''''
 
