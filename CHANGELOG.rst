@@ -281,7 +281,6 @@ General
   parameter in the :command:`ansible.mysql.mysql_user` module, required since
   the rename to the ``ansible.mysql`` collection.
 
-
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
