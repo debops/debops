@@ -84,6 +84,12 @@ General
 - Fixed Jinja issues and AppArmor install detection logic in the
   :command:`apparmor.fact` Python script.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The role will update APT cache if APT repositories in the ``deb822`` format
+  are added or modified.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
