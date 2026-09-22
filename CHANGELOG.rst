@@ -230,6 +230,12 @@ General
 - The :file:`lxc_ssh.py` Ansible connection plugin included in DebOps should
   now work correctly on Python v3.13.
 
+:ref:`debops.apparmor` role
+'''''''''''''''''''''''''''
+
+- Fixed Jinja issues and AppArmor install detection logic in the
+  :command:`apparmor.fact` Python script.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
