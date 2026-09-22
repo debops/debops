@@ -65,6 +65,12 @@ General
 Fixed
 ~~~~~
 
+:ref:`debops.apparmor` role
+'''''''''''''''''''''''''''
+
+- Fixed Jinja issues and AppArmor install detection logic in the
+  :command:`apparmor.fact` Python script.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
