@@ -106,6 +106,15 @@ General
   queried before normal DNS services, if they are installed on the hypervisor
   host.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Fixed an issue with the ``http2`` configuration changing from a ``listen``
+  option to a main configuration directive in the :command:`nginx` v1.25.1
+  version or newer. The role should generate the :command:`nginx` configuration
+  files with the correct variant depending on the version of the installed
+  ``nginx`` package.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
