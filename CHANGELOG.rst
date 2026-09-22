@@ -68,6 +68,13 @@ General
   accidental deletion of data. A fresh installation of the PXE netboot server
   is recommended in this case.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- The :file:`service/python_raw.yml` Ansible playbook has been renamed to
+  :file:`scope/python/raw.yml` playbook, to be uniform with the new system of
+  :ref:`scoped playbooks <scoped_playbooks>`.
+
 Fixed
 ~~~~~
 
