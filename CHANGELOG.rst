@@ -277,6 +277,15 @@ General
   by allowing guests to modify their own MAC addresses by default. This can be
   controlled per-guest if needed.
 
+:ref:`debops.libvirtd` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue where NSS queries to the ``libvirt`` provider did not reach
+  the service due to order of NSS providers in the :file:`/etc/nsswitch.conf`
+  database. Now the ``libvirt`` and ``libvirt_guest`` NSS providers will be
+  queried before normal DNS services, if they are installed on the hypervisor
+  host.
+
 :ref:`debops.mariadb_server` role
 '''''''''''''''''''''''''''''''''
 
