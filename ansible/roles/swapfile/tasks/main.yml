@@ -4,6 +4,9 @@
 # Copyright (C) 2015-2016 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Pre hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "swapfile/pre_main.yml") }}'
+
 - name: Disable swap files when requested
   ansible.builtin.shell: test -f {{ item.path | d(item) }} && swapoff {{ item.path | d(item) }} || true
   changed_when: False
@@ -91,3 +94,6 @@
   ansible.builtin.file:
     path: '{{ swapfile__sysctl_file | d("/etc/sysctl.d/30-debops.swapfile.conf") }}'
     state: 'absent'
+
+- name: Post hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "swapfile/post_main.yml") }}'
