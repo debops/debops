@@ -135,6 +135,13 @@ General
 - Fixed an issue where the role tried to install the ``virt-top`` APT package
   on Debian releases which didn't provide it.
 
+:ref:`debops.nfs_server` role
+'''''''''''''''''''''''''''''
+
+- Fixed an issue where directories with spaces in their names were not
+  exportable in the :file:`/etc/exports.d/ansible.exports` configuration file.
+  Now all export paths in the file are quoted to ensure correct operation.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
