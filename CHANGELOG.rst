@@ -365,6 +365,15 @@ General
   intermediate X.509 certificates directly from the issuer URI, the script
   extracts them from the full certificate chain received from the ACME issuer.
 
+:ref:`debops.resolvconf` role
+'''''''''''''''''''''''''''''
+
+- Fixed an issue with the :command:`resolvconf` service not setting the
+  nameserver configuration properly after boot, when static nameserver
+  configuration is defined with :command:`systemd` init daemon. The static
+  configuration script will check for the ``active`` or ``activating`` state
+  (which is set during boot) and apply the static configuration.
+
 :ref:`debops.root_account` role
 '''''''''''''''''''''''''''''''
 
