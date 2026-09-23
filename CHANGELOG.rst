@@ -100,6 +100,9 @@ General
 - The "Ubuntu Partner" repository has been removed in Ubuntu v24.04 and won't
   be configured on this or newer Ubuntu releases.
 
+- Fixed an issue where the role did not provide a way to avoid purging APT
+  packages during execution. The purge task is now controllable via a variable.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
