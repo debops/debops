@@ -154,6 +154,18 @@ General
   files with the correct variant depending on the version of the installed
   ``nginx`` package.
 
+:ref:`debops.opensearch` role
+'''''''''''''''''''''''''''''
+
+- Fixed an issue with the role trying to stop the :command:`opensearch` service
+  before it's installed, breaking the first installation process. The role will
+  check if the service is available before trying to stop it for the first
+  time.
+
+- Fixed an issue with :file:`/etc/opensearch/` directory lacking the execution
+  bit, which prevented access to the configuration by the service and broke
+  installation.
+
 :ref:`debops.rabbitmq_server` role
 ''''''''''''''''''''''''''''''''''
 
