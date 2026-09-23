@@ -310,6 +310,13 @@ General
   parameter in the :command:`ansible.mysql.mysql_user` module, required since
   the rename to the ``ansible.mysql`` collection.
 
+:ref:`debops.nfs_server` role
+'''''''''''''''''''''''''''''
+
+- Fixed an issue where directories with spaces in their names were not
+  exportable in the :file:`/etc/exports.d/ansible.exports` configuration file.
+  Now all export paths in the file are quoted to ensure correct operation.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
