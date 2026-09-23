@@ -144,6 +144,12 @@ General
   files with the correct variant depending on the version of the installed
   ``nginx`` package.
 
+:ref:`debops.rabbitmq_server` role
+''''''''''''''''''''''''''''''''''
+
+- The RabbitMQ Server parameters defined in the role variables will be filtered
+  trough the ``to_json`` filter to ensure JSON formatting.
+
 :ref:`debops.root_account` role
 '''''''''''''''''''''''''''''''
 
