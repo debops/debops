@@ -319,6 +319,13 @@ General
   files with the correct variant depending on the version of the installed
   ``nginx`` package.
 
+:ref:`debops.nsswitch` role
+'''''''''''''''''''''''''''
+
+- A change in the :file:`/etc/nsswitch.conf` configuration file by the role
+  will no longer restart the :command:`systemd-logind` service automatically
+  (file changes are handled automatically since Debian Bookworm).
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
@@ -360,13 +367,6 @@ General
   password on the host itself. Now the lookup plugin will be used conditionally
   and when password update is disabled via the inventory, passwords for the
   ``root`` UNIX accounts will not be generated.
-
-:ref:`debops.nsswitch` role
-'''''''''''''''''''''''''''
-
-- A change in the :file:`/etc/nsswitch.conf` configuration file by the role
-  will no longer restart the :command:`systemd-logind` service automatically
-  (file changes are handled automatically since Debian Bookworm).
 
 :ref:`debops.rabbitmq_server` role
 ''''''''''''''''''''''''''''''''''
