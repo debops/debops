@@ -319,6 +319,13 @@ General
   files with the correct variant depending on the version of the installed
   ``nginx`` package.
 
+:ref:`debops.nsswitch` role
+'''''''''''''''''''''''''''
+
+- A change in the :file:`/etc/nsswitch.conf` configuration file by the role
+  will no longer restart the :command:`systemd-logind` service automatically
+  (file changes are handled automatically since Debian Bookworm).
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
@@ -361,13 +368,6 @@ General
   and when password update is disabled via the inventory, passwords for the
   ``root`` UNIX accounts will not be generated.
 
-:ref:`debops.nsswitch` role
-'''''''''''''''''''''''''''
-
-- A change in the :file:`/etc/nsswitch.conf` configuration file by the role
-  will no longer restart the :command:`systemd-logind` service automatically
-  (file changes are handled automatically since Debian Bookworm).
-
 :ref:`debops.rabbitmq_server` role
 ''''''''''''''''''''''''''''''''''
 
@@ -377,6 +377,9 @@ General
   appear in ``rabbitmqctl list_feature_flags`` output; they are now detected
   and skipped. Fixes a hard failure observed with RabbitMQ 4.x on Debian
   Trixie where ``detailed_queues_endpoint`` was required.
+
+- The RabbitMQ Server parameters defined in the role variables will be filtered
+  trough the ``to_json`` filter to ensure JSON formatting.
 
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
