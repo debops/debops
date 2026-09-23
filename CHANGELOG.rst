@@ -378,6 +378,9 @@ General
   and skipped. Fixes a hard failure observed with RabbitMQ 4.x on Debian
   Trixie where ``detailed_queues_endpoint`` was required.
 
+- The RabbitMQ Server parameters defined in the role variables will be filtered
+  trough the ``to_json`` filter to ensure JSON formatting.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
