@@ -39,10 +39,14 @@
       become_user: '{{ opensearch__user }}'
       changed_when: False
 
+    - name: Populate service facts
+      ansible.builtin.service_facts:
+
     - name: Stop service
       ansible.builtin.service:
         name: 'opensearch'
         state: 'stopped'
+      when: ansible_facts.services['opensearch.service'] is defined
 
     - name: Remove old installation directory
       ansible.builtin.file:
@@ -74,7 +78,7 @@
         remote_src: True
         owner: 'root'
         group: '{{ opensearch__group }}'
-        mode: '0640'
+        mode: '0750'
 
 - name: Configure OpenSearch and the JVM
   ansible.builtin.template:
