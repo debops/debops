@@ -157,6 +157,15 @@ General
 - The RabbitMQ Server parameters defined in the role variables will be filtered
   trough the ``to_json`` filter to ensure JSON formatting.
 
+:ref:`debops.resolvconf` role
+'''''''''''''''''''''''''''''
+
+- Fixed an issue with the :command:`resolvconf` service not setting the
+  nameserver configuration properly after boot, when static nameserver
+  configuration is defined with :command:`systemd` init daemon. The static
+  configuration script will check for the ``active`` or ``activating`` state
+  (which is set during boot) and apply the static configuration.
+
 :ref:`debops.root_account` role
 '''''''''''''''''''''''''''''''
 
