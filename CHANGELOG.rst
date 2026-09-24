@@ -410,7 +410,7 @@ General
   Trixie where ``detailed_queues_endpoint`` was required.
 
 - The RabbitMQ Server parameters defined in the role variables will be filtered
-  trough the ``to_json`` filter to ensure JSON formatting.
+  through the ``to_json`` filter to ensure JSON formatting.
 
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
