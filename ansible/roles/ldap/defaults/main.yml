@@ -676,6 +676,12 @@ ldap__admin_server_uri: '{{ ldap__servers_uri | first }}'
 # access to credentials stored locally by the current Ansible user. This
 # variable allows to delegate to another host than the Ansible Controller to
 # perform the LDAP tasks there.
+#
+# .. warning:: Although you can delegate to a host which is not in the
+#              inventory (e.g. by using an IP address or hostname), this might
+#              cause hard to debug issues as the delegated-to host will not
+#              inherit variables such as the connection user
+#              (``ansible_user``).
 ldap__admin_delegate_to: 'localhost'
 
                                                                    # ]]]
