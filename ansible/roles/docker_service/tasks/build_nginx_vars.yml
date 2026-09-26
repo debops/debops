@@ -12,7 +12,7 @@
   ansible.builtin.set_fact:
     docker_service__nginx__dependent_upstreams: '{{ lookup("template",
                                                     "lookup/docker_service__nginx_upstreams.j2")
-                                                    | from_yaml }}'
+                                                    | from_yaml | default([], true) }}'
     docker_service__nginx__dependent_servers: '{{ lookup("template",
                                                   "lookup/docker_service__nginx_servers.j2")
-                                                  | from_yaml }}'
+                                                  | from_yaml | default([], true) }}'

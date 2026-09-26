@@ -1,0 +1,82 @@
+{# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+---
+{% set ns = namespace(names=[]) %}
+{% for svc in docker_service__combined_services | d([]) %}
+{%   if svc.state | d('present') not in ['absent', 'ignore'] %}
+{%     for p in svc.published_ports | d([]) %}
+{%       if p.allow | d([]) | length > 0 %}
+{%         set port    = p.port | string %}
+{%         set proto   = p.protocol | d(docker_service__ferm__default_protocol) %}
+{%         set chain   = p.chain | d(docker_service__ferm__default_chain) %}
+{%         set action  = p.action_default | d(docker_service__ferm__default_action) %}
+{%         set target  = 'REJECT' if action == 'reject' else 'DROP' %}
+{# After Docker DNAT, filter chains other than INPUT see the
+   container destination port. INPUT (host network) still matches
+   the host-side port. #}
+{%         if chain == 'INPUT' %}
+{%           set dport = port %}
+{%         else %}
+{%           set dport = (p.container_port | d(p.port)) | string %}
+{%         endif %}
+{%         set iface = p.interface | d(p.interfaces | d(None)) %}
+{%         if iface is string %}
+{%           set iface_key = iface %}
+{%         elif iface %}
+{%           set iface_key = iface | join('-') %}
+{%         else %}
+{%           set iface_key = '' %}
+{%         endif %}
+{# ferm keys dependent rules by name; keep the common 1:1 default
+   unique, and suffix chain / post-DNAT port / interface when they
+   differ so later entries do not overwrite earlier ones. #}
+{%         set name_bits = ['docker_service', svc.name, port, proto] %}
+{%         if chain != docker_service__ferm__default_chain %}
+{%           set name_bits = name_bits + [chain] %}
+{%         endif %}
+{%         if dport != port %}
+{%           set name_bits = name_bits + ['dst' + dport] %}
+{%         endif %}
+{%         if iface_key %}
+{%           set name_bits = name_bits + [iface_key | regex_replace('[^A-Za-z0-9._-]', '_')] %}
+{%         endif %}
+{%         set rule_name = name_bits | join('_') %}
+{%         set ns.names = ns.names + [rule_name] %}
+{%         set comment = p.comment | d(svc.name + ' port ' + port + '/' + proto + ' (DOCKER-USER)') %}
+- name: {{ rule_name | to_json }}
+  by_role: 'debops.docker_service'
+  comment: {{ comment | to_json }}
+  rules:
+
+    - chain: '{{ chain }}'
+      type: 'accept'
+      protocol: '{{ proto }}'
+      dport: [ '{{ dport }}' ]
+      saddr: {{ p.allow | to_json }}
+{%         if iface %}
+      interface: {{ iface | to_json }}
+{%         endif %}
+
+    - chain: '{{ chain }}'
+      type: 'accept'
+      target: '{{ target }}'
+      accept_any: True
+      protocol: '{{ proto }}'
+      dport: [ '{{ dport }}' ]
+{%         if iface %}
+      interface: {{ iface | to_json }}
+{%         endif %}
+
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% endfor %}
+{% for old_name in (ansible_local.docker_service.ferm_rule_names | d([])) %}
+{%   if old_name not in ns.names %}
+- name: {{ old_name | to_json }}
+  state: 'absent'
+  by_role: 'debops.docker_service'
+{%   endif %}
+{% endfor %}
