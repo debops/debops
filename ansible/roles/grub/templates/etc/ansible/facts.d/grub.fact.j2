@@ -4,7 +4,8 @@
 # Copyright (C) 2015 Patryk Ściborek <patryk@sciborek.com>
 # Copyright (C) 2015-2018 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-# Copyright (C) 2015-2018 DebOps <https://debops.org/>
+# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2015-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 # {{ ansible_managed }}
@@ -13,12 +14,6 @@ from __future__ import print_function
 from json import loads, dumps
 import subprocess
 import os
-
-
-try:
-    from subprocess import DEVNULL
-except ImportError:
-    DEVNULL = open(os.devnull, 'wb')
 
 
 def cmd_exists(cmd):
@@ -39,21 +34,23 @@ if os.path.exists(grub_conf) and os.path.isfile(grub_conf):
             for line in f:
                 if not line.startswith('#') and '=' in line:
                     line = line.strip().split('=', 1)
+                    option = line[0].upper()
+                    value = line[1].strip('"')
 
-                    if line[0].lower() == 'grub_cmdline_linux_default':
-                        value = line[1].strip('"').split()
-                        if ('$' + line[0].upper()) in value:
-                            value.remove('$' + line[0].upper())
-                        output['cmdline_default'] = value
+                    if option == 'GRUB_CMDLINE_LINUX_DEFAULT':
+                        values = value.split()
+                        if ('$' + option) in values:
+                            values.remove('$' + option)
+                        output['cmdline_default'] = values
 
-                    elif line[0].lower() == 'grub_cmdline_linux':
-                        value = line[1].strip('"').split()
-                        if ('$' + line[0].upper()) in value:
-                            value.remove('$' + line[0].upper())
-                        output['cmdline'] = value
+                    elif option == 'GRUB_CMDLINE_LINUX':
+                        values = value.split()
+                        if ('$' + option) in values:
+                            values.remove('$' + option)
+                        output['cmdline'] = values
 
-                    elif line[0].lower() == 'grub_default':
-                        output['default'] = line[1].strip('"')
+                    elif option == 'GRUB_DEFAULT':
+                        output['default'] = value
 
     except Exception:
         pass
