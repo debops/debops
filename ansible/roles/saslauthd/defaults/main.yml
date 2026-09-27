@@ -176,8 +176,9 @@ saslauthd__ldap_binddn: '{{ ([saslauthd__ldap_self_rdn] + saslauthd__ldap_device
 #
 # The password stored in the account LDAP object used by the :command:`saslauthd`
 # service to bind to the LDAP directory.
-saslauthd__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
-                                    + saslauthd__ldap_binddn | to_uuid + ".password length=32"))
+saslauthd__ldap_bindpw: '{{ (lookup("ldap_password",
+                                    secret + "/ldap/credentials/",
+                                    saslauthd__ldap_binddn, "length=32"))
                             if saslauthd__ldap_enabled | bool
                             else "" }}'
                                                                    # ]]]
