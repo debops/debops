@@ -154,6 +154,10 @@ General
   files with the correct variant depending on the version of the installed
   ``nginx`` package.
 
+- Fixed an issue with the ``item.enabled`` parameter being incorrectly ignored
+  when the site was meant to be disabled. Now the ``False`` value should
+  correctly disable a site configuration without removing it.
+
 :ref:`debops.opensearch` role
 '''''''''''''''''''''''''''''
 
