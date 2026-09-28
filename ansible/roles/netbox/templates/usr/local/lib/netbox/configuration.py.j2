@@ -260,7 +260,7 @@ SESSION_COOKIE_NAME = 'sessionid'
 # By default, NetBox will store session data in the database. Alternatively, a file path can be specified here to use
 # local file storage instead. (This can be useful for enabling authentication on a standby instance with read-only
 # database access.) Note that the user as which NetBox runs must have read and write permissions to this path.
-SESSION_FILE_PATH = '{{ netbox__config_session_file_path }}'
+SESSION_FILE_PATH = {{ "None" if (netbox__config_session_file_path == "None") else (netbox__config_session_file_path | to_json) }}
 
 # Time zone (default: UTC)
 TIME_ZONE = '{{ netbox__config_time_zone }}'
