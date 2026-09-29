@@ -204,13 +204,68 @@ parameters:
 ``hostname``
   Optional, string. Hostname to set inside the container.
 
+``network_mode``
+  Optional, string. Docker network mode passed to
+  :command:`docker_container` (for example ``host`` or ``bridge``).
+  Use ``host`` together with ``published_ports[].chain: INPUT``;
+  published bridge traffic still goes through ``DOCKER-USER``.
+
 ``volumes``
   Optional, list of strings. Volume mounts in standard Docker format:
   ``host_path:container_path[:options]``. The role automatically creates host
-  directories for bind mounts (paths starting with ``/``). When a volume
-  source path matches a ``config_files`` destination, the directory creation
-  is skipped -- the ``config_files`` tasks create the parent directory and
-  the file itself.
+  directories for bind mounts (paths starting with ``/``), for backward
+  compatibility -- prefer declaring host directories explicitly via
+  ``data_dirs`` instead of relying on this inference. Directory creation from
+  ``volumes`` is skipped when:
+
+  - the source path matches a ``config_files`` destination -- the
+    ``config_files`` tasks create the parent directory and the file itself;
+  - the source path matches a ``data_dirs`` path -- the ``data_dirs`` task
+    already created it, possibly with a non-default ``owner``/``group``/
+    ``mode`` that this inference would not know about. Trailing slashes
+    are ignored, so ``/srv/app/`` and ``/srv/app`` compare as the same
+    path (``/`` itself is preserved);
+  - the source path already exists on the host and is not a directory (e.g.
+    ``/etc/localtime``, a UNIX socket) -- the role checks this with
+    ``ansible.builtin.stat`` before attempting creation;
+  - the service sets ``create_volume_dirs: false`` (see
+    :envvar:`docker_service__create_volume_dirs`) -- required when a bind
+    mount's source is a *file* that does not exist yet on the host, since the
+    ``stat`` check above cannot detect a path that has not been created.
+
+``data_dirs``
+  Optional, list of dictionaries. Directories to create on the host before
+  the container is started. Useful for pre-creating bind-mount targets (e.g.
+  on NFS volumes) with specific ownership and permissions that the
+  containerized application expects, and for bind-mount sources that are
+  *files*, not directories (declare the file's *parent* directory here and
+  exclude the file's own path from the ``volumes`` inference with
+  ``create_volume_dirs: false`` if it does not exist yet). Each entry has:
+
+  ``path``
+    Required, string. Absolute path of the directory to create.
+
+  ``owner``
+    Optional, string. Directory owner (name or UID). When omitted, the
+    ``ansible.builtin.file`` module leaves the parameter unset. A newly
+    created directory is owned by the effective user of the task (typically
+    ``root`` when the playbook uses privilege escalation). An already
+    existing directory keeps its current owner. Ownership is **not**
+    inherited from the parent directory.
+
+  ``group``
+    Optional, string. Directory group (name or GID). Same default behaviour
+    as ``owner``: a new directory uses the effective group, an existing
+    directory keeps its current group.
+
+  ``mode``
+    Optional, string. Directory permissions. Defaults to ``0755``.
+
+``create_volume_dirs``
+  Optional, boolean. Defaults to :envvar:`docker_service__create_volume_dirs`
+  (``True``). Set to ``False`` to disable automatic directory creation from
+  ``volumes`` for this service entirely -- use together with ``data_dirs`` to
+  take full explicit control of which host paths are pre-created.
 
 ``tmpfs``
   Optional, list of strings. Tmpfs mounts inside the container.
@@ -235,6 +290,24 @@ parameters:
 ``capabilities``
   Optional, list of strings. Linux capabilities to add to the container
   (e.g. ``NET_ADMIN``).
+
+``cap_drop``
+  Optional, list of strings. Linux capabilities to drop from the container.
+
+``devices``
+  Optional, list of strings. Host devices to expose inside the container
+  (for example ``/dev/dri:/dev/dri``). Passed to
+  ``community.docker.docker_container``.
+
+``device_cgroup_rules``
+  Optional, list of strings. Device cgroup rules for the container.
+  Requires ``community.docker`` 3.11.0 or newer; older collection
+  versions reject this parameter.
+
+``device_requests``
+  Optional, list of dictionaries. Device requests (for example a GPU).
+  See the ``community.docker.docker_container`` documentation for the
+  dictionary keys.
 
 ``sysctls``
   Optional, dictionary. Sysctl settings for the container.
@@ -325,6 +398,218 @@ parameters:
   :command:`nginx` reverse proxy virtual host for this service. See
   :ref:`docker_service__ref_nginx` for details.
 
+``published_ports``
+  Optional, list of dictionaries. Firewall rules to apply for ports published
+  directly to the network (not via ``127.0.0.1`` behind :command:`nginx`).
+  See :ref:`docker_service__ref_published_ports` for details.
+
+
+.. _docker_service__ref_published_ports:
+
+docker_service__services published_ports parameters
+-----------------------------------------------------
+
+The ``published_ports`` list within a service entry declares the ports that
+the container publishes directly to the network (i.e. bound to ``0.0.0.0`` or
+a specific LAN address rather than ``127.0.0.1``). For each entry with a
+non-empty ``allow`` list the role generates:
+
+- An ``ACCEPT`` rule in the ``DOCKER-USER`` chain for each source CIDR.
+- A trailing default-deny rule (``REJECT`` or ``DROP``) for all remaining
+  sources on that port.
+
+Entries with an empty or absent ``allow`` list are silently skipped (opt-in
+behaviour: no ``published_ports`` key → no change to existing behaviour).
+
+.. important::
+
+   Docker-published ports are processed in the ``FORWARD`` path, not
+   ``INPUT``. A rule placed in ``INPUT`` silently fails to filter a published
+   container port. This integration uses the ``DOCKER-USER`` chain, which is
+   the correct location for per-port filtering of container traffic.
+
+   After Docker's DNAT the destination port seen in ``DOCKER-USER`` is the
+   **container** port, not the host-side published port. When the Docker
+   mapping is not 1:1 (for example ``8080:80``), set ``container_port`` to
+   the container-side value. The :command:`ferm` role has no
+   ``ctorigdstport`` match, so the generated ``dport`` uses
+   ``container_port`` (defaulting to ``port``) on ``DOCKER-USER``.
+
+   Because of that, two mappings that share a container port **and** the
+   same protocol (for example TCP ``8080:80`` and TCP ``8081:80``) cannot
+   have independent ``allow`` lists: both rules match the same ``dport``.
+   Give them the same ``allow`` list, or publish distinct container ports.
+   TCP and UDP on the same container port can still use separate
+   ``allow`` lists.
+
+   Without an ``interface`` match these rules apply to every forwarded
+   packet whose post-DNAT destination port is that container port. That
+   includes container egress to the same port (for example publishing
+   ``80``/``443`` can reject outbound HTTP/HTTPS from other containers).
+   Set ``interface`` to the host ingress NIC so only traffic arriving
+   from the LAN is matched; egress leaves via the Docker bridge and
+   does not hit that match. The :command:`ferm` role has no
+   ``ctorigdstport`` match.
+
+Examples
+~~~~~~~~
+
+Restrict a port to a single VLAN:
+
+.. code-block:: yaml
+
+   docker_service__host_services:
+
+     - name: 'grafana'
+       image: 'grafana/grafana:11.0.0'
+       ports:
+         - '0.0.0.0:3000:3000'
+       published_ports:
+         - port: 3000
+           protocol: 'tcp'
+           allow: [ '192.0.2.0/24' ]
+           comment: 'Grafana - monitoring VLAN only'
+
+Multiple ports, mixed protocols:
+
+.. code-block:: yaml
+
+   docker_service__host_services:
+
+     - name: 'myapp'
+       image: 'myapp/myapp:latest'
+       ports:
+         - '0.0.0.0:8080:8080'
+         - '0.0.0.0:9090:9090'
+       published_ports:
+         - port: 8080
+           allow: [ '10.0.0.0/8' ]
+           comment: 'myapp HTTP'
+         - port: 9090
+           allow: [ '192.0.2.0/24' ]
+           action_default: 'drop'
+           comment: 'myapp metrics - monitoring VLAN only'
+
+A container with ``network_mode: host`` (traffic lands in ``INPUT``):
+
+.. code-block:: yaml
+
+     - name: 'node-exporter'
+       image: 'prom/node-exporter:latest'
+       network_mode: 'host'
+       published_ports:
+         - port: 9100
+           chain: 'INPUT'
+           allow: [ '192.0.2.0/24' ]
+           comment: 'node-exporter - monitoring VLAN only'
+
+Scope the match to LAN ingress (recommended when the published
+container port is a well-known port such as ``80`` or ``443``):
+
+.. code-block:: yaml
+
+       published_ports:
+         - port: 443
+           container_port: 8443
+           interface: 'eth0'
+           allow: [ '192.0.2.0/24' ]
+           comment: 'HTTPS - monitoring VLAN only'
+
+Syntax
+~~~~~~
+
+Each entry in the ``published_ports`` list is a YAML dictionary with the
+following parameters:
+
+``port``
+  Required, integer or string. The host-side published port. Used in the
+  generated rule name. On the default ``DOCKER-USER`` chain this is also
+  the ``dport`` match unless ``container_port`` is set.
+
+``container_port``
+  Optional, integer or string. Destination port to match in filter
+  chains after Docker DNAT (``DOCKER-USER``, ``FORWARD``, …). Defaults
+  to ``port``. Set this when the Docker mapping is not 1:1, for example
+  ``port: 8080`` and ``container_port: 80`` for ``8080:80``. Ignored
+  when ``chain`` is ``INPUT`` (host-network containers still match
+  ``port``).
+
+``protocol``
+  Optional, string. IP protocol: ``tcp`` or ``udp``. Defaults to
+  :envvar:`docker_service__ferm__default_protocol` (``tcp``).
+
+``allow``
+  Optional, list of strings. Source IP addresses or CIDR networks that are
+  permitted to reach the port. When absent or empty, no rules are emitted.
+  When non-empty, one ``ACCEPT`` rule per entry is generated, followed by a
+  single default-deny rule.
+
+``action_default``
+  Optional, string. Action for traffic not matching any ``allow`` source.
+  Supported values: ``reject`` (default, sends ICMP/TCP-reset reply) and
+  ``drop`` (silently discards). Defaults to
+  :envvar:`docker_service__ferm__default_action`.
+
+``chain``
+  Optional, string. :command:`iptables` chain where the rules are placed.
+  Defaults to :envvar:`docker_service__ferm__default_chain`
+  (``DOCKER-USER``). Override to ``INPUT`` only for containers using
+  ``network_mode: host``, where traffic genuinely traverses ``INPUT`` instead
+  of ``FORWARD``.
+
+``interface`` / ``interfaces``
+  Optional, string or list of strings. Ingress interface(s) passed through
+  to :ref:`debops.ferm`. When set, both the ``ACCEPT`` and default-deny
+  rules match only packets arriving on those interfaces (typically the
+  host LAN NIC). Omit to keep the historical match (protocol + source +
+  destination port only). Ignored by :command:`ferm` when empty.
+
+``comment``
+  Optional, string. Human-readable comment embedded in the generated
+  :command:`ferm` rule file. Defaults to
+  ``<service-name> port <port>/<protocol> (DOCKER-USER)``.
+
+The generated :command:`ferm` rule ``name`` is
+``docker_service_<service>_<port>_<protocol>``. When ``chain``,
+``container_port``, or ``interface`` differ from the defaults, those
+values are appended so two entries that share the same host port do not
+overwrite each other (the :ref:`debops.ferm` dependent-rule list is
+keyed by ``name``).
+
+
+.. _docker_service__ref_ferm_defaults:
+
+docker_service ferm defaults
+------------------------------
+
+The following variables control the default behaviour of the
+``published_ports`` firewall integration. They apply to any port entry that
+does not override the corresponding parameter explicitly.
+
+:envvar:`docker_service__ferm__default_chain`
+
+  Default value: ``DOCKER-USER``
+
+  The :command:`iptables` chain used when a ``published_ports`` entry does
+  not specify ``chain``. See the note in
+  :ref:`docker_service__ref_published_ports` for why ``DOCKER-USER`` is the
+  correct default.
+
+:envvar:`docker_service__ferm__default_protocol`
+
+  Default value: ``tcp``
+
+  IP protocol assumed when a ``published_ports`` entry omits ``protocol``.
+
+:envvar:`docker_service__ferm__default_action`
+
+  Default value: ``reject``
+
+  Default-deny action applied to sources not in ``allow``. ``reject`` sends a
+  TCP reset or ICMP ``admin-prohibited`` reply; ``drop`` silently discards
+  the packet. ``reject`` is preferred as it gives the client an explicit
+  signal rather than a timeout.
+
 
 .. _docker_service__ref_nginx:
 
@@ -412,8 +697,8 @@ Syntax
   directive is added after the allow rules. Defaults to ``False``.
 
 ``ssl``
-  Optional, boolean. Enable HTTPS through DebOps PKI. Defaults to ``True``
-  (handled by the :ref:`debops.nginx` role defaults).
+  Optional, boolean. Enable HTTPS through DebOps PKI. When omitted, the
+  :ref:`debops.nginx` role default applies (typically ``True``).
 
 ``auth_basic``
   Optional, boolean. Enable HTTP Basic Authentication. Defaults to ``False``.
