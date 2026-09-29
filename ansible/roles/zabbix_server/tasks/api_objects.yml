@@ -251,6 +251,21 @@
   when: zabbix_server__users | length > 0
 
 # Custom templates [[[1
+# configuration.import returns true on every successful call, including a
+# re-import of the same document. Compare a checksum of the source we send
+# with the checksum stored after the previous successful import.
+- name: Checksum custom Zabbix template sources
+  ansible.builtin.set_fact:
+    zabbix_server__template_checksums: >-
+      {{ zabbix_server__template_checksums | d({})
+         | combine({
+             item.name: ((item.source if item.source is string else (item.source | to_json)) | hash('sha1'))
+           }) }}
+  loop: '{{ zabbix_server__templates }}'
+  loop_control:
+    label: '{{ item.name }}'
+  when: zabbix_server__templates | length > 0
+
 - name: Import custom Zabbix templates
   ansible.builtin.uri:
     url: '{{ zabbix_server__api_url }}'
@@ -259,22 +274,31 @@
       Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
       Content-Type: 'application/json-rpc'
     body_format: 'json'
-    body:
-      jsonrpc: '2.0'
-      method: 'configuration.import'
-      params:
-        format: 'json'
-        source: '{{ item.source }}'
-        rules:
-          template_groups: { createMissing: True }
-          templates: { createMissing: True, updateExisting: True }
-          items: { createMissing: True, updateExisting: True }
-          triggers: { createMissing: True, updateExisting: True }
-          graphs: { createMissing: True, updateExisting: True }
-          templateDashboards: { createMissing: True, updateExisting: True }
-          templateLinkage: { createMissing: True }
-          valueMaps: { createMissing: True, updateExisting: True }
-      id: 1
+    # lookup('file') of a JSON export is parsed back into a dict, but
+    # configuration.import requires source to be a string. A templated
+    # sibling in a YAML body also turns the rule booleans into the
+    # strings "True"/"False". One to_json document keeps real JSON
+    # booleans and a string source.
+    body: >-
+      {{ {
+           'jsonrpc': '2.0',
+           'method': 'configuration.import',
+           'params': {
+             'format': 'json',
+             'source': (item.source if item.source is string else (item.source | to_json)),
+             'rules': {
+               'template_groups': {'createMissing': true},
+               'templates': {'createMissing': true, 'updateExisting': true},
+               'items': {'createMissing': true, 'updateExisting': true},
+               'triggers': {'createMissing': true, 'updateExisting': true},
+               'graphs': {'createMissing': true, 'updateExisting': true},
+               'templateDashboards': {'createMissing': true, 'updateExisting': true},
+               'templateLinkage': {'createMissing': true},
+               'valueMaps': {'createMissing': true, 'updateExisting': true}
+             }
+           },
+           'id': 1
+         } | to_json }}
     validate_certs: '{{ zabbix_server__api_validate_certs }}'
     return_content: True
   loop: '{{ zabbix_server__templates }}'
@@ -283,10 +307,41 @@
   delegate_to: '{{ zabbix_server__api_delegate_to }}'
   become: False
   register: zabbix_server__register_api_template_result
-  failed_when: zabbix_server__register_api_template_result.json.error is defined
-  changed_when: (zabbix_server__register_api_template_result.json.result | d()) | bool
+  changed_when: >-
+    (zabbix_server__template_checksums[item.name] | d('')) !=
+    (((ansible_local.zabbix_server_templates | d({})).checksums | d({}))[item.name] | d(''))
+  failed_when: False
   no_log: '{{ debops__no_log | d(True) }}'
   when: zabbix_server__templates | length > 0
+
+- name: Collect Zabbix template import errors
+  ansible.builtin.set_fact:
+    zabbix_server__template_import_errors: |-
+      {{ (zabbix_server__register_api_template_result.results | d([]))
+         | map(attribute='json')
+         | selectattr('error', 'defined')
+         | map(attribute='error.data')
+         | list }}
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__templates | length > 0
+
+- name: Report Zabbix template import errors
+  ansible.builtin.fail:
+    msg: '{{ zabbix_server__template_import_errors | join("; ") }}'
+  when:
+    - zabbix_server__templates | length > 0
+    - zabbix_server__template_import_errors | d([]) | length > 0
+
+- name: Remember imported Zabbix template checksums
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/zabbix_server_templates.fact.j2'
+    dest: '/etc/ansible/facts.d/zabbix_server_templates.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when:
+    - zabbix_server__templates | length > 0
+    - zabbix_server__template_import_errors | d([]) | length == 0
 
 # Host item overrides [[[1
 - name: Apply host item overrides
