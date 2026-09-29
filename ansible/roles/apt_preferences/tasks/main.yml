@@ -8,15 +8,18 @@
 
 - name: Remove legacy APT preferences
   ansible.builtin.file:
-    dest: '/etc/apt/preferences.d/{{ item.filename | d((item.role | d(item.by_role | d("pin")))
-                                                       + "_" + ((item.package.split(" ")[0]
-                                                                 if item.package is string
-                                                                 else item.package[0])
-                                                                if item.package | d()
-                                                                else (item.packages.split(" ")[0]
-                                                                      if item.packages is string
-                                                                      else item.packages[0]))
-                                                       + (item.suffix | d("")) + ".pref") | replace("*", "all") }}'
+    # Old filenames kept the dot in the role name (debops.role_pkg.pref).
+    # Do not use item.filename here: that is the current file, and deleting
+    # it makes the following create task rewrite the pin on every run.
+    dest: '/etc/apt/preferences.d/{{ ((item.role | d(item.by_role | d("pin")))
+                                      + "_" + ((item.package.split(" ")[0]
+                                                if item.package is string
+                                                else item.package[0])
+                                               if item.package | d()
+                                               else (item.packages.split(" ")[0]
+                                                     if item.packages is string
+                                                     else item.packages[0]))
+                                      + (item.suffix | d("")) + ".pref") | replace("*", "all") }}'
     state: 'absent'
   loop: '{{ q("flattened", apt_preferences_list | d([])
                            + apt_preferences_group_list | d([])
