@@ -214,6 +214,13 @@ Place the Compose file template in the DebOps resources directory:
 
 The template is based on the official Immich ``docker-compose.yml`` with
 modifications for the DebOps environment (loopback-only port mapping).
+Do not bind-mount ``/etc/localtime``. When that path inside the image is
+a symbolic link to the UTC timezone file, Docker follows the link and the
+host file replaces the image UTC data. Programs that treat UTC as an
+offset of zero then get the host offset instead, and short-lived scheduled
+tasks expire as soon as they are received. Set the timezone with the
+``TZ`` environment variable instead.
+
 GPU passthrough for machine learning is optional and shown in the
 section below:
 
@@ -228,9 +235,10 @@ section below:
        image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
        volumes:
          - ${UPLOAD_LOCATION}:/data
-         - /etc/localtime:/etc/localtime:ro
        env_file:
          - .env
+       environment:
+         TZ: 'Etc/UTC'
        ports:
          - '127.0.0.1:2283:2283'
        depends_on:
