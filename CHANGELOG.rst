@@ -32,6 +32,17 @@ General
 - Added :ref:`hook scripts <debops_hooks>` support for extending DebOps CLI
   behavior at various execution points.
 
+Fixed
+~~~~~
+
+:ref:`debops.apt_preferences` role
+''''''''''''''''''''''''''''''''''
+
+- Legacy pin removal no longer deletes the current preferences file. For a
+  role name that contains a dot, the task used ``item.filename`` and removed
+  the pin the following task creates, so the file changed on every run. It
+  now removes only the old dotted filename.
+
 
 `debops v3.3.2`_ - 2026-09-28
 -----------------------------
