@@ -108,15 +108,20 @@
   notify: [ 'Refresh host facts' ]
   tags: [ 'meta::facts' ]
 
-- name: Reload facts if they were modified
-  ansible.builtin.meta: 'flush_handlers'
-
 # Database schema [[[1
+# Import before flushing handlers. The configuration drop-in notifies a
+# restart, and 'flush_handlers' below runs every pending handler, including
+# that restart. Zabbix Server exits immediately when the database has no
+# schema ("cannot use database: database is not a Zabbix database") and
+# systemd then fails the unit because the PID file was never written.
 - name: Import Zabbix database schema
   ansible.builtin.import_tasks: 'schema.yml'
   when: zabbix_server__deploy_state != 'absent' and
         zabbix_server__database == 'postgresql'
   tags: [ 'role::zabbix_server:schema' ]
+
+- name: Reload facts if they were modified
+  ansible.builtin.meta: 'flush_handlers'
 
 # Web frontend [[[1
 # Always imported, even when 'zabbix_server__frontend_enabled' is False: the
