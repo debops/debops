@@ -21,6 +21,14 @@
   changed_when: False
   no_log: '{{ debops__no_log | d(True) }}'
 
+# A fresh database makes zabbix-server exit on startup. With Restart=on-failure
+# the unit crash-loops and can touch the database while the schema is loading.
+- name: Stop Zabbix Server before initial schema import
+  ansible.builtin.systemd:
+    name: 'zabbix-server'
+    state: 'stopped'
+  when: not (zabbix_server__register_schema_check.query_result[0].schema_present | d(False))
+
 - name: Import Zabbix PostgreSQL database schema
   ansible.builtin.shell: |
     set -o pipefail
