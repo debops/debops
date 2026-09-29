@@ -1,0 +1,99 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage Zabbix Server
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_service_zabbix_server' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  pre_tasks:
+
+    - name: Apply keyring configuration for zabbix_server environment
+      ansible.builtin.import_role:
+        name: 'keyring'
+      vars:
+        keyring__dependent_apt_keys:
+          - '{{ zabbix_server__keyring__dependent_apt_keys }}'
+          - '{{ php__keyring__dependent_apt_keys }}'
+          - '{{ nginx__keyring__dependent_apt_keys }}'
+          - '{{ postgresql__keyring__dependent_apt_keys }}'
+      tags: [ 'role::keyring', 'skip::keyring',
+              'role::php', 'role::nginx', 'role::postgresql', 'role::zabbix_server' ]
+
+    - name: Prepare php environment
+      ansible.builtin.import_role:
+        name: 'php'
+        tasks_from: 'main_env'
+      tags: [ 'role::php', 'role::php:env', 'role::logrotate' ]
+
+  roles:
+
+    - role: apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ zabbix_server__apt_preferences__dependent_list }}'
+        - '{{ php__apt_preferences__dependent_list }}'
+        - '{{ nginx__apt_preferences__dependent_list }}'
+
+    - role: cron
+      tags: [ 'role::cron', 'skip::cron' ]
+
+    - role: logrotate
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ php__logrotate__dependent_config }}'
+
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::postgresql', 'role::nginx' ]
+      python__dependent_packages3:
+        - '{{ postgresql__python__dependent_packages3 }}'
+        - '{{ nginx__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ postgresql__python__dependent_packages2 }}'
+        - '{{ nginx__python__dependent_packages2 }}'
+
+    - role: php
+      tags: [ 'role::php', 'skip::php' ]
+      php__dependent_packages:
+        - '{{ zabbix_server__php__dependent_packages }}'
+      php__dependent_pools:
+        # 'zabbix_server__php__dependent_pools' already carries its own
+        # 'state: present/absent' based on 'zabbix_server__frontend_enabled',
+        # so the role must always run to converge that state -- skipping it
+        # here when the frontend is disabled would leave a stale pool.
+        - '{{ zabbix_server__php__dependent_pools }}'
+
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ zabbix_server__ferm__dependent_rules }}'
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: nginx
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_upstreams:
+        # Same reasoning as 'zabbix_server__php__dependent_pools' above:
+        # 'enabled' already reflects 'zabbix_server__frontend_enabled', the
+        # role must always run for it to take effect.
+        - '{{ zabbix_server__nginx__dependent_upstreams }}'
+      nginx__dependent_servers:
+        - '{{ zabbix_server__nginx__dependent_servers }}'
+
+    - role: postgresql
+      tags: [ 'role::postgresql', 'skip::postgresql' ]
+      postgresql__dependent_roles:
+        - '{{ zabbix_server__postgresql__dependent_roles }}'
+      postgresql__dependent_databases:
+        - '{{ zabbix_server__postgresql__dependent_databases }}'
+      postgresql__dependent_pgpass:
+        - '{{ zabbix_server__postgresql__dependent_pgpass }}'
+      when: zabbix_server__database | d('postgresql') == 'postgresql'
+
+    - role: zabbix_server
+      tags: [ 'role::zabbix_server', 'skip::zabbix_server' ]

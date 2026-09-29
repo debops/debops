@@ -1,0 +1,421 @@
+{
+  "zabbix_export": {
+    "version": "7.0",
+    "template_groups": [
+      {
+        "uuid": "cd1526e354cc472c9a52b8d4349079a4",
+        "name": "Templates/Applications"
+      }
+    ],
+    "templates": [
+      {
+        "uuid": "624f89d412e9478ba547f505ecc10e96",
+        "template": "LXC CPU cgroup",
+        "name": "LXC container",
+        "description": "Per-container CPU (cgroup usage_usec) and memory pressure (MemTotal-MemAvailable).\nct.memory.* deliberately ignores reclaimable page cache in memory.current.\nHost loadavg / system.cpu.util on LXC are misleading -- use dashboard \"LXC performance\".\nRequires the zabbix_agent role's cgroup_metrics UserParameters on the LXC container.",
+        "groups": [
+          {
+            "name": "Templates/Applications"
+          }
+        ],
+        "items": [
+          {
+            "uuid": "3bfeb8a536cf4f21a7de893fc0d198af",
+            "name": "LXC: CPU utilization (cgroup)",
+            "type": "ZABBIX_ACTIVE",
+            "key": "ct.cpu.util",
+            "delay": "1m",
+            "history": "7d",
+            "trends": "90d",
+            "value_type": "FLOAT",
+            "units": "%",
+            "description": "Share of container CPUs (nproc) from /sys/fs/cgroup/cpu.stat usage_usec over 1s.",
+            "tags": [
+              {
+                "tag": "component",
+                "value": "cpu"
+              }
+            ],
+            "triggers": [
+              {
+                "uuid": "8b8411a891d24dc289d0e81852457fa8",
+                "expression": "min(/LXC CPU cgroup/ct.cpu.util,5m)>{$CT.CPU.UTIL.MAX.WARN}",
+                "name": "LXC: CPU utilization is too high (over {$CT.CPU.UTIL.MAX.WARN}% for 5m)",
+                "priority": "AVERAGE",
+                "description": "Cgroup CPU for this container, not host load average."
+              }
+            ]
+          },
+          {
+            "uuid": "3ffc6f18211d4da39cf54c5560c8ce0f",
+            "name": "LXC: Memory used (pressure)",
+            "type": "ZABBIX_ACTIVE",
+            "key": "ct.memory.used",
+            "delay": "1m",
+            "history": "7d",
+            "trends": "90d",
+            "value_type": "UNSIGNED",
+            "units": "B",
+            "description": "(MemTotal - MemAvailable) via LXCFS. Not cgroup memory.current (page cache).",
+            "tags": [
+              {
+                "tag": "component",
+                "value": "memory"
+              }
+            ]
+          },
+          {
+            "uuid": "cfc6b714af9941cb80ead5fca55a3c33",
+            "name": "LXC: Memory utilization (pressure)",
+            "type": "ZABBIX_ACTIVE",
+            "key": "ct.memory.util",
+            "delay": "1m",
+            "history": "7d",
+            "trends": "90d",
+            "value_type": "FLOAT",
+            "units": "%",
+            "description": "100*(MemTotal-MemAvailable)/MemTotal. Ignores reclaimable page cache in memory.current.",
+            "tags": [
+              {
+                "tag": "component",
+                "value": "memory"
+              }
+            ],
+            "triggers": [
+              {
+                "uuid": "216fbf53cd0041009e98ba8a08e99698",
+                "expression": "min(/LXC CPU cgroup/ct.memory.util,5m)>{$CT.MEMORY.UTIL.MAX.WARN}",
+                "name": "LXC: Memory utilization is too high (over {$CT.MEMORY.UTIL.MAX.WARN}% for 5m)",
+                "priority": "AVERAGE",
+                "description": "Memory pressure (not cgroup charge with page cache)."
+              }
+            ]
+          }
+        ],
+        "macros": [
+          {
+            "macro": "{$CT.CPU.UTIL.MAX.WARN}",
+            "value": "85",
+            "description": "Warn when CT CPU util (cgroup, % of nproc) stays above this for 5m"
+          },
+          {
+            "macro": "{$CT.MEMORY.UTIL.MAX.WARN}",
+            "value": "90",
+            "description": "Warn when CT memory pressure util stays above this for 5m"
+          }
+        ],
+        "dashboards": [
+          {
+            "uuid": "5c6b45669021448e87f2f75ad12fc4cf",
+            "name": "LXC performance",
+            "pages": [
+              {
+                "name": "Overview",
+                "widgets": [
+                  {
+                    "type": "item",
+                    "name": "CPU (cgroup)",
+                    "width": "18",
+                    "height": "4",
+                    "fields": [
+                      {
+                        "type": "INTEGER",
+                        "name": "decimal_places",
+                        "value": "1"
+                      },
+                      {
+                        "type": "ITEM",
+                        "name": "itemid.0",
+                        "value": {
+                          "host": "LXC CPU cgroup",
+                          "key": "ct.cpu.util"
+                        }
+                      },
+                      {
+                        "type": "INTEGER",
+                        "name": "show.0",
+                        "value": "1"
+                      },
+                      {
+                        "type": "INTEGER",
+                        "name": "show.1",
+                        "value": "2"
+                      },
+                      {
+                        "type": "INTEGER",
+                        "name": "show.2",
+                        "value": "4"
+                      },
+                      {
+                        "type": "INTEGER",
+                        "name": "value_size",
+                        "value": "35"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "item",
+                    "name": "Memory % (cgroup)",
+                    "x": "18",
+                    "width": "18",
+                    "height": "4",
+                    "fields": [
+                      {
+                        "type": "INTEGER",
+                        "name": "decimal_places",
+                        "value": "1"
+                      },
+                      {
+                        "type": "ITEM",
+                        "name": "itemid.0",
+                        "value": {
+                          "host": "LXC CPU cgroup",
+                          "key": "ct.memory.util"
+                        }
+                      },
+                      {
+                        "type": "INTEGER",
+                        "name": "show.0",
+                        "value": "1"
+                      },
+                      {
+                        "type": "INTEGER",
+                        "name": "show.1",
+                        "value": "2"
+                      },
+                      {
+                        "type": "INTEGER",
+                        "name": "show.2",
+                        "value": "4"
+                      },
+                      {
+                        "type": "INTEGER",
+                        "name": "value_size",
+                        "value": "35"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "item",
+                    "name": "Memory used",
+                    "x": "36",
+                    "width": "18",
+                    "height": "4",
+                    "fields": [
+                      {
+                        "type": "INTEGER",
+                        "name": "decimal_places",
+                        "value": "0"
+                      },
+                      {
+                        "type": "ITEM",
+                        "name": "itemid.0",
+                        "value": {
+                          "host": "LXC CPU cgroup",
+                          "key": "ct.memory.used"
+                        }
+                      },
+                      {
+                        "type": "INTEGER",
+                        "name": "show.0",
+                        "value": "1"
+                      },
+                      {
+                        "type": "INTEGER",
+                        "name": "show.1",
+                        "value": "2"
+                      },
+                      {
+                        "type": "INTEGER",
+                        "name": "show.2",
+                        "value": "4"
+                      },
+                      {
+                        "type": "INTEGER",
+                        "name": "value_size",
+                        "value": "28"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "svggraph",
+                    "name": "CPU utilization (cgroup, % of nproc)",
+                    "y": "4",
+                    "width": "72",
+                    "height": "5",
+                    "fields": [
+                      {
+                        "type": "STRING",
+                        "name": "ds.0.color.0",
+                        "value": "1A7C11"
+                      },
+                      {
+                        "type": "INTEGER",
+                        "name": "ds.0.dataset_type",
+                        "value": "0"
+                      },
+                      {
+                        "type": "ITEM",
+                        "name": "ds.0.itemids.0",
+                        "value": {
+                          "host": "LXC CPU cgroup",
+                          "key": "ct.cpu.util"
+                        }
+                      },
+                      {
+                        "type": "STRING",
+                        "name": "lefty_min",
+                        "value": "0"
+                      },
+                      {
+                        "type": "STRING",
+                        "name": "lefty_max",
+                        "value": "100"
+                      },
+                      {
+                        "type": "STRING",
+                        "name": "reference",
+                        "value": "AAAAA"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "svggraph",
+                    "name": "Memory utilization (pressure %)",
+                    "y": "9",
+                    "width": "36",
+                    "height": "5",
+                    "fields": [
+                      {
+                        "type": "STRING",
+                        "name": "ds.0.color.0",
+                        "value": "2774A4"
+                      },
+                      {
+                        "type": "INTEGER",
+                        "name": "ds.0.dataset_type",
+                        "value": "0"
+                      },
+                      {
+                        "type": "ITEM",
+                        "name": "ds.0.itemids.0",
+                        "value": {
+                          "host": "LXC CPU cgroup",
+                          "key": "ct.memory.util"
+                        }
+                      },
+                      {
+                        "type": "STRING",
+                        "name": "lefty_min",
+                        "value": "0"
+                      },
+                      {
+                        "type": "STRING",
+                        "name": "lefty_max",
+                        "value": "100"
+                      },
+                      {
+                        "type": "STRING",
+                        "name": "reference",
+                        "value": "AAAAB"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "svggraph",
+                    "name": "Memory used (pressure)",
+                    "x": "36",
+                    "y": "9",
+                    "width": "36",
+                    "height": "5",
+                    "fields": [
+                      {
+                        "type": "STRING",
+                        "name": "ds.0.color.0",
+                        "value": "F63100"
+                      },
+                      {
+                        "type": "INTEGER",
+                        "name": "ds.0.dataset_type",
+                        "value": "0"
+                      },
+                      {
+                        "type": "ITEM",
+                        "name": "ds.0.itemids.0",
+                        "value": {
+                          "host": "LXC CPU cgroup",
+                          "key": "ct.memory.used"
+                        }
+                      },
+                      {
+                        "type": "STRING",
+                        "name": "lefty_min",
+                        "value": "0"
+                      },
+                      {
+                        "type": "STRING",
+                        "name": "reference",
+                        "value": "AAAAC"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "graphs": [
+      {
+        "uuid": "9532654b09af4d13bdcf000e0a04e235",
+        "name": "LXC: CPU utilization (cgroup)",
+        "ymin_type_1": "FIXED",
+        "ymax_type_1": "FIXED",
+        "yaxismin": "0",
+        "yaxismax": "100",
+        "graph_items": [
+          {
+            "color": "1A7C11",
+            "item": {
+              "host": "LXC CPU cgroup",
+              "key": "ct.cpu.util"
+            }
+          }
+        ]
+      },
+      {
+        "uuid": "284209d0aaef447a9c787c4aa74698f3",
+        "name": "LXC: Memory utilization (pressure)",
+        "ymin_type_1": "FIXED",
+        "ymax_type_1": "FIXED",
+        "yaxismin": "0",
+        "yaxismax": "100",
+        "graph_items": [
+          {
+            "color": "2774A4",
+            "item": {
+              "host": "LXC CPU cgroup",
+              "key": "ct.memory.util"
+            }
+          }
+        ]
+      },
+      {
+        "uuid": "59c47f32c2774f4288b4abb9c43cfe53",
+        "name": "LXC: Memory used (pressure)",
+        "ymin_type_1": "FIXED",
+        "yaxismin": "0",
+        "graph_items": [
+          {
+            "color": "F63100",
+            "item": {
+              "host": "LXC CPU cgroup",
+              "key": "ct.memory.used"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
