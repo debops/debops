@@ -50,6 +50,9 @@ General
   role-specific custom playbooks that are not part of the main :file:`site.yml`
   playbook.
 
+- Added :ref:`hook scripts <debops_hooks>` support for extending DebOps CLI
+  behavior at various execution points.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 

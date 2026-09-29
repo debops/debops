@@ -108,3 +108,15 @@ execution:
 ``DEBOPS_CMD_FUSERMOUNT``
   Path to the :command:`fusermount` binary used by DebOps. Can be overridden by
   configuration files.
+
+``DEBOPS_PROJECT_PATH``
+  Absolute path to the DebOps project directory.
+
+``DEBOPS_PROJECT_VIEW``
+  Name of the current infrastructure view (e.g. ``system``, ``deployment``).
+
+``DEBOPS_ANSIBLE_COLLECTIONS_PATH``
+  Path to the Ansible Collections directory in the project.
+
+``DEBOPS_ANSIBLE_INVENTORY``
+  Path to the default Ansible inventory directory.

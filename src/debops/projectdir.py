@@ -6,6 +6,7 @@ from .constants import DEBOPS_USER_HOME_DIR
 from .utils import unexpanduser
 from .ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
+from .hooks import run_hooks
 import os
 import pkgutil
 import jinja2
@@ -156,6 +157,9 @@ class ProjectDir(object):
                 }
             }
         self.config.merge(view_data)
+
+        # Expose current view in runtime environment
+        self.config.set_env('DEBOPS_PROJECT_VIEW', self.view)
 
         if self.project_type == 'legacy':
             self.ansible_cfg = AnsibleConfig(
@@ -535,6 +539,9 @@ class ProjectDir(object):
             raise IsADirectoryError('You are inside another '
                                     'DebOps project directory')
 
+        if not run_hooks(self.path, 'pre-init'):
+            raise RuntimeError('Hook pre-init aborted, not creating project')
+
         # Let's make a new project
         if self.project_type == 'modern':
             self._create_modern_project(self.path)
@@ -601,6 +608,8 @@ class ProjectDir(object):
                                   'not installing Ansible Collections')
                 logger.debug('Ansible Collections installed in project '
                              'directory')
+
+        run_hooks(self.path, 'post-init')
 
     def mkview(self, view):
 
@@ -731,34 +740,45 @@ class ProjectDir(object):
     def commit(self, interactive=False):
         """Commit the current contents of the project directory to the git
         repository automatically."""
-        if self._is_git_repo(self.path):
-            logger.debug('Detected git repository in project directory')
-            repo = git.Repo(self.path)
-            repo.git.add(all=True)
+        if not self._is_git_repo(self.path):
+            return
 
-            # Check if there are any differences between the current HEAD and
-            # the index. If there are, we need to commit them.
-            diff_list = repo.head.commit.diff()
-            if diff_list:
-                try:
-                    logger.debug('New changes detected, committing')
-                    repo.index.commit(
-                        self.config.raw['project']['git']['auto_commit_message'])
-                    logger.debug('New changes committed in git repository')
-                except KeyError:
-                    # There was an issue in the configuration, unstage any
-                    # changes in git index
-                    logger.warning('Issue in DebOps configuration, unstaging '
-                                   'changes in git index')
-                    repo.git.reset()
-                    if interactive:
-                        print('The "project.git.auto_commit_message" option is '
-                              'not defined. Not committing any changes.')
-            else:
-                logger.debug('No new changes detected, nothing to commit')
+        run_hooks(self.path, 'pre-commit')
+
+        logger.debug('Detected git repository in project directory')
+        repo = git.Repo(self.path)
+        repo.git.add(all=True)
+
+        # Check if there are any differences between the current HEAD and
+        # the index. If there are, we need to commit them.
+        diff_list = repo.head.commit.diff()
+        if diff_list:
+            try:
+                logger.debug('New changes detected, committing')
+                repo.index.commit(
+                    self.config.raw['project']['git']['auto_commit_message'])
+                logger.debug('New changes committed in git repository')
+            except KeyError:
+                # There was an issue in the configuration, unstage any
+                # changes in git index
+                logger.warning('Issue in DebOps configuration, unstaging '
+                               'changes in git index')
+                repo.git.reset()
+                if interactive:
+                    print('The "project.git.auto_commit_message" option is '
+                          'not defined. Not committing any changes.')
+        else:
+            logger.debug('No new changes detected, nothing to commit')
+
+        run_hooks(self.path, 'post-commit')
 
     def refresh(self):
         logger.debug("Refresing project directory")
+
+        if not run_hooks(self.path, 'pre-refresh'):
+            print('Hook pre-refresh aborted, not refreshing project')
+            return
+
         if self.project_type == 'modern':
             self.createdirs(self.path)
 
@@ -786,10 +806,16 @@ class ProjectDir(object):
                 self.ansible_cfg.write_config()
         print('Refreshed DebOps project in', self.path)
 
+        run_hooks(self.path, 'post-refresh')
+
     def unlock(self):
+        run_hooks(self.path, 'pre-unlock')
         inventory = AnsibleInventory(self, self.view)
         inventory.unlock()
+        run_hooks(self.path, 'post-unlock')
 
     def lock(self):
+        run_hooks(self.path, 'pre-lock')
         inventory = AnsibleInventory(self, self.view)
         inventory.lock()
+        run_hooks(self.path, 'post-lock')
