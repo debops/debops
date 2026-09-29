@@ -282,6 +282,11 @@ General
   ``oldstable-``). The change in the Suite: naming convention happened in
   Debian Bookworm.
 
+- Legacy pin removal no longer deletes the current preferences file. For a
+  role name that contains a dot, the task used ``item.filename`` and removed
+  the pin the following task creates, so the file changed on every run. It
+  now removes only the old dotted filename.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
