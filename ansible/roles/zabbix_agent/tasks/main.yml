@@ -160,6 +160,15 @@
   when: (zabbix_agent__deploy_state == 'absent') or
         (zabbix_agent__combined_user_parameters | length == 0)
 
+- name: Remove legacy LXC metrics UserParameter file
+  ansible.builtin.file:
+    path: '{{ "/etc/zabbix/zabbix_agentd.conf.d/lxc-metrics.conf"
+              if (zabbix_agent__flavor == "C")
+              else "/etc/zabbix/zabbix_agent2.d/lxc-metrics.conf" }}'
+    state: 'absent'
+  notify: [ 'Check zabbix-agent and restart', 'Check zabbix-agent2 and restart' ]
+  when: zabbix_agent__deploy_state != 'absent'
+
 # Automatic service monitoring [[[1
 - name: Ensure Zabbix Agent 2 plugin configuration directory exists
   ansible.builtin.file:
