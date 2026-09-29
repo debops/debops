@@ -27,16 +27,12 @@ output = {
 
 if output['installed']:
     try:
-        _devnull = open(os.devnull, 'wb')
-        try:
-            ps_output = subprocess.check_output(
-                ['docker', 'ps', '-a',
-                 '--format', '{% raw %}{{.Names}}\t{{.Image}}\t{{.Status}}{% endraw %}'],
-                stderr=_devnull,
-                timeout=10
-            ).decode('utf-8').strip()
-        finally:
-            _devnull.close()
+        ps_output = subprocess.check_output(
+            ['docker', 'ps', '-a',
+             '--format', '{% raw %}{{.Names}}\t{{.Image}}\t{{.Status}}{% endraw %}'],
+            stderr=subprocess.DEVNULL,
+            timeout=10
+        ).decode('utf-8').strip()
 
         for line in ps_output.split('\n'):
             if line:
