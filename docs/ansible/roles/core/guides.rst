@@ -180,6 +180,33 @@ Check if a given value is not in the tag list:
 You can find a list of host tags in the documentation of various roles which use
 them.
 
+Cluster size awerness
+---------------------
+
+The ``debops.core`` role provides two facts computed at role execution, which
+provide an exact and rough estimate of the size of the environment managed by
+DebOps. These facts can be used in other Ansible roles to change their
+behaviour.
+
+``ansible_local.core.cluster_count``
+  Number of hosts in the main Ansible inventory group (``[debops_all_hosts]``
+  by default). This can also be set directly in the inventory to override the
+  calculated number using :envvar:`core__cluster_count` variable.
+
+``ansible_local.core.cluster_size``
+  A rough estimate of the cluster's size defined as a string with specific
+  prefix- and -suffix values, that other roles can check to decide their
+  configuration conditionally. The string is selected from a list defined in
+  the :envvar:`core__cluster_size` variable which can be overridden through the
+  Ansible inventory. Other Ansible roles can expect specific prefixes or
+  suffixes in this variable.
+
+The local facts are available for other roles to use so the ``debops.core``
+role doesn't need to be included in other Ansible playbooks. When the number of
+hosts changes, the ``debops.core`` role needs to be applied again to update the
+count, possibly followed by other roles that use the facts to update their
+configuration.
+
 System administrator accounts
 -----------------------------
 

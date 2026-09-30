@@ -32,6 +32,13 @@ General
 - Added :ref:`hook scripts <debops_hooks>` support for extending DebOps CLI
   behavior at various execution points.
 
+:ref:`debops.core` role
+'''''''''''''''''''''''
+
+- The role will compute the size of the cluster managed by DebOps based on the
+  number of hosts in the Ansible inventory and provide an exact and rough
+  estimate using Ansible local facts, to be used by other Ansible roles.
+
 Fixed
 ~~~~~
 
