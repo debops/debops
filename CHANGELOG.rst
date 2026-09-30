@@ -33,6 +33,11 @@ New DebOps roles
   services using Docker containers, and can integrate with the
   :ref:`debops.nginx` role to manage the :command:`nginx` reverse proxy.
 
+- The :ref:`debops.docker_compose_service` role can be used to create and
+  manage services using Docker containers through Docker Compose, and can
+  integrate with the :ref:`debops.nginx` and :ref:`debops.ferm` roles to manage
+  the :command:`nginx` reverse proxy.
+
 - The :ref:`debops.netboot_assistant` role allows management of netinst images
   for PXE network booting of Debian and Ubuntu installers, enabling easy
   installation of new hosts and virtual machines over the network.
