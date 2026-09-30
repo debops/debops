@@ -32,11 +32,10 @@
   ansible.builtin.set_fact:
     docker_service__ferm__dependent_rules: "{{
       docker_service__combined_services | d([])
-      | debops.debops.docker_service_ferm_rules(
-          default_chain=docker_service__ferm__default_chain,
-          default_protocol=docker_service__ferm__default_protocol,
-          default_action=docker_service__ferm__default_action,
-          on_disk_rule_names=docker_service__ferm__existing_rule_names)
+      | debops.debops.docker_service_ferm_rules(default_chain=docker_service__ferm__default_chain,
+                                                default_protocol=docker_service__ferm__default_protocol,
+                                                default_action=docker_service__ferm__default_action,
+                                                on_disk_rule_names=docker_service__ferm__existing_rule_names)
       | list }}"
   tags: [ 'role::docker_service', 'skip::docker_service',
           'role::ferm', 'skip::ferm' ]
