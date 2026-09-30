@@ -605,10 +605,16 @@ does not override the corresponding parameter explicitly.
 
   Default value: ``reject``
 
-  Default-deny action applied to sources not in ``allow``. ``reject`` sends a
-  TCP reset or ICMP ``admin-prohibited`` reply; ``drop`` silently discards
-  the packet. ``reject`` is preferred as it gives the client an explicit
-  signal rather than a timeout.
+  Default-deny action applied to sources not in ``allow``. ``reject`` picks the
+  reply type from the protocol: TCP gets a ``tcp-reset``, UDP gets
+  ``icmp-port-unreachable``, and anything else gets ``icmp-admin-prohibited``.
+  ``drop`` silently discards the packet. ``reject`` is preferred because a
+  client can act on an explicit failure, while a dropped packet only looks like
+  a timeout.
+
+  Rejecting TCP with ``icmp-admin-prohibited`` is technically valid but
+  unhelpful: a TCP client expects a RST, and an ICMP error makes it wait for a
+  retransmission timeout.
 
 
 .. _docker_service__ref_nginx:
