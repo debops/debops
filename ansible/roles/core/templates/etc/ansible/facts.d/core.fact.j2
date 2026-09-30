@@ -77,6 +77,8 @@ else:
                                           (core__tpl_ansible_controllers
                                            | sort | unique) }) %}
 {% endif %}
+{%   set _ = core__tpl_facts.update({ "cluster_count": core__cluster_count | int }) %}
+{%   set _ = core__tpl_facts.update({ "cluster_size": core__cluster_size | trim }) %}
 {%   set _ = core__tpl_facts.update({ "admin_groups": core__admin_groups }) %}
 {%   set _ = core__tpl_facts.update({ "admin_users": core__admin_users }) %}
 {%   set _ = core__tpl_facts.update({ "admin_public_email":
