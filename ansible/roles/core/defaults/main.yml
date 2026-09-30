@@ -114,6 +114,48 @@ core__active_controller: '{{ ((ansible_env.SSH_CLIENT.split(" ") | first)
                               else "") }}'
 
                                                                    # ]]]
+# .. envvar:: core__cluster_base_group [[[
+#
+# Specify the Ansible inventory group which will be used to count the number of
+# hosts present in the DebOps cluster.
+core__cluster_base_group: 'debops_all_hosts'
+
+                                                                   # ]]]
+# .. envvar:: core__cluster_count [[[
+#
+# Number of Ansible inventory hosts the define the size of the cluster
+# environment. It will be available in Ansible local facts for use by other
+# Ansible roles as the ``ansible_local.core.cluster_count`` variable.
+core__cluster_count: '{{ groups[core__cluster_base_group] | count }}'
+
+                                                                   # ]]]
+# .. envvar:: core__cluster_size [[[
+#
+# A descriptive name that conveys the rough estimate of the size of the cluster
+# and can be used in other Ansible roles. This name will be available to other
+# Ansible roles via local facts, as the ``ansible_local.core.cluster_size``
+# variable.
+#
+# Other DebOps roles might expect specific prefixes or suffixes in this
+# variable.
+core__cluster_size: >-
+  {% if core__cluster_count | int == 1 %}
+  single-node
+  {% elif core__cluster_count | int == 2 %}
+  pair-node
+  {% elif core__cluster_count | int == 3 %}
+  quorum-node
+  {% elif core__cluster_count | int <= 10 %}
+  pool-node
+  {% elif core__cluster_count | int <= 50 %}
+  small-cluster
+  {% elif core__cluster_count | int <= 100 %}
+  medium-cluster
+  {% else %}
+  large-cluster
+  {% endif %}
+
+# ]]]
 # .. envvar:: core__admin_groups [[[
 #
 # List of the system groups which contain the system administrator accounts.
