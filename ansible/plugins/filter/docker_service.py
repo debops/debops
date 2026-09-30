@@ -36,6 +36,11 @@ REJECT_WITH = {
 
 DEFAULT_REJECT_WITH = 'icmp-admin-prohibited'
 
+ACTIONS = {
+    'reject': 'REJECT',
+    'drop': 'DROP',
+}
+
 UNSAFE_NAME_CHARS = re.compile(r'[^A-Za-z0-9._-]')
 
 
@@ -57,6 +62,24 @@ def _interface_key(interface):
 
 def _reject_with(protocol):
     return REJECT_WITH.get(protocol, DEFAULT_REJECT_WITH)
+
+
+def _target(action, service_name, port):
+    """Map the default-deny action to an iptables target.
+
+    An unrecognized action is rejected instead of being treated as ``drop``:
+    the previous behavior closed the port silently, which is a quiet way to
+    break a published port when the value is a typo.
+    """
+    try:
+        return ACTIONS[action]
+    except KeyError:
+        raise AnsibleFilterError(
+            "Unsupported default-deny action {0!r} for {1} port {2}, "
+            "expected one of: {3}.".format(
+                action, service_name, port,
+                ', '.join(sorted(ACTIONS)))
+        )
 
 
 def _rule_name(service_name, port, protocol, default_chain, chain, dport,
@@ -93,8 +116,8 @@ def _published_port_rules(service, defaults):
         protocol = str(port_entry.get('protocol', defaults['protocol']))
         default_chain = str(defaults['chain'])
         chain = str(port_entry.get('chain', default_chain))
-        action = port_entry.get('action_default', defaults['action'])
-        target = 'REJECT' if action == 'reject' else 'DROP'
+        target = _target(port_entry.get('action_default', defaults['action']),
+                         service_name, port)
 
         # After Docker DNAT, filter chains other than INPUT see the container
         # destination port. INPUT (host network) still matches the host-side

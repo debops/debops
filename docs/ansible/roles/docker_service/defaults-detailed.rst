@@ -546,9 +546,10 @@ following parameters:
 
 ``action_default``
   Optional, string. Action for traffic not matching any ``allow`` source.
-  Supported values: ``reject`` (default, sends ICMP/TCP-reset reply) and
-  ``drop`` (silently discards). Defaults to
-  :envvar:`docker_service__ferm__default_action`.
+  Supported values: ``reject`` (default; replies to the client using the
+  reply type that matches the protocol) and ``drop`` (silently discards).
+  Defaults to :envvar:`docker_service__ferm__default_action`. An
+  unrecognized value raises an error rather than falling back to ``drop``.
 
 ``chain``
   Optional, string. :command:`iptables` chain where the rules are placed.
