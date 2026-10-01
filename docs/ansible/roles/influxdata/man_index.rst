@@ -14,6 +14,7 @@ debops.influxdata
    man_synopsis
    man_description
    getting-started
+   defaults/main
 
 ..
  Local Variables:

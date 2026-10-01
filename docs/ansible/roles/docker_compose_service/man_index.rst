@@ -13,6 +13,7 @@ debops.docker_compose_service
    man_synopsis
    man_description
    getting-started
+   defaults/main
    defaults-detailed
 
 ..
