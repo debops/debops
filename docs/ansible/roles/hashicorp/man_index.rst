@@ -15,6 +15,7 @@ debops.hashicorp
    getting-started
    security
    ansible-integration
+   defaults/main
 
 ..
  Local Variables:

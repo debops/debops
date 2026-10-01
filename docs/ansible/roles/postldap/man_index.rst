@@ -14,6 +14,7 @@ debops.postldap
    man_description
    getting-started
    guides
+   defaults/main
 
 ..
  Local Variables:
