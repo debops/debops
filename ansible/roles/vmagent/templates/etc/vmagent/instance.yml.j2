@@ -1,0 +1,21 @@
+{# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+#
+# vmagent scrape configuration for instance: {{ instance.name }}
+# Format is Prometheus-compatible; consumed via -promscrape.config=.
+#
+# Reference: https://docs.victoriametrics.com/sd_configs/
+
+{% set scrape_configs = instance.scrape_configs | d([]) %}
+{% if scrape_configs | length > 0 %}
+{{ {'scrape_configs': scrape_configs} | to_nice_yaml(indent=2, width=120) }}
+{% else %}
+scrape_configs: []
+{% endif %}
+
+{% if instance.global | d({}) | length > 0 %}
+{{ {'global': instance.global} | to_nice_yaml(indent=2, width=120) }}
+{% endif %}
