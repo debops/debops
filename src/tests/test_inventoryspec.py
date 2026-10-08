@@ -16,6 +16,7 @@ from debops.inventoryspec import (parse_spec, merge_specs, resolve_paths,
                                   DEFAULT_VERSION, PATH_RENDERED_VERSIONS,
                                   CONTENT_RENDERED_VERSIONS, SPEC_TEMPLATES,
                                   SPEC_VERSION)
+from debops.projectdir import ProjectDir
 from unittest import mock
 import io
 import os
@@ -535,6 +536,376 @@ class IncludeTestCase(unittest.TestCase):
             self.render('{{ include("x") }}', allow_io=False)
 
         self.assertIn('--allow-io', str(cm.exception))
+
+
+class TemplateSourceTestCase(unittest.TestCase):
+    """A '--template' value which names a template shipped with DebOps.
+
+    These tests must not depend on the specifications which DebOps ships,
+    because those are examples which can change at any time. The suite brings
+    a document of its own instead. `load_template()` only accepts the names
+    listed in SPEC_TEMPLATES and reads the document with `pkgutil.get_data()`,
+    and 'debops.inventoryspec' and 'debops.projectdir' each bind the tuple
+    under its own name, so both bindings and get_data() are replaced here.
+    """
+
+    FIXTURE_NAME = 'fixture'
+    FIXTURE_DOCUMENT = (b'---\nversion: 1\nfiles:\n  hosts: fixture\n'
+                        b'keep:\n  - group_vars/all/keyring.yml\n')
+
+    def setUp(self):
+        self.base_dir = tempfile.mkdtemp(prefix='debops-spec-test-')
+        self.addCleanup(shutil.rmtree, self.base_dir, True)
+
+        # The NOTICE log level is registered by debops.__main__, which the
+        # test suite never runs
+        logger_patch = mock.patch('debops.projectdir.logger')
+        self.addCleanup(logger_patch.stop)
+        logger_patch.start()
+
+        for module in ('debops.inventoryspec', 'debops.projectdir'):
+            names_patch = mock.patch(module + '.SPEC_TEMPLATES',
+                                     (self.FIXTURE_NAME,))
+            self.addCleanup(names_patch.stop)
+            names_patch.start()
+
+        data_patch = mock.patch('debops.inventoryspec.pkgutil.get_data',
+                                return_value=self.FIXTURE_DOCUMENT)
+        self.addCleanup(data_patch.stop)
+        data_patch.start()
+
+        # _load_specs() needs a ProjectDir instance, but constructing one
+        # touches the filesystem and the DebOps configuration. A bare
+        # instance with the attributes the method and the render context
+        # need is enough.
+        self.project = ProjectDir.__new__(ProjectDir)
+        self.project.kwargs = {}
+        self.project.view = 'system'
+        self.project.name = 'testproject'
+        self.project.path = self.base_dir
+        self.project.project_type = 'legacy'
+        # No 'project.inventory_spec' options, so the defaults apply
+        self.project.config = mock.Mock(raw={})
+
+    def load(self, *sources):
+        files, _keep = self.load_all(*sources)
+        return files
+
+    def load_all(self, *sources):
+        self.project.kwargs['spec_sources'] = list(sources)
+        return self.project._load_specs(self.base_dir)
+
+    def write_spec(self, name, document):
+        path = os.path.join(self.base_dir, name)
+        with open(path, 'w') as fh:
+            fh.write(document)
+        return path
+
+
+class ShippedTemplateTestCase(unittest.TestCase):
+    """The specifications which DebOps ships with.
+
+    These are examples, so the only thing checked here is that each one is a
+    valid document which DebOps can render. Which files a template defines is
+    the example's own business, not the engine's: a template may write
+    variables, remove paths, or do nothing at all.
+    """
+
+    def setUp(self):
+        self.base_dir = tempfile.mkdtemp(prefix='debops-spec-test-')
+        self.addCleanup(shutil.rmtree, self.base_dir, True)
+
+    def context(self, project_type):
+        """The variables which DebOps renders a specification with.
+
+        The production builder is used rather than a literal of its own, so
+        that a template which relies on a new context variable does not need
+        the test suite updated along with it.
+        """
+        project = ProjectDir.__new__(ProjectDir)
+        project.kwargs = {}
+        project.view = 'system'
+        project.name = 'testproject'
+        project.path = self.base_dir
+        project.project_type = project_type
+
+        return project._spec_render_context()
+
+    def test_every_shipped_template_is_a_valid_document(self):
+        for name in SPEC_TEMPLATES:
+            with self.subTest(template=name):
+                spec = load_template(name)
+
+                self.assertIsInstance(spec['files'], dict)
+                self.assertIsInstance(spec['version'], int)
+                self.assertGreaterEqual(spec['version'], 0)
+                self.assertLessEqual(spec['version'], SPEC_VERSION)
+
+    def test_every_shipped_template_renders(self):
+        # pipe() and include() are stubbed out: the examples use them to read
+        # the timezone and the SSH agent keys of the machine running the
+        # tests, and their contents are not what this test is about
+        stubs = {'pipe': lambda command: 'stub',
+                 'include': lambda path: 'stub'}
+
+        with mock.patch('debops.inventoryspec._render_globals',
+                        return_value=stubs):
+            for name in SPEC_TEMPLATES:
+                spec = load_template(name)
+                source = 'template "{}"'.format(name)
+
+                # The project type is part of the context, so each template
+                # has to survive both of them
+                for project_type in ('modern', 'legacy'):
+                    with self.subTest(template=name, project=project_type):
+                        self._assert_files_are_valid(name, render_spec(
+                            spec['files'], self.context(project_type), source,
+                            version=spec['version'],
+                            render_paths=(
+                                spec['version'] in PATH_RENDERED_VERSIONS),
+                            render_contents=(
+                                spec['version'] in CONTENT_RENDERED_VERSIONS)))
+
+    def _assert_files_are_valid(self, name, files):
+        for path, content in files.items():
+            if content is None or content == '':
+                continue
+            self.assertTrue(content.endswith('\n'),
+                            '{}:{} has no trailing newline'
+                            .format(name, path))
+            if path.endswith('.yml') or path.endswith('.yaml'):
+                yaml.safe_load(content)
+
+    def test_unknown_template_rejected(self):
+        with self.assertRaises(InventorySpecError) as cm:
+            load_template('nope')
+
+        self.assertIn('nope', str(cm.exception))
+
+    def test_path_traversal_in_template_name_rejected(self):
+        for name in ('../secrets', 'sub/local', '/etc/passwd'):
+            with self.assertRaises(InventorySpecError):
+                load_template(name)
+
+
+class KeepPlumbingTestCase(TemplateSourceTestCase):
+    """The 'keep' patterns of the loaded documents reach the caller."""
+
+    def test_fixture_keep_patterns_are_returned(self):
+        files, keep = self.load_all(self.FIXTURE_NAME)
+
+        self.assertEqual(files, {'hosts': 'fixture'})
+        self.assertEqual(keep, ['group_vars/all/keyring.yml'])
+
+    def test_a_document_without_keep_returns_an_empty_list(self):
+        path = self.write_spec('spec.yml', '---\nfiles:\n  extra: x\n')
+
+        files, keep = self.load_all(path)
+
+        self.assertEqual(files, {'extra': 'x'})
+        self.assertEqual(keep, [])
+
+    def test_keep_patterns_are_unioned_across_documents(self):
+        path = self.write_spec('spec.yml',
+                               '---\nfiles: {}\nkeep: [host_vars/local.yml]\n')
+
+        _files, keep = self.load_all(self.FIXTURE_NAME, path)
+
+        self.assertEqual(keep, ['group_vars/all/keyring.yml',
+                                'host_vars/local.yml'])
+
+    def test_no_sources_returns_empty_files_and_keep(self):
+        files, keep = self.load_all()
+
+        self.assertEqual(files, {})
+        self.assertEqual(keep, [])
+
+    def test_version_0_patterns_are_not_templated(self):
+        path = self.write_spec(
+            'spec.yml',
+            '---\nversion: 0\nfiles: {}\nkeep: ["{{ literal }}.yml"]\n')
+
+        _files, keep = self.load_all(path)
+
+        self.assertEqual(keep, ['{{ literal }}.yml'])
+
+
+class LoadSpecSourcesTestCase(TemplateSourceTestCase):
+    """How '--template' values are resolved: a template name, a file, or '-'."""
+
+    def test_template_name_loads_that_template(self):
+        files = self.load(self.FIXTURE_NAME)
+
+        self.assertEqual(files, {'hosts': 'fixture'})
+
+    def test_file_path_loads_the_file(self):
+        path = self.write_spec('spec.yml', '---\nfiles:\n  extra: x\n')
+
+        files = self.load(path)
+
+        self.assertEqual(files, {'extra': 'x'})
+
+    def test_dash_reads_standard_input(self):
+        with mock.patch.object(sys, 'stdin',
+                               io.StringIO('---\nfiles:\n  extra: x\n')):
+            files = self.load('-')
+
+        self.assertEqual(files, {'extra': 'x'})
+
+    def test_standard_input_can_only_be_read_once(self):
+        with self.assertRaises(ValueError) as cm:
+            self.load('-', self.FIXTURE_NAME, '-')
+
+        self.assertIn('only be read once', str(cm.exception))
+
+    def test_unknown_name_reports_templates_and_files(self):
+        with self.assertRaises(ValueError) as cm:
+            self.load('nosuch')
+
+        self.assertIn('nosuch', str(cm.exception))
+        self.assertIn(self.FIXTURE_NAME, str(cm.exception))
+
+    def test_unreadable_path_reports_a_file_error(self):
+        with self.assertRaises(ValueError) as cm:
+            self.load('sub/nosuch.yml')
+
+        # A path with a separator can only be a file, so the template list
+        # would be noise here
+        self.assertIn('sub/nosuch.yml', str(cm.exception))
+        self.assertNotIn('templates shipped', str(cm.exception))
+
+    def test_template_name_wins_over_a_file_of_the_same_name(self):
+        # A file whose name matches a template in the current directory must
+        # not shadow it, since an inventory directory often contains one
+        decoy = self.write_spec(self.FIXTURE_NAME,
+                                '---\nfiles:\n  decoy: x\n')
+
+        cwd = os.getcwd()
+        self.addCleanup(os.chdir, cwd)
+        os.chdir(self.base_dir)
+
+        files = self.load(self.FIXTURE_NAME)
+
+        # The template was used, not the decoy file
+        self.assertEqual(files, {'hosts': 'fixture'})
+        self.assertNotIn('decoy', files)
+        self.assertTrue(os.path.exists(decoy))
+
+    def test_dotted_path_loads_the_shadowed_file(self):
+        self.write_spec(self.FIXTURE_NAME, '---\nfiles:\n  decoy: x\n')
+
+        cwd = os.getcwd()
+        self.addCleanup(os.chdir, cwd)
+        os.chdir(self.base_dir)
+
+        files = self.load('./' + self.FIXTURE_NAME)
+
+        self.assertEqual(files, {'decoy': 'x'})
+
+
+class ProjectSpecConfigTestCase(TemplateSourceTestCase):
+    """The 'project.inventory_spec' options in the project configuration."""
+
+    # The version cap is checked before anything is rendered, so a document
+    # which declares a version above the cap only needs to parse
+    FIXTURE_DOCUMENT = b'---\nversion: 3\nfiles:\n  extra: x\n'
+
+    def load(self, *sources, policy=None):
+        self.project.kwargs['spec_sources'] = list(sources)
+        self.project.config = mock.Mock(
+            raw={'project': {'inventory_spec': policy}} if policy else {})
+        files, _keep = self.project._load_specs(self.base_dir)
+        return files
+
+    def test_no_options_means_defaults(self):
+        config = self.project._inventory_spec_config()
+
+        self.assertEqual(config, {'enabled': True, 'max_version': 3,
+                                  'allow_io': False})
+
+    def test_disabled_project_refuses_specifications(self):
+        with self.assertRaises(ValueError) as cm:
+            self.load(self.FIXTURE_NAME, policy={'enabled': False})
+
+        self.assertIn('project.inventory_spec.enabled', str(cm.exception))
+
+    def test_enabled_as_a_string(self):
+        # A quoted YAML boolean is a string; it still counts
+        with self.assertRaises(ValueError) as cm:
+            self.load(self.FIXTURE_NAME, policy={'enabled': 'false'})
+
+        self.assertIn('disabled', str(cm.exception))
+
+    def test_version_cap_refuses_newer_document(self):
+        path = os.path.join(self.base_dir, 'spec.yml')
+        with open(path, 'w') as fh:
+            fh.write('---\nversion: 2\nfiles:\n  extra: x\n')
+
+        with self.assertRaises(ValueError) as cm:
+            self.load(path, policy={'version': 1})
+
+        self.assertIn('project.inventory_spec.version', str(cm.exception))
+
+    def test_version_cap_accepts_older_document(self):
+        path = os.path.join(self.base_dir, 'spec.yml')
+        with open(path, 'w') as fh:
+            fh.write('---\nversion: 1\nfiles:\n  "extra": x\n')
+
+        files = self.load(path, policy={'version': 1})
+
+        self.assertEqual(files, {'extra': 'x'})
+
+    def test_version_cap_refuses_a_template(self):
+        with self.assertRaises(ValueError) as cm:
+            self.load(self.FIXTURE_NAME, policy={'version': 2})
+
+        self.assertIn('project.inventory_spec.version', str(cm.exception))
+
+    def test_version_as_a_string(self):
+        with self.assertRaises(ValueError) as cm:
+            self.load(self.FIXTURE_NAME, policy={'version': '2'})
+
+        self.assertIn('version', str(cm.exception))
+
+    def test_non_numeric_version_rejected(self):
+        with self.assertRaises(ValueError) as cm:
+            self.load(self.FIXTURE_NAME, policy={'version': 'newest'})
+
+        self.assertIn('must be an integer', str(cm.exception))
+
+    def test_allow_io_from_configuration(self):
+        document = ('---\nversion: 3\nfiles:\n  x: "{{ pipe(\'true\') }}"\n')
+
+        with mock.patch('debops.inventoryspec._execute_command') as execute:
+            execute.return_value = mock.Mock(returncode=0, stdout='', stderr='')
+
+            with mock.patch.object(sys, 'stdin', io.StringIO(document)):
+                files = self.load('-', policy={'allow_io': True})
+
+        self.assertIn('x', files)
+
+    def test_allow_io_denied_without_flag_or_config(self):
+        document = ('---\nversion: 3\nfiles:\n  x: "{{ pipe(\'true\') }}"\n')
+
+        with mock.patch.object(sys, 'stdin', io.StringIO(document)):
+            with self.assertRaises(InventorySpecError) as cm:
+                self.load('-', policy={'allow_io': False})
+
+        self.assertIn('--allow-io', str(cm.exception))
+
+    def test_allow_io_flag_wins_over_config(self):
+        # OR semantics: the CLI flag grants I/O for one invocation even when
+        # the project configuration denies it
+        document = ('---\nversion: 3\nfiles:\n  x: "{{ pipe(\'true\') }}"\n')
+        self.project.kwargs['allow_io'] = True
+
+        with mock.patch('debops.inventoryspec._execute_command') as execute:
+            execute.return_value = mock.Mock(returncode=0, stdout='', stderr='')
+
+            with mock.patch.object(sys, 'stdin', io.StringIO(document)):
+                files = self.load('-', policy={'allow_io': False})
+
+        self.assertIn('x', files)
 
 
 class MergeSpecsTestCase(unittest.TestCase):
