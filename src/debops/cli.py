@@ -2,7 +2,7 @@
 # Copyright (C) 2020-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from .exceptions import NoDefaultViewException
+from .exceptions import NoDefaultViewException, InventorySpecError
 from .config import Configuration
 from .subcommands import Subcommands
 from .projectdir import ProjectDir
@@ -61,16 +61,19 @@ class Interpreter(object):
                                  create=True, **vars(args))
             project.create()
         except (IsADirectoryError, NotADirectoryError,
-                PermissionError, ValueError) as errmsg:
+                PermissionError, InventorySpecError,
+                ValueError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 
     def do_project_refresh(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 **vars(args))
             project.refresh()
         except (IsADirectoryError, NotADirectoryError,
-                PermissionError) as errmsg:
+                PermissionError, InventorySpecError,
+                ValueError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 
@@ -107,7 +110,9 @@ class Interpreter(object):
             project = ProjectDir(path=args.project_dir, config=self.config,
                                  **vars(args))
             project.mkview(view=args.new_view)
-        except (IsADirectoryError, NotADirectoryError, ValueError) as errmsg:
+        except (IsADirectoryError, NotADirectoryError,
+                InventorySpecError,
+                ValueError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 

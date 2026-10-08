@@ -1,14 +1,21 @@
-# Copyright (C) 2020-2021 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2020-2021 DebOps <https://debops.org/>
+# Copyright (C) 2020-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .constants import DEBOPS_USER_HOME_DIR
-from .utils import unexpanduser
+from .utils import unexpanduser, write_file, host_is_controller, strtobool
 from .ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
+from .inventoryspec import (parse_spec, merge_specs, apply_spec,
+                            render_keep,
+                            render_spec, load_template,
+                            PATH_RENDERED_VERSIONS,
+                            CONTENT_RENDERED_VERSIONS, SPEC_TEMPLATES,
+                            SPEC_VERSION)
 from .hooks import run_hooks
 import os
 import pkgutil
+import getpass
 import jinja2
 import socket
 import distro
@@ -16,6 +23,7 @@ import platform
 import pathlib
 import git
 import subprocess
+import sys
 import time
 import logging
 
@@ -226,14 +234,261 @@ class ProjectDir(object):
                 git.exc.NoSuchPathError):
             return False
 
-    def _write_file(self, filename, *content):
+    def _write_file(self, filename, *content, overwrite=False):
         """
         If file:`filename` does not exist, create it and write
-        var:`content` into it.
+        var:`content` into it. An existing file is only replaced when
+        var:`overwrite` is True.
+
+        Returns True if the file was written, False if it already existed and
+        overwriting was not requested.
         """
-        if not os.path.exists(filename):
-            with open(filename, "w") as fh:
-                fh.writelines(content)
+        return write_file(filename, ''.join(content), overwrite=overwrite)
+
+    def _inventory_spec_config(self):
+        """Read the 'project.inventory_spec' configuration tree.
+
+        The tree is written into '.debops/conf.d/project.yml' when a modern
+        project is created. Projects created before it existed, and legacy
+        projects, do not have it; they get the defaults, which permit
+        everything the installed DebOps supports.
+
+        Returns a dict with 'enabled', 'max_version' and 'allow_io'.
+        """
+        try:
+            configured = self.config.raw.get('project', {}).get(
+                'inventory_spec', {}) or {}
+        except AttributeError:
+            configured = {}
+
+        enabled = configured.get('enabled', True)
+        if isinstance(enabled, str):
+            enabled = bool(strtobool(enabled))
+
+        allow_io = configured.get('allow_io', False)
+        if isinstance(allow_io, str):
+            allow_io = bool(strtobool(allow_io))
+
+        # The version is an integer in the configuration file, but a string
+        # is accepted as well, since quoting numbers is an easy mistake to
+        # make in YAML
+        max_version = configured.get('version', SPEC_VERSION)
+        try:
+            max_version = int(max_version)
+        except (TypeError, ValueError):
+            raise ValueError('The project.inventory_spec.version option must '
+                             'be an integer, not {!r}'.format(max_version))
+
+        return {'enabled': bool(enabled),
+                'max_version': max_version,
+                'allow_io': bool(allow_io)}
+
+    def _load_specs(self, inventory_path):
+        """Parse the inventory file specifications given on the command line.
+
+        Each '--template' value is resolved in order: '-' reads the document
+        from standard input, a name matching a template shipped with DebOps
+        loads that template, anything else is read as a file. Template names
+        win over files of the same name; use a path such as './hosts' to load
+        a file whose name matches a template. Standard input can only be
+        consumed once per invocation.
+
+        var:`inventory_path` is the Ansible inventory directory the
+        specification is applied to; a version 3 document uses it as the base
+        for relative paths given to include().
+
+        Each document's version decides how much of it is templated: a version
+        0 document is used as it is written, a version 1 document has its paths
+        rendered, and a version 2 or 3 document has its paths and contents
+        rendered. This happens before the documents are merged, so each one
+        decides for itself.
+
+        Returns a dict of inventory-relative path to file contents and the list
+        of kept path patterns, both empty if no specification was requested.
+        """
+        sources = self.kwargs.get('spec_sources', None) or []
+
+        if not sources:
+            return {}, []
+
+        policy = self._inventory_spec_config()
+
+        if not policy['enabled']:
+            raise ValueError('Inventory file specifications are disabled in '
+                             'this project; the project.inventory_spec.enabled '
+                             'option is false')
+
+        if sources.count('-') > 1:
+            raise ValueError('Standard input can only be read once, it cannot '
+                             'be used for more than one --template option')
+
+        context = self._spec_render_context()
+
+        # The project can pre-authorize I/O in its configuration; the
+        # '--allow-io' option grants it for one invocation
+        allow_io = (bool(self.kwargs.get('allow_io', False))
+                    or policy['allow_io'])
+        specs = []
+
+        for value in sources:
+            source, spec = self._load_spec_source(value)
+
+            if spec['version'] > policy['max_version']:
+                raise ValueError(
+                    '{} declares inventory specification version {}, but this '
+                    'project allows at most version {} (the '
+                    'project.inventory_spec.version option)'.format(
+                        source, spec['version'], policy['max_version']))
+
+            # Render before merging, so that a document's own version decides
+            # which of its paths and contents are templates, even when
+            # documents of different versions are combined. A version which
+            # asks for neither is left exactly as it was written.
+            version = spec['version']
+            if version in PATH_RENDERED_VERSIONS:
+                spec = {'version': version,
+                        'files': render_spec(spec['files'], context, source,
+                                             version=version,
+                                             allow_io=allow_io,
+                                             include_base=inventory_path,
+                                             notify=logger.notice,
+                                             render_contents=(
+                                                 version in
+                                                 CONTENT_RENDERED_VERSIONS)),
+                        'keep': render_keep(spec['keep'], context, source,
+                                            version=version)}
+
+            specs.append((source, spec))
+
+        files, keep, notices = merge_specs(specs)
+        for notice in notices:
+            logger.notice(notice)
+
+        return files, keep
+
+    def _load_spec_source(self, value):
+        """Read one '--template' value and parse it into a specification.
+
+        Returns the source description used in error messages and the parsed
+        document. Resolution follows the order documented for _load_specs():
+        standard input, then a shipped template, then a file, with template
+        names winning over files of the same name.
+        """
+        if value == '-':
+            if sys.stdin.isatty():
+                raise ValueError('Reading an inventory specification from '
+                                 'standard input was requested but '
+                                 'standard input is a terminal. Pipe the '
+                                 'document in, or pass a file name to '
+                                 '--template instead.')
+            source = 'standard input'
+            return source, parse_spec(sys.stdin.read(), source)
+
+        if value in SPEC_TEMPLATES:
+            source = 'template "{}"'.format(value)
+            return source, load_template(value)
+
+        source = value
+        try:
+            with open(os.path.expanduser(value), 'r',
+                      encoding='utf-8') as fh:
+                document = fh.read()
+        except OSError as errmsg:
+            message = ('Cannot read inventory specification "{}": {}'
+                       .format(value, errmsg.strerror))
+            if os.sep not in value:
+                message += ('; it is also not a template shipped with '
+                            'DebOps (' +
+                            ', '.join(sorted(SPEC_TEMPLATES)) + ')')
+            raise ValueError(message)
+        return source, parse_spec(document, source)
+
+    def _spec_render_context(self):
+        """Build the variables which a templated specification is rendered
+        with.
+
+        These are the variables that the DebOps project templates are rendered
+        with, plus the facts of this project, so that one set of rules covers
+        both.
+        """
+        return {
+            'env': os.environ,
+            'user': getpass.getuser(),
+            'hostname': socket.gethostname(),
+            'fqdn': socket.getfqdn(),
+            'host_as_controller': host_is_controller(),
+            'secret_name': self.kwargs.get('secret_name', 'secret'),
+            'view': self.view,
+            'default_view': self.kwargs.get('default_view', self.view),
+            'project': {'name': self.name,
+                        'path': self.path,
+                        'type': self.project_type},
+        }
+
+    def _report_spec_result(self, result, base_dir, dry_run):
+        """Tell the user which paths a specification changed or left alone.
+
+        The per-path lines are logged at the NOTICE level, so that a template
+        which touches many paths does not flood the terminal unless '-v' is
+        used. The summary and the hint about '--force' stay on stdout.
+
+        Removals are reported before writes to follow the order in which
+        :func:`debops.inventoryspec.apply_spec` performs them, so that a
+        document which removes a directory and then re-creates files inside it
+        does not read as if it deleted what it had just written.
+        """
+        for key, verb in (('removed', 'Removed'),
+                          ('planned_removed', 'Would remove'),
+                          ('written', 'Created'),
+                          ('planned', 'Would create'),
+                          ('skipped', 'Skipped existing'),
+                          ('kept', 'Kept')):
+            for target in result.get(key, []):
+                logger.notice('{} {}'.format(
+                    verb, os.path.relpath(target, base_dir)))
+
+        if result.get('skipped'):
+            print("Use '--force' to overwrite or remove paths which already "
+                  "exist.", file=self._status_stream())
+
+        if not dry_run and not result.get('skipped'):
+            print('Applied the inventory specification.',
+                  file=self._status_stream())
+
+    def _status_stream(self):
+        """The stream for status messages.
+
+        A 'list' or 'host' inspection prints JSON to standard output, so
+        status messages go to standard error to keep the JSON usable in a
+        pipe. Everything else stays on standard output.
+        """
+        if self.kwargs.get('list', False) or self.kwargs.get('host'):
+            return sys.stderr
+        return sys.stdout
+
+    def _process_spec(self, inventory, pre_existing):
+        """Apply an inventory file specification to an Ansible inventory.
+
+        var:`pre_existing` is the set of paths which were present in the
+        inventory before this command started, so that the specification can
+        replace the files which DebOps itself just generated without touching
+        the ones the user has written.
+        """
+        files, keep = self._load_specs(inventory.path)
+        dry_run = self.kwargs.get('dry_run', False)
+        overwrite = self.kwargs.get('force', False)
+
+        if files:
+            if dry_run:
+                logger.info('Inventory specification will not be written to '
+                            'disk')
+
+            result = inventory.apply_spec(files, pre_existing=pre_existing,
+                                          overwrite=overwrite,
+                                          dry_run=dry_run, keep=keep)
+            self._report_spec_result(result,
+                                     os.path.realpath(inventory.path),
+                                     dry_run)
 
     def _create_modern_project(self, path):
         logger.debug('Initializing new "modern" project directory')
@@ -245,6 +500,9 @@ class ProjectDir(object):
         self.createdirs(path)
 
         inventory = AnsibleInventory(self, default_view, **self.kwargs)
+
+        pre_existing = inventory.existing_paths()
+
         inventory.create()
 
         default_project_yml = jinja2.Template(
@@ -393,13 +651,20 @@ class ProjectDir(object):
         self.ansible_cfg.merge_config(
                 self.config.raw['views'][default_view]['ansible'])
         self.ansible_cfg.write_config()
-        print('Created new DebOps project in', path)
+
+        self._process_spec(inventory, pre_existing)
+
+        print('Created new DebOps project in', path,
+              file=self._status_stream())
 
     def _create_legacy_project(self, path):
         logger.debug('Initializing new "legacy" project directory')
         self.project_type = 'legacy'
 
         inventory = AnsibleInventory(self, self.name, **self.kwargs)
+
+        pre_existing = inventory.existing_paths()
+
         inventory.create()
 
         default_requirements = jinja2.Template(
@@ -511,7 +776,11 @@ class ProjectDir(object):
         self.ansible_cfg.load_config()
         self.ansible_cfg.merge_config(debops_cfg)
         self.ansible_cfg.write_config()
-        print('Created new DebOps project in', path)
+
+        self._process_spec(inventory, pre_existing)
+
+        print('Created new DebOps project in', path,
+              file=self._status_stream())
 
     def createdirs(self, path):
         skel_dirs = (
@@ -638,6 +907,9 @@ class ProjectDir(object):
         if self.project_type == 'modern':
             if view:
                 inventory = AnsibleInventory(self, view, **self.kwargs)
+
+                pre_existing = inventory.existing_paths()
+
                 inventory.create()
 
                 default_view_yml = jinja2.Template(
@@ -727,7 +999,11 @@ class ProjectDir(object):
                 self.ansible_cfg.merge_config(
                         self.config.raw['views'][view]['ansible'])
                 self.ansible_cfg.write_config()
-                print('Created', view, 'view in DebOps project', self.name)
+
+                self._process_spec(inventory, pre_existing)
+
+                print('Created', view, 'view in DebOps project', self.name,
+                      file=self._status_stream())
 
             else:
                 raise ValueError('You must specify name of the view '
@@ -785,7 +1061,13 @@ class ProjectDir(object):
         project_views = list(self.config.raw['views'].keys())
         for view in project_views:
             inventory = AnsibleInventory(self, view, **self.kwargs)
+            pre_existing = inventory.existing_paths()
             inventory.createdirs()
+
+            # Only the selected view receives the specification, the other
+            # views are refreshed with the internal defaults as before
+            if view == self.view:
+                self._process_spec(inventory, pre_existing)
 
             if self.project_type == 'modern':
                 self.ansible_cfg = AnsibleConfig(
@@ -804,7 +1086,8 @@ class ProjectDir(object):
                         project_type=self.project_type)
                 self.ansible_cfg.merge_config(debops_cfg)
                 self.ansible_cfg.write_config()
-        print('Refreshed DebOps project in', self.path)
+        print('Refreshed DebOps project in', self.path,
+              file=self._status_stream())
 
         run_hooks(self.path, 'post-refresh')
 
