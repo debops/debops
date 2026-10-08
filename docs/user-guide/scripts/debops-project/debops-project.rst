@@ -1,5 +1,5 @@
-.. Copyright (C) 2021-2023 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2021-2023 DebOps <https://debops.org/>
+.. Copyright (C) 2021-2026 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2021-2026 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 :command:`debops project init`
@@ -64,6 +64,47 @@ Options
   to unlock the :file:`ansible/secret/` directory encrypted with EncFS or
   git-crypt. Separate multiple list entries by commas.
 
+``--template <spec>``
+  Create Ansible inventory structure in the selected or default view, described
+  by a :ref:`inventory specification <inventory_specification>`. This
+  option can be specified multiple times; the specification sources are merged
+  before they are applied.
+
+  The value is resolved in order: ``-`` reads the document from standard
+  input, a name matching a template shipped with DebOps (``hosts`` for remote
+  hosts, ``local`` for the local machine, ``clear`` to reset the inventory,
+  ``sshkeys`` to grant the SSH agent's public keys access) loads that
+  template, and anything else is read as a file. A template name wins over a
+  file of the same name; use ``./hosts`` to load such a file.
+
+``-n``, ``--dry-run``
+  Describe the changes which the specification would make, without writing
+  them. The project directory itself is still created or refreshed.
+
+``--force``
+  Overwrite, clear or remove inventory paths which already exist. Inventory
+  paths listed in a specification's ``keep`` key are not affected by this
+  option. See :ref:`inventory_specification` for the default behavior.
+
+``--allow-io``
+  Allow a version 3 specification to run commands with ``pipe()`` and read
+  files with ``include()``. Without this option such a document is refused.
+
+``--graph``
+  Display the Ansible inventory graph after the specification has been
+  applied, to confirm that Ansible reads the files the way you expect.
+  Mutually exclusive with ``--list`` and ``--host``.
+
+``--list``
+  Display the Ansible inventory as JSON after the specification has been
+  applied, like :command:`ansible-inventory --list`. Mutually exclusive with
+  ``--graph`` and ``--host``.
+
+``--host <hostname>``
+  Display the variables Ansible resolves for the given host after the
+  specification has been applied, like :command:`ansible-inventory --host`.
+  Mutually exclusive with ``--graph`` and ``--list``.
+
 ``-v, --verbose``
   Increase output verbosity. More letters means higher verbosity.
 
@@ -95,6 +136,12 @@ Create a project directory with EncFS encryption for secrets:
    debops project init --encrypt encfs \
                        --keys admin@example.org,otheradmin@example.org \
                        ~/src/projects/example.org
+
+Create a project directory with an inventory read from standard input:
+
+.. code-block:: shell
+
+   debops project init --template - ~/src/projects/example.org <inventory.yml
 
 
 :command:`debops project mkview`
@@ -138,6 +185,42 @@ Options
   A list of GPG recipients (e-mail addresses or key IDs) which will be allowed
   to unlock the :file:`<view>/secret/` directory encrypted with EncFS or
   git-crypt. Separate multiple list entries by commas.
+
+``--template <spec>``
+  Create inventory files in the new view, described by a :ref:`inventory file
+  specification <inventory_specification>`. The value is resolved in
+  order: ``-`` reads the document from standard input, a name matching a
+  template shipped with DebOps (``hosts`` for remote hosts, ``local`` for the
+  local machine, ``clear`` to reset the inventory, ``sshkeys`` to grant the
+  SSH agent's public keys access) loads that template, and anything else is
+  read as a file. This option can be given more than once; the specification
+  sources are merged before they are applied.
+
+``-n``, ``--dry-run``
+  Describe the changes which the specification would make, without writing
+  them. The project directory itself is still created or refreshed.
+
+``--force``
+  Overwrite, clear or remove inventory paths which already exist. Inventory
+  paths listed in a specification's ``keep`` key are not affected by this
+  option.
+
+``--allow-io``
+  Allow a version 3 specification to run commands with ``pipe()`` and read
+  files with ``include()``. Without this option such a document is refused.
+
+``--graph``
+  Display the Ansible inventory graph after the specification has been
+  applied. Mutually exclusive with ``--list`` and ``--host``.
+
+``--list``
+  Display the Ansible inventory as JSON after the specification has been
+  applied. Mutually exclusive with ``--graph`` and ``--host``.
+
+``--host <hostname>``
+  Display the variables Ansible resolves for the given host after the
+  specification has been applied. Mutually exclusive with ``--graph`` and
+  ``--list``.
 
 ``-v, --verbose``
   Increase output verbosity. More letters means higher verbosity.
@@ -210,11 +293,74 @@ Options
 ``-h, --help``
   Display the help and usage information
 
+``-V <view>``, ``--view <view>``
+  Specify the name of the "infrastructure view" to refresh. If not specified,
+  the default view will be refreshed. Using this option overrides the
+  automatic view detection performed by DebOps based on the current working
+  directory.
+
+``--template <spec>``
+  Create inventory files in the selected view, described by a :ref:`inventory
+  file specification <inventory_specification>`. Without this option
+  the view is refreshed with DebOps' internal defaults only. The value is
+  resolved in order: ``-`` reads the document from standard input, a name
+  matching a template shipped with DebOps (``hosts`` for remote hosts,
+  ``local`` for the local machine, ``clear`` to reset the inventory,
+  ``sshkeys`` to grant the SSH agent's public keys access) loads that
+  template, and anything else is read as a file. This option can be given
+  more than once; the specification sources are merged before they are
+  applied.
+
+``-n``, ``--dry-run``
+  Describe the changes which the specification would make, without writing
+  them. The project directory itself is still refreshed.
+
+``--force``
+  Overwrite, clear or remove inventory paths which already exist. This is
+  usually what you want when reapplying a specification to an existing project,
+  because otherwise paths you have already edited are kept. Inventory paths
+  listed in a specification's ``keep`` key are not affected by this option.
+
+``--allow-io``
+  Allow a version 3 specification to run commands with ``pipe()`` and read
+  files with ``include()``. Without this option such a document is refused.
+
+``--graph``
+  Display the Ansible inventory graph after the specification has been
+  applied. Mutually exclusive with ``--list`` and ``--host``.
+
+``--list``
+  Display the Ansible inventory as JSON after the specification has been
+  applied. Mutually exclusive with ``--graph`` and ``--host``.
+
+``--host <hostname>``
+  Display the variables Ansible resolves for the given host after the
+  specification has been applied. Mutually exclusive with ``--graph`` and
+  ``--list``.
+
 ``-v, --verbose``
   Increase output verbosity. More letters means higher verbosity.
 
 ``<project_dir>``
-  Path to the project directory to refresh.
+  Path to the DebOps project directory to refresh.
+
+Examples
+~~~~~~~~
+
+Refresh the project directory using DebOps' internal defaults:
+
+.. code-block:: shell
+
+   debops project refresh ~/src/projects/myproject
+
+Apply an inventory file specification to the default view and check the
+result without writing anything:
+
+.. code-block:: shell
+
+   debops project refresh --dry-run --graph \
+                          --template inventory.yml \
+                          ~/src/projects/myproject
 
 
 :command:`debops project unlock`
