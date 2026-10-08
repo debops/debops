@@ -1,5 +1,5 @@
-# Copyright (C) 2020-2023 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2020-2023 DebOps <https://debops.org/>
+# Copyright (C) 2020-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import argparse
@@ -84,6 +84,24 @@ Commands:
             sys.exit(1)
         getattr(self, 'do_project_' + self._command.command)()
 
+    def add_spec_arguments(self, parser):
+        """Add the options which read and apply an inventory file
+        specification. Shared by the 'project' subcommands which can create
+        or refresh an Ansible inventory."""
+        parser.add_argument('--template', type=str, dest='spec_sources',
+                            action='append', metavar='SPEC',
+                            help='apply an inventory spec from '
+                                 'template, file or stdin (multiple)')
+        parser.add_argument('-n', '--dry-run', action='store_true',
+                            help='only simulate changes from inventory '
+                                 'spec')
+        parser.add_argument('--force', action='store_true',
+                            help='overwrite, clear or remove paths which '
+                                 'already exist')
+        parser.add_argument('--allow-io', action='store_true',
+                            help='allow commands or file includes in '
+                                 'inventory spec')
+
     def do_project_init(self):
         parser = argparse.ArgumentParser(
                 description='initialize new project directory',
@@ -111,6 +129,7 @@ Commands:
         parser.add_argument('--keys', type=str,
                             help='list of GPG recipients with secret access, '
                                  'delimited by commas')
+        self.add_spec_arguments(parser)
         parser.add_argument('-v', '--verbose', action="count",
                             help='increase output verbosity '
                                  '(e.g., -vv is more than -v)')
@@ -123,6 +142,10 @@ Commands:
         parser = argparse.ArgumentParser(
                 description='refresh existing project directory',
                 usage='debops project refresh [<args>] <project_dir>')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view '
+                                 'to refresh')
+        self.add_spec_arguments(parser)
         parser.add_argument('-v', '--verbose', action="count",
                             help='increase output verbosity '
                                  '(e.g., -vv is more than -v)')
@@ -172,6 +195,7 @@ Commands:
         parser.add_argument('--keys', type=str,
                             help='list of GPG recipients with secret access, '
                                  'delimited by commas')
+        self.add_spec_arguments(parser)
         parser.add_argument('new_view', type=str, nargs='?',
                             help='name of the new infrastructure view')
         self.args = parser.parse_args(self.args[3:])
