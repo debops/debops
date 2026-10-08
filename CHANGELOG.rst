@@ -35,6 +35,11 @@ General
 - Manual pages for each Ansible role now include the role default
   variables rendered from the :file:`defaults/main.yml` file.
 
+- The :command:`debops project` subcommands accept an :ref:`inventory
+  specification <inventory_specification>` given with the ``--template``
+  option, which can create or remove Ansible inventory contents defined as
+  a YAML document.
+
 :ref:`debops.core` role
 '''''''''''''''''''''''
 
