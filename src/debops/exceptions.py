@@ -5,3 +5,8 @@
 class NoDefaultViewException(Exception):
     """Raised when default view is not defined in DebOps configuration"""
     pass
+
+
+class InventorySpecError(Exception):
+    """Raised when an inventory file specification is invalid"""
+    pass

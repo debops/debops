@@ -1,0 +1,32 @@
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+---
+# Inventory specification for a DebOps project
+
+# This document is version 3, the paths and the contents of the defined files
+# are rendered as Jinja2 templates. The pipe() and include() functions are
+# available with the --allow-io option.
+version: 3
+
+# File and directory definitions, each YAML dictionary key is a file path.
+# Paths are relative to the 'inventory/' directory in DebOps project or view.
+files:
+
+  # The 'tojson' filter creates a YAML-compatible list of entries
+
+  group_vars/all/root_account.yml: |
+    ---
+    # Include SSH key from Ansible Controller on root account of all hosts in
+    # the Ansible inventory
+    root_account__authorized_keys: {{ pipe('ssh-add -L 2>/dev/null || true').splitlines() | tojson }}
+
+  group_vars/all/system_users.yml: |
+    ---
+    # Administrator accounts defined on all hosts in Ansible inventory
+    system_users__accounts:
+
+      - name: '{{ user }}'
+        admin: True
+        sshkeys: {{ pipe('ssh-add -L 2>/dev/null || true').splitlines() | tojson }}
+        state: 'present'

@@ -1,0 +1,61 @@
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+---
+# Inventory specification for a DebOps project
+
+# This document is version 3, the paths and the contents of the defined files
+# are rendered as Jinja2 templates. The pipe() and include() functions are
+# available with the --allow-io option.
+version: 3
+
+# File and directory definitions, each YAML dictionary key is a file path.
+# Paths are relative to the 'inventory/' directory in DebOps project or view.
+files:
+
+  # Simple Ansible inventory file in INI format; Ansible does not need a
+  # file extension to detect the format
+  hosts_controllers: |
+    # This is an Ansible inventory file in INI format. You can define a list of
+    # hosts and groups to be managed by this particular inventory.
+
+    # Hosts listed under [debops_all_hosts] will have common DebOps plays
+    # ran against them. It will include services such as iptables, DNS, Postfix,
+    # sshd configuration and more.
+    #
+    # View the list here:
+    # https://github.com/debops/debops/blob/master/ansible/playbooks/common.yml
+    #
+    # You should check Getting Started guide for useful suggestions:
+    # https://docs.debops.org/en/master/introduction/getting-started.html
+
+    {% if host_as_controller == True -%}
+    # Your host is eligible to be managed by DebOps playbooks.
+
+    [controllers]
+    {{ hostname }} ansible_host={{ fqdn }} ansible_connection=local
+
+    [debops_all_hosts:children]
+    controllers
+    {% else -%}
+    # Your host was not detected as compatible with DebOps playbooks.
+
+    [debops_all_hosts]
+    {% endif -%}
+
+  # Define default values for DebOps roles on Ansible Controller host
+
+  'host_vars/{{ hostname }}/locales.yml': |
+    ---
+    # Language(s) present on the Ansible Controller
+    {% if (env.LANG | default('en_US.UTF-8') != 'en_US.UTF-8') -%}
+    locales__list: [ 'en_US.UTF-8', '{{ env.LANG | default("en_US.UTF-8") }}' ]
+    {% else -%}
+    locales__list: [ '{{ env.LANG | default("en_US.UTF-8") }}' ]
+    {% endif -%}
+    locales__system_lang: '{{ env.LANG | default("en_US.UTF-8") }}'
+
+  'host_vars/{{ hostname }}/tzdata.yml': |
+    ---
+    # Timezone defined on the Ansible Controller
+    tzdata__timezone: '{{ include("/etc/timezone") | trim }}'
