@@ -3,10 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from debops.exceptions import NoDefaultViewException
+from debops.utils import host_is_controller
 import pkgutil
 import jinja2
-import platform
-import distro
 import socket
 import subprocess
 import sys
@@ -213,19 +212,12 @@ class AnsibleInventory(object):
                 .decode('utf-8'), trim_blocks=True)
 
         # Create hosts file
-        if (platform.system() == "Linux" and
-                (distro.linux_distribution(full_distribution_name=False)[0]
-                 ).lower() in ("debian", "ubuntu")):
-            host_as_controller = True
-        else:
-            host_as_controller = False
-
         hosts_path = os.path.join(self.path, 'hosts')
         if not os.path.exists(hosts_path):
             with open(hosts_path, 'w') as fh:
                 fh.writelines(
                     default_hosts.render(
-                        host_as_controller=host_as_controller,
+                        host_as_controller=host_is_controller(),
                         hostname=socket.gethostname(),
                         fqdn=socket.getfqdn()))
             logger.debug('Default hosts file created in Ansible inventory')
