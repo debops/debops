@@ -101,6 +101,13 @@ Commands:
         parser.add_argument('--allow-io', action='store_true',
                             help='allow commands or file includes in '
                                  'inventory spec')
+        inspect = parser.add_mutually_exclusive_group()
+        inspect.add_argument('--graph', action='store_true',
+                             help='display the Ansible inventory graph')
+        inspect.add_argument('--list', action='store_true',
+                             help='display the Ansible inventory as JSON')
+        inspect.add_argument('--host', type=str, metavar='HOST',
+                             help='display selected host variables as JSON')
 
     def do_project_init(self):
         parser = argparse.ArgumentParser(
