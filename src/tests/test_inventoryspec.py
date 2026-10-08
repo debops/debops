@@ -1574,3 +1574,64 @@ VARIABLE_OUTPUT = """\
 """
 
 
+class GraphNameTestCase(unittest.TestCase):
+    """Parsing of 'ansible-inventory --graph' output.
+
+    Ansible does not report 'group_vars' and 'host_vars' entries which match
+    no group or host, so the names have to be recovered from the graph to warn
+    about them.
+    """
+
+    def test_groups_and_hosts_are_extracted(self):
+        groups, hosts = ProjectDir._parse_graph_names(GRAPH_OUTPUT)
+
+        self.assertEqual(groups, {'all', 'ungrouped', 'webservers',
+                                  'staging_pool'})
+        self.assertEqual(hosts, {'web1'})
+
+    def test_group_without_hosts_is_found(self):
+        # 'ansible-inventory --list' does not report such a group at all
+        groups, _ = ProjectDir._parse_graph_names(GRAPH_OUTPUT)
+
+        self.assertIn('staging_pool', groups)
+
+    def test_variables_are_not_mistaken_for_hosts(self):
+        _, hosts = ProjectDir._parse_graph_names(GRAPH_OUTPUT)
+
+        self.assertNotIn('nginx__server_name = example.org}', hosts)
+        self.assertEqual(hosts, {'web1'})
+
+    def test_wrapped_variable_is_not_a_host(self):
+        # 'ansible-inventory --graph --vars' renders values on a single line,
+        # so this only guards the parser against a value which ever spans
+        # several lines: it must not become a host name
+        _, hosts = ProjectDir._parse_graph_names(VARIABLE_OUTPUT)
+
+        self.assertEqual(hosts, {'web1'})
+
+
+class VarsEntriesTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.base_dir = tempfile.mkdtemp(prefix='debops-spec-test-')
+        self.addCleanup(shutil.rmtree, self.base_dir, True)
+
+    def test_directories_and_files_name_the_same_group(self):
+        group_vars = os.path.join(self.base_dir, 'group_vars')
+        os.makedirs(os.path.join(group_vars, 'webservers'))
+
+        for name in ('all.yml', 'db.yaml', 'notes.txt'):
+            with open(os.path.join(group_vars, name), 'w') as fh:
+                fh.write('a: 1\n')
+
+        self.assertEqual(ProjectDir._vars_entries(group_vars),
+                         ['all', 'db', 'webservers'])
+
+    def test_missing_directory_yields_nothing(self):
+        self.assertEqual(
+            ProjectDir._vars_entries(os.path.join(self.base_dir, 'host_vars')),
+            [])
+
+
+if __name__ == '__main__':
+    unittest.main()

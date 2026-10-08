@@ -62,7 +62,7 @@ class Interpreter(object):
             project.create()
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError, InventorySpecError,
-                ValueError) as errmsg:
+                ChildProcessError, ValueError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 
@@ -73,7 +73,7 @@ class Interpreter(object):
             project.refresh()
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError, InventorySpecError,
-                ValueError) as errmsg:
+                ChildProcessError, ValueError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 
@@ -111,7 +111,7 @@ class Interpreter(object):
                                  **vars(args))
             project.mkview(view=args.new_view)
         except (IsADirectoryError, NotADirectoryError,
-                InventorySpecError,
+                InventorySpecError, ChildProcessError,
                 ValueError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
