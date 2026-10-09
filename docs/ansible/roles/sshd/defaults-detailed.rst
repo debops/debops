@@ -72,12 +72,12 @@ Configure SSH daemon to listen on additional TCP ports for network connections:
      - name: 'Port_2222'
        option: 'Port'
        value: 2222
-       copy_id_from: 'Port'
+       anchor_to: 'Port'
 
      - name: 'Port_3322'
        option: 'Port'
        value: 3322
-       copy_id_from: 'Port'
+       anchor_to: 'Port'
 
 Alternatively, you can specify a list of TCP ports using the
 :envvar:`sshd__ports` variable which will generate the corresponding
@@ -180,16 +180,19 @@ parameters:
   configuration file.
 
 ``weight``
-  Optional. Positive or negative number, by default ``0``. Weight can be used
-  to affect the order of configuration options (important, first option sets
-  the configuration in the SSH daemon), with negative weight resulting in
-  a given configuration being moved "up" in the generated config file, and
-  positive number resulting in an option being moved "down" in the generated
-  config file.
+  Optional. Positive or negative number, by default ``0``. Weight selects the
+  placement zone of a configuration option: negative values move it to the
+  top, ``0`` (the default) keeps it in the middle in source order (the first
+  instance of an option in SSH daemon configuration takes precedence), and
+  positive values move it to the bottom. The magnitude of the value does not
+  matter; use ``anchor_to`` for ordering relative to a specific option. See
+  :ref:`universal_configuration_advanced_weight` for details.
 
-``copy_id_from``
-  Optional. Name of a configuration entry (``name`` parameter), which should be
-  used as an "anchor" for a given entry. This parameter can be used to group
-  related configuration options together - for example multiple ``Port``
-  options (see the examples section above). The ``weight`` parameter can be
-  used to fine-tune the order of options in the generated configuration file.
+``anchor_to``
+  Optional. Name of a configuration option (its ``name`` parameter) to anchor
+  this option to. The option is placed right after the anchor when its
+  ``weight`` is zero or positive, and right before it when ``weight`` is
+  negative. This can be used to group related configuration options together -
+  for example multiple ``Port`` options (see the examples section above).
+  Anchoring takes precedence over zone-based placement. See
+  :ref:`universal_configuration_advanced_weight` for details.

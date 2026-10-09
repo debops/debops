@@ -108,16 +108,20 @@ Supported parameters are:
   Optional. String or YAML text block with comments about a given configuration
   option.
 
-``copy_id_from``
-  Optional. Copy the internal "id" of a configuration option specified by the
-  ``name`` parameter to the current configuration option. This parameter can be
-  used to reorder configuration options relative to a specific option.
+``anchor_to``
+  Optional. Name of another configuration option (its ``name`` parameter) to
+  anchor this option to. The option is placed right after the anchor when its
+  ``weight`` is zero or positive, and right before it when ``weight`` is
+  negative. Anchoring takes precedence over zone-based placement. See
+  :ref:`universal_configuration_advanced_weight` for details.
 
 ``weight``
-  Optional. Positive or negative number which defines the additional "weight"
-  of an option. Smaller or negative weight will move the option higher in the
-  configuration file, Bigger weight will move the configuration option lower in
-  the configuration file.
+  Optional. Positive or negative number which selects the placement zone of
+  an option in the generated configuration file: negative values move it to
+  the top, ``0`` (the default) keeps it in the middle in source order, and
+  positive values move it to the bottom. The magnitude of the value does not
+  matter; use ``anchor_to`` for ordering relative to a specific option. See
+  :ref:`universal_configuration_advanced_weight` for details.
 
 ``value_cast``
   Optional. Specify the type of a given value to use in the configuration file.

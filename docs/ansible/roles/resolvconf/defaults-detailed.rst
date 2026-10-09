@@ -62,14 +62,17 @@ using specific parameters:
   file. If ``ignore``, a given configuration entry will not be evaluated by the
   role during its execution.
 
-``copy_id_from``
-  Optional. Name of a configuration entry (its ``name`` parameter) from which
-  a given entry should copy its internal "id" value. This can be used to roughly
-  place a given configuration entry near the specified configuration section
-  without the need to modify the order of all of the other entries.
+``anchor_to``
+  Optional. Name of another configuration entry (its ``name`` parameter) to
+  anchor this entry to. The entry is placed right after the anchor when its
+  ``weight`` is zero or positive, and right before it when ``weight`` is
+  negative. Anchoring takes precedence over zone-based placement. See
+  :ref:`universal_configuration_advanced_weight` for details.
 
 ``weight``
-  Optional. A positive or negative number which defines an additional "weight"
-  of a given entry relative to other configuration entries. This parameter can
-  be used to fine-tune the order of the configuration sections in the generated
-  configuration file.
+  Optional. A positive or negative number which selects the placement zone of
+  a given entry relative to other configuration entries: negative values move
+  it to the top, ``0`` (the default) keeps it in the middle in source order,
+  and positive values move it to the bottom. The magnitude of the value does
+  not matter; use ``anchor_to`` for ordering relative to a specific entry. See
+  :ref:`universal_configuration_advanced_weight` for details.

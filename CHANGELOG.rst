@@ -148,6 +148,16 @@ General
   when the collection is installed via Ansible Galaxy without the ``debops``
   Python package.
 
+:ref:`debops.ansible_plugins` role
+''''''''''''''''''''''''''''''''''
+
+- The :ref:`universal_configuration` filters
+  (``debops.debops.parse_kv_config`` and ``debops.debops.parse_kv_items``)
+  have been redesigned with a zone-based weight system. The ``copy_id_from``
+  property has been replaced by ``anchor_to``; ``real_weight`` has been
+  removed; ``id`` is now assigned sequentially after sorting. See
+  :ref:`upgrade_notes` for required inventory variable changes.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 

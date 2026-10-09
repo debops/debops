@@ -56,8 +56,9 @@ facilitate.
 ``debops.debops.parse_kv_config``
   Parse a YAML list of dictionaries and output a sorted and expanded list of
   YAML dictionaries that contain a common set of dictionary keys. The filter
-  supports dynamic order of the entries using weight model, and can be used to
-  generate a configuration file which uses a key/value syntax with unique keys.
+  supports dynamic order of the entries using a zone-based weight model and
+  ``anchor_to`` for relative positioning. Can be used to generate a
+  configuration file which uses a key/value syntax with unique keys.
 
   The ``debops.debops.parse_kv_config`` filter accepts this argument:
 
@@ -138,13 +139,22 @@ Output mappings
 '''''''''''''''
 These values get populated in the ``parse_kv_*`` output mappings:
 
-- ``id``: The initial source order of the items in the input list ``* 10``.
-- ``state`` defaults to ``present``
+- ``id``: Sequential index assigned after sorting.
+- ``state`` defaults to ``present``.
 - ``weight``: The weight as defined in the source mapping. Defaults to ``0``.
-- ``real_weight``: Calculated from adding ``weight`` and ``id``.
+  The sign determines the item's zone: negative floats to the top, zero stays
+  in the middle (preserving source order), positive sinks to the bottom.
+- ``first_index``: Source position of the item's first occurrence, used for
+  within-zone ordering and as secondary sort for same-target anchors.
 - ``section``: defaults to ``unknown``. Can be used by roles to split sections.
 - ``separator``: defaults to ``False``.
   Can be used by roles to affect formatting.
+
+Items can also define an ``anchor_to`` key referencing another item's name.
+This positions the item right before (if ``weight`` is negative) or right after
+(if ``weight`` is zero or positive) the referenced item, overriding zone-based
+placement. Multiple items anchored to the same target are ordered by their
+source position (``first_index``).
 
 Any other values in the mappings are preserved, so the ``parse_kv_*`` filters
 can be used to weigh and merge arbitrary of mappings, as long as they have a

@@ -606,7 +606,7 @@ sshd__default_configuration:
                if (sshd__register_host_certs is defined and
                    "stdout_lines" in sshd__register_host_certs)
                else "ignore" }}'
-    copy_id_from: 'HostKey'
+    anchor_to: 'HostKey'
 
   # Add support for authorized keys managed by the
   # "debops.authorized_keys" Ansible role.
@@ -623,7 +623,7 @@ sshd__default_configuration:
     state: '{{ "present"
                if (sshd__trusted_user_ca_keys | d() | length > 0)
                else "ignore" }}'
-    copy_id_from: 'AuthorizedKeysFile'
+    anchor_to: 'AuthorizedKeysFile'
 
   # Default "Match" conditional block which defines configuration for SFTPonly
   # accounts. The 'stfponly' UNIX system group is created by the
@@ -703,7 +703,7 @@ sshd__default_configuration:
       {{ 'Ciphers {}'.format(sshd__tpl_ciphers | join(",")) }}
       {% endif %}
     state: 'present'
-    copy_id_from: 'RekeyLimit'
+    anchor_to: 'RekeyLimit'
 
   - name: 'KexAlgorithms'
     comment: 'List of allowed key exchange algorithms'
@@ -719,7 +719,7 @@ sshd__default_configuration:
       {{ 'KexAlgorithms {}'.format(sshd__tpl_kex_algorithms | join(",")) }}
       {% endif %}
     state: 'present'
-    copy_id_from: 'RekeyLimit'
+    anchor_to: 'RekeyLimit'
 
   - name: 'MACs'
     comment: 'List of allowed Message Authentication Code algorithms'
@@ -733,25 +733,25 @@ sshd__default_configuration:
       {{ 'MACs {}'.format(sshd__tpl_macs | join(",")) }}
       {% endif %}
     state: 'present'
-    copy_id_from: 'RekeyLimit'
+    anchor_to: 'RekeyLimit'
 
     # Privilege Separation is default for sshd v7.5+
   - name: 'UsePrivilegeSeparation'
     comment: 'Privilege Separation is turned on for security'
     value: 'sandbox'
     state: '{{ "present" if (sshd__version is version("7.5", "<")) else "ignore" }}'
-    copy_id_from: 'RekeyLimit'
+    anchor_to: 'RekeyLimit'
 
   - name: 'KeyRegenerationInterval'
     comment: 'Lifetime and size of ephemeral version 1 server key'
     value: 3600
     state: '{{ "present" if (sshd__version is version("7.4", "<")) else "ignore" }}'
-    copy_id_from: 'RekeyLimit'
+    anchor_to: 'RekeyLimit'
 
   - name: 'ServerKeyBits'
     value: 1024
     state: '{{ "present" if (sshd__version is version("7.4", "<")) else "ignore" }}'
-    copy_id_from: 'RekeyLimit'
+    anchor_to: 'RekeyLimit'
 
   - name: 'AuthorizedKeysCommand'
     value: '/etc/ssh/authorized_keys_lookup'

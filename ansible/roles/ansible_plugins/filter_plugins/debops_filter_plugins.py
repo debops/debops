@@ -23,7 +23,6 @@
 
 # Make coding more python3-ish
 from __future__ import (absolute_import, division, print_function)
-from operator import itemgetter
 
 __metaclass__ = type
 
@@ -59,25 +58,146 @@ def _check_if_key_in_nested_dict(key, dictionary):
     return False
 
 
-def _handle_copy_id_from(parsed_config, element, current_param):
-    if 'copy_id_from' in element:
-        if element['copy_id_from'] in parsed_config:
-            id_src = element['copy_id_from']
-            current_param['id'] = (
-                int(parsed_config[id_src]['id']) +
-                int(parsed_config[id_src].get('weight', 0)))
-
-
 def _handle_weight(element, current_param):
     if 'weight' in element:
-        current_param['weight'] = (
-            int(element.get('weight',
-                current_param.get('weight', 0))) +
-            int(current_param.get('weight', 0)))
+        current_param['weight'] = int(element['weight'])
 
 
-def _get_real_weight(current_param):
-    return int(current_param['id']) + int(current_param['weight'])
+def _detect_anchor_cycles(graph):
+    """Raise ValueError if the anchor_to graph contains a cycle.
+
+    ``graph`` maps an item name to the name it is anchored to. A cycle means
+    the items can never be ordered relative to each other, so it is treated as
+    a fatal configuration error.
+    """
+    WHITE, GRAY, BLACK = 0, 1, 2
+    color = {node: WHITE for node in graph}
+
+    def dfs(node, path):
+        color[node] = GRAY
+        neighbor = graph.get(node)
+        if neighbor and neighbor in color:
+            if color[neighbor] == GRAY:
+                path.append(neighbor)
+                raise ValueError(
+                    "Circular anchor_to dependency detected: "
+                    + " -> ".join(str(n) for n in path))
+            elif color[neighbor] == WHITE:
+                path.append(neighbor)
+                dfs(neighbor, path)
+                path.pop()
+        color[node] = BLACK
+
+    for node in graph:
+        if color[node] == WHITE:
+            dfs(node, [node])
+
+
+def _sort_parsed_items(items, name_key='name'):
+    """Sort items by weight zone, first_index, and anchor_to relationships.
+
+    Sorting rules:
+      - Items without anchor_to: sort by zone (neg→top, zero→middle, pos→bottom)
+        then by first_index (original position of first occurrence).
+      - Items with anchor_to: positioned relative to anchor item; weight sign
+        determines direction (neg→before, zero/pos→after). Cross-zone anchor_to
+        overrides the item's zone.
+      - Multiple items anchored to the same target: sorted by first_index
+        and inserted as a contiguous block.
+      - Anchor chains (A→B→C): resolved via topological sort.
+      - Circular anchor_to chains: raise ValueError.
+    """
+
+    def _zone(item):
+        w = item.get('weight', 0)
+        try:
+            w = int(w)
+        except (ValueError, TypeError):
+            w = 0
+        return 0 if w < 0 else (1 if w == 0 else 2)
+
+    name_map = {item[name_key]: item for item in items}
+
+    anchored = []
+    unanchored = []
+    for item in items:
+        at = item.get('anchor_to')
+        if at and at in name_map:
+            anchored.append(item)
+        else:
+            unanchored.append(item)
+
+    unanchored.sort(key=lambda x: (_zone(x), x.get('first_index', 0)))
+
+    graph = {item[name_key]: item['anchor_to'] for item in anchored}
+    _detect_anchor_cycles(graph)
+
+    target_groups = {}
+    for item in anchored:
+        target = item['anchor_to']
+        if target not in target_groups:
+            target_groups[target] = []
+        target_groups[target].append(item)
+
+    for group in target_groups.values():
+        group.sort(key=lambda x: x.get('first_index', 0))
+
+    target_dep = {}
+    for target, group in target_groups.items():
+        for item in group:
+            if item[name_key] in target_groups:
+                if target not in target_dep:
+                    target_dep[target] = []
+                target_dep[target].append(item[name_key])
+
+    all_targets = list(target_groups.keys())
+    in_degree = {t: 0 for t in all_targets}
+    for deps in target_dep.values():
+        for dep in deps:
+            in_degree[dep] = in_degree.get(dep, 0) + 1
+
+    queue = [t for t in all_targets if in_degree.get(t, 0) == 0]
+    target_order = []
+    while queue:
+        t = queue.pop(0)
+        target_order.append(t)
+        for dep in target_dep.get(t, []):
+            in_degree[dep] -= 1
+            if in_degree[dep] == 0:
+                queue.append(dep)
+
+    result = list(unanchored)
+
+    for target in target_order:
+        if target not in target_groups:
+            continue
+        group = target_groups[target]
+
+        target_pos = None
+        for i, item in enumerate(result):
+            if item[name_key] == target:
+                target_pos = i
+                break
+
+        if target_pos is None:
+            result.extend(group)
+        else:
+            before = [item for item in group if item.get('weight', 0) < 0]
+            after = [item for item in group if item.get('weight', 0) >= 0]
+
+            for item in reversed(before):
+                result.insert(target_pos, item)
+
+            target_pos = None
+            for i, item in enumerate(result):
+                if item[name_key] == target:
+                    target_pos = i
+                    break
+
+            for i, item in enumerate(after):
+                result.insert(target_pos + 1 + i, item)
+
+    return result
 
 
 def _parse_kv_value(current_data, new_data, data_index):
@@ -87,7 +207,6 @@ def _parse_kv_value(current_data, new_data, data_index):
 
     if 'value' in new_data:
         old_value = current_data.get('value')
-        old_state = current_data.get('state', 'present')
         new_value = new_data['value']
         new_value_cast = new_data.get('value_cast', None)
 
@@ -109,11 +228,6 @@ def _parse_kv_value(current_data, new_data, data_index):
                 else:
                     current_data['value'] = new_value
 
-            # TODO(drybjed): This never evaluates to true.
-            #  if (old_value is not None and old_state in ['comment'] and
-            #          current_data['state'] != 'comment'):
-            #      current_data['state'] = 'present'
-
         elif isinstance(new_value, list):
             if isinstance(old_value, dict):
                 dict_value = current_data.get('value', {}).copy()
@@ -126,12 +240,10 @@ def _parse_kv_value(current_data, new_data, data_index):
                     if not dict_element.get('name'):
                         dict_element.update({
                             'name': element,
-                            'id': ((data_index * 10) + element_index),
-                            'weight': dict_element.get('weight', 0),
+                            'first_index': element_index,
+                            'weight': int(dict_element.get('weight', 0)),
                             'state': 'present'})
 
-                        dict_element['real_weight'] = _get_real_weight(
-                                dict_element)
                         dict_value[element] = dict_element
                         current_data['value'] = dict_value
 
@@ -145,29 +257,26 @@ def _parse_kv_value(current_data, new_data, data_index):
                                                  (basestring, int))
                                    else element_name):
                         dict_element = dict_value.get(cursor, {}).copy()
+                        if 'first_index' not in dict_element:
+                            dict_element['first_index'] = element_index
                         dict_element.update({
                             'name': cursor,
-                            'id': ((data_index * 10) + element_index),
-                            'weight': int(dict_element.get('weight', 0)),
+                            'weight': int(element.get('weight',
+                                                      dict_element.get(
+                                                          'weight', 0))),
                             'state': element.get('state', 'present')
                         })
 
-                        _handle_copy_id_from(dict_value, element, dict_element)
+                        if 'anchor_to' in element:
+                            dict_element['anchor_to'] = element['anchor_to']
 
                         if 'weight' in element:
-                            dict_element['weight'] = (
-                                int(element.get('weight',
-                                    dict_element.get('weight', 0))) +
-                                int(dict_element.get('weight', 0)))
+                            dict_element['weight'] = int(element['weight'])
 
-                        dict_element['real_weight'] = _get_real_weight(
-                                dict_element)
-
-                        # Include any unknown keys.
                         for key in element.keys():
                             if key not in ['name', 'state', 'id', 'weight',
-                                           'real_weight', 'param',
-                                           'copy_id_from']:
+                                           'param',
+                                           'first_index']:
                                 dict_element[key] = element.get(key)
 
                         dict_value.update({cursor: dict_element})
@@ -220,6 +329,9 @@ def parse_kv_config(*args, **kwargs):
                                      if param_name in parsed_config
                                      else {})
 
+                    if 'first_index' not in current_param:
+                        current_param['first_index'] = element_index
+
                     if element.get('state', 'present') == 'append':
                         current_param['state'] = current_param.get(
                                 'state', 'present')
@@ -236,9 +348,9 @@ def parse_kv_config(*args, **kwargs):
 
                     current_param.update({
                         name: param_name,  # in case of a new entry
-                        'id': int(current_param.get('id',
-                                                    (element_index * 10))),
-                        'weight': int(current_param.get('weight', 0)),
+                        'weight': int(element.get('weight',
+                                                  current_param.get(
+                                                      'weight', 0))),
                         'separator': element.get('separator',
                                                  current_param.get('separator',
                                                                    False)),
@@ -247,14 +359,14 @@ def parse_kv_config(*args, **kwargs):
                                                                  'unknown'))
                     })
 
-                    _handle_copy_id_from(parsed_config, element, current_param)
                     _handle_weight(element, current_param)
 
-                    current_param['real_weight'] = (
-                            _get_real_weight(current_param))
+                    if 'anchor_to' in element:
+                        current_param['anchor_to'] = element['anchor_to']
 
                     _parse_kv_value(current_param, element,
-                                    current_param.get('id'))
+                                    current_param.get('first_index',
+                                                      element_index))
 
                     if 'option' in element:
                         current_param['option'] = element.get('option')
@@ -280,10 +392,11 @@ def parse_kv_config(*args, **kwargs):
                     for unknown_key in element.keys():
                         if (unknown_key not in merge_keys
                             and unknown_key not in [name, 'state', 'id',
-                                                    'weight', 'real_weight',
+                                                    'weight',
                                                     'separator', 'value',
                                                     'comment', 'option',
-                                                    'section']):
+                                                    'section', 'first_index',
+                                                    'anchor_to']):
                             current_param[unknown_key] = (
                                     element.get(unknown_key))
 
@@ -292,42 +405,43 @@ def parse_kv_config(*args, **kwargs):
             # These parameters are special and should not be interpreted
             # directly as configuration options
             elif not all(x in [name, 'option', 'state', 'comment',
-                               'section', 'weight', 'value', 'copy_id_from']
+                               'section', 'weight', 'value', 'anchor_to']
                          for x in element):
                 for key, value in element.items():
                     current_param = (parsed_config[key].copy()
                                      if key in parsed_config else {})
+                    if 'first_index' not in current_param:
+                        current_param['first_index'] = element_index
                     current_param.update({
                         name: key,
                         'state': 'present',
-                        'id': int(current_param.get('id',
-                                                    (element_index * 10))),
                         'weight': int(current_param.get('weight', 0)),
                         'section': current_param.get('section', 'unknown')
                     })
 
-                    current_param['real_weight'] = _get_real_weight(
-                            current_param)
-
                     _parse_kv_value(current_param,
                                     {'value': value},
-                                    current_param.get('id'))
+                                    current_param.get('first_index',
+                                                      element_index))
 
                     parsed_config.update({key: current_param})
 
-    # Expand the dictionary of configuration options into a list,
-    # and return sorted by weight.
-    output = []
-    for key, params in parsed_config.items():
-        if isinstance(params.get('value'), dict):
-            params['value'] = sorted(
-                params.get('value').values(),
-                key=itemgetter('real_weight')
-            )
+    items = list(parsed_config.values())
+    sorted_items = _sort_parsed_items(items, name_key=name)
 
-        output.append(params)
+    for item in sorted_items:
+        if isinstance(item.get('value'), dict):
+            value_items = list(item['value'].values())
+            item['value'] = _sort_parsed_items(value_items)
 
-    return sorted(output, key=itemgetter('real_weight'))
+    for idx, item in enumerate(sorted_items):
+        item['id'] = idx
+        if isinstance(item.get('value'), list):
+            for vidx, vitem in enumerate(item['value']):
+                if isinstance(vitem, dict):
+                    vitem['id'] = vidx
+
+    return sorted_items
 
 
 def parse_kv_items(*args, **kwargs):
@@ -401,6 +515,9 @@ def parse_kv_items(*args, **kwargs):
                                  if param_name in parsed_config
                                  else {})
 
+                if 'first_index' not in current_param:
+                    current_param['first_index'] = element_index
+
                 if element_state == 'append':
                     current_param['state'] = current_param.get(
                             'state', 'present')
@@ -416,18 +533,19 @@ def parse_kv_items(*args, **kwargs):
                     current_param['state'] = 'present'
 
                 current_param.update({
-                    name: param_name,  # in case of a new entry
-                    'id': int(current_param.get('id', (element_index * 10))),
-                    'weight': int(current_param.get('weight', 0)),
+                    name: param_name,
+                    'weight': int(element.get('weight',
+                                              current_param.get(
+                                                  'weight', 0))),
                     'separator': element.get('separator',
                                              current_param.get('separator',
                                                                False))
                 })
 
-                _handle_copy_id_from(parsed_config, element, current_param)
                 _handle_weight(element, current_param)
 
-                current_param['real_weight'] = _get_real_weight(current_param)
+                if 'anchor_to' in element:
+                    current_param['anchor_to'] = element['anchor_to']
 
                 if 'comment' in element:
                     current_param['comment'] = element.get('comment')
@@ -444,8 +562,9 @@ def parse_kv_items(*args, **kwargs):
                             merge_keys=merge_keys)
 
                 known_keys = [name, 'state', 'id', 'weight',
-                              'real_weight', 'separator',
-                              'comment', 'options']
+                              'separator',
+                              'comment', 'options', 'first_index',
+                              'anchor_to']
 
                 # Include any unknown keys.
                 for unknown_key in element.keys():
@@ -466,20 +585,22 @@ def parse_kv_items(*args, **kwargs):
 
                 parsed_config[param_name] = current_param
 
-    # Expand the dictionary of configuration options into a list,
-    # and return sorted by weight.
-    output = []
-    for key, params in parsed_config.items():
-        # FIXME: Make recursive.
-        if isinstance(params.get('value'), dict):
-            params['value'] = sorted(
-                params.get('value').values(),
-                key=itemgetter('real_weight')
-            )
+    items = list(parsed_config.values())
+    sorted_items = _sort_parsed_items(items, name_key=name)
 
-        output.append(params)
+    for item in sorted_items:
+        if isinstance(item.get('value'), dict):
+            value_items = list(item['value'].values())
+            item['value'] = _sort_parsed_items(value_items)
 
-    return sorted(output, key=itemgetter('real_weight'))
+    for idx, item in enumerate(sorted_items):
+        item['id'] = idx
+        if isinstance(item.get('value'), list):
+            for vidx, vitem in enumerate(item['value']):
+                if isinstance(vitem, dict):
+                    vitem['id'] = vidx
+
+    return sorted_items
 
 
 class FilterModule(object):
@@ -512,9 +633,6 @@ if __name__ == '__main__':
 
             _parse_kv_value(current_data, new_data, 0)
 
-            #  print(yaml.dump(current_data, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
-
             self.assertEqual(current_data, new_data)
 
         def test_parse_kv_value_mixed(self):
@@ -531,23 +649,17 @@ if __name__ == '__main__':
               - 'beta'
             '''))
 
-            # FIXME: Not getting it. Why does the _parse_kv_value behave like
-            # this?
             expected_data = yaml.safe_load(textwrap.dedent('''
             name: local
             value:
               beta:
-                id: 0
+                first_index: 0
                 name: beta
-                real_weight: 0
                 state: present
                 weight: 0
             '''))
 
             _parse_kv_value(current_data, new_data, 0)
-
-            #  print(yaml.dump(current_data, default_flow_style=False))
-            #  print(yaml.dump(new_data, default_flow_style=False))
 
             self.assertEqual(current_data, expected_data)
 
@@ -564,25 +676,25 @@ if __name__ == '__main__':
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
-            - id: 0
+            - first_index: 0
+              id: 0
               name: local
-              real_weight: 0
               section: unknown
               separator: false
               state: present
               value: test3
               weight: 0
-            - id: 10
+            - first_index: 1
+              id: 1
               name: local2
-              real_weight: 10
               section: unknown
               separator: false
               state: present
               value: test2
               weight: 0
-            - id: 30
+            - first_index: 3
+              id: 2
               name: local_null
-              real_weight: 30
               section: unknown
               separator: false
               state: present
@@ -591,9 +703,6 @@ if __name__ == '__main__':
             '''))
 
             items = parse_kv_config(input_items)
-
-            #  print(yaml.dump(items, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
 
             self.assertEqual(items, expected_items)
 
@@ -611,25 +720,25 @@ if __name__ == '__main__':
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
-            - id: 0
+            - first_index: 0
+              id: 0
               name: local
-              real_weight: 0
               section: unknown
               separator: false
               state: present
               value: test3
               weight: 0
-            - id: 10
+            - first_index: 1
+              id: 1
               name: local2
-              real_weight: 10
               section: unknown
               separator: false
               state: present
               value: test2
               weight: 0
-            - id: 30
+            - first_index: 3
+              id: 2
               name: local_null
-              real_weight: 30
               section: unknown
               separator: false
               state: absent
@@ -638,9 +747,6 @@ if __name__ == '__main__':
             '''))
 
             items = parse_kv_config(input_items)
-
-            #  print(yaml.dump(items, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
 
             self.assertEqual(items, expected_items)
 
@@ -658,25 +764,25 @@ if __name__ == '__main__':
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
-            - id: 0
+            - first_index: 0
+              id: 0
               name: local
-              real_weight: 0
               section: unknown
               separator: false
               state: present
               value: test3
               weight: 0
-            - id: 10
+            - first_index: 1
+              id: 1
               name: local2
-              real_weight: 10
               section: unknown
               separator: false
               state: present
               value: test2
               weight: 0
-            - id: 30
+            - first_index: 3
+              id: 2
               name: local_null
-              real_weight: 30
               section: unknown
               separator: false
               state: init
@@ -685,9 +791,6 @@ if __name__ == '__main__':
             '''))
 
             items = parse_kv_config(input_items)
-
-            #  print(yaml.dump(items, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
 
             self.assertEqual(items, expected_items)
 
@@ -705,17 +808,17 @@ if __name__ == '__main__':
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
-            - id: 0
+            - first_index: 0
+              id: 0
               name: local
-              real_weight: 0
               section: unknown
               separator: false
               state: present
               value: test3
               weight: 0
-            - id: 10
+            - first_index: 1
+              id: 1
               name: local2
-              real_weight: 10
               section: unknown
               separator: false
               state: present
@@ -724,9 +827,6 @@ if __name__ == '__main__':
             '''))
 
             items = parse_kv_config(input_items)
-
-            #  print(yaml.dump(items, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
 
             self.assertEqual(items, expected_items)
 
@@ -742,17 +842,17 @@ if __name__ == '__main__':
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
-            - id: 0
+            - first_index: 0
+              id: 0
               name: local
-              real_weight: 0
               section: unknown
               separator: false
               state: present
               value: test
               weight: 0
-            - id: 10
+            - first_index: 1
+              id: 1
               name: local2
-              real_weight: 10
               section: unknown
               separator: false
               state: present
@@ -762,9 +862,6 @@ if __name__ == '__main__':
 
             items = parse_kv_config(input_items)
 
-            #  print(yaml.dump(items, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
-
             self.assertEqual(items, expected_items)
 
         def test_parse_kv_config_simple_string(self):
@@ -773,9 +870,9 @@ if __name__ == '__main__':
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
-            - id: 0
+            - first_index: 0
+              id: 0
               name: simple_string
-              real_weight: 0
               section: unknown
               separator: false
               state: present
@@ -783,9 +880,6 @@ if __name__ == '__main__':
             '''))
 
             items = parse_kv_config(input_items)
-
-            #  print(yaml.dump(items, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
 
             self.assertEqual(items, expected_items)
 
@@ -798,25 +892,22 @@ if __name__ == '__main__':
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
-            - id: 0
+            - first_index: 0
+              id: 0
               name: local
-              real_weight: 0
               section: unknown
               separator: false
               state: present
               value:
-              - id: 0
+              - first_index: 0
+                id: 0
                 name: test1
-                real_weight: 0
                 state: present
                 weight: 0
               weight: 0
             '''))
 
             items = parse_kv_config(input_items)
-
-            #  print(yaml.dump(items, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
 
             self.assertEqual(items, expected_items)
 
@@ -831,17 +922,17 @@ if __name__ == '__main__':
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
-            - id: 0
+            - first_index: 0
+              id: 0
               renamed: local
-              real_weight: 0
               section: unknown
               separator: false
               state: present
               value: test3
               weight: 0
-            - id: 10
+            - first_index: 1
+              id: 1
               renamed: local2
-              real_weight: 10
               section: unknown
               separator: false
               state: present
@@ -851,9 +942,6 @@ if __name__ == '__main__':
 
             items = parse_kv_config(input_items, name='renamed')
 
-            #  print(yaml.dump(items, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
-
             self.assertEqual(items, expected_items)
 
         def test_parse_kv_items_simple_string(self):
@@ -862,18 +950,15 @@ if __name__ == '__main__':
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
-            - id: 0
+            - first_index: 0
+              id: 0
               name: simple_string
-              real_weight: 0
               separator: false
               state: present
               weight: 0
             '''))
 
             items = parse_kv_items(input_items)
-
-            #  print(yaml.dump(items, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
 
             self.assertEqual(items, expected_items)
 
@@ -891,12 +976,13 @@ if __name__ == '__main__':
 
             expected_items = yaml.safe_load(textwrap.dedent('''
             - comment: name should be used as comment
+              first_index: 0
               id: 0
               name: name should be used as comment
               options:
-              - id: 0
+              - first_index: 0
+                id: 0
                 name: second level is ignored
-                real_weight: 0
                 section: unknown
                 separator: false
                 service: |-
@@ -905,7 +991,6 @@ if __name__ == '__main__':
                 state: present
                 value: test
                 weight: 0
-              real_weight: 0
               separator: false
               state: present
               weight: 0
@@ -913,9 +998,6 @@ if __name__ == '__main__':
 
             items = parse_kv_items(
                     input_items, empty={'comment': ['service', 'name']})
-
-            #  print(yaml.dump(items, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
 
             self.assertEqual(items, expected_items)
 
@@ -927,11 +1009,11 @@ if __name__ == '__main__':
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
-            - id: 0
+            - first_index: 0
+              id: 0
               key1: existing
               key2: value2
               name: something
-              real_weight: 0
               separator: false
               state: present
               value: something
@@ -941,8 +1023,29 @@ if __name__ == '__main__':
             items = parse_kv_items(
                     input_items, defaults={'key1': 'value1', 'key2': 'value2'})
 
-            #  print(yaml.dump(items, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_items_value_string_list(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'protocols'
+              value:
+                - '!SSLv2'
+                - '!SSLv3'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - first_index: 0
+              id: 0
+              name: protocols
+              separator: false
+              state: present
+              value:
+                - '!SSLv2'
+                - '!SSLv3'
+              weight: 0
+            '''))
+
+            items = parse_kv_items(input_items)
 
             self.assertEqual(items, expected_items)
 
@@ -973,44 +1076,44 @@ if __name__ == '__main__':
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
-            - id: 0
+            - first_index: 0
+              id: 0
               key1: existing
               name: something
               options:
-              - id: 0
+              - first_index: 0
+                id: 0
                 name: nested1
-                real_weight: 0
                 section: unknown
                 separator: false
                 state: present
                 value: value1
                 weight: 0
-              - id: 10
+              - first_index: 1
+                id: 1
                 name: nested2
-                real_weight: 10
                 section: unknown
                 separator: false
                 state: present
                 value: value2
                 weight: 0
               test:
-              - id: 0
+              - first_index: 0
+                id: 0
                 name: test_nested1
-                real_weight: 0
                 section: unknown
                 separator: false
                 state: present
                 value: test_value1
                 weight: 0
-              - id: 10
+              - first_index: 1
+                id: 1
                 name: test_nested2
-                real_weight: 10
                 section: unknown
                 separator: false
                 state: present
                 value: test_value2
                 weight: 0
-              real_weight: 0
               separator: false
               state: present
               weight: 0
@@ -1018,45 +1121,293 @@ if __name__ == '__main__':
 
             items = parse_kv_items(input_items, merge_keys=['test'])
 
-            #  print(yaml.dump(items, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
-
             self.assertEqual(items, expected_items)
 
-        def test_parse_kv_items_copy_id_from(self):
+        def test_parse_kv_items_anchor_to(self):
             input_items = yaml.safe_load(textwrap.dedent('''
             - name: 'second'
-              weight: 10
+              weight: 1
               value: 'value1'
 
             - name: 'first'
-              weight: -10
-              copy_id_from: 'second'
+              anchor_to: 'second'
+              weight: -1
               value: 'value2'
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
-            - copy_id_from: second
-              id: 10
+            - anchor_to: second
+              first_index: 1
+              id: 0
               name: first
-              real_weight: 0
               separator: false
               state: present
               value: value2
-              weight: -10
-            - id: 0
+              weight: -1
+            - first_index: 0
+              id: 1
               name: second
-              real_weight: 10
               separator: false
               state: present
               value: value1
+              weight: 1
+            '''))
+
+            items = parse_kv_items(input_items)
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_items_anchor_to_chain(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'C'
+              value: 'c_value'
+
+            - name: 'B'
+              anchor_to: 'C'
+              weight: 1
+              value: 'b_value'
+
+            - name: 'A'
+              anchor_to: 'B'
+              weight: 1
+              value: 'a_value'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - first_index: 0
+              id: 0
+              name: C
+              separator: false
+              state: present
+              value: c_value
+              weight: 0
+            - anchor_to: C
+              first_index: 1
+              id: 1
+              name: B
+              separator: false
+              state: present
+              value: b_value
+              weight: 1
+            - anchor_to: B
+              first_index: 2
+              id: 2
+              name: A
+              separator: false
+              state: present
+              value: a_value
+              weight: 1
+            '''))
+
+            items = parse_kv_items(input_items)
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_items_anchor_to_same_target(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'target'
+              value: 'main'
+
+            - name: 'second'
+              anchor_to: 'target'
+              weight: 1
+              value: 'second_value'
+
+            - name: 'first'
+              anchor_to: 'target'
+              weight: 1
+              value: 'first_value'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - first_index: 0
+              id: 0
+              name: target
+              separator: false
+              state: present
+              value: main
+              weight: 0
+            - anchor_to: target
+              first_index: 1
+              id: 1
+              name: second
+              separator: false
+              state: present
+              value: second_value
+              weight: 1
+            - anchor_to: target
+              first_index: 2
+              id: 2
+              name: first
+              separator: false
+              state: present
+              value: first_value
+              weight: 1
+            '''))
+
+            items = parse_kv_items(input_items)
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_items_anchor_to_cross_zone(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'middle_item'
+              weight: 0
+              value: 'middle'
+
+            - name: 'anchored_after'
+              anchor_to: 'middle_item'
+              weight: 5
+              value: 'after_middle'
+
+            - name: 'anchored_before'
+              anchor_to: 'middle_item'
+              weight: -3
+              value: 'before_middle'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - anchor_to: middle_item
+              first_index: 2
+              id: 0
+              name: anchored_before
+              separator: false
+              state: present
+              value: before_middle
+              weight: -3
+            - first_index: 0
+              id: 1
+              name: middle_item
+              separator: false
+              state: present
+              value: middle
+              weight: 0
+            - anchor_to: middle_item
+              first_index: 1
+              id: 2
+              name: anchored_after
+              separator: false
+              state: present
+              value: after_middle
+              weight: 5
+            '''))
+
+            items = parse_kv_items(input_items)
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_items_anchor_to_cycle(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'A'
+              anchor_to: 'B'
+              value: 'a'
+
+            - name: 'B'
+              anchor_to: 'A'
+              value: 'b'
+            '''))
+
+            with self.assertRaises(ValueError):
+                parse_kv_items(input_items)
+
+        def test_parse_kv_items_weight_override(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'item'
+              weight: 5
+              value: 'first'
+
+            - name: 'item'
+              weight: 10
+              value: 'second'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - first_index: 0
+              id: 0
+              name: item
+              separator: false
+              state: present
+              value: second
               weight: 10
             '''))
 
             items = parse_kv_items(input_items)
 
-            #  print(yaml.dump(items, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_items_weight_zones(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'bottom1'
+              weight: 5
+              value: 'bottom1'
+
+            - name: 'top1'
+              weight: -5
+              value: 'top1'
+
+            - name: 'middle1'
+              weight: 0
+              value: 'middle1'
+
+            - name: 'bottom2'
+              weight: 3
+              value: 'bottom2'
+
+            - name: 'top2'
+              weight: -10
+              value: 'top2'
+
+            - name: 'middle2'
+              weight: 0
+              value: 'middle2'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - first_index: 1
+              id: 0
+              name: top1
+              separator: false
+              state: present
+              value: top1
+              weight: -5
+            - first_index: 4
+              id: 1
+              name: top2
+              separator: false
+              state: present
+              value: top2
+              weight: -10
+            - first_index: 2
+              id: 2
+              name: middle1
+              separator: false
+              state: present
+              value: middle1
+              weight: 0
+            - first_index: 5
+              id: 3
+              name: middle2
+              separator: false
+              state: present
+              value: middle2
+              weight: 0
+            - first_index: 0
+              id: 4
+              name: bottom1
+              separator: false
+              state: present
+              value: bottom1
+              weight: 5
+            - first_index: 3
+              id: 5
+              name: bottom2
+              separator: false
+              state: present
+              value: bottom2
+              weight: 3
+            '''))
+
+            items = parse_kv_items(input_items)
 
             self.assertEqual(items, expected_items)
 
@@ -1143,97 +1494,94 @@ if __name__ == '__main__':
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
-            - id: 0
+            - first_index: 0
+              id: 0
               name: should-stay-init
               options:
-              - id: 0
+              - first_index: 0
+                id: 0
                 name: local
-                real_weight: 0
                 section: unknown
                 separator: false
                 state: present
                 value: test
                 weight: 0
-              real_weight: 0
               separator: false
               state: init
               weight: 0
-            - id: 10
+            - first_index: 1
+              id: 1
               name: should-become-present
               options:
-              - id: 0
+              - first_index: 0
+                id: 0
                 name: local
-                real_weight: 0
                 section: unknown
                 separator: false
                 state: present
                 value: test2
                 weight: 0
-              real_weight: 10
               separator: false
               state: present
               weight: 0
-            - id: 30
+            - first_index: 3
+              id: 2
               name: should-become-present2
               options:
-              - id: 0
+              - first_index: 0
+                id: 0
                 name: local
-                real_weight: 0
                 section: unknown
                 separator: false
                 state: present
                 value: test2
                 weight: 0
-              real_weight: 30
               separator: false
               state: present
               weight: 0
-            - id: 50
+            - first_index: 5
+              id: 3
               name: should-become-present3
               options:
               - comment: This comment should survive.
+                first_index: 0
                 id: 0
                 name: local1
                 options:
-                - id: 0
+                - first_index: 0
+                  id: 0
                   name: local2
-                  real_weight: 0
                   section: unknown
                   separator: false
                   state: present
                   value: test2
                   weight: 0
-                real_weight: 0
                 section: unknown
                 separator: false
                 state: present
                 weight: 0
-              - id: 10
+              - first_index: 1
+                id: 1
                 name: external1
                 options:
-                - id: 0
+                - first_index: 0
+                  id: 0
                   name: external2
-                  real_weight: 0
                   section: unknown
                   separator: false
                   state: present
                   value: test
                   weight: 0
-                real_weight: 10
                 section: unknown
                 separator: false
                 state: present
                 weight: 0
-              real_weight: 50
               separator: false
               state: present
               weight: 0
             '''))
 
             items = parse_kv_items(input_items1, input_items2)
-
-            #  print(yaml.dump(items, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
 
             self.assertEqual(items, expected_items)
 
@@ -1320,97 +1668,94 @@ if __name__ == '__main__':
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
-            - id: 0
+            - first_index: 0
+              id: 0
               renamed: should-stay-init
               options:
-              - id: 0
+              - first_index: 0
+                id: 0
                 name: local
-                real_weight: 0
                 section: unknown
                 separator: false
                 state: present
                 value: test
                 weight: 0
-              real_weight: 0
               separator: false
               state: init
               weight: 0
-            - id: 10
+            - first_index: 1
+              id: 1
               renamed: should-become-present
               options:
-              - id: 0
+              - first_index: 0
+                id: 0
                 name: local
-                real_weight: 0
                 section: unknown
                 separator: false
                 state: present
                 value: test2
                 weight: 0
-              real_weight: 10
               separator: false
               state: present
               weight: 0
-            - id: 30
+            - first_index: 3
+              id: 2
               renamed: should-become-present2
               options:
-              - id: 0
+              - first_index: 0
+                id: 0
                 name: local
-                real_weight: 0
                 section: unknown
                 separator: false
                 state: present
                 value: test2
                 weight: 0
-              real_weight: 30
               separator: false
               state: present
               weight: 0
-            - id: 50
+            - first_index: 5
+              id: 3
               renamed: should-become-present3
               options:
               - comment: This comment should survive.
+                first_index: 0
                 id: 0
                 name: local1
                 options:
-                - id: 0
+                - first_index: 0
+                  id: 0
                   name: local2
-                  real_weight: 0
                   section: unknown
                   separator: false
                   state: present
                   value: test2
                   weight: 0
-                real_weight: 0
                 section: unknown
                 separator: false
                 state: present
                 weight: 0
-              - id: 10
+              - first_index: 1
+                id: 1
                 name: external1
                 options:
-                - id: 0
+                - first_index: 0
+                  id: 0
                   name: external2
-                  real_weight: 0
                   section: unknown
                   separator: false
                   state: present
                   value: test
                   weight: 0
-                real_weight: 10
                 section: unknown
                 separator: false
                 state: present
                 weight: 0
-              real_weight: 50
               separator: false
               state: present
               weight: 0
             '''))
 
             items = parse_kv_items(input_items1, input_items2, name='renamed')
-
-            #  print(yaml.dump(items, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
 
             self.assertEqual(items, expected_items)
 
@@ -1434,18 +1779,18 @@ if __name__ == '__main__':
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
-            - id: 0
+            - first_index: 0
+              id: 0
               name: test-item
               options:
-              - id: 0
+              - first_index: 0
+                id: 0
                 name: test-option
-                real_weight: 0
                 section: unknown
                 separator: false
                 state: present
                 raw: test-is-present
                 weight: 0
-              real_weight: 0
               separator: false
               state: present
               weight: 0
@@ -1453,8 +1798,51 @@ if __name__ == '__main__':
 
             items = parse_kv_items(input_items1, input_items2)
 
-            #  print(yaml.dump(items, default_flow_style=False))
-            #  print(yaml.dump(expected_items, default_flow_style=False))
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_items_anchor_to_before_in_zone(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'target'
+              value: 'main'
+
+            - name: 'before_item'
+              anchor_to: 'target'
+              weight: -1
+              value: 'before'
+
+            - name: 'after_item'
+              anchor_to: 'target'
+              weight: 1
+              value: 'after'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - anchor_to: target
+              first_index: 1
+              id: 0
+              name: before_item
+              separator: false
+              state: present
+              value: before
+              weight: -1
+            - first_index: 0
+              id: 1
+              name: target
+              separator: false
+              state: present
+              value: main
+              weight: 0
+            - anchor_to: target
+              first_index: 2
+              id: 2
+              name: after_item
+              separator: false
+              state: present
+              value: after
+              weight: 1
+            '''))
+
+            items = parse_kv_items(input_items)
 
             self.assertEqual(items, expected_items)
 

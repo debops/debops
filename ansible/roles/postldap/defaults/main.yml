@@ -260,13 +260,13 @@ postldap__postfix__dependent_maincf:
   - name: 'smtpd_sender_restrictions'
     value:
       - name: 'check_sasl_access ldap:${config_directory}/ldap_known_sender_relays.cf'
-        copy_id_from: 'permit_mynetworks'
+        anchor_to: 'permit_mynetworks'
         weight: 5
       - name: 'check_sender_access ldap:${config_directory}/ldap_unauth_sender_access.cf'
-        copy_id_from: 'permit_sasl_authenticated'
+        anchor_to: 'permit_sasl_authenticated'
         weight: 10
       - name: 'check_sender_access ldap:${config_directory}/ldap_unauth_domain_access.cf'
-        copy_id_from: 'permit_sasl_authenticated'
+        anchor_to: 'permit_sasl_authenticated'
         weight: 15
     state: '{{ "present"
             if (postldap__ldap_enabled | bool)
@@ -275,7 +275,7 @@ postldap__postfix__dependent_maincf:
   - name: 'smtpd_relay_restrictions'
     value:
       - name: 'check_sasl_access ldap:${config_directory}/ldap_known_sender_relays.cf'
-        copy_id_from: 'permit_mynetworks'
+        anchor_to: 'permit_mynetworks'
         weight: 5
     state: '{{ "present"
             if (postldap__ldap_enabled | bool)

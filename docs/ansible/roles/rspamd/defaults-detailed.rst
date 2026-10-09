@@ -108,10 +108,12 @@ the following parameters:
   be removed.
 
 ``weight``
-  Optional. A positive or negative number which can be used to affect the order
-  of files to be generated. Positive numbers add more "weight" to the section
-  making it appear "lower" in the list; negative numbers subtract the "weight"
-  and therefore move the file up in the list.
+  Optional. A positive or negative number which selects the placement zone of
+  a configuration section in the generated configuration: negative values move
+  it to the top, ``0`` (the default) keeps it in the middle in source order,
+  and positive values move it to the bottom. The magnitude of the value does
+  not matter; use ``anchor_to`` for ordering relative to a specific section.
+  See :ref:`universal_configuration_advanced_weight` for details.
 
 ``options``
   Required. A list of :command:`rspamd` configuration options for a given

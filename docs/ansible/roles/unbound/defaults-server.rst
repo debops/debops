@@ -116,18 +116,19 @@ using specific parameters:
   same name already exists. The current state will not be changed.
 
 ``weight``
-  Optional. A positive or negative number which affects the position of a given
-  option in the configuration file. The higher the number, the more a given
-  option "weighs" and the lower it will be placed in the finished configuration
-  file. Negative numbers make the option "lighter" and it will be placed
-  higher.
+  Optional. A positive or negative number which selects the placement zone of
+  a given option in the configuration file: negative values move it to the
+  top, ``0`` (the default) keeps it in the middle in source order, and positive
+  values move it to the bottom. The magnitude of the value does not matter; use
+  ``anchor_to`` for ordering relative to a specific option. See
+  :ref:`universal_configuration_advanced_weight` for details.
 
-``copy_id_from``
-  Optional. This is an internal role parameter which can be used to change the
-  relative position of a given option in the configuration file. If you specify
-  a name of an option, it's internal "id" number (used for sorting) will be
-  copied to the current option. This can be used to move options around to
-  different configuration file sections.
+``anchor_to``
+  Optional. Name of another configuration option (its ``name`` parameter) to
+  anchor this option to. The option is placed right after the anchor when its
+  ``weight`` is zero or positive, and right before it when ``weight`` is
+  negative. Anchoring takes precedence over zone-based placement. See
+  :ref:`universal_configuration_advanced_weight` for details.
 
 
 Examples
@@ -230,10 +231,12 @@ defined as YAML dictionaries with specific parameters:
   values conditionally.
 
 ``weight``
-  Optional. A positive or negative number which affects the position of a given
-  value in the list. The higher the number, the more a given value "weighs" and
-  the lower it will be placed in the finished list. Negative numbers make the
-  value "lighter" and it will be placed higher.
+  Optional. A positive or negative number which selects the placement zone of
+  a given value in the list: negative values move it to the top, ``0`` (the
+  default) keeps it in the middle in source order, and positive values move it
+  to the bottom. The magnitude of the value does not matter; use ``anchor_to``
+  for ordering relative to a specific value. See
+  :ref:`universal_configuration_advanced_weight` for details.
 
 ``args``
   Optional. Some Unbound values can have additional arguments. They should be

@@ -534,7 +534,9 @@ interpret a given entry using specific parameters:
   specified, an ``unknown`` section will be used by default.
 
 ``weight``
-  Optional. A positive or negative number which modifies the "weight" of
-  a given configuration option. The weight affects the order of configuration
-  options in a given section; use negative number to move a given option higher
-  in the file, and positive number to move it lower in the file.
+  Optional. A positive or negative number which selects the placement zone of
+  a given configuration option within its section: negative values move it to
+  the top, ``0`` (the default) keeps it in the middle in source order, and
+  positive values move it to the bottom. The magnitude of the value does not
+  matter; use ``anchor_to`` for ordering relative to a specific option. See
+  :ref:`universal_configuration_advanced_weight` for details.

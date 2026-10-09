@@ -328,15 +328,15 @@ postconf__postfix__dependent_maincf:
       - name: 'permit_mynetworks'
 
       - name: 'reject_authenticated_sender_login_mismatch'
-        copy_id_from: 'permit_mynetworks'
+        anchor_to: 'permit_mynetworks'
         weight: 10
 
       - name: 'permit_sasl_authenticated'
-        copy_id_from: 'reject_authenticated_sender_login_mismatch'
+        anchor_to: 'reject_authenticated_sender_login_mismatch'
         weight: 10
 
       - name: 'check_sender_access hash:${config_directory}/unauth_sender_access'
-        copy_id_from: 'permit_sasl_authenticated'
+        anchor_to: 'permit_sasl_authenticated'
         weight: 10
 
     state: '{{ "present"
@@ -348,7 +348,7 @@ postconf__postfix__dependent_maincf:
     value:
 
       - name: 'reject_authenticated_sender_login_mismatch'
-        copy_id_from: 'permit_mynetworks'
+        anchor_to: 'permit_mynetworks'
         weight: 10
 
     state: '{{ "present"
@@ -430,7 +430,7 @@ postconf__postfix__dependent_mastercf:
     state: '{{ "present"
                if ("authcleanup" in postconf__combined_capabilities)
                else "ignore" }}'
-    copy_id_from: 'cleanup'
+    anchor_to: 'cleanup'
     weight: 10
                                                                    # ]]]
                                                                    # ]]]
