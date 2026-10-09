@@ -92,6 +92,7 @@ infrastructure environments.
    user-guide/custom-environment
    user-guide/playbooks
    user-guide/universal-configuration
+   user-guide/inventory-spec
    user-guide/dns-configuration
    ansible/role-index
    ansible/roles/index

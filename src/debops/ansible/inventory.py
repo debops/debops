@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from debops.exceptions import NoDefaultViewException
+from debops.inventoryspec import apply_spec
+from debops.utils import host_is_controller
 import pkgutil
 import jinja2
-import platform
-import distro
 import socket
 import subprocess
 import sys
@@ -106,6 +106,40 @@ class AnsibleInventory(object):
         random_string = (''.join(random.choice(all_chars)
                          for i in range(64)))
         return random_string
+
+    def existing_paths(self):
+        """Return the set of paths which currently exist in the inventory.
+
+        Used to tell apart the files the user has written or edited from the
+        ones that DebOps generates, so that a specification can replace the
+        latter without touching the former. Directories are included as well as
+        files, so that a specification which removes a directory can tell
+        whether it was already there before the command started.
+        """
+        found = set()
+        if not os.path.isdir(self.path):
+            return found
+        for root, dirs, files in os.walk(self.path):
+            for directory in dirs:
+                found.add(os.path.realpath(os.path.join(root, directory)))
+            for filename in files:
+                found.add(os.path.realpath(os.path.join(root, filename)))
+        return found
+
+    def apply_spec(self, files, pre_existing=frozenset(), overwrite=False,
+                   dry_run=False, keep=()):
+        """Apply the paths described by a specification in the inventory.
+
+        var:`keep` names the paths which the specification must not remove or
+        clear, together with the directories above them.
+
+        Returns the same result mapping as
+        :func:`debops.inventoryspec.apply_spec`.
+        """
+        logger.info('Applying inventory specification in {} directory'.format(
+            self.path))
+        return apply_spec(files, self.path, pre_existing=pre_existing,
+                          overwrite=overwrite, dry_run=dry_run, keep=keep)
 
     def _encrypt_secrets_encfs(self):
         logger.debug('Preparing to encrypt secrets using EncFS')
@@ -213,19 +247,12 @@ class AnsibleInventory(object):
                 .decode('utf-8'), trim_blocks=True)
 
         # Create hosts file
-        if (platform.system() == "Linux" and
-                (distro.linux_distribution(full_distribution_name=False)[0]
-                 ).lower() in ("debian", "ubuntu")):
-            host_as_controller = True
-        else:
-            host_as_controller = False
-
         hosts_path = os.path.join(self.path, 'hosts')
         if not os.path.exists(hosts_path):
             with open(hosts_path, 'w') as fh:
                 fh.writelines(
                     default_hosts.render(
-                        host_as_controller=host_as_controller,
+                        host_as_controller=host_is_controller(),
                         hostname=socket.gethostname(),
                         fqdn=socket.getfqdn()))
             logger.debug('Default hosts file created in Ansible inventory')

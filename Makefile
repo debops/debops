@@ -86,6 +86,10 @@ test: test-all
 yaml:           ## Test YAML syntax using yamllint
 yaml: test-yaml
 
+.PHONY: unit
+unit:           ## Run unit tests
+unit: test-unit
+
 .PHONY: sdist
 sdist:          ## Create Python sdist package
 sdist: clean-sdist man
@@ -131,7 +135,12 @@ twine-upload:    ## Upload Python packages to PyPI
 	@twine upload dist/*
 
 .PHONY: test-all
-test-all: clean-tests test-spdx test-pep8 test-debops-tools test-debops-ansible_plugins test-spell test-docs test-man test-playbook-syntax test-ansible-lint test-yaml test-shell
+test-all: clean-tests test-spdx test-pep8 test-unit test-debops-tools test-debops-ansible_plugins test-spell test-docs test-man test-playbook-syntax test-ansible-lint test-yaml test-shell
+
+.PHONY: test-unit
+test-unit:
+	@printf "%s\n" "Running unit tests using unittest..."
+	@PYTHONPATH=src python3 -m unittest discover -s src/tests
 
 .PHONY: test-pep8
 test-pep8:
@@ -155,6 +164,7 @@ test-spdx:
 .PHONY: clean-tests
 clean-tests:
 	@rm -vrf .coverage docs/_build/* docs/ansible/roles/*/defaults.rst docs/ansible/roles/*/defaults
+	@find . -type d -name '__pycache__' -prune -exec rm -rf {} +
 
 .PHONY: check-versions
 check-versions:
