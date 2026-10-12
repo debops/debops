@@ -203,10 +203,12 @@ following parameters:
     before a given configuration option, to allow for better readability.
 
   ``weight``
-    Optional. Positive or negative number which defines the additional "weight"
-    of an option. Smaller or negative weight will move the option higher in the
-    configuration file, higher weight will move the configuration option lower
-    in the configuration file.
+    Optional. Positive or negative number which selects the placement zone of
+    an option in the configuration file: negative values move it to the top,
+    ``0`` (the default) keeps it in the middle in source order, and positive
+    values move it to the bottom. The magnitude of the value does not matter;
+    use ``anchor_to`` for ordering relative to a specific option. See
+    :ref:`universal_configuration_advanced_weight` for details.
 
   ``options``
     Optional. Same format as ``options`` above. An option which contains

@@ -5,7 +5,7 @@
 # {{ ansible_managed }}
 
 {% set opendkim__tpl_config = (opendkim__combined_config | debops.debops.parse_kv_config) %}
-{% set opendkim__tpl_sections = ((opendkim__tpl_config | map(attribute='section')) | list | unique) %}
+{% set opendkim__tpl_sections = ((opendkim__tpl_config | map(attribute='section', default='unknown')) | list | unique) %}
 {% for section in opendkim__config_sections | d([ {'name': 'unknown'} ]) %}
 {%   if section.state | d('present') != 'absent' %}
 {%     set section_loop = [] %}
@@ -16,7 +16,7 @@
 {{ '{:-^70}'.format(' ' + section.title + ' ') | comment(prefix=section_comment_prefix, postfix='') }}
 {%       endif %}
 {%       for element in opendkim__tpl_config %}
-{%         if element.section == section.name and element.state | d('present') != 'absent' %}
+{%         if (element.section | d('unknown')) == section.name and element.state | d('present') != 'absent' %}
 {%           set comment_prefix =   ('' if not section_loop else '\n') %}
 {%           set option_commented = ('#' if element.state | d('present') == 'comment' else '') %}
 {%           set option_indent =    ('27' if element.state | d('present') == 'comment' else '28') %}

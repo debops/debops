@@ -233,19 +233,20 @@ Each configuration option is defined as a YAML dictionary with specific paramete
   during role execution. If ``comment``, the option will be present in the
   configuration file, but commented out.
 
-``copy_id_from``
-  Optional. Specify the ``name`` parameter of a different configuration option;
-  the configuration entry with this parameter will copy the internal "id" value
-  of the specified configuration entry. This can be used to reorder
-  configuration entries in the final generated configuration file.
+``anchor_to``
+  Optional. Name of another configuration option (its ``name`` parameter) to
+  anchor this option to. The option is placed right after the anchor when its
+  ``weight`` is zero or positive, and right before it when ``weight`` is
+  negative. Anchoring takes precedence over zone-based placement. See
+  :ref:`universal_configuration_advanced_weight` for details.
 
 ``weight``
-  Optional. Positive or negative number which can be used to affect the
-  position of a given configuration option in the generated file. Specifying
-  a positive number will lower the option within the file (more weight),
-  specifying a negative number will raise the option (less weight). This can be
-  used to reorder configuration entries in the final generated configuration
-  file.
+  Optional. Positive or negative number which selects the placement zone of
+  a given configuration option in the generated file: negative values move it
+  to the top, ``0`` (the default) keeps it in the middle in source order, and
+  positive values move it to the bottom. The magnitude of the value does not
+  matter; use ``anchor_to`` for ordering relative to a specific option. See
+  :ref:`universal_configuration_advanced_weight` for details.
 
 
 .. _mailman__ref_templates:

@@ -15,7 +15,12 @@
 #################################################
 {% set host = item.0 %}
 {% for section in rsnapshot__configuration_sections %}
-{%   set host_options = host.options | selectattr('section', 'defined') | selectattr('section', 'equalto', section.name) | list %}
+{%   set host_options = [] %}
+{%   for option in host.options %}
+{%     if (option.section | d('unknown')) == section.name %}
+{%       set _ = host_options.append(option) %}
+{%     endif %}
+{%   endfor %}
 {%   if host_options | d() %}
 
 {%     set section_title = {'width': ((section.value | length) | int + 4)} %}

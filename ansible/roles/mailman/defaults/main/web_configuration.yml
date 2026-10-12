@@ -325,7 +325,7 @@ mailman__web_default_configuration:
 
   - name: 'databases_mysql'
     option: 'databases'
-    copy_id_from: 'installed_apps'
+    anchor_to: 'installed_apps'
     state: '{{ "present" if (mailman__database_type == "mysql") else "ignore" }}'
     config:
       'default':
@@ -340,7 +340,7 @@ mailman__web_default_configuration:
 
   - name: 'databases_postgresql'
     option: 'databases'
-    copy_id_from: 'installed_apps'
+    anchor_to: 'installed_apps'
     state: '{{ "present" if (mailman__database_type == "postgresql") else "ignore" }}'
     config:
       'default':
@@ -401,7 +401,7 @@ mailman__web_ldap_configuration:
       import ldap
       from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
     state: '{{ "present" if mailman__ldap_enabled | bool else "ignore" }}'
-    copy_id_from: 'secret_key'
+    anchor_to: 'secret_key'
     weight: -200
 
   - name: 'auth_ldap_server_uri'

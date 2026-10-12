@@ -375,22 +375,22 @@ opendkim__default_config:
 
   - name: 'KeyTable'
     value: '{{ opendkim__dkimkeys_path + "/KeyTable" }}'
-    copy_id_from: 'Selector'
+    anchor_to: 'Selector'
     weight: 1
 
   - name: 'SigningTable'
     value: '{{ opendkim__dkimkeys_path + "/SigningTable" }}'
-    copy_id_from: 'KeyTable'
+    anchor_to: 'KeyTable'
     weight: 2
 
   - name: 'InternalHosts'
     value: '{{ opendkim__dkimkeys_path + "/TrustedHosts" }}'
-    copy_id_from: 'KeyTable'
+    anchor_to: 'KeyTable'
     weight: 3
 
   - name: 'ExternalIgnoreList'
     value: '{{ opendkim__dkimkeys_path + "/TrustedHosts" }}'
-    copy_id_from: 'KeyTable'
+    anchor_to: 'KeyTable'
     weight: 4
 
                                                                    # ]]]

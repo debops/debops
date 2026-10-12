@@ -147,7 +147,7 @@ resolvconf__default_interface_order:
   # Place configuration from NetworkManager between Ethernet and Wireless
   # interface configuration
   - name: 'network-manager-interfaces'
-    copy_id_from: 'ethernet-interfaces'
+    anchor_to: 'ethernet-interfaces'
     value: 'NetworkManager'
 
   # Add missing Predictable Network Interface Names definitions
@@ -187,7 +187,7 @@ resolvconf__default_interface_order:
   # disrupt the local host DNS domain configuration.
   # Ref: https://bugs.debian.org/612351
   - name: 'vpn-interfaces'
-    copy_id_from: 'ppp-interfaces'
+    anchor_to: 'ppp-interfaces'
     state: '{{ "present"
                if ("unbound" in resolvconf__combined_services or
                    "dnsmasq" in resolvconf__combined_services or
@@ -202,7 +202,7 @@ resolvconf__default_interface_order:
       @(vlan|vxlan)*([^.]).inet
       @(vlan|vxlan)*([^.]).@(dhclient|dhcpcd|pump|udhcpc)
       @(vlan|vxlan)*
-    copy_id_from: 'vpn-interfaces'
+    anchor_to: 'vpn-interfaces'
     weight: -10
 
   # Add the 'mesh*' interfaces for mesh-like VPNs before the tunnel interfaces
@@ -213,7 +213,7 @@ resolvconf__default_interface_order:
       @(mesh)*([^.]).inet
       @(mesh)*([^.]).@(dhclient|dhcpcd|pump|udhcpc)
       @(mesh)*
-    copy_id_from: 'vpn-interfaces'
+    anchor_to: 'vpn-interfaces'
     weight: -5
 
                                                                    # ]]]

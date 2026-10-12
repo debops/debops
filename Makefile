@@ -138,7 +138,7 @@ twine-upload:    ## Upload Python packages to PyPI
 test-all: clean-tests test-spdx test-pep8 test-unit test-debops-tools test-debops-ansible_plugins test-spell test-docs test-man test-playbook-syntax test-ansible-lint test-yaml test-shell
 
 .PHONY: test-unit
-test-unit:
+test-unit: test-debops-ansible_plugins
 	@printf "%s\n" "Running unit tests using unittest..."
 	@PYTHONPATH=src python3 -m unittest discover -s src/tests
 
@@ -225,8 +225,9 @@ test-debops-tools:
 
 .PHONY: test-debops-ansible_plugins
 test-debops-ansible_plugins:
-	@printf "%s\n" "Testing debops-ansible_plugins using nose2..."
-	@python3 ansible/roles/ansible_plugins/filter_plugins/debops_filter_plugins.py
+	@printf "%s\n" "Testing debops-ansible_plugins filter plugins..."
+	@diff -q ansible/plugins/filter/debops_filter_plugins.py ansible/roles/ansible_plugins/filter_plugins/debops_filter_plugins.py
+	@python3 ansible/plugins/filter/debops_filter_plugins.py
 
 .PHONY: fail-if-git-dirty
 fail-if-git-dirty:

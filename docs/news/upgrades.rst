@@ -15,6 +15,54 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Changes in inventory variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``copy_id_from`` property in :ref:`universal_configuration` items has
+been replaced by ``anchor_to``. Weight is now zone-based: negative → top
+zone, zero → middle (source order preserved), positive → bottom zone.
+The ``anchor_to`` property positions an item right after (weight ≥ 0) or
+right before (weight < 0) the referenced item. The ``id`` field is now
+sequential (0, 1, 2, …) and ``real_weight`` has been removed.
+
+If you use ``copy_id_from`` or weight-based ordering in inventory variables
+for these roles, replace ``copy_id_from`` with ``anchor_to`` in the
+affected items:
+
+  * :ref:`debops.sshd` — :envvar:`sshd__configuration`,
+    :envvar:`sshd__group_configuration`, :envvar:`sshd__host_configuration`
+
+  * :ref:`debops.postconf` —
+    :envvar:`postconf__postfix__dependent_maincf`,
+    :envvar:`postconf__postfix__dependent_mastercf`
+
+  * :ref:`debops.opendkim` — :envvar:`opendkim__config`,
+    :envvar:`opendkim__group_config`, :envvar:`opendkim__host_config`
+
+  * :ref:`debops.preseed` — :envvar:`preseed__configuration`,
+    :envvar:`preseed__group_configuration`,
+    :envvar:`preseed__host_configuration`
+
+  * :ref:`debops.resolvconf` — :envvar:`resolvconf__interface_order`,
+    :envvar:`resolvconf__group_interface_order`,
+    :envvar:`resolvconf__host_interface_order`
+
+  * :ref:`debops.postldap` —
+    :envvar:`postldap__postfix__dependent_maincf`
+
+  * :ref:`debops.mailman` — :envvar:`mailman__web_configuration`,
+    :envvar:`mailman__web_group_configuration`,
+    :envvar:`mailman__web_host_configuration`
+
+  * :ref:`debops.postfix` — :envvar:`postfix__maincf`,
+    :envvar:`postfix__group_maincf`, :envvar:`postfix__host_maincf`,
+    :envvar:`postfix__mastercf`, :envvar:`postfix__group_mastercf`,
+    :envvar:`postfix__host_mastercf`
+
+  * :ref:`debops.rsyslog` — :envvar:`rsyslog__configuration`,
+    :envvar:`rsyslog__group_configuration`,
+    :envvar:`rsyslog__host_configuration`
+
 
 v3.3.0 (2026-03-13)
 -------------------

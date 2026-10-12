@@ -685,9 +685,16 @@ postfix__restrictions_maincf:
 
       - name: 'permit_mynetworks'
 
+  - name: 'smtpd_discard_ehlo_keywords'
+    section: 'restrictions'
+    anchor_to: 'smtpd_sender_restrictions'
+    value:
+      - 'dsn'  # Disallow Delivery Status Notification requests
+      - 'etrn'  # Disallow Remote Message Queue Starting
+
   - name: 'smtpd_relay_restrictions'
     section: 'restrictions'
-    copy_id_from: 'smtpd_sender_restrictions'
+    anchor_to: 'smtpd_sender_restrictions'
     weight: 40
     state: '{{ "present"
                if (postfix__version is version_compare("2.10.0", ">="))
@@ -713,13 +720,7 @@ postfix__restrictions_maincf:
       - name: 'reject_multi_recipient_bounce'
         weight: -100
 
-  - name: 'smtpd_discard_ehlo_keywords'
-    section: 'restrictions'
-    value:
-      - 'dsn'  # Disallow Delivery Status Notification requests
-      - 'etrn'  # Disallow Remote Message Queue Starting
-
-                                                                   # ]]]
+                                                                    # ]]]
 # .. envvar:: postfix__maincf [[[
 #
 # The list of Postfix :file:`/etc/postfix/main.cf` configuration file options

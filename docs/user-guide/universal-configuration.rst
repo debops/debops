@@ -322,7 +322,8 @@ argument,  but for consistency it is generally discouraged unless there's a
 This has the implication that configuration options which *may* appear multiple
 times in valid configuration would override each other if naively implemented.
 
-The ``option`` field exists for this purpose:
+The ``alias`` field (also accepted as the legacy ``option`` field) exists for
+this purpose:
 
 .. code-block:: yaml
 
@@ -330,22 +331,24 @@ The ``option`` field exists for this purpose:
      value: 2 * 60 * 60
 
    - name: 'my first include'
-     option: 'include'
+     alias: 'include'
      value: '/etc/fizz'
 
    - name: 'my other include'
-     option: 'include'
+     option: 'include'  # legacy, still supported
      value: '/etc/buzz'
 
 In this example, our two ``include`` statements can coexist and be modified
 as expected by later items targeting their ``name`` field.
+
+If both ``alias`` and ``option`` are specified, ``alias`` takes precedence.
 
 The role can then loop through the resulting list in its templates with a
 single statement like the one below:
 
 .. code-block:: jinja
 
-  {{ '{} = {}'.format((item.option | d(item.name)), item.value) }}
+  {{ '{} = {}'.format((item.alias | d(item.option) | d(item.name)), item.value) }}
 
 
 .. _universal_configuration_advanced_weight:
@@ -353,25 +356,40 @@ single statement like the one below:
 Weighing and anchoring
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Under the hood, the configuration filters populate an ``id`` field for each
-item in multiples of 10, starting from 0.
+Universal Configuration provides a zone-based weight system. The ``weight``
+value determines an item's broad position through its sign:
 
-An item's ``weight`` is added to that ``id`` to come up with the final sorting
-order, stored in a field called ``.real_weight``.
+* Items with **negative weight** float to the **top** of the list
+* Items with **weight 0** (the default) stay in the **middle**, preserving
+  source order of their first occurrence
+* Items with **positive weight** sink to the **bottom** of the list
+
+Within each zone, items are ordered by their source position (``first_index``),
+so two items with the same weight sign maintain their relative order.
 
 .. note::
 
-   Take note that the initial order of the list items matters as much as
-   the ``weight`` you provide.
+   ``first_index`` is a computed **output** field. The filters populate it
+   automatically with the source position of the item's first occurrence and
+   use it internally to order items within a weight zone. It is not a
+   user-settable input key; set ``weight`` and ``anchor_to`` instead.
 
-   The specifics of the weight behavior can be counterintuitive and are
-   currently under review. Don't build too intricate orderings that you
-   cannot afford to rewrite, and watch this space!
+.. note::
+
+   ``weight`` value on its own does not determine precise numeric positioning.
+   It is the sign that matters. If you need fine-grained ordering, use
+   ``anchor_to`` (see below).
 
 
-In more complex scenarios, the ``copy_id_from`` key allows us to reference
-another list item by ``name``. Its ``real_weight`` will then be calculated
-based on that referenced item's ``id``.
+In more complex scenarios, the ``anchor_to`` key allows us to reference
+another list item by ``name`` and position ourselves relative to it.
+If ``weight`` is negative, the item is placed **right before** its anchor;
+if zero or positive, it is placed **right after**. Anchoring overrides
+the zone-based positioning, allowing cross-zone placement.
+
+Multiple items anchored to the same target maintain their source order.
+Anchor chains (A anchored to B anchored to C) are resolved automatically.
+Circular anchor chains are detected and raise an error.
 
 
 .. _universal_configuration_recursion:

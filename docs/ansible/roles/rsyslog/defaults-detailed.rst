@@ -182,11 +182,12 @@ Each configuration entry is a YAML dictionary with specific parameters:
   will be hidden in the generated configuration file.
 
 ``weight``
-  Optional. A positive or negative number which can be used to affect the order
-  of sections in the generated configuration file. Positive numbers add more
-  "weight" to the section making it appear "lower" in the file; negative
-  numbers subtract the "weight" and therefore move the section upper in the
-  file.
+  Optional. A positive or negative number which selects the placement zone of
+  a section in the generated configuration file: negative values move it to the
+  top, ``0`` (the default) keeps it in the middle in source order, and positive
+  values move it to the bottom. The magnitude of the value does not matter; use
+  ``anchor_to`` for ordering relative to a specific section. See
+  :ref:`universal_configuration_advanced_weight` for details.
 
 
 .. _rsyslog__ref_rules:
