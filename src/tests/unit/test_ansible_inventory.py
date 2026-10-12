@@ -269,7 +269,7 @@ def test_unlock_encfs_rejects_a_regular_config_file(stub_project):
     encfs_dir = os.path.join(project.path, "ansible", ".encfs.secret")
     os.makedirs(encfs_dir)
     open(os.path.join(encfs_dir, ".encfs6.xml"), "w").write("not a fifo")
-    open(os.path.join(encfs_dir, ".encfs6.xml.asc"), "w").write("crypted")
+    open(os.path.join(encfs_dir, ".encfs6.xml.asc"), "w").write("encrypted")
 
     inventory = make_inventory(project)
 
