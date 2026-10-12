@@ -40,6 +40,12 @@ General
   option, which can create or remove Ansible inventory contents defined as
   a YAML document.
 
+- The :command:`debops` Python package now has a pytest-based test suite,
+  split into unit tests (:command:`make test-unit`) and integration tests
+  (:command:`make test-integration`) which drive the command line in
+  temporary directories, with optional coverage of encrypted secrets when
+  :command:`git-crypt` or :command:`encfs` are installed.
+
 :ref:`debops.core` role
 '''''''''''''''''''''''
 
