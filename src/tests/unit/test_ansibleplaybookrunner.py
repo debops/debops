@@ -261,3 +261,151 @@ def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch):
         runner.execute()
 
     assert runner.inventory.lock.called
+
+
+def test_missing_ansible_cfg_is_reported(stub_project):
+    project = stub_project(cfg_error=configparser.NoSectionError("defaults"))
+
+    with pytest.raises(FileNotFoundError):
+        AnsiblePlaybookRunner(project, ansible_args=[])
+
+
+def test_missing_defaults_section_in_an_existing_file(stub_project):
+    project = stub_project(cfg_error=configparser.NoSectionError("defaults"))
+    with open(project.ansible_cfg.path, "w") as handle:
+        handle.write("[other]\n")
+
+    with pytest.raises(ValueError):
+        AnsiblePlaybookRunner(project, ansible_args=[])
+
+
+def test_missing_inventory_option_aborts(stub_project, capsys):
+    project = stub_project(cfg_options={})
+
+    with pytest.raises(SystemExit) as exception:
+        AnsiblePlaybookRunner(project, ansible_args=[])
+
+    assert exception.value.code == 1
+    assert "No inventory specified" in capsys.readouterr().out
+
+
+def test_global_vars_are_added_as_extra_vars(stub_project, tmp_path):
+    (tmp_path / "ansible" / "inventory").mkdir(parents=True)
+    (tmp_path / "ansible" / "global-vars.yml").write_text("---\n")
+
+    runner = AnsiblePlaybookRunner(stub_project(), ansible_args=[])
+
+    assert runner._ansible_command[0] == "ansible-playbook"
+    index = runner._ansible_command.index("--extra-vars")
+    assert runner._ansible_command[index + 1].startswith("@")
+
+
+def test_option_with_an_argument_is_kept_in_order(stub_project):
+    runner = AnsiblePlaybookRunner(stub_project(),
+                                   ansible_args=["--limit", "web",
+                                                 "site.yml"])
+
+    assert runner._ansible_command[:3] == ["ansible-playbook", "--limit",
+                                           "web"]
+    assert runner._found_playbooks == ["site.yml"]
+
+
+def test_option_argument_with_spaces_is_quoted(stub_project):
+    runner = AnsiblePlaybookRunner(stub_project(),
+                                   ansible_args=["-e", "a=b c", "site.yml"])
+
+    assert '"a=b c"' in runner._ansible_command
+
+
+def test_double_dash_is_dropped(stub_project):
+    runner = AnsiblePlaybookRunner(stub_project(),
+                                   ansible_args=["--", "site.yml"])
+
+    assert "--" not in runner._ansible_command
+    assert runner._found_playbooks == ["site.yml"]
+
+
+def test_flags_without_arguments_are_kept_in_order(stub_project):
+    runner = AnsiblePlaybookRunner(stub_project(),
+                                   ansible_args=["-vvv", "--diff",
+                                                 "site.yml"])
+
+    assert runner._ansible_command[:3] == ["ansible-playbook", "-vvv",
+                                           "--diff"]
+
+
+def test_quote_spaces_leaves_simple_strings_alone(stub_project):
+    runner = AnsiblePlaybookRunner(stub_project(), ansible_args=[])
+    assert runner._quote_spaces("web") == "web"
+
+
+def test_get_check_mode_detects_the_short_flag(stub_project):
+    runner = AnsiblePlaybookRunner(stub_project(),
+                                   ansible_args=["-C", "site.yml"])
+
+    assert runner._get_check_mode() == "check"
+
+
+def test_playbook_found_relative_to_the_working_directory(stub_project,
+                                                          tmp_path,
+                                                          monkeypatch):
+    (tmp_path / "local.yml").write_text("---\n")
+    monkeypatch.chdir(tmp_path)
+
+    runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["local.yml"])
+
+    assert runner._found_playbooks == ["local.yml"]
+
+
+def test_playbook_in_a_view_collection_is_found(stub_project, tmp_path):
+    playbooks = (tmp_path / "ansible" / "collections" / "ansible_collections"
+                 / "myns" / "mycoll" / "playbooks")
+    playbooks.mkdir(parents=True)
+    (playbooks / "deploy.yml").write_text("---\n")
+    project = stub_project(
+        collections=str(tmp_path / "ansible" / "collections"))
+    project.config.raw["views"] = {
+        "system": {"playbook_collections": ["myns.mycoll"]}}
+
+    runner = AnsiblePlaybookRunner(project, ansible_args=["deploy.yml"])
+
+    assert runner._found_playbooks == [str(playbooks / "deploy.yml")]
+
+
+def test_execute_returns_a_nonzero_code(stub_project, monkeypatch):
+    runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"])
+    executor = mock.Mock(returncode=3)
+    executor.communicate.return_value = (b"", b"")
+    monkeypatch.setattr(runner_module.subprocess, "Popen",
+                        mock.Mock(return_value=executor))
+    monkeypatch.setattr(runner_module, "run_hooks",
+                        mock.Mock(return_value=True))
+    runner.inventory.unlock.return_value = False
+
+    assert runner.execute() == 3
+
+
+def test_execute_rings_the_bell(stub_project, monkeypatch, capsys):
+    runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"],
+                                   bell=True)
+    executor = mock.Mock(returncode=0)
+    executor.communicate.return_value = (b"", b"")
+    monkeypatch.setattr(runner_module.subprocess, "Popen",
+                        mock.Mock(return_value=executor))
+    monkeypatch.setattr(runner_module, "run_hooks",
+                        mock.Mock(return_value=True))
+    runner.inventory.unlock.return_value = False
+
+    runner.execute()
+
+    assert "\a" in capsys.readouterr().out
+
+
+def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch):
+    runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"])
+    runner.inventory.unlock.side_effect = ChildProcessError("dirty tree")
+    monkeypatch.setattr(runner_module, "run_hooks",
+                        mock.Mock(return_value=True))
+
+    with pytest.raises(ChildProcessError):
+        runner.execute()
