@@ -273,9 +273,16 @@ def _parse_kv_value(current_data, new_data, data_index):
                         if 'weight' in element:
                             dict_element['weight'] = int(element['weight'])
 
+                        if 'option' in element or 'alias' in element:
+                            alias_value = element.get('alias',
+                                                      element.get(
+                                                          'option'))
+                            dict_element['option'] = alias_value
+                            dict_element['alias'] = alias_value
+
                         for key in element.keys():
                             if key not in ['name', 'state', 'id', 'weight',
-                                           'param',
+                                           'param', 'option', 'alias',
                                            'first_index']:
                                 dict_element[key] = element.get(key)
 
@@ -368,8 +375,11 @@ def parse_kv_config(*args, **kwargs):
                                     current_param.get('first_index',
                                                       element_index))
 
-                    if 'option' in element:
-                        current_param['option'] = element.get('option')
+                    if 'option' in element or 'alias' in element:
+                        alias_value = element.get('alias',
+                                                  element.get('option'))
+                        current_param['option'] = alias_value
+                        current_param['alias'] = alias_value
 
                     if 'comment' in element:
                         current_param['comment'] = element.get('comment')
@@ -395,7 +405,8 @@ def parse_kv_config(*args, **kwargs):
                                                     'weight',
                                                     'separator', 'value',
                                                     'comment', 'option',
-                                                    'section', 'first_index',
+                                                    'alias', 'section',
+                                                    'first_index',
                                                     'anchor_to']):
                             current_param[unknown_key] = (
                                     element.get(unknown_key))
@@ -404,7 +415,7 @@ def parse_kv_config(*args, **kwargs):
 
             # These parameters are special and should not be interpreted
             # directly as configuration options
-            elif not all(x in [name, 'option', 'state', 'comment',
+            elif not all(x in [name, 'option', 'alias', 'state', 'comment',
                                'section', 'weight', 'value', 'anchor_to']
                          for x in element):
                 for key, value in element.items():
@@ -547,6 +558,12 @@ def parse_kv_items(*args, **kwargs):
                 if 'anchor_to' in element:
                     current_param['anchor_to'] = element['anchor_to']
 
+                if 'option' in element or 'alias' in element:
+                    alias_value = element.get('alias',
+                                              element.get('option'))
+                    current_param['option'] = alias_value
+                    current_param['alias'] = alias_value
+
                 if 'comment' in element:
                     current_param['comment'] = element.get('comment')
 
@@ -564,7 +581,7 @@ def parse_kv_items(*args, **kwargs):
                 known_keys = [name, 'state', 'id', 'weight',
                               'separator',
                               'comment', 'options', 'first_index',
-                              'anchor_to']
+                              'anchor_to', 'option', 'alias']
 
                 # Include any unknown keys.
                 for unknown_key in element.keys():
@@ -1840,6 +1857,191 @@ if __name__ == '__main__':
               state: present
               value: after
               weight: 1
+            '''))
+
+            items = parse_kv_items(input_items)
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_config_alias(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'local'
+              alias: 'local_alias'
+
+            - name: 'other'
+              option: 'other_option'
+
+            - name: 'both'
+              option: 'both_option'
+              alias: 'both_alias'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - alias: local_alias
+              first_index: 0
+              id: 0
+              name: local
+              option: local_alias
+              section: unknown
+              separator: false
+              state: present
+              weight: 0
+
+            - alias: other_option
+              first_index: 1
+              id: 1
+              name: other
+              option: other_option
+              section: unknown
+              separator: false
+              state: present
+              weight: 0
+
+            - alias: both_alias
+              first_index: 2
+              id: 2
+              name: both
+              option: both_alias
+              section: unknown
+              separator: false
+              state: present
+              weight: 0
+            '''))
+
+            items = parse_kv_config(input_items)
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_config_alias_nested(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'local'
+              value:
+
+                - name: 'element1'
+                  alias: 'element1_alias'
+
+                - name: 'element2'
+                  option: 'element2_option'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - first_index: 0
+              id: 0
+              name: local
+              section: unknown
+              separator: false
+              state: present
+              value:
+
+              - alias: element1_alias
+                first_index: 0
+                id: 0
+                name: element1
+                option: element1_alias
+                state: present
+                weight: 0
+
+              - alias: element2_option
+                first_index: 1
+                id: 1
+                name: element2
+                option: element2_option
+                state: present
+                weight: 0
+              weight: 0
+            '''))
+
+            items = parse_kv_config(input_items)
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_items_alias(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'local'
+              alias: 'local_alias'
+
+            - name: 'other'
+              option: 'other_option'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - alias: local_alias
+              first_index: 0
+              id: 0
+              name: local
+              option: local_alias
+              separator: false
+              state: present
+              weight: 0
+
+            - alias: other_option
+              first_index: 1
+              id: 1
+              name: other
+              option: other_option
+              separator: false
+              state: present
+              weight: 0
+            '''))
+
+            items = parse_kv_items(input_items)
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_items_alias_nested(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'local'
+              options:
+
+                - name: 'element1'
+                  alias: 'element1_alias'
+
+                - name: 'element2'
+                  option: 'element2_option'
+
+                - name: 'element3'
+                  option: 'both_option'
+                  alias: 'both_alias'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - first_index: 0
+              id: 0
+              name: local
+              options:
+
+              - alias: element1_alias
+                first_index: 0
+                id: 0
+                name: element1
+                option: element1_alias
+                section: unknown
+                separator: false
+                state: present
+                weight: 0
+
+              - alias: element2_option
+                first_index: 1
+                id: 1
+                name: element2
+                option: element2_option
+                section: unknown
+                separator: false
+                state: present
+                weight: 0
+
+              - alias: both_alias
+                first_index: 2
+                id: 2
+                name: element3
+                option: both_alias
+                section: unknown
+                separator: false
+                state: present
+                weight: 0
+              separator: false
+              state: present
+              weight: 0
             '''))
 
             items = parse_kv_items(input_items)

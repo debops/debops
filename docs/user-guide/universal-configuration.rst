@@ -322,7 +322,8 @@ argument,  but for consistency it is generally discouraged unless there's a
 This has the implication that configuration options which *may* appear multiple
 times in valid configuration would override each other if naively implemented.
 
-The ``option`` field exists for this purpose:
+The ``alias`` field (also accepted as the legacy ``option`` field) exists for
+this purpose:
 
 .. code-block:: yaml
 
@@ -330,22 +331,24 @@ The ``option`` field exists for this purpose:
      value: 2 * 60 * 60
 
    - name: 'my first include'
-     option: 'include'
+     alias: 'include'
      value: '/etc/fizz'
 
    - name: 'my other include'
-     option: 'include'
+     option: 'include'  # legacy, still supported
      value: '/etc/buzz'
 
 In this example, our two ``include`` statements can coexist and be modified
 as expected by later items targeting their ``name`` field.
+
+If both ``alias`` and ``option`` are specified, ``alias`` takes precedence.
 
 The role can then loop through the resulting list in its templates with a
 single statement like the one below:
 
 .. code-block:: jinja
 
-  {{ '{} = {}'.format((item.option | d(item.name)), item.value) }}
+  {{ '{} = {}'.format((item.alias | d(item.option) | d(item.name)), item.value) }}
 
 
 .. _universal_configuration_advanced_weight:
