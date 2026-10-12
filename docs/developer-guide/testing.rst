@@ -31,7 +31,7 @@ Software dependencies
    sudo apt install build-essential git graphviz shellcheck \
                     python3-sphinx python3-sphinx-rtd-theme
 
-   pip install -U pycodestyle nose2 yamllint ansible-lint reuse
+   pip install -U pycodestyle pytest pytest-cov yamllint ansible-lint reuse
 
 
 If you intend on running :command:`make docker`,
@@ -61,6 +61,30 @@ For our purposes, all you need is to add your user to the ``docker`` group:
 ~~~~~~~~~~~~~~~~~~~~
 
 Runs all tests. This runs on automatically on contributions on github.
+
+
+.. _cmd_make_test_unit:
+
+:command:`make test-unit`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Runs the unit tests for the :command:`debops` Python package using pytest,
+together with a coverage report. The tests live in :file:`src/tests/unit/`;
+each module of the package has a matching :file:`test_*.py` file. External
+tools are replaced with test doubles, so the suite runs the same way on any
+machine.
+
+
+.. _cmd_make_test_integration:
+
+:command:`make test-integration`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Runs the integration tests from :file:`src/tests/integration/`, which drive
+the real :command:`debops` command line in temporary directories: project
+initialization, command dispatch and secret management. Tests which need
+optional tools such as :command:`ansible-inventory`, :command:`git-crypt` or
+:command:`encfs` are skipped when the tools are not installed.
 
 
 .. _cmd_make_help:
