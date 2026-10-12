@@ -158,6 +158,11 @@ General
   removed; ``id`` is now assigned sequentially after sorting. See
   :ref:`upgrade_notes` for required inventory variable changes.
 
+- The ``separator`` and ``section`` parameters are no longer set by the
+  :ref:`universal_configuration` filters unless they are defined explicitly in
+  the configuration. The filters now also accept an optional ``alias`` key as
+  a synonym for the ``option`` key.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
