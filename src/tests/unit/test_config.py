@@ -1,0 +1,317 @@
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+"""Tests for ``debops.config``."""
+
+import os
+from unittest import mock
+
+import pytest
+
+from debops import config as config_module
+
+
+def test_expand_env_vars_expands_a_string(configuration, monkeypatch):
+    monkeypatch.setenv("DEBOPS_TEST_VALUE", "hello")
+
+    assert configuration._expand_env_vars("$DEBOPS_TEST_VALUE") == "hello"
+
+
+def test_expand_env_vars_walks_a_dictionary(configuration, monkeypatch):
+    monkeypatch.setenv("DEBOPS_TEST_VALUE", "hello")
+
+    assert configuration._expand_env_vars(
+        {"a": "$DEBOPS_TEST_VALUE"}) == {"a": "hello"}
+
+
+def test_expand_env_vars_walks_a_list(configuration, monkeypatch):
+    monkeypatch.setenv("DEBOPS_TEST_VALUE", "hello")
+
+    assert configuration._expand_env_vars(
+        ["$DEBOPS_TEST_VALUE"]) == ["hello"]
+
+
+@pytest.mark.parametrize("value", [42, None, True])
+def test_expand_env_vars_leaves_other_types_alone(configuration, value):
+    assert configuration._expand_env_vars(value) == value
+
+
+def test_merge_dict_overwrites_a_scalar(configuration):
+    data = {"a": 1}
+
+    configuration._merge_dict(data, {"a": 2})
+
+    assert data == {"a": 2}
+
+
+def test_merge_dict_adds_missing_keys(configuration):
+    data = {"a": 1}
+
+    configuration._merge_dict(data, {"b": 2})
+
+    assert data == {"a": 1, "b": 2}
+
+
+def test_merge_dict_merges_nested_dictionaries(configuration):
+    data = {"a": {"b": 1, "c": 2}}
+
+    configuration._merge_dict(data, {"a": {"b": 9, "d": 3}})
+
+    assert data == {"a": {"b": 9, "c": 2, "d": 3}}
+
+
+def test_merge_dict_extends_lists(configuration):
+    data = {"a": [1, 2]}
+
+    configuration._merge_dict(data, {"a": [3]})
+
+    assert data == {"a": [1, 2, 3]}
+
+
+def test_merge_dict_replaces_on_a_type_mismatch(configuration):
+    data = {"a": [1]}
+
+    configuration._merge_dict(data, {"a": {"b": 1}})
+
+    assert data == {"a": {"b": 1}}
+
+
+@pytest.mark.parametrize("source", [None, {}])
+def test_merge_dict_ignores_an_empty_source(configuration, source):
+    data = {"a": 1}
+
+    configuration._merge_dict(data, source)
+
+    assert data == {"a": 1}
+
+
+def test_get_returns_the_whole_configuration_without_items(configuration):
+    configuration._config = {"a": 1}
+
+    assert configuration.get() == {"a": 1}
+
+
+def test_get_accepts_a_single_key(configuration):
+    configuration._config = {"a": {"b": 2}}
+
+    assert configuration.get("a") == {"b": 2}
+
+
+def test_get_walks_a_list_of_keys(configuration):
+    configuration._config = {"a": {"b": {"c": 3}}}
+
+    assert configuration.get(["a", "b", "c"]) == 3
+
+
+def test_get_returns_an_empty_dict_for_a_missing_key(configuration):
+    configuration._config = {"a": 1}
+
+    assert configuration.get("nope") == {}
+
+
+def test_load_returns_empty_for_a_missing_path(configuration, tmp_path):
+    assert configuration.load(str(tmp_path / "nope")) == {}
+
+
+@pytest.mark.parametrize("extension", ["toml", "json", "yaml"])
+def test_load_reads_a_single_file(configuration, tmp_path, extension):
+    content = {
+        "toml": 'a = "b"\n',
+        "json": '{"a": "b"}\n',
+        "yaml": "a: b\n",
+    }[extension]
+    path = tmp_path / ("config." + extension)
+    path.write_text(content)
+
+    assert configuration.load(str(path)) == {"a": "b"}
+    assert str(path) in configuration._config_files
+
+
+def test_load_expands_environment_variables(configuration, tmp_path,
+                                            monkeypatch):
+    monkeypatch.setenv("DEBOPS_TEST_VALUE", "hello")
+    path = tmp_path / "config.toml"
+    path.write_text('a = "$DEBOPS_TEST_VALUE"\n')
+
+    assert configuration.load(str(path)) == {"a": "hello"}
+
+
+def test_load_merges_a_directory_in_sorted_order(configuration, tmp_path):
+    (tmp_path / "10-first.toml").write_text('a = 1\nb = 1\n')
+    (tmp_path / "20-second.toml").write_text('b = 2\n')
+
+    assert configuration.load(str(tmp_path)) == {"a": 1, "b": 2}
+
+
+def test_load_ignores_hidden_files(configuration, tmp_path):
+    (tmp_path / ".hidden.toml").write_text('a = 1\n')
+    (tmp_path / "visible.toml").write_text('b = 2\n')
+
+    assert configuration.load(str(tmp_path)) == {"b": 2}
+
+
+def test_load_reports_invalid_yaml_and_keeps_going(configuration, tmp_path,
+                                                   capsys):
+    (tmp_path / "broken.yaml").write_text("a: [unterminated\n")
+    (tmp_path / "ok.toml").write_text('b = 2\n')
+
+    assert configuration.load(str(tmp_path)) == {"b": 2}
+    assert "broken.yaml" in capsys.readouterr().err
+
+
+def test_load_converts_the_legacy_debops_cfg(configuration, tmp_path):
+    path = tmp_path / ".debops.cfg"
+    path.write_text("[ansible defaults]\n"
+                    "become = True\n"
+                    "inventory = hosts\n"
+                    "\n"
+                    "[general]\n"
+                    "verbose = 1\n"
+                    "name = debops\n")
+
+    assert configuration.load(str(path)) == {
+        "ansible": {"defaults": {"become": True, "inventory": "hosts"}},
+        "general": {"verbose": True, "name": "debops"},
+    }
+
+
+def test_merge_env_reads_a_dotenv_directory(configuration, tmp_path,
+                                            monkeypatch):
+    env_file = tmp_path / ".env"
+    env_file.write_text("DEBOPS_TEST_FROM_ENV=value\n")
+    monkeypatch.setattr(config_module.dotenv, "load_dotenv",
+                        lambda *args, **kwargs: None)
+    monkeypatch.setattr(config_module.dotenv, "dotenv_values",
+                        lambda path: {"DEBOPS_TEST_FROM_ENV": "value"})
+
+    configuration.merge_env(str(tmp_path))
+
+    assert configuration._env_files == [str(env_file)]
+    assert configuration._env_vars == {"DEBOPS_TEST_FROM_ENV": "value"}
+
+
+def test_merge_env_reads_a_direct_file(configuration, tmp_path, monkeypatch):
+    env_file = tmp_path / "environment"
+    env_file.write_text("DEBOPS_TEST_FROM_ENV=value\n")
+    monkeypatch.setattr(config_module.dotenv, "load_dotenv",
+                        lambda *args, **kwargs: None)
+    monkeypatch.setattr(config_module.dotenv, "dotenv_values",
+                        lambda path: {"DEBOPS_TEST_FROM_ENV": "value"})
+
+    configuration.merge_env(str(env_file))
+
+    assert configuration._env_files == [str(env_file)]
+    assert configuration._env_vars == {"DEBOPS_TEST_FROM_ENV": "value"}
+
+
+def test_merge_env_ignores_a_missing_path(configuration, tmp_path):
+    configuration.merge_env(str(tmp_path / "nope"))
+
+    assert configuration._env_files == []
+    assert configuration._env_vars == {}
+
+
+def test_set_env_writes_the_environment(configuration, monkeypatch):
+    monkeypatch.delenv("DEBOPS_TEST_ENV", raising=False)
+
+    configuration.set_env("DEBOPS_TEST_ENV", 1)
+
+    assert os.environ["DEBOPS_TEST_ENV"] == "1"
+    assert configuration._env_vars["DEBOPS_TEST_ENV"] == "1"
+
+
+def test_get_env_returns_none_when_unset(configuration, monkeypatch):
+    monkeypatch.delenv("DEBOPS_TEST_ENV", raising=False)
+
+    assert configuration.get_env("DEBOPS_TEST_ENV") is None
+
+
+def test_get_env_returns_the_value(configuration, monkeypatch):
+    monkeypatch.setenv("DEBOPS_TEST_ENV", "value")
+
+    assert configuration.get_env("DEBOPS_TEST_ENV") == "value"
+
+
+def test_section_returns_items_for_a_known_section(configuration):
+    configuration._config = mock.Mock()
+    configuration._config.has_section.return_value = True
+    configuration._config.items.return_value = [("a", "b")]
+
+    assert configuration.section("general") == [("a", "b")]
+
+
+def test_section_returns_empty_for_an_unknown_section(configuration):
+    configuration._config = mock.Mock()
+    configuration._config.has_section.return_value = False
+
+    assert configuration.section("general") == []
+
+
+def test_config_get_prints_a_scalar(configuration, capsys):
+    configuration._config = {"a": "b"}
+
+    configuration.config_get("a")
+
+    assert capsys.readouterr().out.strip() == "b"
+
+
+def test_config_get_prints_a_nested_key(configuration, capsys):
+    configuration._config = {"a": {"b": "c"}}
+
+    configuration.config_get("a.b")
+
+    assert capsys.readouterr().out.strip() == "c"
+
+
+def test_config_get_prints_the_whole_configuration_for_dot(configuration,
+                                                           capsys):
+    configuration._config = {"a": "b"}
+
+    configuration.config_get(".")
+
+    assert capsys.readouterr().out.strip() == "a: b"
+
+
+def test_config_get_formats_a_boolean_as_json(configuration, capsys):
+    configuration._config = {"a": True}
+
+    configuration.config_get("a")
+
+    assert capsys.readouterr().out.strip() == "true"
+
+
+def test_config_get_prints_list_entries(configuration, capsys):
+    configuration._config = {"a": ["x", "y"]}
+
+    configuration.config_get("a")
+
+    assert capsys.readouterr().out.splitlines() == ["x", "y"]
+
+
+def test_config_get_json_sorts_keys(configuration, capsys):
+    configuration._config = {"b": 1, "a": 2}
+
+    configuration.config_get(".", format="json")
+
+    out = capsys.readouterr().out
+    assert out.index('"a"') < out.index('"b"')
+
+
+def test_config_get_exits_for_a_missing_key(configuration, capsys):
+    configuration._config = {"a": "b"}
+
+    with pytest.raises(SystemExit) as exc:
+        configuration.config_get("nope", format="json")
+
+    assert exc.value.code == 1
+    assert capsys.readouterr().out.strip() == "{}"
+
+
+def test_config_get_prints_nothing_for_a_missing_key(configuration, capsys):
+    configuration._config = {"a": "b"}
+
+    with pytest.raises(SystemExit):
+        configuration.config_get("nope")
+
+    assert capsys.readouterr().out == ""
