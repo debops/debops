@@ -315,3 +315,100 @@ def test_config_get_prints_nothing_for_a_missing_key(configuration, capsys):
         configuration.config_get("nope")
 
     assert capsys.readouterr().out == ""
+
+
+def test_init_loads_the_default_configuration(tmp_path, monkeypatch):
+    # xdg_config_home is imported into the module at import time, so the
+    # environment variable alone is not enough
+    monkeypatch.setattr(config_module, "xdg_config_home", str(tmp_path))
+    monkeypatch.setenv("DEBOPS_ANSIBLE_COLLECTIONS_PATH", "sentinel")
+
+    config = config_module.Configuration()
+
+    assert config.raw["binaries"]["ansible"] == "ansible"
+    assert config.raw["git"]["init_message"] == \
+        "Initialize new DebOps project directory"
+    assert os.environ["DEBOPS_ANSIBLE_COLLECTIONS_PATH"] != "sentinel"
+
+
+def test_merge_accepts_a_dictionary(configuration):
+    configuration._config = {"a": 1}
+
+    configuration.merge({"b": 2})
+
+    assert configuration.raw == {"a": 1, "b": 2}
+
+
+def test_merge_loads_from_a_directory(configuration, tmp_path):
+    (tmp_path / "10-extra.toml").write_text('extra = "yes"\n')
+
+    configuration.merge(str(tmp_path))
+
+    assert configuration.raw["extra"] == "yes"
+
+
+def test_config_list_prints_env_and_config_files(configuration, capsys,
+                                                 tmp_path):
+    env_file = tmp_path / "project" / ".env"
+    config_file = tmp_path / "project" / ".debops.cfg"
+    configuration._env_files = [str(env_file)]
+    configuration._config_files = [str(config_file)]
+
+    configuration.config_list()
+
+    out = capsys.readouterr().out
+    assert "# Environment files:" in out
+    assert "# Configuration files:" in out
+    assert ".env" in out
+    assert ".debops.cfg" in out
+
+
+def test_config_get_formats_a_dict_as_toml(configuration, capsys):
+    configuration._config = {"a": {"b": 1}}
+
+    configuration.config_get("a", format="toml")
+
+    assert "b = 1" in capsys.readouterr().out
+
+
+def test_config_get_formats_a_list_as_json(configuration, capsys):
+    configuration._config = {"a": ["x", "y"]}
+
+    configuration.config_get("a", format="json")
+
+    assert '["x", "y"]' in capsys.readouterr().out
+
+
+def test_config_get_formats_a_scalar_as_yaml(configuration, capsys):
+    configuration._config = {"a": "b"}
+
+    configuration.config_get("a", format="yaml")
+
+    assert "b" in capsys.readouterr().out
+
+
+def test_config_get_formats_a_boolean_as_yaml(configuration, capsys):
+    configuration._config = {"a": True}
+
+    configuration.config_get("a", format="yaml")
+
+    assert "true" in capsys.readouterr().out
+
+
+def test_config_get_lists_the_keys_of_a_dict(configuration, capsys):
+    configuration._config = {"a": {"b": 1, "c": 2}}
+
+    configuration.config_get("a", keys=True)
+
+    out = capsys.readouterr().out
+    assert "b" in out
+    assert "c" in out
+
+
+def test_config_get_keys_on_a_scalar_returns_an_empty_list(configuration,
+                                                           capsys):
+    configuration._config = {"a": 1}
+
+    configuration.config_get("a", keys=True)
+
+    assert capsys.readouterr().out == ""
