@@ -10,8 +10,12 @@
 #			/usr/share/doc/rsyslog-doc/html/rsyslog_conf.html
 {% for section in rsyslog__combined_configuration_sections | debops.debops.parse_kv_config %}
 {%   if section.name | d() and section.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
-{%     set section_config = (rsyslog__combined_configuration | debops.debops.parse_kv_config
-                             | selectattr("section", "equalto", section.name) | list) %}
+{%     set section_config = [] %}
+{%     for element in (rsyslog__combined_configuration | debops.debops.parse_kv_config) %}
+{%       if (element.section | d('unknown')) == section.name %}
+{%         set _ = section_config.append(element) %}
+{%       endif %}
+{%     endfor %}
 {%     if section_config | d() %}
 {%       if section.state != 'hidden' %}
 {%         if ('present' in (section_config | map(attribute='state') | list)) %}
