@@ -93,8 +93,12 @@
 {% for section in (item.options_sections | d([ {"name": "unknown", "state": "hidden"} ])) | debops.debops.parse_kv_config %}
 {%   if section.name | d() and section.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
 {%     set loop_next = [] %}
-{%     set section_config = (item.options | debops.debops.parse_kv_config
-                             | selectattr("section", "equalto", section.name) | list) %}
+{%     set section_config = [] %}
+{%     for element in (item.options | debops.debops.parse_kv_config) %}
+{%       if (element.section | d('unknown')) == section.name %}
+{%         set _ = section_config.append(element) %}
+{%       endif %}
+{%     endfor %}
 {%     if section_config | d() %}
 {%       if section.state != 'hidden' %}
 {%         if ('present' in (section_config | map(attribute='state') | list)) %}
