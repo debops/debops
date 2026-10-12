@@ -87,6 +87,17 @@ optional tools such as :command:`ansible-inventory`, :command:`git-crypt` or
 :command:`encfs` are skipped when the tools are not installed.
 
 
+.. _cmd_make_test_coverage:
+
+:command:`make test-coverage`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Runs the unit and integration tests together and prints a combined coverage
+report. Use this to see the real coverage of the modules which the
+integration tests exercise, for example the project directory management;
+the unit-only report of :command:`make test-unit` understates them.
+
+
 .. _cmd_make_help:
 
 :command:`make help`

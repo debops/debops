@@ -94,6 +94,10 @@ unit: test-unit
 integration:    ## Run integration tests
 integration: test-integration
 
+.PHONY: coverage
+coverage:       ## Run all tests with a combined coverage report
+coverage: test-coverage
+
 .PHONY: sdist
 sdist:          ## Create Python sdist package
 sdist: clean-sdist man
@@ -152,6 +156,12 @@ test-unit:
 test-integration:
 	@printf "%s\n" "Running integration tests using pytest..."
 	@PYTHONPATH=src python3 -m pytest src/tests/integration
+
+.PHONY: test-coverage
+test-coverage:
+	@printf "%s\n" "Running all tests with a combined coverage report..."
+	@PYTHONPATH=src python3 -m pytest src/tests \
+		--cov=debops --cov-report=term-missing
 
 .PHONY: test-pep8
 test-pep8:
