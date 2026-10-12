@@ -357,10 +357,7 @@ def parse_kv_config(*args, **kwargs):
                         name: param_name,  # in case of a new entry
                         'weight': int(element.get('weight',
                                                   current_param.get(
-                                                      'weight', 0))),
-                        'section': element.get('section',
-                                               current_param.get('section',
-                                                                 'unknown'))
+                                                      'weight', 0)))
                     })
 
                     _handle_weight(element, current_param)
@@ -402,8 +399,7 @@ def parse_kv_config(*args, **kwargs):
                                                     'weight',
                                                     'value',
                                                     'comment', 'option',
-                                                    'alias', 'section',
-                                                    'first_index',
+                                                    'alias', 'first_index',
                                                     'anchor_to']):
                             current_param[unknown_key] = (
                                     element.get(unknown_key))
@@ -413,7 +409,7 @@ def parse_kv_config(*args, **kwargs):
             # These parameters are special and should not be interpreted
             # directly as configuration options
             elif not all(x in [name, 'option', 'alias', 'state', 'comment',
-                               'section', 'weight', 'value', 'anchor_to']
+                               'weight', 'value', 'anchor_to']
                          for x in element):
                 for key, value in element.items():
                     current_param = (parsed_config[key].copy()
@@ -423,8 +419,7 @@ def parse_kv_config(*args, **kwargs):
                     current_param.update({
                         name: key,
                         'state': 'present',
-                        'weight': int(current_param.get('weight', 0)),
-                        'section': current_param.get('section', 'unknown')
+                        'weight': int(current_param.get('weight', 0))
                     })
 
                     _parse_kv_value(current_param,
@@ -689,21 +684,18 @@ if __name__ == '__main__':
             - first_index: 0
               id: 0
               name: local
-              section: unknown
               state: present
               value: test3
               weight: 0
             - first_index: 1
               id: 1
               name: local2
-              section: unknown
               state: present
               value: test2
               weight: 0
             - first_index: 3
               id: 2
               name: local_null
-              section: unknown
               state: present
               value: null
               weight: 0
@@ -730,21 +722,18 @@ if __name__ == '__main__':
             - first_index: 0
               id: 0
               name: local
-              section: unknown
               state: present
               value: test3
               weight: 0
             - first_index: 1
               id: 1
               name: local2
-              section: unknown
               state: present
               value: test2
               weight: 0
             - first_index: 3
               id: 2
               name: local_null
-              section: unknown
               state: absent
               value: null
               weight: 0
@@ -771,21 +760,18 @@ if __name__ == '__main__':
             - first_index: 0
               id: 0
               name: local
-              section: unknown
               state: present
               value: test3
               weight: 0
             - first_index: 1
               id: 1
               name: local2
-              section: unknown
               state: present
               value: test2
               weight: 0
             - first_index: 3
               id: 2
               name: local_null
-              section: unknown
               state: init
               value: null
               weight: 0
@@ -812,14 +798,12 @@ if __name__ == '__main__':
             - first_index: 0
               id: 0
               name: local
-              section: unknown
               state: present
               value: test3
               weight: 0
             - first_index: 1
               id: 1
               name: local2
-              section: unknown
               state: present
               value: test2
               weight: 0
@@ -844,14 +828,12 @@ if __name__ == '__main__':
             - first_index: 0
               id: 0
               name: local
-              section: unknown
               state: present
               value: test
               weight: 0
             - first_index: 1
               id: 1
               name: local2
-              section: unknown
               state: present
               value: test2
               weight: 0
@@ -870,7 +852,6 @@ if __name__ == '__main__':
             - first_index: 0
               id: 0
               name: simple_string
-              section: unknown
               state: present
               weight: 0
             '''))
@@ -891,7 +872,6 @@ if __name__ == '__main__':
             - first_index: 0
               id: 0
               name: local
-              section: unknown
               state: present
               value:
               - first_index: 0
@@ -920,14 +900,12 @@ if __name__ == '__main__':
             - first_index: 0
               id: 0
               renamed: local
-              section: unknown
               state: present
               value: test3
               weight: 0
             - first_index: 1
               id: 1
               renamed: local2
-              section: unknown
               state: present
               value: test2
               weight: 0
@@ -975,7 +953,6 @@ if __name__ == '__main__':
               - first_index: 0
                 id: 0
                 name: second level is ignored
-                section: unknown
                 service: |-
                     second level is ignored so service will not become the
                     comment
@@ -1072,14 +1049,12 @@ if __name__ == '__main__':
               - first_index: 0
                 id: 0
                 name: nested1
-                section: unknown
                 state: present
                 value: value1
                 weight: 0
               - first_index: 1
                 id: 1
                 name: nested2
-                section: unknown
                 state: present
                 value: value2
                 weight: 0
@@ -1087,14 +1062,12 @@ if __name__ == '__main__':
               - first_index: 0
                 id: 0
                 name: test_nested1
-                section: unknown
                 state: present
                 value: test_value1
                 weight: 0
               - first_index: 1
                 id: 1
                 name: test_nested2
-                section: unknown
                 state: present
                 value: test_value2
                 weight: 0
@@ -1466,7 +1439,6 @@ if __name__ == '__main__':
               - first_index: 0
                 id: 0
                 name: local
-                section: unknown
                 state: present
                 value: test
                 weight: 0
@@ -1479,7 +1451,6 @@ if __name__ == '__main__':
               - first_index: 0
                 id: 0
                 name: local
-                section: unknown
                 state: present
                 value: test2
                 weight: 0
@@ -1492,7 +1463,6 @@ if __name__ == '__main__':
               - first_index: 0
                 id: 0
                 name: local
-                section: unknown
                 state: present
                 value: test2
                 weight: 0
@@ -1510,11 +1480,9 @@ if __name__ == '__main__':
                 - first_index: 0
                   id: 0
                   name: local2
-                  section: unknown
                   state: present
                   value: test2
                   weight: 0
-                section: unknown
                 state: present
                 weight: 0
               - first_index: 1
@@ -1524,11 +1492,9 @@ if __name__ == '__main__':
                 - first_index: 0
                   id: 0
                   name: external2
-                  section: unknown
                   state: present
                   value: test
                   weight: 0
-                section: unknown
                 state: present
                 weight: 0
               state: present
@@ -1629,7 +1595,6 @@ if __name__ == '__main__':
               - first_index: 0
                 id: 0
                 name: local
-                section: unknown
                 state: present
                 value: test
                 weight: 0
@@ -1642,7 +1607,6 @@ if __name__ == '__main__':
               - first_index: 0
                 id: 0
                 name: local
-                section: unknown
                 state: present
                 value: test2
                 weight: 0
@@ -1655,7 +1619,6 @@ if __name__ == '__main__':
               - first_index: 0
                 id: 0
                 name: local
-                section: unknown
                 state: present
                 value: test2
                 weight: 0
@@ -1673,11 +1636,9 @@ if __name__ == '__main__':
                 - first_index: 0
                   id: 0
                   name: local2
-                  section: unknown
                   state: present
                   value: test2
                   weight: 0
-                section: unknown
                 state: present
                 weight: 0
               - first_index: 1
@@ -1687,11 +1648,9 @@ if __name__ == '__main__':
                 - first_index: 0
                   id: 0
                   name: external2
-                  section: unknown
                   state: present
                   value: test
                   weight: 0
-                section: unknown
                 state: present
                 weight: 0
               state: present
@@ -1729,7 +1688,6 @@ if __name__ == '__main__':
               - first_index: 0
                 id: 0
                 name: test-option
-                section: unknown
                 state: present
                 raw: test-is-present
                 weight: 0
@@ -1803,7 +1761,6 @@ if __name__ == '__main__':
               id: 0
               name: local
               option: local_alias
-              section: unknown
               state: present
               weight: 0
 
@@ -1812,7 +1769,6 @@ if __name__ == '__main__':
               id: 1
               name: other
               option: other_option
-              section: unknown
               state: present
               weight: 0
 
@@ -1821,7 +1777,6 @@ if __name__ == '__main__':
               id: 2
               name: both
               option: both_alias
-              section: unknown
               state: present
               weight: 0
             '''))
@@ -1846,7 +1801,6 @@ if __name__ == '__main__':
             - first_index: 0
               id: 0
               name: local
-              section: unknown
               state: present
               value:
 
@@ -1930,7 +1884,6 @@ if __name__ == '__main__':
                 id: 0
                 name: element1
                 option: element1_alias
-                section: unknown
                 state: present
                 weight: 0
 
@@ -1939,7 +1892,6 @@ if __name__ == '__main__':
                 id: 1
                 name: element2
                 option: element2_option
-                section: unknown
                 state: present
                 weight: 0
 
@@ -1948,7 +1900,6 @@ if __name__ == '__main__':
                 id: 2
                 name: element3
                 option: both_alias
-                section: unknown
                 state: present
                 weight: 0
               state: present
@@ -1973,7 +1924,6 @@ if __name__ == '__main__':
             - first_index: 0
               id: 0
               name: local
-              section: unknown
               separator: true
               state: present
               value: test
@@ -1982,7 +1932,6 @@ if __name__ == '__main__':
             - first_index: 1
               id: 1
               name: local2
-              section: unknown
               state: present
               value: test2
               weight: 0
@@ -2020,6 +1969,55 @@ if __name__ == '__main__':
             '''))
 
             items = parse_kv_items(input_items)
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_config_section(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'local'
+              section: 'base'
+              value: 'test'
+
+            - name: 'local2'
+              value: 'test2'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - first_index: 0
+              id: 0
+              name: local
+              section: base
+              state: present
+              value: test
+              weight: 0
+
+            - first_index: 1
+              id: 1
+              name: local2
+              state: present
+              value: test2
+              weight: 0
+            '''))
+
+            items = parse_kv_config(input_items)
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_config_section_raw(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - section: 'base'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - first_index: 0
+              id: 0
+              name: section
+              state: present
+              value: base
+              weight: 0
+            '''))
+
+            items = parse_kv_config(input_items)
 
             self.assertEqual(items, expected_items)
 

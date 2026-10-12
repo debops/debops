@@ -146,7 +146,6 @@ These values get populated in the ``parse_kv_*`` output mappings:
   in the middle (preserving source order), positive sinks to the bottom.
 - ``first_index``: Source position of the item's first occurrence, used for
   within-zone ordering and as secondary sort for same-target anchors.
-- ``section``: defaults to ``unknown``. Can be used by roles to split sections.
 
 Items can also define an ``anchor_to`` key referencing another item's name.
 This positions the item right before (if ``weight`` is negative) or right after
