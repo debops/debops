@@ -4,9 +4,8 @@
 
 """Tests for the DebOps inventory file specification.
 
-Written with 'unittest' so that the suite runs without extra dependencies:
-
-    PYTHONPATH=src python3 -m unittest discover -s src/tests
+Written with 'unittest' so that the suite runs under pytest without extra
+dependencies.
 """
 
 from debops.exceptions import InventorySpecError
