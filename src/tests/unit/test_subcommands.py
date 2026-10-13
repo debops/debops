@@ -59,9 +59,9 @@ def test_project_init_defaults():
     assert args.type == "legacy"
     assert args.default_view == "system"
     assert args.project_dir == "/tmp/example"
-    # Both are enabled unless explicitly disabled
-    assert bool(args.git) is True
-    assert bool(args.requirements) is True
+    # Both are enabled by default
+    assert args.git is True
+    assert args.requirements is True
     assert args.encrypt is None
     assert args.spec_sources is None
     assert args.dry_run is False
