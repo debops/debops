@@ -374,7 +374,6 @@ class AnsiblePlaybookRunner(object):
             if executor.returncode != 0:
                 logger.error('Ansible finished with '
                              'return code {}'.format(executor.returncode))
-            self._ring_bell()
             rc = executor.returncode
 
         except ChildProcessError:

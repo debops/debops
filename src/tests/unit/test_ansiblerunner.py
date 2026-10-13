@@ -146,6 +146,20 @@ def test_execute_sets_the_environment(stub_project, monkeypatch):
     assert os.environ["ANSIBLE_CONFIG"] == project.ansible_cfg.path
 
 
+def test_execute_rings_the_bell(stub_project, monkeypatch, capsys):
+    runner = AnsibleRunner(stub_project(), ansible_args=["all"], bell=True)
+    executor = mock.Mock(returncode=0)
+    executor.communicate.return_value = (b"", b"")
+    monkeypatch.setattr(runner_module.subprocess, "Popen",
+                        mock.Mock(return_value=executor))
+    monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
+    runner.inventory.unlock.return_value = False
+
+    runner.execute()
+
+    assert capsys.readouterr().out.count("\a") == 1
+
+
 def test_execute_aborts_when_the_pre_hook_fails(stub_project, monkeypatch):
     runner = AnsibleRunner(stub_project(), ansible_args=["all"])
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=False))
