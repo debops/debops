@@ -18,15 +18,6 @@ def stub_ansible_inventory(monkeypatch):
     monkeypatch.setattr(runner_module, "AnsibleInventory", mock.Mock())
 
 
-@pytest.fixture(autouse=True)
-def stub_logger_notice(monkeypatch):
-    # debops.__main__ installs this on logging.Logger; importing the runner
-    # alone does not, but the module relies on it.
-    monkeypatch.setattr(runner_module.logger, "notice",
-                        lambda *args, **kwargs: None,
-                        raising=False)
-
-
 class Friday(datetime.date):
 
     @classmethod
