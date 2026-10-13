@@ -93,9 +93,10 @@ class AnsibleRunner(object):
                                 [argument, self._quote_spaces(next_arg)])
                         self._parsed_args.extend([index, index + 1])
                         continue
-                else:
-                    self._ansible_command.append(argument)
-                    self._parsed_args.append(index)
+
+                # This is an 'ansible' option without an argument
+                self._ansible_command.append(argument)
+                self._parsed_args.append(index)
 
             else:
                 # This is an 'ansible' option without an argument
