@@ -410,7 +410,7 @@ def test_execute_rings_the_bell(stub_project, monkeypatch, capsys):
 
     runner.execute()
 
-    assert "\a" in capsys.readouterr().out
+    assert capsys.readouterr().out.count("\a") == 1
 
 
 def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch):
