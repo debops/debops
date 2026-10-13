@@ -822,6 +822,28 @@ class ProjectSpecConfigTestCase(TemplateSourceTestCase):
         self.assertEqual(config, {'enabled': True, 'max_version': 3,
                                   'allow_io': False})
 
+    def test_a_null_tree_means_defaults(self):
+        self.project.config = mock.Mock(
+            raw={'project': {'inventory_spec': None}})
+
+        config = self.project._inventory_spec_config()
+
+        self.assertEqual(config, {'enabled': True, 'max_version': 3,
+                                  'allow_io': False})
+
+    def test_options_written_as_strings_are_honored(self):
+        # Quoting booleans and numbers in YAML is an easy mistake; the
+        # options are still recognized
+        self.project.config = mock.Mock(
+            raw={'project': {'inventory_spec': {'enabled': 'false',
+                                                'allow_io': 'yes',
+                                                'version': '3'}}})
+
+        config = self.project._inventory_spec_config()
+
+        self.assertEqual(config, {'enabled': False, 'max_version': 3,
+                                  'allow_io': True})
+
     def test_disabled_project_refuses_specifications(self):
         with self.assertRaises(ValueError) as cm:
             self.load(self.FIXTURE_NAME, policy={'enabled': False})
