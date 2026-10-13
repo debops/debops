@@ -138,8 +138,6 @@ class AnsibleRunner(object):
             rc = executor.returncode
 
         except KeyboardInterrupt:
-            if unlocked:
-                self.inventory.lock()
             raise SystemExit('... aborted by user')
 
         else:

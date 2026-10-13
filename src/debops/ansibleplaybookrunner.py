@@ -383,8 +383,6 @@ class AnsiblePlaybookRunner(object):
         except KeyboardInterrupt:
             logger.notice('Playbook execution interrupted by user',
                           extra={'block': 'stderr'})
-            if unlocked:
-                self.inventory.lock()
             raise SystemExit('... aborted by user')
         else:
             self._ring_bell()
