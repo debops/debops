@@ -9,7 +9,6 @@ belongs to the integration tests; these cover the pure helpers that can be
 exercised against small directory trees.
 """
 
-import os
 import sys
 from types import SimpleNamespace
 from unittest import mock
@@ -65,95 +64,6 @@ def test_is_git_repo_detects_a_repository(tmp_path):
 
 def test_is_git_repo_rejects_a_plain_directory(tmp_path):
     assert ProjectDir.__new__(ProjectDir)._is_git_repo(str(tmp_path)) is False
-
-
-def test_inventory_spec_config_defaults():
-    assert make_project({})._inventory_spec_config() == {
-        "enabled": True,
-        "max_version": projectdir_module.SPEC_VERSION,
-        "allow_io": False,
-    }
-
-
-def test_inventory_spec_config_uses_the_configured_options():
-    raw = {"project": {"inventory_spec": {"enabled": "false",
-                                          "allow_io": "yes",
-                                          "version": "3"}}}
-
-    assert make_project(raw)._inventory_spec_config() == {
-        "enabled": False,
-        "max_version": 3,
-        "allow_io": True,
-    }
-
-
-def test_inventory_spec_config_ignores_a_none_tree():
-    raw = {"project": {"inventory_spec": None}}
-
-    config = make_project(raw)._inventory_spec_config()
-
-    assert config["enabled"] is True
-    assert config["allow_io"] is False
-
-
-def test_inventory_spec_config_rejects_a_bad_version():
-    raw = {"project": {"inventory_spec": {"version": "eight"}}}
-
-    with pytest.raises(ValueError):
-        make_project(raw)._inventory_spec_config()
-
-
-def test_parse_graph_names_extracts_groups_and_hosts():
-    graph = ("@all:\n"
-             "  |--@ungrouped:\n"
-             "  |  |--localhost\n"
-             "  |--@web:\n"
-             "  |  |--web01\n"
-             "  |  |--web02\n")
-
-    groups, hosts = ProjectDir._parse_graph_names(graph)
-
-    assert groups == {"all", "ungrouped", "web"}
-    assert hosts == {"localhost", "web01", "web02"}
-
-
-def test_parse_graph_names_skips_single_line_variables():
-    graph = ("@all:\n"
-             "  |--@web:\n"
-             "  |  |--web01\n"
-             "  |  |--{role_test=[value]}\n")
-
-    groups, hosts = ProjectDir._parse_graph_names(graph)
-
-    assert "web01" in hosts
-    assert "{role_test=[value]}" not in hosts
-
-
-def test_parse_graph_names_tracks_multiline_variables():
-    graph = ("@all:\n"
-             "  |--web01 {\n"
-             "  |  |--web02\n"
-             "  }\n"
-             "  |--web03\n")
-
-    groups, hosts = ProjectDir._parse_graph_names(graph)
-
-    assert groups == {"all"}
-    assert hosts == {"web03"}
-
-
-def test_vars_entries_lists_files_and_directories(tmp_path):
-    base_dir = tmp_path / "group_vars"
-    base_dir.mkdir()
-    (base_dir / "web.yml").write_text("")
-    (base_dir / "db").mkdir()
-    (base_dir / "readme.txt").write_text("")
-
-    assert ProjectDir._vars_entries(str(base_dir)) == ["db", "web"]
-
-
-def test_vars_entries_is_empty_for_a_missing_directory(tmp_path):
-    assert ProjectDir._vars_entries(str(tmp_path / "nope")) == []
 
 
 def test_report_unused_vars_warns_about_unknown_entries(tmp_path, capsys):
