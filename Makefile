@@ -90,6 +90,14 @@ yaml: test-yaml
 unit:           ## Run unit tests
 unit: test-unit
 
+.PHONY: integration
+integration:    ## Run integration tests
+integration: test-integration
+
+.PHONY: coverage
+coverage:       ## Run all tests with a combined coverage report
+coverage: test-coverage
+
 .PHONY: sdist
 sdist:          ## Create Python sdist package
 sdist: clean-sdist man
@@ -135,12 +143,25 @@ twine-upload:    ## Upload Python packages to PyPI
 	@twine upload dist/*
 
 .PHONY: test-all
-test-all: clean-tests test-spdx test-pep8 test-unit test-debops-tools test-debops-ansible_plugins test-spell test-docs test-man test-playbook-syntax test-ansible-lint test-yaml test-shell
+test-all: clean-tests test-spdx test-pep8 test-unit test-integration test-debops-ansible_plugins test-spell test-docs test-man test-playbook-syntax test-ansible-lint test-yaml test-shell
 
 .PHONY: test-unit
-test-unit: test-debops-ansible_plugins
-	@printf "%s\n" "Running unit tests using unittest..."
-	@PYTHONPATH=src python3 -m unittest discover -s src/tests
+test-unit:
+	@printf "%s\n" "Running unit tests using pytest..."
+	@PYTHONPATH=src python3 -m pytest src/tests \
+		--ignore=src/tests/integration \
+		--cov=debops --cov-report=term-missing
+
+.PHONY: test-integration
+test-integration:
+	@printf "%s\n" "Running integration tests using pytest..."
+	@PYTHONPATH=src python3 -m pytest src/tests/integration
+
+.PHONY: test-coverage
+test-coverage:
+	@printf "%s\n" "Running all tests with a combined coverage report..."
+	@PYTHONPATH=src python3 -m pytest src/tests \
+		--cov=debops --cov-report=term-missing
 
 .PHONY: test-pep8
 test-pep8:
@@ -217,11 +238,6 @@ test-ansible-lint: ansible.cfg
 test-yaml:
 	@printf "%s\n" "Testing YAML syntax using yamllint..."
 	@yamllint .
-
-.PHONY: test-debops-tools
-test-debops-tools:
-	@printf "%s\n" "Testing debops-tools using nose2..."
-	@type nose2-3 > /dev/null && ( nose2-3 --with-coverage ) || nose2 --with-coverage
 
 .PHONY: test-debops-ansible_plugins
 test-debops-ansible_plugins:

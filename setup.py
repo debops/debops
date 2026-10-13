@@ -97,10 +97,11 @@ setup(
                       'pyxdg', 'toml', 'python-dotenv', 'gitpython'],
     extras_require={
         'ansible': ['ansible', 'netaddr', 'passlib',
-                    'python-ldap', 'dnspython', 'pyopenssl']
+                    'python-ldap', 'dnspython', 'pyopenssl'],
+        'tests': ['pytest>=7', 'pytest-cov']
     },
     package_dir={'': 'src'},
-    packages=find_packages('src', exclude=('tests', 'docs')),
+    packages=find_packages('src', exclude=('tests', 'tests.*', 'docs')),
     data_files=[
         ('share/man/man1', MANPAGES_1),
         ('share/man/man5', MANPAGES_5),
