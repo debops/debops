@@ -135,7 +135,6 @@ class AnsibleRunner(object):
             executor = subprocess.Popen(' '.join(self._ansible_command),
                                         shell=True)
             std_out, std_err = executor.communicate()
-            self._ring_bell()
             rc = executor.returncode
 
         except KeyboardInterrupt:
