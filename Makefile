@@ -143,7 +143,7 @@ twine-upload:    ## Upload Python packages to PyPI
 	@twine upload dist/*
 
 .PHONY: test-all
-test-all: clean-tests test-spdx test-pep8 test-unit test-integration test-debops-tools test-debops-ansible_plugins test-spell test-docs test-man test-playbook-syntax test-ansible-lint test-yaml test-shell
+test-all: clean-tests test-spdx test-pep8 test-unit test-integration test-debops-ansible_plugins test-spell test-docs test-man test-playbook-syntax test-ansible-lint test-yaml test-shell
 
 .PHONY: test-unit
 test-unit:
@@ -238,11 +238,6 @@ test-ansible-lint: ansible.cfg
 test-yaml:
 	@printf "%s\n" "Testing YAML syntax using yamllint..."
 	@yamllint .
-
-.PHONY: test-debops-tools
-test-debops-tools:
-	@printf "%s\n" "Testing debops-tools using nose2..."
-	@type nose2-3 > /dev/null && ( nose2-3 --with-coverage ) || nose2 --with-coverage
 
 .PHONY: test-debops-ansible_plugins
 test-debops-ansible_plugins:
