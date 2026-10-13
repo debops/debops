@@ -100,8 +100,7 @@ class AnsiblePlaybookRunner(object):
                 if (index + 1 < arg_length and
                         argument not in ansible_playbook_flags):
                     next_arg = self.kwargs['ansible_args'][index + 1]
-                    if (not next_arg.startswith('-') or
-                            not next_arg.startswith('--')):
+                    if not next_arg.startswith('-'):
                         self._ansible_command.extend(
                                 [argument, self._quote_spaces(next_arg)])
                         self._parsed_args.extend([index, index + 1])

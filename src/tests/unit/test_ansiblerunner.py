@@ -50,6 +50,13 @@ def test_option_argument_with_spaces_is_quoted(stub_project):
     assert runner._ansible_command == ["ansible", "--limit", '"web srv"']
 
 
+def test_single_dash_option_is_not_taken_as_an_argument(stub_project):
+    # '-x y' is an option, not the value of '--limit'
+    runner = AnsibleRunner(stub_project(),
+                           ansible_args=["--limit", "-x y", "all"])
+    assert runner._ansible_command == ["ansible", "--limit", "-x y", "all"]
+
+
 def test_double_dash_is_dropped(stub_project):
     runner = AnsibleRunner(stub_project(), ansible_args=["--", "all"])
     assert runner._ansible_command == ["ansible", "all"]
