@@ -32,7 +32,8 @@ class AnsiblePlaybookRunner(object):
         except configparser.NoSectionError:
             path = project.ansible_cfg.path
             if (os.path.exists(path) and os.path.isfile(path)):
-                logger.error('Cannot find [defaults] section in {}.format(path)')
+                logger.error('Cannot find [defaults] section in '
+                             '{}'.format(path))
                 raise ValueError("Cannot find [defaults] section in " + path)
             else:
                 raise FileNotFoundError("Cannot find Ansible "
