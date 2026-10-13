@@ -56,6 +56,23 @@ General
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- The Ansible option parser used by the :command:`debops run` and
+  :command:`debops exec` commands no longer drops an option which is immediately
+  followed by another option, and no longer mistakes a single-dash token for the
+  argument of the preceding option.
+
+- The :command:`debops check` command no longer appends the ``--diff`` and
+  ``--check`` options when they are already present on the command line, and now
+  respects the ``-D`` and ``-C`` short forms specified by the user.
+
+- Interrupting an execution with ``Ctrl-C`` no longer fails with a ``NameError``
+  instead of reporting the interruption, encrypted secrets are now locked only
+  once when a run is interrupted, and the ``--bell`` option rings the terminal
+  bell only once.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
