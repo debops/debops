@@ -39,6 +39,12 @@ def test_option_with_an_argument_is_kept_in_order(stub_project):
     assert runner._ansible_command == ["ansible", "--limit", "web", "all"]
 
 
+def test_option_followed_by_an_option_is_kept(stub_project):
+    runner = AnsibleRunner(stub_project(),
+                           ansible_args=["--limit", "--verbose", "all"])
+    assert runner._ansible_command == ["ansible", "--limit", "--verbose", "all"]
+
+
 def test_option_argument_with_spaces_is_quoted(stub_project):
     runner = AnsibleRunner(stub_project(), ansible_args=["--limit", "web srv"])
     assert runner._ansible_command == ["ansible", "--limit", '"web srv"']
