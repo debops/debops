@@ -26,15 +26,6 @@ def make_hook(directory, name, body="exit 0"):
     return script
 
 
-@pytest.fixture(autouse=True)
-def stub_logger_notice(monkeypatch):
-    # debops.__main__ installs this on logging.Logger; importing the hooks
-    # module alone does not, but the module relies on it.
-    monkeypatch.setattr(hooks_module.logger, "notice",
-                        lambda *args, **kwargs: None,
-                        raising=False)
-
-
 @pytest.fixture
 def hook_dirs(tmp_path, monkeypatch):
     """Project-local and user-global hook directories in a tmp tree.

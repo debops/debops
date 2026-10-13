@@ -13,6 +13,8 @@ which the ``clean_logging`` fixture restores afterwards.
 import logging
 from logging.handlers import SysLogHandler
 import os
+import subprocess
+import sys
 from types import SimpleNamespace
 from unittest import mock
 
@@ -30,12 +32,9 @@ def clean_logging():
     logger = logging.getLogger("debops")
     old_handlers = list(logger.handlers)
     old_level = logger.level
-    had_notice = hasattr(logging.Logger, "notice")
     yield
     logger.handlers = old_handlers
     logger.setLevel(old_level)
-    if not had_notice and hasattr(logging.Logger, "notice"):
-        del logging.Logger.notice
 
 
 def stub_main_collaborators(monkeypatch, verbose=None,
@@ -77,14 +76,20 @@ def test_main_runs_the_interpreter_with_the_command_line(clean_logging,
     interpreter_class.assert_called_once_with(list(os.sys.argv))
 
 
-def test_main_installs_the_notice_log_level(clean_logging, monkeypatch):
-    stub_main_collaborators(monkeypatch)
+def test_importing_the_package_installs_the_notice_level():
+    env = dict(os.environ)
+    env["PYTHONPATH"] = os.pathsep.join(
+        [os.path.dirname(os.path.dirname(debops.__file__)),
+         env.get("PYTHONPATH", "")])
+    result = subprocess.run(
+        [sys.executable, "-c",
+         "import logging\n"
+         "import debops\n"
+         "assert logging.getLevelName(logging.NOTICE) == 'NOTICE'\n"
+         "logging.getLogger('debops').notice('test message')\n"],
+        capture_output=True, env=env)
 
-    main_module.main()
-
-    assert logging.getLevelName(logging.NOTICE) == "NOTICE"
-    logger = logging.getLogger("debops")
-    logger.notice("test message")  # must not raise AttributeError
+    assert result.returncode == 0, result.stderr.decode()
 
 
 def test_main_adds_the_stderr_and_syslog_handlers(clean_logging, monkeypatch):
