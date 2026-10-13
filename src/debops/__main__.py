@@ -8,6 +8,9 @@ import os
 import logging
 from logging.handlers import SysLogHandler
 
+# Configure logging early so that it's available as soon as possible
+logger = logging.getLogger('debops')
+
 
 def main():
 
@@ -74,9 +77,6 @@ def main():
         'local7': SysLogHandler.LOG_LOCAL7
     }
 
-    # Configure logging early so that it's available as soon as possible
-    logger = logging.getLogger('debops')
-
     if log_verbosity:
         if log_verbosity >= 3:
             logger.setLevel(logging.DEBUG)
@@ -139,10 +139,14 @@ def main():
     interpreter = debops.Interpreter(args)
 
 
-if __name__ == '__main__':
+def run():
     try:
         main()
     except KeyboardInterrupt:
         logger.notice('User interrupted execution',
                       extra={'block': 'stderr'})
         raise SystemExit('... aborted by user')
+
+
+if __name__ == '__main__':
+    run()

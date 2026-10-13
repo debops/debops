@@ -173,3 +173,15 @@ def test_main_filters_can_block_a_handler(clean_logging, monkeypatch):
     assert syslog_handler().filters[0](record) is False
     del record.block
     assert stream_handler().filters[0](record) is True
+
+
+def test_run_reports_a_keyboard_interrupt(clean_logging, monkeypatch):
+    monkeypatch.setattr(main_module, "main",
+                        mock.Mock(side_effect=KeyboardInterrupt))
+    monkeypatch.setattr(main_module.logger, "notice", mock.Mock(),
+                        raising=False)
+
+    with pytest.raises(SystemExit):
+        main_module.run()
+
+    main_module.logger.notice.assert_called_once()
