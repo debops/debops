@@ -123,12 +123,12 @@ Commands:
                                  '(default: %(default)s)')
         self.add_bool_argument(parser, 'git',
                                help='enable git support (default)',
-                               default='store_true',
+                               default=True,
                                no_help='disable git support')
         self.add_bool_argument(parser, 'requirements',
                                help='install Ansible Collections after '
                                     'initialization (default)',
-                               default='store_true',
+                               default=True,
                                no_help="don't install Ansible Collections")
         parser.add_argument('--encrypt', type=str, nargs='?',
                             choices=['encfs', 'git-crypt'],
@@ -245,7 +245,9 @@ Commands:
                 parents=[self.global_parser],
                 usage='debops run [<args>] [--] <[<namespace>.<collection>/]'
                       'playbook> [playbook] ... [ansible_args]',
-                description='run Ansible playbook(s) against hosts')
+                description='run Ansible playbook(s) against hosts',
+                epilog='The Ansible options must be specified after the '
+                       'playbook name(s).')
         parser.add_argument('-V', '--view', type=str,
                             help='select the infrastructure view '
                                  'to use for the "ansible-playbook" command')
@@ -267,7 +269,9 @@ Commands:
                 parents=[self.global_parser],
                 usage='debops check [<args>] [--] <[<namespace>.<collection>/]'
                       'playbook> [playbook] ... [ansible_args]',
-                description='run Ansible playbook(s) in check mode')
+                description='run Ansible playbook(s) in check mode',
+                epilog='The Ansible options must be specified after the '
+                       'playbook name(s).')
         parser.add_argument('-V', '--view', type=str,
                             help='select the infrastructure view '
                                  'to use for the "ansible-playbook" command')
@@ -283,11 +287,15 @@ Commands:
                             nargs=argparse.REMAINDER,
                             help='arguments for the '
                                  '"ansible-playbook" command')
-        parser.add_argument(const='--diff',  dest='ansible_args',
-                            help=argparse.SUPPRESS, action='append_const')
-        parser.add_argument(const='--check', dest='ansible_args',
-                            help=argparse.SUPPRESS, action='append_const')
         self.args = parser.parse_args(self.args[2:])
+
+        # Run in check mode with diff output; add the flags only if the user
+        # did not already specify them, in either long or short form
+        ansible_args = self.args.ansible_args
+        if '--diff' not in ansible_args and '-D' not in ansible_args:
+            ansible_args.append('--diff')
+        if '--check' not in ansible_args and '-C' not in ansible_args:
+            ansible_args.append('--check')
 
     def do_env(self):
         parser = argparse.ArgumentParser(

@@ -8,6 +8,9 @@ import os
 import logging
 from logging.handlers import SysLogHandler
 
+# Configure logging early so that it's available as soon as possible
+logger = logging.getLogger('debops')
+
 
 def main():
 
@@ -18,18 +21,6 @@ def main():
 
     # Check DebOps configuration to get logging options
     config = debops.config.Configuration()
-
-    # The NOTICE log level is missing in the Python's logging module,
-    # let's add it back (sysadmin's perspective)
-    LOGGING_NOTICE_NUM = (logging.INFO + 5)
-    logging.addLevelName(LOGGING_NOTICE_NUM, "NOTICE")
-    logging.NOTICE = LOGGING_NOTICE_NUM
-
-    def notice(self, message, *args, **kws):
-        if self.isEnabledFor(LOGGING_NOTICE_NUM):
-            # Yes, logger takes its '*args' as 'args'.
-            self._log(LOGGING_NOTICE_NUM, message, args, **kws)
-    logging.Logger.notice = notice
 
     def build_handler_filters(handler: str):
         """Add a way to block output of a specific log handler
@@ -73,9 +64,6 @@ def main():
         'local6': SysLogHandler.LOG_LOCAL6,
         'local7': SysLogHandler.LOG_LOCAL7
     }
-
-    # Configure logging early so that it's available as soon as possible
-    logger = logging.getLogger('debops')
 
     if log_verbosity:
         if log_verbosity >= 3:
@@ -139,10 +127,14 @@ def main():
     interpreter = debops.Interpreter(args)
 
 
-if __name__ == '__main__':
+def run():
     try:
         main()
     except KeyboardInterrupt:
         logger.notice('User interrupted execution',
                       extra={'block': 'stderr'})
         raise SystemExit('... aborted by user')
+
+
+if __name__ == '__main__':
+    run()

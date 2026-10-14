@@ -59,9 +59,9 @@ def test_project_init_defaults():
     assert args.type == "legacy"
     assert args.default_view == "system"
     assert args.project_dir == "/tmp/example"
-    # Both are enabled unless explicitly disabled
-    assert bool(args.git) is True
-    assert bool(args.requirements) is True
+    # Both are enabled by default
+    assert args.git is True
+    assert args.requirements is True
     assert args.encrypt is None
     assert args.spec_sources is None
     assert args.dry_run is False
@@ -166,9 +166,28 @@ def test_check_adds_the_check_mode_flags():
     subcommands = parse_cli("check", "site.yml")
     args = subcommands.args
 
-    assert "site.yml" in args.ansible_args
-    assert "--check" in args.ansible_args
-    assert "--diff" in args.ansible_args
+    assert args.ansible_args == ["site.yml", "--diff", "--check"]
+
+
+def test_check_adds_only_the_missing_flag():
+    subcommands = parse_cli("check", "site.yml", "--diff")
+    args = subcommands.args
+
+    assert args.ansible_args == ["site.yml", "--diff", "--check"]
+
+
+def test_check_does_not_duplicate_the_flags():
+    subcommands = parse_cli("check", "site.yml", "--diff", "--check")
+    args = subcommands.args
+
+    assert args.ansible_args == ["site.yml", "--diff", "--check"]
+
+
+def test_check_does_not_duplicate_the_short_flags():
+    subcommands = parse_cli("check", "site.yml", "-D", "-C")
+    args = subcommands.args
+
+    assert args.ansible_args == ["site.yml", "-D", "-C"]
 
 
 def test_env_defaults_to_the_local_scope():

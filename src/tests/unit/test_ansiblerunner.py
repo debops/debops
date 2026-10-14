@@ -39,9 +39,22 @@ def test_option_with_an_argument_is_kept_in_order(stub_project):
     assert runner._ansible_command == ["ansible", "--limit", "web", "all"]
 
 
+def test_option_followed_by_an_option_is_kept(stub_project):
+    runner = AnsibleRunner(stub_project(),
+                           ansible_args=["--limit", "--verbose", "all"])
+    assert runner._ansible_command == ["ansible", "--limit", "--verbose", "all"]
+
+
 def test_option_argument_with_spaces_is_quoted(stub_project):
     runner = AnsibleRunner(stub_project(), ansible_args=["--limit", "web srv"])
     assert runner._ansible_command == ["ansible", "--limit", '"web srv"']
+
+
+def test_single_dash_option_is_not_taken_as_an_argument(stub_project):
+    # '-x y' is an option, not the value of '--limit'
+    runner = AnsibleRunner(stub_project(),
+                           ansible_args=["--limit", "-x y", "all"])
+    assert runner._ansible_command == ["ansible", "--limit", "-x y", "all"]
 
 
 def test_double_dash_is_dropped(stub_project):
@@ -133,6 +146,20 @@ def test_execute_sets_the_environment(stub_project, monkeypatch):
     assert os.environ["ANSIBLE_CONFIG"] == project.ansible_cfg.path
 
 
+def test_execute_rings_the_bell(stub_project, monkeypatch, capsys):
+    runner = AnsibleRunner(stub_project(), ansible_args=["all"], bell=True)
+    executor = mock.Mock(returncode=0)
+    executor.communicate.return_value = (b"", b"")
+    monkeypatch.setattr(runner_module.subprocess, "Popen",
+                        mock.Mock(return_value=executor))
+    monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
+    runner.inventory.unlock.return_value = False
+
+    runner.execute()
+
+    assert capsys.readouterr().out.count("\a") == 1
+
+
 def test_execute_aborts_when_the_pre_hook_fails(stub_project, monkeypatch):
     runner = AnsibleRunner(stub_project(), ansible_args=["all"])
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=False))
@@ -185,4 +212,4 @@ def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch):
     with pytest.raises(SystemExit):
         runner.execute()
 
-    assert runner.inventory.lock.called
+    runner.inventory.lock.assert_called_once_with()

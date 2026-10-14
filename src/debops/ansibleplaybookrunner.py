@@ -32,7 +32,8 @@ class AnsiblePlaybookRunner(object):
         except configparser.NoSectionError:
             path = project.ansible_cfg.path
             if (os.path.exists(path) and os.path.isfile(path)):
-                logger.error('Cannot find [defaults] section in {}.format(path)')
+                logger.error('Cannot find [defaults] section in '
+                             '{}'.format(path))
                 raise ValueError("Cannot find [defaults] section in " + path)
             else:
                 raise FileNotFoundError("Cannot find Ansible "
@@ -99,8 +100,7 @@ class AnsiblePlaybookRunner(object):
                 if (index + 1 < arg_length and
                         argument not in ansible_playbook_flags):
                     next_arg = self.kwargs['ansible_args'][index + 1]
-                    if (not next_arg.startswith('-') or
-                            not next_arg.startswith('--')):
+                    if not next_arg.startswith('-'):
                         self._ansible_command.extend(
                                 [argument, self._quote_spaces(next_arg)])
                         self._parsed_args.extend([index, index + 1])
@@ -374,7 +374,6 @@ class AnsiblePlaybookRunner(object):
             if executor.returncode != 0:
                 logger.error('Ansible finished with '
                              'return code {}'.format(executor.returncode))
-            self._ring_bell()
             rc = executor.returncode
 
         except ChildProcessError:
@@ -384,8 +383,6 @@ class AnsiblePlaybookRunner(object):
         except KeyboardInterrupt:
             logger.notice('Playbook execution interrupted by user',
                           extra={'block': 'stderr'})
-            if unlocked:
-                self.inventory.lock()
             raise SystemExit('... aborted by user')
         else:
             self._ring_bell()

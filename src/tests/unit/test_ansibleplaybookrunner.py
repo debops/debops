@@ -18,15 +18,6 @@ def stub_ansible_inventory(monkeypatch):
     monkeypatch.setattr(runner_module, "AnsibleInventory", mock.Mock())
 
 
-@pytest.fixture(autouse=True)
-def stub_logger_notice(monkeypatch):
-    # debops.__main__ installs this on logging.Logger; importing the runner
-    # alone does not, but the module relies on it.
-    monkeypatch.setattr(runner_module.logger, "notice",
-                        lambda *args, **kwargs: None,
-                        raising=False)
-
-
 class Friday(datetime.date):
 
     @classmethod
@@ -260,7 +251,7 @@ def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch):
     with pytest.raises(SystemExit):
         runner.execute()
 
-    assert runner.inventory.lock.called
+    runner.inventory.lock.assert_called_once_with()
 
 
 def test_missing_ansible_cfg_is_reported(stub_project):
@@ -270,13 +261,15 @@ def test_missing_ansible_cfg_is_reported(stub_project):
         AnsiblePlaybookRunner(project, ansible_args=[])
 
 
-def test_missing_defaults_section_in_an_existing_file(stub_project):
+def test_missing_defaults_section_in_an_existing_file(stub_project, caplog):
     project = stub_project(cfg_error=configparser.NoSectionError("defaults"))
     with open(project.ansible_cfg.path, "w") as handle:
         handle.write("[other]\n")
 
     with pytest.raises(ValueError):
         AnsiblePlaybookRunner(project, ansible_args=[])
+
+    assert project.ansible_cfg.path in caplog.text
 
 
 def test_missing_inventory_option_aborts(stub_project, capsys):
@@ -315,6 +308,16 @@ def test_option_argument_with_spaces_is_quoted(stub_project):
                                    ansible_args=["-e", "a=b c", "site.yml"])
 
     assert '"a=b c"' in runner._ansible_command
+
+
+def test_single_dash_option_is_not_taken_as_an_argument(stub_project):
+    # '-x y' is an option, not the value of '--limit'
+    runner = AnsiblePlaybookRunner(stub_project(),
+                                   ansible_args=["site.yml", "--limit",
+                                                 "-x y"])
+
+    assert runner._ansible_command[-2:] == ["--limit", "-x y"]
+    assert runner._found_playbooks == ["site.yml"]
 
 
 def test_double_dash_is_dropped(stub_project):
@@ -398,7 +401,7 @@ def test_execute_rings_the_bell(stub_project, monkeypatch, capsys):
 
     runner.execute()
 
-    assert "\a" in capsys.readouterr().out
+    assert capsys.readouterr().out.count("\a") == 1
 
 
 def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch):

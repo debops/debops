@@ -87,15 +87,15 @@ class AnsibleRunner(object):
                 if (index + 1 < arg_length and
                         argument not in ansible_flags):
                     next_arg = self.kwargs['ansible_args'][index + 1]
-                    if (not next_arg.startswith('-') or
-                            not next_arg.startswith('--')):
+                    if not next_arg.startswith('-'):
                         self._ansible_command.extend(
                                 [argument, self._quote_spaces(next_arg)])
                         self._parsed_args.extend([index, index + 1])
                         continue
-                else:
-                    self._ansible_command.append(argument)
-                    self._parsed_args.append(index)
+
+                # This is an 'ansible' option without an argument
+                self._ansible_command.append(argument)
+                self._parsed_args.append(index)
 
             else:
                 # This is an 'ansible' option without an argument
@@ -135,12 +135,9 @@ class AnsibleRunner(object):
             executor = subprocess.Popen(' '.join(self._ansible_command),
                                         shell=True)
             std_out, std_err = executor.communicate()
-            self._ring_bell()
             rc = executor.returncode
 
         except KeyboardInterrupt:
-            if unlocked:
-                self.inventory.lock()
             raise SystemExit('... aborted by user')
 
         else:
