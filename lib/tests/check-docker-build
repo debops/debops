@@ -25,7 +25,7 @@ if type docker > /dev/null 2>&1 ; then
     fi
 
     printf "%s\\n" "Building the 'debops/test' Docker image..."
-    docker build -t debops/test .
+    BUILDKIT_PROGRESS=plain docker build --build-arg "WITH_MANPAGES=${WITH_MANPAGES:-1}" -t debops/test .
 
     printf "%s\\n" "Testing the viability of 'debops/test' Docker image..."
     docker run -it --rm debops/test bash -c 'cd src/controller && debops run service/core --diff'
