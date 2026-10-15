@@ -123,17 +123,30 @@ class Configuration(object):
         else:
             return self._config
 
+    def _merge_env_file(self, path):
+        """Parse an environment file once and merge it into the environment.
+
+        The file is parsed only once so that a variable which references its
+        own previous value (for example 'PATH=/extra/bin:${PATH}') is not
+        applied twice; a 'dotenv.load_dotenv()' call followed by
+        'dotenv.dotenv_values()' would interpolate the second parse against
+        the results of the first.
+        """
+        values = dotenv.dotenv_values(path)
+        for key, value in values.items():
+            if value is not None:
+                os.environ[key] = value
+        self._env_vars.update(values)
+
     def merge_env(self, path):
         if os.path.exists(os.path.join(path, '.env')):
             if os.path.isfile(os.path.join(path, '.env')):
                 self._env_files.append(os.path.join(path, '.env'))
-                dotenv.load_dotenv(os.path.join(path, '.env'), override=True)
-                self._env_vars.update(dotenv.dotenv_values(os.path.join(path, '.env')))
+                self._merge_env_file(os.path.join(path, '.env'))
         elif os.path.exists(path):
             if os.path.isfile(path):
                 self._env_files.append(path)
-                dotenv.load_dotenv(path, override=True)
-                self._env_vars.update(dotenv.dotenv_values(os.path.join(path)))
+                self._merge_env_file(path)
 
     def load(self, path):
         if os.path.exists(path):
