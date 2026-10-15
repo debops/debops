@@ -62,6 +62,8 @@ def test_project_init_defaults():
     # Both are enabled by default
     assert args.git is True
     assert args.requirements is True
+    # The Python virtual environment is opt-in
+    assert args.venv is False
     assert args.encrypt is None
     assert args.spec_sources is None
     assert args.dry_run is False
@@ -74,6 +76,13 @@ def test_project_init_disable_flags():
 
     assert args.git is False
     assert args.requirements is False
+
+
+def test_project_init_enables_the_virtual_environment():
+    subcommands = parse_cli("project", "init", "-t", "modern", "--venv",
+                            "/tmp/example")
+
+    assert subcommands.args.venv is True
 
 
 def test_project_init_accepts_all_options():
@@ -140,6 +149,56 @@ def test_project_commit_defaults_to_the_current_directory():
     subcommands = parse_cli("project", "commit")
 
     assert subcommands.args.project_dir == os.getcwd()
+
+
+def test_project_venv_defaults():
+    subcommands = parse_cli("project", "venv", "install", "/tmp/example")
+    args = subcommands.args
+
+    assert args.action == "install"
+    assert args.scope == "all"
+    assert args.project_dir == "/tmp/example"
+
+
+def test_project_venv_defaults_to_the_current_directory():
+    subcommands = parse_cli("project", "venv", "install")
+
+    assert subcommands.args.project_dir == os.getcwd()
+
+
+@pytest.mark.parametrize(("option", "scope"), [
+    ("--python", "python"),
+    ("--collections", "collections"),
+    ("--all", "all"),
+])
+def test_project_venv_scope_options(option, scope):
+    subcommands = parse_cli("project", "venv", "upgrade", option)
+
+    assert subcommands.args.scope == scope
+
+
+def test_project_venv_rejects_an_unknown_action():
+    with pytest.raises(SystemExit) as exc:
+        parse_cli("project", "venv", "bogus")
+
+    assert exc.value.code == 2
+
+
+def test_project_venv_enable():
+    subcommands = parse_cli("project", "venv", "enable", "/tmp/example")
+    args = subcommands.args
+
+    assert args.action == "enable"
+    assert args.scope == "all"
+    assert args.project_dir == "/tmp/example"
+
+
+@pytest.mark.parametrize("action", ["enable", "install", "upgrade",
+                                    "recreate", "freeze"])
+def test_project_venv_scope_options_on_all_actions(action):
+    subcommands = parse_cli("project", "venv", action, "--python")
+
+    assert subcommands.args.scope == "python"
 
 
 def test_exec_captures_the_ansible_arguments():
