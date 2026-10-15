@@ -510,12 +510,11 @@ apt__ubuntu_sources:
     suites:
       - '{{ apt__distribution_release }}'
     components: [ 'partner' ]
-    state: '{{ "present"
-               if (apt__distribution == "Ubuntu" and
-                   apt__distribution_version != "n/a" and
-                   ansible_distribution_version is version_compare("24.4", "<") and
-                   apt__nonfree | bool)
-               else "ignore" }}'
+    # As of october 2026, archive.ubuntu.com no longer responds, which breaks
+    # the rule for all Ubuntu distributions.
+    # We should keep it 'absent' for some releases so that servers using it
+    # have time to get cleaned.
+    state: 'absent'
 
   - name: 'ubuntu-release-security'
     types: '{{ apt__archive_types }}'
