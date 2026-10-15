@@ -6,6 +6,7 @@ from .exceptions import NoDefaultViewException, InventorySpecError
 from .config import Configuration
 from .subcommands import Subcommands
 from .projectdir import ProjectDir
+from .projectvenv import ProjectVenv
 from .ansiblerunner import AnsibleRunner
 from .ansibleplaybookrunner import AnsiblePlaybookRunner
 from .envrunner import EnvRunner
@@ -39,6 +40,8 @@ class Interpreter(object):
                 self.do_project_mkview(self.parsed_args.args)
             elif self.parsed_args.command == 'commit':
                 self.do_project_commit(self.parsed_args.args)
+            elif self.parsed_args.command == 'venv':
+                self.do_project_venv(self.parsed_args.args)
 
         elif self.parsed_args.section == 'exec':
             self.do_exec(self.parsed_args.args)
@@ -60,8 +63,11 @@ class Interpreter(object):
             project = ProjectDir(path=args.project_dir, config=self.config,
                                  create=True, **vars(args))
             project.create()
+            if args.venv and args.requirements:
+                venv = ProjectVenv(project, **vars(args))
+                venv.install()
         except (IsADirectoryError, NotADirectoryError,
-                PermissionError, InventorySpecError,
+                PermissionError, InventorySpecError, FileNotFoundError,
                 ChildProcessError, ValueError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
@@ -122,6 +128,28 @@ class Interpreter(object):
             project.commit(interactive=True)
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
+            print('Error:', errmsg)
+            sys.exit(1)
+
+    def do_project_venv(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 **vars(args))
+            if args.action == 'enable':
+                project.enable_venv(scope=args.scope)
+                return
+            venv = ProjectVenv(project, **vars(args))
+            if args.action == 'install':
+                venv.install(scope=args.scope)
+            elif args.action == 'upgrade':
+                venv.upgrade(scope=args.scope)
+            elif args.action == 'recreate':
+                venv.recreate(scope=args.scope)
+            elif args.action == 'freeze':
+                venv.freeze(scope=args.scope)
+        except (IsADirectoryError, NotADirectoryError,
+                PermissionError, FileNotFoundError,
+                ChildProcessError, ValueError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 
