@@ -72,6 +72,13 @@ General
   temporary directories, with optional coverage of encrypted secrets when
   :command:`git-crypt` or :command:`encfs` are installed.
 
+- Modern project directories can now contain their own :ref:`encapsulated
+  Python virtual environment <project_virtual_environment>` with Ansible and
+  the Python dependencies required by the DebOps roles, independent of the
+  system-wide installation. Python package versions and Ansible Collection
+  versions can be locked and a given virtual environment can be reinstalled
+  when needed.
+
 :ref:`debops.core` role
 '''''''''''''''''''''''
 

@@ -49,6 +49,22 @@ Options
 ``--no-requirements``
   Don't install Ansible Collections after the project directory is initialized.
 
+``--venv``
+  Enable an encapsulated Python virtual environment in the new project
+  directory (modern projects only). The environment lives in the
+  :file:`.debops/venv/` subdirectory and contains its own Ansible installation
+  along with the Python dependencies required by the DebOps roles, independent
+  of the system packages. By default, in a new project directory Python
+  packages and Ansible Collections will be installed automatically; this can be
+  turned off using ``--no-requirements`` option to allow for customization of
+  the environment, which can be installed later with the :command:`debops
+  project venv install` command. See :command:`debops project venv` for more
+  details.
+
+``--no-venv``
+  Don't enable a Python virtual environment in the new project directory
+  (default).
+
 ``--encrypt <encfs|git-crypt>``
   Prepare the project directory to host encrypted :file:`ansible/secret/`
   subdirectory, used to store passwords, encryption keys and other confidential
@@ -436,3 +452,145 @@ Options
 
 ``<project_dir>``
   Path to the project directory to lock.
+
+
+:command:`debops project venv`
+------------------------------
+
+This command manages the Python virtual environment encapsulated in
+a "modern" DebOps project directory, enabled either at creation time with
+the :command:`debops project init --venv` command or later with the
+``enable`` action. The environment lives in the :file:`.debops/venv/`
+subdirectory and contains its own Ansible installation along with the Python
+dependencies required by the DebOps roles, independent of the system
+packages. The installed package versions are recorded in the
+:file:`.debops/requirements.txt` file, and the versions of the installed
+Ansible Collections in the :file:`ansible/collections/requirements.lock.yml`
+file; both are meant to be committed to version control. The environment
+itself is not, and can be recreated on demand. When git auto-commit is
+enabled, changes to the requirements files are committed automatically.
+
+While the environment is enabled, its :file:`bin/` directory is prepended to
+the ``PATH`` environment variable at runtime, so :command:`debops env` and
+the other subcommands use the binaries from the environment; the ``ansible``
+binaries used by the :command:`debops` subcommands are likewise resolved
+into the environment at runtime. An explicit ``PATH`` entry in the
+:file:`.debops/environment` file overrides the runtime ``PATH``.
+
+The ``project.venv.path`` configuration option can be an absolute path
+outside of the project directory, which allows multiple projects to share
+one environment. Note that in that case the
+:file:`.debops/requirements.txt` file of each project mirrors the full
+contents of the shared environment, and upgrading the packages in one
+project affects the other projects as well.
+
+Available actions:
+
+``enable``
+  Activate the Python virtual environment in an existing "modern" project
+  directory. This writes the same configuration which a project created with
+  :command:`debops project init --venv` configures in a new project directory.
+  Existing configuration files will be modified to encapsulate the environment
+  (for example, ``collections_path`` parameter in Ansible configuration will be
+  rewritten to use only the project directory :file:`ansible/collections/`
+  path).
+
+  After enabling the environment, the :command:`debops project venv install`
+  command can be used to install the specified Python packages and Ansbile
+  Collections.
+
+``install``
+  Create the virtual environment if it does not exist yet and install the
+  Python packages from the :file:`.debops/requirements.txt` file (or the DebOps
+  seed if the file is missing). Ansible Collections are installed from the
+  :file:`ansible/collections/requirements.lock.yml` file if it exists (which
+  reproduces the locked versions), followed by the
+  :file:`ansible/collections/requirements.yml` file, which applies new or
+  changed entries on top. The requirements files are rewritten afterwards with
+  the pinned versions of everything installed. New packages can be added to the
+  requirements file by hand and installed by running this action again.
+
+  Some of the Python packages in the DebOps seed, for example
+  ``python-ldap``, need external, system-level build dependencies such as
+  a C compiler and development files. DebOps checks for their presence on
+  the Ansible Controller; where they are missing, the affected packages are
+  commented out in the requirements file, together with the command needed
+  to install the dependencies on the detected platform (APT, DNF, Pacman,
+  APK, Zypper or Homebrew). After installing the dependencies, uncomment the
+  package and run this action again to add it to the environment.
+
+``upgrade``
+  Upgrade the Python packages listed in the DebOps seed which are present in
+  the requirements file, along with their dependencies, and force-upgrade
+  the Ansible Collections from the
+  :file:`ansible/collections/requirements.yml` file. Packages added to the
+  requirements file by the user stay at their pinned versions. The
+  requirements files are rewritten afterwards with the new pinned versions.
+
+``recreate``
+  Destroy the virtual environment and install it from scratch, using the
+  current contents of the requirements files. This action can be used during
+  downgrades of Python packages or Ansible Collections to help with dependency
+  resolution.
+
+``freeze``
+  Rewrite the requirements files with the pinned versions of the Python
+  packages and Ansible Collections currently installed in the project. The
+  versions of the Ansible Collections listed in the
+  :file:`ansible/collections/requirements.yml` file are recorded in the
+  :file:`ansible/collections/requirements.lock.yml` file alongside it, which
+  is meant to be committed to version control and can be used to reinstall
+  the recorded state with :command:`ansible-galaxy collection install -r`.
+  Collections with a source other than Ansible Galaxy (for example a git
+  repository) are preserved as written in the requirements file, with the
+  installed version recorded in a comment when it can be determined.
+
+Options
+~~~~~~~
+
+``-h, --help``
+  Display the help and usage information
+
+``--python``
+  Manage only the Python packages and the virtual environment. Mutually
+  exclusive with ``--collections`` and ``--all``.
+
+``--collections``
+  Manage only the Ansible Collections. Mutually exclusive with ``--python``
+  and ``--all``.
+
+``--all``
+  Manage both the Python packages and the Ansible Collections (default).
+
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
+``<project_dir>``
+  Path to the project directory to manage.
+
+Examples
+~~~~~~~~
+
+Activate the Python virtual environment in an existing project directory:
+
+.. code-block:: console
+
+   debops project venv enable
+
+Create the virtual environment and install all requirements:
+
+.. code-block:: console
+
+   debops project venv install
+
+Upgrade Ansible and the other seed packages to their latest versions:
+
+.. code-block:: console
+
+   debops project venv upgrade
+
+Install only the Ansible Collections, leaving the Python packages alone:
+
+.. code-block:: console
+
+   debops project venv install --collections

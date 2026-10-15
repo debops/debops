@@ -4,6 +4,8 @@
 
 from .constants import DEBOPS_USER_HOME_DIR
 from .utils import unexpanduser, write_file, host_is_controller, strtobool
+from .projectvenv import (seed_requirements, seed_names, check_scope,
+                          find_missing_external_deps, comment_external_deps)
 from .ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
 from .inventoryspec import (parse_spec, merge_specs, apply_spec,
@@ -28,6 +30,7 @@ import tempfile
 import sys
 import time
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -122,6 +125,10 @@ class ProjectDir(object):
         self.config.merge(project_data)
 
         self.config.merge(os.path.join(self.path, '.debops', 'conf.d'))
+
+        # Point the Ansible binaries and PATH at the project virtual
+        # environment, if enabled
+        self._apply_venv_runtime()
 
         self._commands = {
             'ansible-galaxy': self.config.raw['binaries']['ansible-galaxy'],
@@ -259,6 +266,76 @@ class ProjectDir(object):
         overwriting was not requested.
         """
         return write_file(filename, ''.join(content), overwrite=overwrite)
+
+    def _venv_enabled(self):
+        """Check if the project uses an encapsulated Python virtual
+        environment, based on the 'project.venv.enabled' configuration
+        option."""
+        try:
+            enabled = (self.config.raw.get('project', {})
+                       .get('venv', {}).get('enabled', False))
+        except AttributeError:
+            return False
+        if isinstance(enabled, str):
+            enabled = bool(strtobool(enabled))
+        return bool(enabled)
+
+    def _venv_path(self):
+        """Return the absolute path of the project Python virtual
+        environment, honoring the 'project.venv.path' configuration option.
+
+        The path may be absolute ('~' is expanded), or relative to the
+        project directory. An absolute path can point outside of the project
+        to share one environment between multiple projects.
+        """
+        venv = self.config.raw.get('project', {}).get('venv', {}) or {}
+        return os.path.join(self.path,
+                            os.path.expanduser(venv.get('path',
+                                                        '.debops/venv')))
+
+    def _update_venv_binaries(self):
+        """Point the Ansible binaries in the configuration at the project
+        Python virtual environment.
+
+        The paths are computed at runtime from the 'project.venv.path'
+        option, so the environment can live anywhere - also outside of the
+        project directory. In a project with the environment enabled this
+        wins over the 'binaries' options from the configuration files; the
+        encapsulation premise is that the environment provides Ansible.
+        """
+        venv_bin = os.path.join(self._venv_path(), 'bin')
+        self.config.merge({'binaries': {
+            name: os.path.join(venv_bin, name)
+            for name in ('ansible', 'ansible-inventory',
+                         'ansible-galaxy', 'ansible-playbook')}})
+
+    def _apply_venv_runtime(self):
+        """Point the Ansible binaries and the PATH environment variable at
+        the project Python virtual environment, if it is enabled."""
+        if not self._venv_enabled():
+            return
+        self._update_venv_binaries()
+        self._prepend_venv_path()
+
+    def _prepend_venv_path(self):
+        """Prepend the 'bin' directory of the project Python virtual
+        environment to the PATH environment variable at runtime.
+
+        Skipped when an environment file defines PATH explicitly - a PATH
+        entry in the environment file then acts as an override (the runtime
+        never sets PATH itself, so its presence in the environment variables
+        means that a file did it).
+        """
+        if not self._venv_enabled():
+            return
+        if 'PATH' in self.config._env_vars:
+            # An environment file defines PATH explicitly, leave it alone
+            return
+        venv_bin = os.path.join(self._venv_path(), 'bin')
+        path = os.environ.get('PATH', '')
+        if venv_bin in path.split(os.pathsep):
+            return
+        self.config.set_env('PATH', venv_bin + os.pathsep + path)
 
     def _inventory_spec_config(self):
         """Read the 'project.inventory_spec' configuration tree.
@@ -492,7 +569,8 @@ class ProjectDir(object):
         that is how a group_vars directory without a matching group is
         reported.
         """
-        command = self.config.raw['binaries']['ansible-inventory']
+        command = os.path.expanduser(
+                self.config.raw['binaries']['ansible-inventory'])
 
         if not shutil.which(command):
             raise ValueError('The "{}" command is not available, so the '
@@ -706,6 +784,7 @@ class ProjectDir(object):
         self.project_type = 'modern'
         default_view = self.kwargs.get('default_view', 'system')
         filename_view = default_view.replace('/', '-')
+        venv = bool(self.kwargs.get('venv', False))
 
         # Create modern project directory structure
         self.createdirs(path)
@@ -804,9 +883,14 @@ class ProjectDir(object):
         # Create .debops/conf.d/view-<name>.yml
         self._write_file(os.path.join(path, '.debops', 'conf.d',
                                       'view-' + filename_view + '.yml'),
-                         default_view_yml.render(env=os.environ,
-                                                 view_name=default_view)
+                         default_view_yml.render(
+                             env=os.environ,
+                             view_name=default_view,
+                             venv=venv)
                          + '\n')
+
+        if venv:
+            self._write_venv_config(path)
 
         # Create .debops/environment
         self._write_file(os.path.join(path, '.debops', 'environment'),
@@ -823,7 +907,8 @@ class ProjectDir(object):
         # Create ansible/collections/requirements.yml
         self._write_file(os.path.join(path, 'ansible', 'collections',
                                       'requirements.yml'),
-                         default_requirements.render()
+                         default_requirements.render(
+                             include_debops_collection=venv)
                          + '\n')
 
         # Create view/.gitattributes
@@ -853,6 +938,11 @@ class ProjectDir(object):
 
         self.config.merge(os.path.join(self.path, '.debops', 'conf.d'))
 
+        # Point the Ansible binaries and PATH at the project virtual
+        # environment, if enabled; __init__() ran before the project
+        # configuration existed, so this is not applied there
+        self._apply_venv_runtime()
+
         self.ansible_cfg = AnsibleConfig(
                 os.path.join(self.path, 'ansible', 'views',
                              default_view, 'ansible.cfg'),
@@ -869,6 +959,11 @@ class ProjectDir(object):
               file=self._status_stream())
 
     def _create_legacy_project(self, path):
+        if self.kwargs.get('venv', False):
+            raise ValueError('Python virtual environments can be enabled '
+                             'only in "modern" DebOps project directories; '
+                             'use the "debops project init -t modern --venv" '
+                             'command')
         logger.debug('Initializing new "legacy" project directory')
         self.project_type = 'legacy'
 
@@ -1067,9 +1162,12 @@ class ProjectDir(object):
                                                 stdin=subprocess.PIPE)
                 gitcrypt_cmd.communicate()
 
-            # Install Ansible Collections after the project is initialized
+            # Install Ansible Collections after the project is initialized.
+            # In a project with a Python virtual environment the collections
+            # are installed by the 'debops project venv' command instead,
+            # which uses the ansible-galaxy binary from the environment
             install_requirements = self.kwargs.get('requirements', None)
-            if install_requirements:
+            if install_requirements and not self.kwargs.get('venv', False):
                 logger.debug('Installing Ansible Collections specified in '
                              + os.path.join('ansible', 'collections',
                                             'requirements.yml') + ' file')
@@ -1169,8 +1267,10 @@ class ProjectDir(object):
                 self._write_file(
                         os.path.join(self.path, '.debops', 'conf.d',
                                      'view-' + filename_view + '.yml'),
-                        default_view_yml.render(env=os.environ,
-                                                view_name=view)
+                        default_view_yml.render(
+                            env=os.environ,
+                            view_name=view,
+                            venv=self._venv_enabled())
                         + '\n')
 
                 encrypted_secrets = self.kwargs.get('encrypt', None)
@@ -1223,6 +1323,246 @@ class ProjectDir(object):
         else:
             raise NotADirectoryError('This functionality only works in '
                                      '"modern" DebOps project directory')
+
+    def _write_venv_config(self, path):
+        """Write the configuration files of the project Python venv.
+
+        This covers the '.debops/conf.d/venv.yml' drop-in file and the seed
+        '.debops/requirements.txt' file, in which packages whose external
+        build dependencies are not available are commented out with an
+        explanation of what to install. The Ansible binaries are pointed at
+        the environment at runtime, based on the configured path. Existing
+        files are not overwritten, so the function can be used both when
+        a project is created with the '--venv' option and when the
+        environment is enabled in an existing project with
+        'debops project venv enable'.
+        """
+        default_venv_yml = jinja2.Template(
+                pkgutil.get_data('debops',
+                                 os.path.join('_data',
+                                              'templates',
+                                              'projectdir',
+                                              'modern',
+                                              'venv.yml.j2'))
+                .decode('utf-8'), trim_blocks=True)
+
+        # Create .debops/conf.d/venv.yml
+        self._write_file(os.path.join(path, '.debops', 'conf.d',
+                                      'venv.yml'),
+                         default_venv_yml.render()
+                         + '\n')
+
+        # Create .debops/requirements.txt with the seed Python packages.
+        # Packages whose external build dependencies are not available are
+        # commented out with an explanation of what to install
+        self._write_file(os.path.join(path, '.debops',
+                                      'requirements.txt'),
+                         comment_external_deps(
+                             seed_requirements(),
+                             find_missing_external_deps(
+                                 seed_names()))
+                         + '\n')
+
+    def _enable_venv_collections_requirements(self):
+        """Activate the pinned 'debops.debops' entry in the Ansible
+        Collection requirements.
+
+        A project with a Python virtual environment uses collections
+        only from the project directory itself, so the DebOps Collection has
+        to come from Ansible Galaxy. Projects created without the
+        environment have the entry commented out; enable it. The installed
+        version is pinned in the 'requirements.lock.yml' file. If the
+        commented-out entry cannot be found, the entry is appended instead.
+        """
+        path = os.path.join(self.path, 'ansible', 'collections',
+                            'requirements.yml')
+        with open(path, encoding='utf-8') as fh:
+            content = fh.read()
+
+        if re.search(r"(?m)^[ ]*- name: 'debops\.debops'", content):
+            return False
+
+        # Keep in sync with the 'requirements.yml.j2' project template
+        block = ("  # The DebOps Collection from Ansible Galaxy; the "
+                 "installed version is\n"
+                 "  # pinned in the requirements.lock.yml file\n"
+                 "  - name: 'debops.debops'\n"
+                 "    version: '*'\n")
+
+        # Anchor on the commented-out entry itself, so that a modified or
+        # removed comment does not prevent the detection; the stock comment
+        # above the entry is replaced along with it when present
+        stub = re.compile(
+                r"(?:^[ ]*# Uncomment this[^\n]*\n[ ]*#[^\n]*\n)?"
+                r"^[ ]*#[ ]*- name: 'debops\.debops'\n"
+                r"(?:[ ]*#[ ]+version:[^\n]*\n?)?",
+                re.MULTILINE)
+        content, count = stub.subn(block, content)
+        if not count:
+            if not content.endswith('\n'):
+                content += '\n'
+            content += '\n' + block
+
+        with open(path, 'w', encoding='utf-8') as fh:
+            fh.write(content)
+        return True
+
+    def _append_venv_gitignore(self):
+        """Add the '.debops/venv/' entry to the '.gitignore' file, unless it
+        is already present."""
+        path = os.path.join(self.path, '.gitignore')
+        if os.path.isfile(path):
+            with open(path, encoding='utf-8') as fh:
+                if '/.debops/venv/' in fh.read():
+                    return
+        block = ('#-- Python virtual environment managed by DebOps\n'
+                 '/.debops/venv/\n')
+        with open(path, 'a', encoding='utf-8') as fh:
+            if os.path.getsize(path) > 0:
+                fh.write('\n')
+            fh.write(block)
+
+    def _rewrite_view_collections_path(self, view):
+        """Point the 'collections_path' Ansible option of a view at the
+        project directory only, replacing the current value in its
+        configuration file."""
+        filename_view = view.replace('/', '-')
+        path = os.path.join(self.path, '.debops', 'conf.d',
+                            'view-' + filename_view + '.yml')
+        if not os.path.isfile(path):
+            logger.notice('View configuration file not found in '
+                          + unexpanduser(path) + ', not updated')
+            return False
+        with open(path, encoding='utf-8') as fh:
+            content = fh.read()
+        new_content, count = re.subn(
+                r'(?m)^(\s*collections_path:\s*).*$',
+                "\\1'${DEBOPS_PROJECT_PATH}/ansible/collections'",
+                content)
+        if count and new_content != content:
+            with open(path, 'w', encoding='utf-8') as fh:
+                fh.write(new_content)
+            return True
+        if not count:
+            logger.notice('The "collections_path" option not found in '
+                          + unexpanduser(path) + ', not updated')
+        return False
+
+    def _ensure_collections_lock_unignored(self):
+        """Make sure that the '.gitignore' file does not ignore the Ansible
+        Collection lock file, so that it can be committed to version
+        control."""
+        path = os.path.join(self.path, '.gitignore')
+        if not os.path.isfile(path):
+            return False
+        with open(path, encoding='utf-8') as fh:
+            lines = fh.read().splitlines()
+        if ('!/ansible/collections/requirements.lock.yml' in lines
+                or '/ansible/collections/*' not in lines):
+            return False
+        try:
+            index = lines.index('!/ansible/collections/requirements.yml')
+            lines.insert(index + 1,
+                         '!/ansible/collections/requirements.lock.yml')
+        except ValueError:
+            lines.append('')
+            lines.append('!/ansible/collections/requirements.lock.yml')
+        with open(path, 'w', encoding='utf-8') as fh:
+            fh.write('\n'.join(lines) + '\n')
+        return True
+
+    def enable_venv(self, scope='all'):
+        """Enable the Python virtual environment or the project-local
+        Ansible Collections in an existing project.
+
+        With the default scope this writes the same configuration which
+        a project created with the '--venv' option of 'debops project init'
+        gets: the '.debops/conf.d/venv.yml' drop-in file, the seed
+        '.debops/requirements.txt' file, a '.gitignore' entry, and the
+        pinned 'debops.debops' entry in the Ansible Collection requirements;
+        the views are switched to project-local collections and their
+        'ansible.cfg' files are regenerated. The 'bin/' directory of the
+        environment is prepended to the PATH environment variable at
+        runtime, as long as no environment file defines PATH. Nothing is
+        installed; the environment can be installed afterwards with the
+        'debops project venv install' command.
+
+        With a scope, only the selected side is enabled: '--python' writes
+        only the virtual environment configuration (the views keep searching
+        the Ansible Collections bundled with the DebOps Python package), and
+        '--collections' sets up only the project-local Ansible Collections,
+        without the virtual environment.
+
+        Calling this on parts which are already enabled is a no-op.
+        """
+        check_scope(scope)
+        if self.project_type != 'modern':
+            raise ValueError('Python virtual environments can be enabled '
+                             'only in "modern" DebOps project directories')
+
+        changed = False
+        if scope in ('python', 'all'):
+            if self._venv_enabled():
+                logger.debug('The Python virtual environment is already '
+                             'enabled')
+            else:
+                self._write_venv_config(self.path)
+                self._append_venv_gitignore()
+                changed = True
+        if scope in ('collections', 'all'):
+            if self._enable_venv_collections_requirements():
+                changed = True
+            if self._ensure_collections_lock_unignored():
+                changed = True
+            views_changed = False
+            for view in list(self.config.raw['views'].keys()):
+                if self._rewrite_view_collections_path(view):
+                    views_changed = True
+            if views_changed:
+                self.config.merge(os.path.join(self.path, '.debops',
+                                               'conf.d'))
+                self.refresh()
+                changed = True
+
+        if not changed:
+            if scope == 'collections':
+                print('The project-local Ansible Collections are already '
+                      'enabled in this project, nothing to do',
+                      file=self._status_stream())
+            else:
+                print('The Python virtual environment is already enabled in '
+                      'this project, nothing to do',
+                      file=self._status_stream())
+            return False
+
+        self.auto_commit()
+
+        if scope in ('python', 'all'):
+            print('Enabled Python virtual environment in', self.path,
+                  file=self._status_stream())
+            print('Run "debops project venv install" to install the '
+                  'environment', file=self._status_stream())
+        else:
+            print('Enabled project-local Ansible Collections in', self.path,
+                  file=self._status_stream())
+            print('Install them with "debops env ansible-galaxy collection '
+                  'install -r ansible/collections/requirements.yml"',
+                  file=self._status_stream())
+        return True
+
+    def auto_commit(self):
+        """Commit the current changes if automatic commits are enabled.
+
+        A no-op when the 'project.git.auto_commit' configuration option is
+        disabled or missing; commit() itself takes care of non-git
+        directories and empty changes.
+        """
+        try:
+            if self.config.raw['project']['git']['auto_commit']:
+                self.commit()
+        except KeyError:
+            # The configuration option might not exist at this time
+            pass
 
     def commit(self, interactive=False):
         """Commit the current contents of the project directory to the git

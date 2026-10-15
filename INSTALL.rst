@@ -34,6 +34,12 @@ DebOps can be installed in different ways depending on your needs:
   interested only in specific DebOps roles and you don't want to use the
   additional scripts to manage your environments.
 
+Additionally, each "modern" DebOps project directory can contain its own,
+encapsulated Python virtual environment with Ansible and the Python
+dependencies required by the DebOps roles, independent of the system-wide
+installation. See the :ref:`project virtual environment
+<project_virtual_environment>` documentation for details.
+
 In any case, the installation will be performed on a Linux, macOS or Windows
 (WSL) computer which will be called the "Ansible Controller". This machine will
 be used to execute Ansible commands against other, remote hosts which will be

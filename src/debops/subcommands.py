@@ -74,7 +74,8 @@ Commands:
     commit  commit current changes in git repository
     refresh refresh existing project directory
     unlock  decrypt secrets in project directory
-    lock    encrypt secrets in project directory''')
+    lock    encrypt secrets in project directory
+    venv    manage Python virtual environment''')
         parser.add_argument('command', help='project command to run')
         self._command = parser.parse_args(self.args[2:3])
         self.command = self._command.command
@@ -130,6 +131,12 @@ Commands:
                                     'initialization (default)',
                                default=True,
                                no_help="don't install Ansible Collections")
+        self.add_bool_argument(parser, 'venv',
+                               help='enable Python virtual environment '
+                                    '(modern projects only)',
+                               default=False,
+                               no_help="don't enable Python virtual "
+                                       "environment")
         parser.add_argument('--encrypt', type=str, nargs='?',
                             choices=['encfs', 'git-crypt'],
                             help='enable encrypted secrets')
@@ -218,6 +225,43 @@ Commands:
                             default=os.getcwd(),
                             help='path to the project directory')
         self.args = parser.parse_args(self.args[3:])
+
+    def do_project_venv(self):
+        parser = argparse.ArgumentParser(
+                description='manage Python virtual environment in project '
+                            'directory',
+                usage='''debops project venv <action> [<args>] [<project_dir>]
+
+Actions:
+    enable    activate the environment in an existing project
+    install   create the environment and install requirements
+    upgrade   upgrade the seed Python packages and Ansible Collections
+    recreate  destroy the environment and install it from scratch
+    freeze    write the installed package versions to the requirements file''')
+        parser.add_argument('action', type=str,
+                            choices=['enable', 'install', 'upgrade',
+                                     'recreate', 'freeze'],
+                            help='action to perform on the environment')
+        scope = parser.add_mutually_exclusive_group()
+        scope.add_argument('--python', dest='scope', action='store_const',
+                           const='python',
+                           help='manage only the Python packages')
+        scope.add_argument('--collections', dest='scope',
+                           action='store_const', const='collections',
+                           help='manage only the Ansible Collections')
+        scope.add_argument('--all', dest='scope', action='store_const',
+                           const='all',
+                           help='manage everything (default)')
+        parser.set_defaults(scope='all')
+        parser.add_argument('-v', '--verbose', action="count",
+                            help='increase output verbosity '
+                                 '(e.g., -vv is more than -v)')
+        parser.add_argument('project_dir', type=str, nargs='?',
+                            default=os.getcwd(),
+                            help='path to the project directory')
+        # The 'action' and 'project_dir' positionals need to be matched
+        # around the options, which parse_args() cannot do on its own
+        self.args = parser.parse_intermixed_args(self.args[3:])
 
     def do_exec(self):
         parser = argparse.ArgumentParser(
