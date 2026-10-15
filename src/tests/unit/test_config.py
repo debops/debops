@@ -218,6 +218,45 @@ def test_merge_env_applies_a_self_reference_once(configuration, tmp_path,
     assert configuration._env_vars["PATH"] == "/venv/bin:/usr/bin"
 
 
+def test_merge_env_expands_a_tilde_in_path(configuration, tmp_path,
+                                           monkeypatch):
+    """A '~' in a PATH entry must be expanded to the home directory; the
+    shell does not expand it during command lookup, so a literal tilde would
+    silently never match."""
+    home = os.path.expanduser("~")
+    monkeypatch.setenv("PATH", "/usr/bin")
+    env_file = tmp_path / "environment"
+    env_file.write_text("PATH=~/venv/bin:${PATH}\n")
+
+    configuration.merge_env(str(env_file))
+
+    expected = home + "/venv/bin:/usr/bin"
+    assert os.environ["PATH"] == expected
+    assert configuration._env_vars["PATH"] == expected
+
+
+def test_merge_env_expands_a_tilde_in_other_path_variables(configuration,
+                                                           tmp_path):
+    env_file = tmp_path / "environment"
+    env_file.write_text("PYTHONPATH=~/lib:~root/lib\n")
+
+    configuration.merge_env(str(env_file))
+
+    expected = (os.path.expanduser("~") + "/lib:"
+                + os.path.expanduser("~root") + "/lib")
+    assert configuration._env_vars["PYTHONPATH"] == expected
+
+
+def test_merge_env_keeps_a_literal_tilde_in_other_variables(configuration,
+                                                            tmp_path):
+    env_file = tmp_path / "environment"
+    env_file.write_text("DEBOPS_TEST_TILDE=~/literal\n")
+
+    configuration.merge_env(str(env_file))
+
+    assert configuration._env_vars["DEBOPS_TEST_TILDE"] == "~/literal"
+
+
 def test_merge_env_ignores_a_missing_path(configuration, tmp_path):
     configuration.merge_env(str(tmp_path / "nope"))
 
