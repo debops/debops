@@ -73,6 +73,12 @@ General
   once when a run is interrupted, and the ``--bell`` option rings the terminal
   bell only once.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The "Ubuntu Partner" repository has been removed in Ubuntu and won't
+  be configured.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
