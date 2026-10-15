@@ -38,7 +38,7 @@ def make_parsed(section, command, args):
 
 
 @pytest.mark.parametrize("command", ["init", "refresh", "lock", "unlock",
-                                     "mkview", "commit"])
+                                     "mkview", "commit", "venv"])
 def test_init_dispatches_the_project_commands(monkeypatch, command):
     args = make_args(project_dir="/tmp/example")
     monkeypatch.setattr(cli_module, "Configuration",
@@ -125,7 +125,8 @@ def test_init_ignores_unknown_project_commands(monkeypatch):
     command_methods = {name: mock.Mock() for name in
                        ("do_project_init", "do_project_refresh",
                         "do_project_lock", "do_project_unlock",
-                        "do_project_mkview", "do_project_commit")}
+                        "do_project_mkview", "do_project_commit",
+                        "do_project_venv")}
     for name, method in command_methods.items():
         monkeypatch.setattr(cli_module.Interpreter, name, method)
 
@@ -139,16 +140,126 @@ def test_project_init_creates_the_project(monkeypatch):
     project = mock.Mock()
     monkeypatch.setattr(cli_module, "ProjectDir",
                         mock.Mock(return_value=project))
+    monkeypatch.setattr(cli_module, "ProjectVenv", mock.Mock())
     interpreter = make_interpreter()
     args = make_args(project_dir="/tmp/example", type="legacy",
-                     default_view="system")
+                     default_view="system", venv=False, requirements=True)
 
     interpreter.do_project_init(args)
 
     cli_module.ProjectDir.assert_called_once_with(
         path="/tmp/example", config=interpreter.config, create=True,
-        project_dir="/tmp/example", type="legacy", default_view="system")
+        project_dir="/tmp/example", type="legacy", default_view="system",
+        venv=False, requirements=True)
     project.create.assert_called_once_with()
+    cli_module.ProjectVenv.assert_not_called()
+
+
+def test_project_init_installs_the_virtual_environment(monkeypatch):
+    project = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    venv = mock.Mock()
+    projectvenv_type = mock.Mock(return_value=venv)
+    monkeypatch.setattr(cli_module, "ProjectVenv", projectvenv_type)
+    interpreter = make_interpreter()
+    args = make_args(project_dir="/tmp/example", type="modern",
+                     default_view="system", venv=True, requirements=True)
+
+    interpreter.do_project_init(args)
+
+    projectvenv_type.assert_called_once_with(project, **vars(args))
+    venv.install.assert_called_once_with()
+
+
+def test_project_init_skips_the_venv_install_without_requirements(monkeypatch):
+    project = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    projectvenv_type = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectVenv", projectvenv_type)
+    interpreter = make_interpreter()
+    args = make_args(project_dir="/tmp/example", type="modern",
+                     default_view="system", venv=True, requirements=False)
+
+    interpreter.do_project_init(args)
+
+    project.create.assert_called_once_with()
+    projectvenv_type.assert_not_called()
+
+
+@pytest.mark.parametrize("action", ["install", "upgrade", "recreate"])
+def test_project_venv_runs_the_scoped_actions(monkeypatch, action):
+    project = mock.Mock()
+    venv = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    monkeypatch.setattr(cli_module, "ProjectVenv",
+                        mock.Mock(return_value=venv))
+    interpreter = make_interpreter()
+    args = make_args(project_dir=".", action=action, scope="python")
+
+    interpreter.do_project_venv(args)
+
+    getattr(venv, action).assert_called_once_with(scope="python")
+
+
+def test_project_venv_enable_enables_the_project(monkeypatch):
+    project = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    projectvenv_type = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectVenv", projectvenv_type)
+    interpreter = make_interpreter()
+
+    interpreter.do_project_venv(make_args(project_dir=".", action="enable",
+                                          scope="all"))
+
+    project.enable_venv.assert_called_once_with(scope="all")
+    projectvenv_type.assert_not_called()
+
+
+def test_project_venv_enable_reports_a_failure(monkeypatch, capsys):
+    project = mock.Mock()
+    project.enable_venv.side_effect = ValueError("boom")
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    interpreter = make_interpreter()
+
+    with pytest.raises(SystemExit) as caught:
+        interpreter.do_project_venv(make_args(project_dir=".",
+                                              action="enable", scope="all"))
+
+    assert caught.value.code == 1
+    assert "Error: boom" in capsys.readouterr().out
+
+
+def test_project_venv_freezes_the_requirements(monkeypatch):
+    project = mock.Mock()
+    venv = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    monkeypatch.setattr(cli_module, "ProjectVenv",
+                        mock.Mock(return_value=venv))
+    interpreter = make_interpreter()
+
+    interpreter.do_project_venv(make_args(project_dir=".", action="freeze",
+                                          scope="all"))
+
+    venv.freeze.assert_called_once_with(scope="all")
+
+
+def test_project_venv_reports_a_failure(monkeypatch, capsys):
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(side_effect=ValueError("boom")))
+    interpreter = make_interpreter()
+
+    with pytest.raises(SystemExit) as caught:
+        interpreter.do_project_venv(make_args(project_dir=".",
+                                              action="install", scope="all"))
+
+    assert caught.value.code == 1
+    assert "Error: boom" in capsys.readouterr().out
 
 
 @pytest.mark.parametrize("exception", [
