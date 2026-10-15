@@ -41,7 +41,14 @@ collections:
   - name: 'community.rabbitmq'
     version: '*'
 
+{% if include_debops_collection %}
+  # The DebOps Collection from Ansible Galaxy; the installed version is
+  # pinned in the requirements.lock.yml file
+  - name: 'debops.debops'
+    version: '*'
+{%- else %}
   # Uncomment this if you want to use DebOps Collection from Ansible Galaxy
   # instead of the one included in the DebOps Python package.
   #- name: 'debops.debops'
   #  version: '*'
+{%- endif %}

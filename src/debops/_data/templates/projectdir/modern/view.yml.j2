@@ -35,7 +35,13 @@ views:
         # List of directories which contain Ansible Collections, separated by
         # colons. The first directory found will be used by the
         # 'ansible-galaxy' command to install collections.
+{% if venv %}
+        # In a project with a Python virtual environment, only the
+        # collections of the project itself are used by Ansible.
+        collections_path: '${DEBOPS_PROJECT_PATH}/ansible/collections'
+{% else %}
         collections_path: '{{ env["ANSIBLE_COLLECTIONS_PATH"] | d("${DEBOPS_PROJECT_PATH}/ansible/collections:~/.ansible/collections:${DEBOPS_ANSIBLE_COLLECTIONS_PATH}:/usr/share/ansible/collections") }}'
+{% endif %}
 
         # Don't show tasks that were skipped during Ansible execution.
         display_skipped_hosts: {{ env["ANSIBLE_DISPLAY_SKIPPED_HOSTS"] | d("false") }}
