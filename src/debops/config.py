@@ -131,9 +131,21 @@ class Configuration(object):
         applied twice; a 'dotenv.load_dotenv()' call followed by
         'dotenv.dotenv_values()' would interpolate the second parse against
         the results of the first.
+
+        In PATH-style variables (PATH itself and any variable ending with
+        'PATH'), a '~' at the start of a colon-separated entry is expanded
+        to the home directory; the shell and shutil.which() do not expand it
+        during command lookup, so a literal tilde would silently never match
+        (other variables are left alone, their consumers like Ansible expand
+        '~' on their own).
         """
-        values = dotenv.dotenv_values(path)
-        for key, value in values.items():
+        values = {}
+        for key, value in dotenv.dotenv_values(path).items():
+            if value is not None and (key == 'PATH'
+                                      or key.endswith('PATH')):
+                value = ':'.join(os.path.expanduser(entry)
+                                 for entry in value.split(':'))
+            values[key] = value
             if value is not None:
                 os.environ[key] = value
         self._env_vars.update(values)
