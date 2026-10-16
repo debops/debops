@@ -1,0 +1,39 @@
+{# Copyright (C) 2024 Tasos Alvas <tasos.alvas@qwertyuiopia.com>
+ # Copyright (C) 2024 DebOps https://debops.org/
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+{% if item.comment | d() %}
+# {{ item.comment }}
+{% endif %}
+# {{ ansible_managed }}
+
+{# Accept absolute paths or item names #}
+{% set i_defs = [ item.include ] if item.include | d([]) is string else item.include | d([]) %}
+{% set include_paths = [] %}
+{% for def in i_defs %}
+{%   set include_paths = include_paths.append(
+       def if def[0] == "/"
+       else borgbackup__configuration_include_path + "/" + def + ".yaml")
+%}
+{% endfor %}
+{% if item.type | d("unit") == "repo" and ansible_local.borgbackup.borgmatic_version is version("1.8.1", "<") %}
+{# The repo definition will take care of daisy-chaining the intended include. #}
+<<: !include {{ borgbackup__configuration_repo_path + "/" + item.name + ".yaml" }}
+
+{% elif item.type | d("unit") == "repo" %}
+{%   set include_paths = include_paths.append(borgbackup__configuration_repo_path + "/" + item.name + ".yaml") %}
+{% endif %}
+{# This checks for !repo only because the legacy code above templates the include #}
+{% if item.type | d("unit") != "repo" and include_paths | d() %}
+{# This can be simplified to always be a list after borgmatic 1.8.1 #}
+<<: !include {{ include_paths[0] if include_paths | length == 1 else include_paths }}
+
+{% endif %}
+{% if item.yaml | d() %}
+{{ item.yaml | to_nice_yaml(indent=2) }}
+
+{% endif %}
+{% if item.raw | d() %}
+{{ item.raw }}
+
+{% endif %}
