@@ -88,10 +88,10 @@
     name: '{{ item.user | d(item.name) }}'
     host: '{{ item.host | default(mariadb__client) }}'
     state: 'present'
-    password: '{{ item.password | default(lookup("password",
+    password: '{{ item.password if item.password is defined else lookup("password",
                   secret + "/mariadb/" + mariadb__delegate_to +
                   "/credentials/" + item.user | d(item.name) + "/password " +
-                  "length=" + mariadb__password_length)) }}'
+                  "length=" + mariadb__password_length) }}'
     login_unix_socket: '/run/mysqld/mysqld.sock'
   loop: '{{ q("flattened", mariadb__users + mariadb__dependent_users + mariadb_users | d([])) }}'
   delegate_to: '{{ mariadb__delegate_to }}'
