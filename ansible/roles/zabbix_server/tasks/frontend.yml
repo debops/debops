@@ -1,0 +1,69 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# 'zabbix_server__database: mysql' only selects the matching APT package
+# (see 'zabbix_server__database' in defaults/main.yml) -- schema import and
+# this frontend configuration are PostgreSQL-only. Fail loudly instead of
+# rendering a frontend that points at the wrong database engine.
+- name: Assert that the web frontend is only enabled with PostgreSQL
+  ansible.builtin.assert:
+    that: zabbix_server__database == 'postgresql'
+    fail_msg: >-
+      zabbix_server__frontend_enabled is True, but zabbix_server__database is
+      '{{ zabbix_server__database }}': the bundled frontend configuration
+      only supports PostgreSQL. Set zabbix_server__frontend_enabled to False
+      and configure the frontend manually, or switch the database to
+      'postgresql'.
+    quiet: True
+  when: zabbix_server__deploy_state != 'absent' and
+        zabbix_server__frontend_enabled | bool
+
+# 'zabbix_server__frontend_image_format' is interpolated directly into
+# a PHP constant name ('IMAGE_FORMAT_<value>') in the frontend template;
+# an unexpected value would produce a fatal PHP parse error at runtime
+# instead of failing here, during the Ansible run.
+- name: Assert that the frontend image format is valid
+  ansible.builtin.assert:
+    that: zabbix_server__frontend_image_format in ['PNG', 'JPEG']
+    fail_msg: >-
+      zabbix_server__frontend_image_format must be 'PNG' or 'JPEG', got
+      '{{ zabbix_server__frontend_image_format }}'.
+    quiet: True
+  when: zabbix_server__deploy_state != 'absent' and
+        zabbix_server__frontend_enabled | bool
+
+- name: Ensure Zabbix web frontend configuration directory exists
+  ansible.builtin.file:
+    path: '{{ zabbix_server__frontend_conf_path | dirname }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: zabbix_server__deploy_state != 'absent' and
+        zabbix_server__frontend_enabled | bool
+
+- name: Generate Zabbix web frontend configuration
+  ansible.builtin.template:
+    src: 'etc/zabbix/web/zabbix.conf.php.j2'
+    dest: '{{ zabbix_server__frontend_conf_path }}'
+    owner: 'root'
+    group: 'www-data'
+    mode: '0640'
+    unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__deploy_state != 'absent' and
+        zabbix_server__frontend_enabled | bool
+
+# This task file is imported unconditionally from 'tasks/main.yml' (not only
+# when the frontend is enabled), specifically so that toggling
+# 'zabbix_server__frontend_enabled' from True to False removes a previously
+# generated 'zabbix.conf.php' -- otherwise the file would keep pointing at
+# a still-valid, but no longer managed, database/frontend configuration.
+- name: Remove Zabbix web frontend configuration
+  ansible.builtin.file:
+    path: '{{ zabbix_server__frontend_conf_path }}'
+    state: 'absent'
+  when: zabbix_server__deploy_state == 'absent' or
+        not (zabbix_server__frontend_enabled | bool)

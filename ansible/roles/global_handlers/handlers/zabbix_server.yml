@@ -1,0 +1,15 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Check zabbix-server and restart
+  ansible.builtin.command: '/usr/sbin/zabbix_server -T'
+  register: global_handlers__zabbix_server_register_config_test
+  changed_when: global_handlers__zabbix_server_register_config_test.changed | bool
+  notify: [ 'Restart zabbix-server' ]
+
+- name: Restart zabbix-server
+  ansible.builtin.service:
+    name: 'zabbix-server'
+    state: 'restarted'
