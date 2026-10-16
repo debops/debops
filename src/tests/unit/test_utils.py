@@ -90,32 +90,28 @@ def test_write_file_writes_empty_content(tmp_path):
 
 def test_host_is_controller_on_debian(monkeypatch):
     monkeypatch.setattr(utils.platform, "system", lambda: "Linux")
-    monkeypatch.setattr(utils.distro, "linux_distribution",
-                        lambda **kwargs: ("Debian", "12", ""))
+    monkeypatch.setattr(utils.distro, "id", lambda: "Debian")
 
     assert utils.host_is_controller() is True
 
 
 def test_host_is_controller_accepts_ubuntu(monkeypatch):
     monkeypatch.setattr(utils.platform, "system", lambda: "Linux")
-    monkeypatch.setattr(utils.distro, "linux_distribution",
-                        lambda **kwargs: ("Ubuntu", "24.04", ""))
+    monkeypatch.setattr(utils.distro, "id", lambda: "Ubuntu")
 
     assert utils.host_is_controller() is True
 
 
 def test_host_is_controller_is_case_insensitive(monkeypatch):
     monkeypatch.setattr(utils.platform, "system", lambda: "Linux")
-    monkeypatch.setattr(utils.distro, "linux_distribution",
-                        lambda **kwargs: ("DEBIAN", "12", ""))
+    monkeypatch.setattr(utils.distro, "id", lambda: "DEBIAN")
 
     assert utils.host_is_controller() is True
 
 
 def test_host_is_controller_rejects_other_distributions(monkeypatch):
     monkeypatch.setattr(utils.platform, "system", lambda: "Linux")
-    monkeypatch.setattr(utils.distro, "linux_distribution",
-                        lambda **kwargs: ("Fedora", "39", ""))
+    monkeypatch.setattr(utils.distro, "id", lambda: "Fedora")
 
     assert utils.host_is_controller() is False
 
@@ -126,6 +122,6 @@ def test_host_is_controller_rejects_other_systems(monkeypatch):
     def fail(**kwargs):
         raise AssertionError("the distribution must not be read off Linux")
 
-    monkeypatch.setattr(utils.distro, "linux_distribution", fail)
+    monkeypatch.setattr(utils.distro, "id", fail)
 
     assert utils.host_is_controller() is False
