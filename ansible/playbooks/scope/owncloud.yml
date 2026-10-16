@@ -14,6 +14,14 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - name: Prepare owncloud environment
+      ansible.builtin.import_role:
+        name: 'debops.debops.owncloud'
+        tasks_from: 'main_env'
+      tags: [ 'role::owncloud', 'role::owncloud:env' ]
+
   tasks:
 
     - name: Import owncloud role

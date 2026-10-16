@@ -64,5 +64,4 @@ def host_is_controller():
     host is only an Ansible controller and not a managed one.
     """
     return (platform.system() == 'Linux' and
-            distro.linux_distribution(full_distribution_name=False)[0].lower()
-            in ('debian', 'ubuntu'))
+            distro.id().lower() in ('debian', 'ubuntu'))
