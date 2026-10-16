@@ -6,8 +6,18 @@
 
 # {{ ansible_managed }}
 
+# jinja templating is not supported by shellcheck
+# shellcheck disable=all
+
 VERSION="{{ item.version | d(postgresql_server__version) }}"
 NAME="{{ item.name }}"
+
+{% if postgresql_server__register_autopostgresqlbackup_has_timer.rc | d(1) == 0 %}
+if [ -d /run/systemd/system ]; then
+    # Skip in favour of systemd timer.
+    exit 0
+fi
+{% endif %}
 
 if [ -r "/etc/postgresql/${VERSION}/${NAME}/postgresql.conf" ] \
    && [ -x "/usr/sbin/autopostgresqlbackup-${VERSION}-${NAME}" ]; then
