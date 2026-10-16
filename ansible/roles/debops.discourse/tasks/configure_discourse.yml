@@ -1,0 +1,168 @@
+---
+
+- name: Manage other Discourse directories
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ discourse_user }}'
+    group: '{{ discourse_group }}'
+    mode: '0755'
+  with_items: [ '{{ discourse_git_checkout + "/tmp" }}',
+                '{{ discourse_git_checkout + "/log" }}',
+                '{{ discourse_git_checkout + "/tmp/pids" }}',
+                '{{ discourse_git_checkout + "/tmp/sockets" }}',
+                '{{ discourse_git_checkout + "/public/uploads" }}' ]
+
+- name: Manage secure Discourse directories
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ discourse_user }}'
+    group: '{{ discourse_group }}'
+    mode: '0750'
+  with_items: [ '{{ discourse_backup_path }}',
+                '{{ discourse_repositories_path }}' ]
+
+
+# ---- Application configuration ----
+
+- name: Setup Discourse main configuration
+  template:
+    src: 'var/local/discourse/config/discourse.conf.j2'
+    dest: '{{ discourse_git_checkout + "/config/discourse.conf" }}'
+    owner: '{{ discourse_user }}'
+    group: '{{ discourse_group }}'
+    mode: '0600'
+  notify: [ 'Restart discourse' ]
+
+- name: Setup file containing relavant environment variables
+  # TODO: Shall this file's extension be `.sh`, `.txt` or no extension?
+  template:
+    src: 'var/local/discourse/environment.txt.j2'
+    dest: '{{ discourse_git_checkout + "/environment.txt" }}'
+    owner: '{{ discourse_user }}'
+    group: '{{ discourse_group }}'
+    mode: '0600'
+  notify: [ 'Restart discourse' ]
+
+- name: Configure custom redis server
+  lineinfile:
+    dest: '{{ discourse_git_checkout + "/config/resque.yml" }}'
+    regexp: '^production:'
+    line: 'production: {{ discourse_redis_resque }}'
+    state: 'present'
+    create: True
+    backup: False
+    owner: '{{ discourse_user }}'
+    group: '{{ discourse_group }}'
+    mode: '0640'
+  notify: [ 'Restart discourse' ]
+  no_log: True
+  when: False
+  # FIXME: Remove
+
+- name: Setup Discourse unicorn configuration (lineinfile)
+  lineinfile:
+    dest: '{{ discourse_git_checkout + "/config/unicorn.conf.rb" }}'
+    regexp: '^{{ item.key }} .*'
+    line: '{{ item.key }} {{ item.value }}'
+  notify: [ 'Restart discourse' ]
+  with_dict:
+    - worker_processes: '{{ discourse_unicorn_workers }}'
+    - listen: >-
+        {{ '"' + discourse_git_checkout + '/tmp/sockets/discourse.socket"'
+        if discourse_unicorn_connection == "socket"
+        else discourse_unicorn_port }}
+
+# ---- Discourse installation / upgrade ----
+
+- name: NPM install
+  npm:
+    production: true
+    path: '{{ discourse_git_checkout }}'
+  become: True
+  become_user: '{{ discourse_user }}'
+  when: False
+  # FIXME: Do we need this?
+
+- name: Install Discourse dependencies via bundler
+  bundler:
+    chdir: '{{ discourse_git_checkout }}'
+    extra_args: "--jobs 4 --retry=5"
+    deployment_mode: True
+    exclude_groups: '{{ discourse_bundle_install_without | split }}'
+  become: True
+  become_user: '{{ discourse_user }}'
+  register: discourse__register_bundler
+  until: discourse__register_bundler is succeeded
+  when: discourse_register_checkout is changed
+  tags: [ 'role::discourse:gems' ]
+
+- name: "Downloading MaxMindDb's GeoLite2-City"
+  # TODO: What exactly is this needed for?
+  environment:
+    RAILS_ENV: 'production'
+    DISCOURSE_DEVELOPER_EMAILS: '{{ discourse_admin_emails | join(",") }}'
+  command: 'bundle exec rake maxminddb:get'
+  args:
+    chdir: '{{ discourse_git_checkout }}'
+  become: True
+  become_user: '{{ discourse_user }}'
+  register: discourse_register_bundle_setup_postgresql
+  # FIXME check the condition to run this command
+  when: False and ansible_local |d() and
+        ansible_local.discourse |d() and
+        ansible_local.discourse.installed |d() and
+        discourse_register_checkout is changed
+
+- name: Migrate Discourse database
+  command: bundle exec rake db:migrate RAILS_ENV=production
+  args:
+    chdir: '{{ discourse_git_checkout }}'
+  become: True
+  become_user: '{{ discourse_user }}'
+  register: discourse_register_bundle_migrate
+  notify: [ 'Restart discourse' ]
+  when: discourse_register_checkout is changed
+  #when: ansible_local|d() and
+  #      ansible_local.discourse|d() and
+  #      ansible_local.discourse.installed|d() and
+  #      discourse_register_checkout is changed
+
+- name: Clean Discourse assets
+  command: bundle exec rake assets:clean RAILS_ENV=production
+  args:
+    chdir: '{{ discourse_git_checkout }}'
+  become: True
+  become_user: '{{ discourse_user }}'
+  when: discourse_register_bundle_migrate is changed
+
+- name: Precompile Discourse assets
+  command: bundle exec rake assets:precompile RAILS_ENV=production NODE_ENV=production
+           NODE_OPTIONS='--max_old_space_size=4096'
+  args:
+    chdir: '{{ discourse_git_checkout }}'
+  become: True
+  become_user: '{{ discourse_user }}'
+  notify: [ 'Restart discourse' ]
+  when: discourse_register_bundle_setup_postgresql is changed or
+        discourse_register_bundle_migrate is changed
+
+# ---- Discourse service ----
+
+- name: Install Discourse systemd service files
+  template:
+    src: 'etc/systemd/system/discourse.service.j2'
+    dest: '/etc/systemd/system/discourse.service'
+  register: discourse__register_systemd_services
+
+- name: Reload systemd daemons
+  systemd:
+    daemon_reload: True
+  when: discourse__register_systemd_services is changed
+
+- name: Enable Discourse systemd services
+  service:
+    name: 'discourse.service'
+    enabled: True
+  when: discourse_register_checkout is changed

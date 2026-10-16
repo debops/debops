@@ -1,0 +1,13 @@
+---
+
+- name: Restart discourse
+  service:
+    name: 'discourse'
+    state: 'restarted'
+  notify: [ 'Deactivate Discourse maintenance.html page' ]
+  when: ansible_local|d() and ansible_local.discourse |d() and ansible_local.discourse.installed
+
+- name: Deactivate Discourse maintenance.html page
+  file:
+    path: '{{ discourse_git_checkout + "/public/maintenance.html" }}'
+    state: 'absent'

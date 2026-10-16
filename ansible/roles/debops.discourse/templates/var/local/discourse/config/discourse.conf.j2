@@ -1,0 +1,28 @@
+# {{ ansible_managed }}
+
+hostname = {{ discourse__fqdn }}
+
+env HOME={{ discourse_home }}
+
+{% if discourse_database_connection == 'port' %}
+db_host = {{ discourse_database_server }}
+db_port = {{ discourse_database_port }}
+{% else %}
+db_socket = /var/run/postgresql
+{% endif %}
+db_name = {{ discourse_database_name }}
+db_user = {{ discourse_database_user }}
+db_password = {{ discourse_database_password }}
+
+developer_emails = {{ discourse_admin_emails | join(",") }}
+smtp_address = {{ discourse__smtp_host }}
+smtp_port = {{ discourse__smtp_port }}
+smtp_user_name = {{ discourse__smtp_user }}
+smtp_password = {{ discourse__smtp_password }}
+smtp_authentication = {{ discourse__smtp_auth_mechanism }}
+smtp_enable_start_tls = {{ discourse__smtp_start_tls }}
+
+redis_host = {{ discourse_redis_host }}
+redis_port = {{ discourse_redis_port }}
+redis_db  = {{ discourse_redis_database }}
+redis_password= {{ discourse_redis_password }}

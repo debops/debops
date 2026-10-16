@@ -1,0 +1,56 @@
+---
+# Some script to run commonly used commands under user `discourse`
+# Based on discourse_docker/templates/web.template.yml
+# TODO: Include this into mail.yml, but only if requested
+# TODO: Username from '{{ discourse_user }}'
+
+- name: Create helper /usr/local/bin/discourse
+  file:
+    path: /usr/local/bin/discourse
+    mode: '0750'
+    contents: |
+      #!/bin/bash
+      cd /var/www/discourse && \
+      RAILS_ENV=production sudo -H -E -u discourse bundle exec script/discourse "$@"
+
+- name: Create helper /usr/local/bin/rails
+  file:
+    path: /usr/local/bin/rails
+    mode: '0750'
+    contents: |
+      #!/bin/bash
+      # If they requested a console, load pry instead
+      if [ "$*" == "c" -o "$*" == "console" ] ; then
+        cd /var/www/discourse && \
+        RAILS_ENV=production sudo -H -E -u discourse bundle exec pry -r ./config/environment
+      else
+        cd /var/www/discourse && \
+        RAILS_ENV=production sudo -H -E -u discourse bundle exec script/rails "$@"
+      fi
+
+- name: Create helper /usr/local/bin/rake
+  file:
+    path: /usr/local/bin/rake
+    mode: '0750'
+    contents: |
+      #!/bin/bash
+      cd /var/www/discourse && \
+      RAILS_ENV=production sudo -H -E -u discourse bundle exec bin/rake "$@"
+
+- name: Create helper /usr/local/bin/rbtrace
+  file:
+    path: /usr/local/bin/rbtrace
+    mode: '0750'
+    contents: |
+       #!/bin/bash
+       cd /var/www/discourse && \
+       RAILS_ENV=production sudo -H -E -u discourse bundle exec rbtrace "$@"
+
+- name: Create helper /usr/local/bin/stackprof
+  file:
+    path: /usr/local/bin/stackprof
+    mode: '0750'
+    contents: |
+       #!/bin/bash
+       cd /var/www/discourse && \
+       RAILS_ENV=production sudo -H -E -u discourse bundle exec stackprof "$@"

@@ -1,0 +1,84 @@
+---
+
+- name: Manage Discourse service
+  hosts: [ 'debops_service_discourse' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.discourse/env
+      tags: [ 'role::discourse', 'role::postgresql' ]
+
+    - role: debops.system_groups
+      tags: [ 'role::system_groups', 'skip::system_groups' ]
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ nginx__apt_preferences__dependent_list }}'
+        - '{{ nodejs__apt_preferences__dependent_list }}'
+        - '{{ postgresql__apt_preferences__dependent_list }}'
+        - '{{ ruby__apt_preferences__dependent_list }}'
+        - '{{ discourse__apt_preferences__dependent_list }}'
+
+    - role: debops.nodejs
+      tags: [ 'role::nodejs', 'skip::nodejs' ]
+      nodejs__upstream: True
+      nodejs__yarn_upstream: True
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ discourse__etc_services__dependent_list }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ discourse__logrotate__dependent_config }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: debops.ruby
+      tags: [ 'role::ruby', 'skip::ruby' ]
+      ruby__dev_support: True
+
+    - role: debops.postgresql
+      tags: [ 'role::postgresql', 'skip::postgresql' ]
+      postgresql__dependent_roles:
+        - '{{ discourse__postgresql__dependent_roles }}'
+      postgresql__dependent_groups:
+        - '{{ discourse__postgresql__dependent_groups }}'
+      postgresql__dependent_databases:
+        - '{{ discourse__postgresql__dependent_databases }}'
+      postgresql__dependent_extensions:
+        - '{{ discourse__postgresql__dependent_extensions }}'
+      postgresql__dependent_pgpass:
+        - '{{ discourse__postgresql__dependent_pgpass }}'
+      when: discourse__database == 'postgresql'
+
+    - role: debops.discourse/nginx
+      # Install discourse snippets required by nginx
+      # TODO: are these the correct tags?
+      tags: [ 'role::nginx', 'skip::nginx' ]
+
+    - role: debops.nginx
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_maps:
+        - '{{ discourse__nginx__dependent_maps }}'
+      nginx__dependent_servers:
+        - '{{ discourse__nginx__dependent_servers }}'
+      nginx__dependent_upstreams:
+        - '{{ discourse__nginx__dependent_upstreams }}'
+      # FIXME: How to do this the right way?
+      nginx_http_extra_options: >
+        {{ discourse__nginx_http_extra_options }}
+
+    - role: debops.discourse
+      tags: [ 'role::discourse', 'skip::discourse' ]

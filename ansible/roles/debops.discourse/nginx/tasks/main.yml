@@ -1,0 +1,27 @@
+---
+
+# FIXME: What is the proper way to add this file?
+# FIXME: Are these the correct tags? Is this the correct way to use tags?
+
+- name: Ensure nginx snippet directory exists
+  file:
+    dest: '{{ nginx_etc_path }}/snippets'
+    state: directory
+  when: nginx__deploy_state == "present"
+  tags: [ 'role::nginx', 'skip::nginx' ]
+
+- name: Install Discourse location mapping snippet
+  copy:
+    src: 'etc/nginx/snippets/discourse-locations.conf'
+    dest: '{{ nginx_etc_path }}/snippets/discourse-locations.conf'
+    mode: '0644'
+  when: nginx__deploy_state == "present"
+  notify: [ 'Restart nginx' ]
+  tags: [ 'role::nginx', 'skip::nginx' ]
+
+- name: Remove Discourse location mapping snippet
+  file:
+    dest: '{{ nginx_etc_path }}/snippets/discourse-locations.conf'
+    state: absent
+  when: nginx__deploy_state == "absent"
+  tags: [ 'role::nginx', 'skip::nginx' ]
