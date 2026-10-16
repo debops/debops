@@ -1,0 +1,18 @@
+---
+# Copyright (C) 2026 Patryk Sciborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage Prometheus exporters
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_service_prometheus_exporter' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: prometheus_exporter
+      tags: [ 'role::prometheus_exporter', 'skip::prometheus_exporter' ]
