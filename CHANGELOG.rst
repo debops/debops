@@ -302,6 +302,9 @@ General
   once when a run is interrupted, and the ``--bell`` option rings the terminal
   bell only once.
 
+- The ``debops.debops.to_toml`` and ``debops.debops.from_toml`` filter plugins
+  should now work correctly with :command:`ansible-core` v2.19 and newer.
+
 :ref:`debops.apparmor` role
 '''''''''''''''''''''''''''
 
