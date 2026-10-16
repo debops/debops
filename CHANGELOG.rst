@@ -352,6 +352,13 @@ General
   the pin the following task creates, so the file changed on every run. It
   now removes only the old dotted filename.
 
+:ref:`debops.dhcp_probe` role
+'''''''''''''''''''''''''''''
+
+- Fixed an issue with DHCP probe failing to start on boot. The
+  ``dhcp-probe.service`` systemd service should now wait until the
+  ``network-online.target`` target is reached before trying to start.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
