@@ -21,6 +21,24 @@
   run_once: True
   delegate_to: 'localhost'
 
+- name: Make sure that the dbconfig directory exists
+  ansible.builtin.file:
+    path: '/etc/dbconfig-common'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: icinga_db__icinga_installed | bool
+
+- name: Disable dbconfig for package icinga2-ido-{{ icinga_db__ido }}
+  ansible.builtin.template:
+    src: 'etc/dbconfig-common/icinga2-ido.conf.j2'
+    dest: '/etc/dbconfig-common/icinga2-ido-{{ icinga_db__ido }}.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  when: icinga_db__icinga_installed | bool
+
 - name: Install required packages
   ansible.builtin.package:
     name: '{{ q("flattened", icinga_db__base_packages + icinga_db__packages) }}'
