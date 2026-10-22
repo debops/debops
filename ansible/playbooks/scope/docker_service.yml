@@ -19,6 +19,13 @@
         name: 'secret'
       tags: [ 'role::secret', 'role::docker_service' ]
 
+    - name: Build docker_service ferm configuration
+      ansible.builtin.import_role:
+        name: 'docker_service'
+        tasks_from: 'build_ferm_vars'
+      tags: [ 'role::docker_service', 'skip::docker_service',
+              'role::ferm', 'skip::ferm' ]
+
   tasks:
 
     - name: Import docker_service role
