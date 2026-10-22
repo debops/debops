@@ -5,7 +5,7 @@
 .. Copyright (C) 2016-2019 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
-ebops.php
+debops.php
 ==========
 
 .. toctree::
