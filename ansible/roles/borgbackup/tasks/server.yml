@@ -1,0 +1,32 @@
+---
+# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2024 Tasos Alvas <tasos.alvas@qwertyuiopia.com>
+# Copyright (C) 2023-2024 DebOps https://debops.org/
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Collect public keys from all borgbackup clients in inventory
+  ansible.builtin.setup:
+    gather_subset:
+      - '!all'
+      - '!min'
+      - 'local'
+  delegate_to: '{{ item }}'
+  delegate_facts: true
+  loop: '{{ groups["debops_service_borgbackup"] | d([]) }}'
+  tags: [ 'role::borgbackup:server' ]
+
+- name: Create borg server user accounts
+  ansible.builtin.include_role:
+    name: 'users'
+  vars:
+    users__dependent_accounts: '{{ lookup("template", "borgbackup__server__users.yml.j2") | from_yaml }}'
+  when: borgbackup__server_combined_accounts | d([])
+  tags: [ 'role::borgbackup:server' ]
+
+- name: Configure borg server user authorized_keys
+  ansible.builtin.include_role:
+    name: 'authorized_keys'
+  vars:
+    authorized_keys__dependent_identities: '{{ lookup("template", "borgbackup__server__authorized_keys.yml.j2") | from_yaml }}'
+  when: borgbackup__server_combined_accounts | d([])
+  tags: [ 'role::borgbackup:server' ]
