@@ -1,0 +1,10 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Prepare debops.vmagent environment
+  ansible.builtin.set_fact:
+    vmagent__secret_directories: '{{ lookup("template",
+                                     "lookup/vmagent_env_secret_directories.j2")
+                                     | from_yaml }}'
