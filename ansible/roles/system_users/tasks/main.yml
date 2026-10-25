@@ -301,7 +301,7 @@
   changed_when: ('Already up to date.' not in system_users__register_dotfiles.stdout_lines | regex_replace('-', ' '))
   when:
     - system_users__enabled | bool
-    - item.name is defined and item.name is truthy and item.name != 'root'
+    - item.name is defined and item.name is truthy
     - item.state | d('present') not in [ 'absent', 'ignore' ]
     - (item.create_home | d(True)) | bool
     - (ansible_local.yadm.installed | d(False)) | bool
@@ -328,7 +328,7 @@
     label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
                 "state": item.0.state | d("present"), "resources": item.1} }}'
   when: (system_users__enabled | bool and
-         item.0.name is defined and item.0.name is truthy and item.0.name != 'root' and
+         item.0.name is defined and item.0.name is truthy and
          item.0.state | d('present') not in ['absent', 'ignore'] and
          item.0.create_home | d(True) and item.0.resources is defined and item.0.resources is truthy and (item.0.user | d(True)) | bool and
          item.1.state | d('directory') in ['directory', 'link', 'touch'] and
@@ -351,7 +351,7 @@
     label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
                 "state": item.0.state | d("present"), "resources": item.1} }}'
   when: (system_users__enabled | bool and
-         item.0.name is defined and item.0.name is truthy and item.0.name != 'root' and
+         item.0.name is defined and item.0.name is truthy and
          item.0.state | d('present') not in ['absent', 'ignore'] and
          item.0.create_home | d(True) and item.0.resources is defined and item.0.resources is truthy and (item.0.user | d(True)) | bool and
          item.1.state | d('directory') in ['present', 'file'])
@@ -373,7 +373,7 @@
     label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
                 "state": item.0.state | d("present"), "resources": item.1} }}'
   when: (system_users__enabled | bool and
-         item.0.name is defined and item.0.name is truthy and item.0.name != 'root' and
+         item.0.name is defined and item.0.name is truthy and
          item.0.state | d('present') not in ['absent', 'ignore'] and
          item.0.create_home | d(True) and item.0.resources is defined and item.0.resources is truthy and (item.0.user | d(True)) | bool and
          item.1.state | d('directory') in ['present', 'file'] and
@@ -391,7 +391,7 @@
     label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
                 "state": item.0.state | d("present"), "resources": item.1} }}'
   when: (system_users__enabled | bool and
-         item.0.name is defined and item.0.name is truthy and item.0.name != 'root' and
+         item.0.name is defined and item.0.name is truthy and
          item.0.state | d('present') not in ['absent', 'ignore'] and
          item.0.create_home | d(True) and item.0.resources is defined and item.0.resources is truthy and (item.0.user | d(True)) | bool and
          item.1.state | d('directory') == 'absent')
