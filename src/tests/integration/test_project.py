@@ -328,6 +328,29 @@ def test_refresh_dry_run_inspects_a_copy(run_debops, tmp_path, debops_env):
     assert not real.exists()
 
 
+def test_refresh_applies_a_spec_to_the_selected_view(run_debops, tmp_path,
+                                                     debops_env):
+    project_dir = tmp_path / "example-modern"
+    run_debops("project", "init", "-t", "modern", "-V", "system",
+               "--no-requirements", str(project_dir), env=debops_env,
+               check=True)
+    run_debops("project", "mkview", "test", cwd=str(project_dir),
+               env=debops_env, check=True)
+    spec = tmp_path / "view.yml"
+    spec.write_text("version: 0\n"
+                    "files:\n"
+                    "  view_marker.yml: |\n"
+                    "    selected: true\n")
+
+    result = run_debops("project", "refresh", "-V", "test", "--template",
+                        str(spec), str(project_dir), env=debops_env)
+
+    assert result.returncode == 0
+    views = project_dir / "ansible" / "views"
+    assert (views / "test" / "inventory" / "view_marker.yml").exists()
+    assert not (views / "system" / "inventory" / "view_marker.yml").exists()
+
+
 def test_refresh_aborts_on_a_failing_pre_refresh_hook(run_debops, tmp_path,
                                                       debops_env):
     project_dir = tmp_path / "example-modern"
