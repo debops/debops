@@ -142,7 +142,7 @@ def test_init_refuses_a_directory_inside_a_project(run_debops, tmp_path,
                         str(project_dir / "nested"), env=debops_env)
 
     assert result.returncode == 1
-    assert "inside another" in result.stdout
+    assert "inside another" in error_message(result)
 
 
 def test_init_aborts_on_a_failing_pre_init_hook(run_debops, tmp_path,
@@ -386,7 +386,7 @@ def test_refresh_aborts_on_a_failing_pre_refresh_hook(run_debops, tmp_path,
                         env=debops_env)
 
     assert result.returncode == 0
-    assert "Hook pre-refresh aborted" in result.stdout
+    assert "Hook pre-refresh aborted" in error_message(result)
     assert hosts.read_text() == before
 
 
@@ -461,7 +461,7 @@ def test_init_with_venv_rejects_a_legacy_project(run_debops, tmp_path,
                         env=debops_env)
 
     assert result.returncode == 1
-    assert "modern" in result.stdout
+    assert "modern" in error_message(result)
     assert not project_dir.exists()
 
 
@@ -474,7 +474,7 @@ def test_venv_enable_activates_an_existing_project(run_debops, tmp_path,
     result = run_debops("project", "venv", "install", str(project_dir),
                         env=debops_env)
     assert result.returncode == 1
-    assert "not enabled" in result.stdout
+    assert "not enabled" in error_message(result)
 
     result = run_debops("project", "venv", "enable", str(project_dir),
                         env=debops_env)
