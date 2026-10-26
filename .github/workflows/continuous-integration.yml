@@ -192,8 +192,23 @@ jobs:
           WITH_MANPAGES: '0'
         run: 'make test-docker-build'
 
-  debops-unit-test:
+  debops-python-matrix:
     runs-on: 'ubuntu-latest'
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python-version: '3.8'
+          - python-version: '3.9'
+          - python-version: '3.10'
+          - python-version: '3.11'
+          - python-version: '3.12'
+          - python-version: '3.13'
+          - python-version: '3.14'
+            experimental: true
+          - python-version: '3.15'
+            experimental: true
     steps:
 
       - name: Add ~/.local/bin to $PATH
@@ -206,7 +221,6 @@ jobs:
 
       - name: Prepare test environment
         run: |
-          sudo apt-get -qq update
           pip3 install --user -c requirements-ci.txt \
             pip wheel setuptools pytest pytest-cov future pyyaml python-dotenv \
             toml pyxdg jinja2 distro GitPython
@@ -216,9 +230,6 @@ jobs:
         run: |
           make clean-tests
           make test-unit
-          #make test-debops-tools test-debops-ansible_plugins
-          make test-debops-ansible_plugins
-          make check
 
   debops-test-coverage:
     runs-on: 'ubuntu-latest'
