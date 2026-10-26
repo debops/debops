@@ -188,6 +188,11 @@ test-smoke:     ## Test an installed DebOps wheel or sdist package
 	@printf "%s\n" "Running the installed DebOps package smoke test..."
 	@./lib/tests/check-installed-package
 
+.PHONY: test-metadata
+test-metadata:  ## Check the metadata of a built DebOps package
+	@printf "%s\n" "Checking the built DebOps package metadata..."
+	@./lib/tests/check-package-metadata
+
 .PHONY: test-smoke-collection
 test-smoke-collection:  ## Test an installed DebOps Ansible Collection
 	@printf "%s\n" "Running the installed DebOps Collection smoke test..."
