@@ -386,6 +386,37 @@ def test_config_get_prints_nothing_for_a_missing_key(configuration, capsys):
     assert capsys.readouterr().out == ""
 
 
+@pytest.mark.parametrize("fmt", ["json", "toml"])
+def test_config_get_formats_a_boolean_in_every_style(configuration, fmt,
+                                                    capsys):
+    """Boolean values print as JSON literals in the 'json' and 'toml'
+    formats, keeping the output comparable across the callers.
+    """
+    configuration._config = {"a": True}
+
+    configuration.config_get("a", format=fmt)
+
+    assert capsys.readouterr().out.strip() == "true"
+
+
+def test_config_get_formats_a_list_as_yaml(configuration, capsys):
+    configuration._config = {"a": ["x", "y"]}
+
+    configuration.config_get("a", format="yaml")
+
+    assert capsys.readouterr().out.strip() == "- x\n- y"
+
+
+@pytest.mark.parametrize("fmt", ["json", "toml"])
+def test_config_get_formats_a_scalar_in_every_style(configuration, fmt,
+                                                    capsys):
+    configuration._config = {"a": "b"}
+
+    configuration.config_get("a", format=fmt)
+
+    assert capsys.readouterr().out.strip() == '"b"'
+
+
 def test_init_loads_the_default_configuration(tmp_path, monkeypatch):
     # xdg_config_home is imported into the module at import time, so the
     # environment variable alone is not enough
