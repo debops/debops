@@ -112,7 +112,7 @@ def test_missing_inventory_option_aborts(stub_project, capsys):
         AnsibleRunner(project, ansible_args=[])
 
     assert exception.value.code == 1
-    assert "No inventory specified" in capsys.readouterr().out
+    assert "No inventory specified" in capsys.readouterr().err
 
 
 def test_eval_prints_the_command(stub_project, capsys):

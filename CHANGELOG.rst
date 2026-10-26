@@ -161,6 +161,12 @@ General
   when the collection is installed via Ansible Galaxy without the ``debops``
   Python package.
 
+- The :command:`debops` command line now prints failure reports on the
+  standard error stream instead of standard output. Machine-readable output
+  written to standard output, for example the output of
+  :command:`debops config get` or the Ansible inventory printed with
+  ``debops project refresh --list``, stays parseable.
+
 :ref:`debops.ansible_plugins` role
 ''''''''''''''''''''''''''''''''''
 
