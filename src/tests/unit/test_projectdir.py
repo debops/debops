@@ -9,6 +9,7 @@ belongs to the integration tests; these cover the pure helpers that can be
 exercised against small directory trees.
 """
 
+import logging
 import os
 import re
 import sys
@@ -98,6 +99,49 @@ def test_report_unused_vars_warns_about_unknown_entries(tmp_path, capsys):
     assert "host_vars/extra" in err
 
 
+def test_parse_graph_names_skips_empty_entries():
+    groups, hosts = ProjectDir._parse_graph_names(
+            "@all:\n\n  |--@web:\n  |  |--web1\n")
+
+    assert groups == {"all", "web"}
+    assert hosts == {"web1"}
+
+
+def test_report_spec_result_covers_every_verb(tmp_path, capsys, caplog):
+    project = make_project({})
+    result = {
+        "removed": [str(tmp_path / "removed")],
+        "planned_removed": [str(tmp_path / "would-remove")],
+        "written": [str(tmp_path / "written")],
+        "planned": [str(tmp_path / "would-create")],
+        "skipped": [str(tmp_path / "skipped")],
+        "kept": [str(tmp_path / "kept")],
+    }
+
+    with caplog.at_level(logging.NOTICE, logger="debops.projectdir"):
+        project._report_spec_result(result, str(tmp_path), dry_run=False)
+
+    output = capsys.readouterr().out
+    assert "Removed removed" in caplog.text
+    assert "Would remove would-remove" in caplog.text
+    assert "Created written" in caplog.text
+    assert "Would create would-create" in caplog.text
+    assert "Skipped existing skipped" in caplog.text
+    assert "Kept kept" in caplog.text
+    assert "Use '--force' to overwrite or remove paths which already exist." \
+        in output
+    assert "Applied the inventory specification." not in output
+
+    result["skipped"] = []
+    project._report_spec_result(result, str(tmp_path), dry_run=False)
+    assert "Applied the inventory specification." in capsys.readouterr().out
+
+    project._report_spec_result({"planned": [str(tmp_path / "x")]},
+                                str(tmp_path), dry_run=True)
+    assert "Applied the inventory specification." not in \
+        capsys.readouterr().out
+
+
 def test_venv_enabled_reads_the_configuration():
     assert make_project(
             {"project": {"venv": {"enabled": True}}})._venv_enabled() is True
@@ -112,6 +156,18 @@ def test_venv_enabled_accepts_string_values():
             {"project": {"venv": {"enabled": "yes"}}})._venv_enabled() is True
     assert make_project(
             {"project": {"venv": {"enabled": "no"}}})._venv_enabled() is False
+
+
+def test_venv_enabled_tolerates_a_config_without_get():
+    assert make_project(None)._venv_enabled() is False
+
+
+def test_inventory_spec_config_tolerates_a_config_without_get():
+    policy = make_project(None)._inventory_spec_config()
+
+    assert policy == {"enabled": True,
+                      "max_version": projectdir_module.SPEC_VERSION,
+                      "allow_io": False}
 
 
 def test_status_stream_uses_stderr_for_json_outputs():
@@ -269,6 +325,22 @@ def test_enable_venv_collections_requirements_appends_a_missing_entry(
     assert content.index("ansible.posix") < content.index("debops.debops")
 
 
+def test_enable_venv_collections_requirements_appends_without_a_newline(
+        tmp_path):
+    project = make_project_at(tmp_path)
+    requirements = write_collections_requirements(
+            tmp_path,
+            "---\ncollections:\n\n  - name: 'ansible.posix'\n"
+            "    version: '*'")
+
+    project._enable_venv_collections_requirements()
+
+    content = requirements.read_text()
+    assert content.count("- name: 'debops.debops'") == 1
+    assert content.endswith("\n")
+    assert "version: '*'\n\n  # The DebOps Collection" in content
+
+
 def test_append_venv_gitignore_appends_the_entry_once(tmp_path):
     project = make_project_at(tmp_path)
     (tmp_path / ".gitignore").write_text(".env\n")
@@ -322,6 +394,16 @@ def test_rewrite_view_collections_path_ignores_a_missing_option(tmp_path):
     project._rewrite_view_collections_path("system")
 
     assert view_yml.read_text() == "views:\n  system: {}\n"
+
+
+def test_rewrite_view_collections_path_ignores_a_missing_file(tmp_path,
+                                                              caplog):
+    project = make_project_at(tmp_path)
+
+    with caplog.at_level(logging.NOTICE, logger="debops.projectdir"):
+        assert project._rewrite_view_collections_path("system") is False
+
+    assert "View configuration file not found" in caplog.text
 
 
 def test_enable_venv_rejects_a_legacy_project(tmp_path):
@@ -442,6 +524,19 @@ def test_prepend_venv_path_does_not_prepend_twice(tmp_path, monkeypatch):
     assert os.environ["PATH"].count("/.debops/venv/bin") == 1
 
 
+def test_prepend_venv_path_skips_a_process_path_entry(tmp_path, monkeypatch):
+    venv_bin = str(tmp_path / ".debops" / "venv" / "bin")
+    monkeypatch.setenv("PATH", venv_bin + ":/usr/bin")
+    project = make_project_at(tmp_path)
+    project.config = make_venv_config(tmp_path)
+    project.config.set_env = mock.Mock()
+
+    project._prepend_venv_path()
+
+    project.config.set_env.assert_not_called()
+    assert os.environ["PATH"] == venv_bin + ":/usr/bin"
+
+
 def test_auto_commit_commits_when_enabled():
     project = make_project({"project": {"git": {"auto_commit": True}}})
     project.commit = mock.Mock()
@@ -467,6 +562,45 @@ def test_auto_commit_tolerates_a_missing_option():
     project.auto_commit()
 
     project.commit.assert_not_called()
+
+
+def test_commit_is_a_noop_outside_a_git_repository(tmp_path):
+    project = make_project_at(tmp_path)
+
+    project.commit()
+
+
+def test_commit_unstages_changes_without_a_message(
+        tmp_path, monkeypatch, capsys):
+    project = make_project({"project": {}})
+    project.path = str(tmp_path)
+    project._is_git_repo = lambda path: True
+    hooks = mock.Mock()
+    monkeypatch.setattr(projectdir_module, "run_hooks", hooks)
+    repo = mock.Mock()
+    repo.head.commit.diff.return_value = [mock.Mock()]
+    repo.index.commit.side_effect = KeyError
+    monkeypatch.setattr(projectdir_module.git, "Repo",
+                        mock.Mock(return_value=repo))
+
+    project.commit(interactive=True)
+
+    repo.git.reset.assert_called_once_with()
+    assert "auto_commit_message" in capsys.readouterr().out
+    assert [call.args[1] for call in hooks.call_args_list] == [
+        "pre-commit", "post-commit"]
+
+
+def test_create_aborts_on_a_failing_pre_init_hook(tmp_path):
+    project = make_project_at(tmp_path)
+    hook_dir = tmp_path / ".debops" / "hooks" / "pre-init"
+    hook_dir.mkdir(parents=True)
+    hook = hook_dir / "00-fail"
+    hook.write_text("#!/bin/sh\nexit 1\n")
+    hook.chmod(0o755)
+
+    with pytest.raises(RuntimeError, match="pre-init"):
+        project.create()
 
 
 def test_enable_venv_collections_requirements_without_the_comment(tmp_path):
@@ -741,3 +875,49 @@ def test_ensure_collections_lock_unignored_ignores_other_files(tmp_path):
 
     assert project._ensure_collections_lock_unignored() is False
     assert (tmp_path / ".gitignore").read_text() == "/.debops/venv/\n"
+
+
+def test_load_specs_reports_overlapping_definitions(tmp_path, caplog):
+    first = tmp_path / "first.yml"
+    second = tmp_path / "second.yml"
+    first.write_text("version: 0\nfiles:\n  hosts: first\n")
+    second.write_text("version: 0\nfiles:\n  hosts: second\n")
+    project = make_project_at(tmp_path)
+    project.view = "system"
+    project.kwargs = {"spec_sources": [str(first), str(second)]}
+
+    with caplog.at_level(logging.NOTICE, logger="debops.projectdir"):
+        files, keep = project._load_specs(str(tmp_path / "inventory"))
+
+    assert files == {"hosts": "second"}
+    assert keep == []
+    assert 'File "hosts" from' in caplog.text
+    assert "replaces an earlier definition" in caplog.text
+
+
+def test_load_spec_source_rejects_a_terminal_stdin(tmp_path, monkeypatch):
+    project = make_project_at(tmp_path)
+    monkeypatch.setattr(projectdir_module.sys, "stdin",
+                        SimpleNamespace(isatty=lambda: True))
+
+    with pytest.raises(ValueError, match="standard input"):
+        project._load_spec_source("-")
+
+
+def test_process_spec_logs_a_dry_run(tmp_path, caplog):
+    project = make_project_at(tmp_path)
+    project.kwargs = {"dry_run": True}
+    project._load_specs = mock.Mock(return_value=({"hosts": "x"}, []))
+    project._report_spec_result = mock.Mock()
+    inventory = SimpleNamespace(path=str(tmp_path),
+                                apply_spec=mock.Mock(return_value={}))
+
+    with caplog.at_level(logging.INFO, logger="debops.projectdir"):
+        project._process_spec(inventory, frozenset())
+
+    assert "will not be written to disk" in caplog.text
+    inventory.apply_spec.assert_called_once_with(
+            {"hosts": "x"}, pre_existing=frozenset(), overwrite=False,
+            dry_run=True, keep=[])
+    project._report_spec_result.assert_called_once_with(
+            {}, os.path.realpath(str(tmp_path)), True)
