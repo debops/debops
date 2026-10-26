@@ -591,6 +591,23 @@ def test_commit_unstages_changes_without_a_message(
         "pre-commit", "post-commit"]
 
 
+def test_commit_commits_when_there_are_changes(tmp_path, monkeypatch):
+    project = make_project({"project": {"git": {
+        "auto_commit_message": "Changes committed automatically"}}})
+    project.path = str(tmp_path)
+    project._is_git_repo = lambda path: True
+    monkeypatch.setattr(projectdir_module, "run_hooks", mock.Mock())
+    repo = mock.Mock()
+    repo.head.commit.diff.return_value = [mock.Mock()]
+    monkeypatch.setattr(projectdir_module.git, "Repo",
+                        mock.Mock(return_value=repo))
+
+    project.commit()
+
+    repo.index.commit.assert_called_once_with(
+            "Changes committed automatically")
+
+
 def test_create_aborts_on_a_failing_pre_init_hook(tmp_path):
     project = make_project_at(tmp_path)
     hook_dir = tmp_path / ".debops" / "hooks" / "pre-init"
@@ -921,3 +938,16 @@ def test_process_spec_logs_a_dry_run(tmp_path, caplog):
             dry_run=True, keep=[])
     project._report_spec_result.assert_called_once_with(
             {}, os.path.realpath(str(tmp_path)), True)
+
+
+def test_process_spec_inspects_without_files(tmp_path):
+    project = make_project_at(tmp_path)
+    project.kwargs = {"graph": True}
+    project._load_specs = mock.Mock(return_value=({}, []))
+    project.show_inventory = mock.Mock()
+    inventory = SimpleNamespace(path=str(tmp_path))
+
+    project._process_spec(inventory, frozenset())
+
+    project.show_inventory.assert_called_once_with(
+            inventory, {}, frozenset(), [])
