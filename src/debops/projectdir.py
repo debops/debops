@@ -1115,7 +1115,8 @@ class ProjectDir(object):
                                     'DebOps project directory')
 
         if not run_hooks(self.path, 'pre-init'):
-            raise RuntimeError('Hook pre-init aborted, not creating project')
+            raise ChildProcessError('Hook pre-init aborted, '
+                                    'not creating project')
 
         # Let's make a new project
         if self.project_type == 'modern':

@@ -616,7 +616,7 @@ def test_create_aborts_on_a_failing_pre_init_hook(tmp_path):
     hook.write_text("#!/bin/sh\nexit 1\n")
     hook.chmod(0o755)
 
-    with pytest.raises(RuntimeError, match="pre-init"):
+    with pytest.raises(ChildProcessError, match="pre-init"):
         project.create()
 
 
