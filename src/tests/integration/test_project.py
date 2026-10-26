@@ -4,6 +4,7 @@
 
 """End-to-end tests for the project directory lifecycle."""
 
+import json
 import os
 import re
 import shutil
@@ -74,6 +75,52 @@ def test_init_creates_a_modern_project(run_debops, tmp_path, debops_env):
     assert not environment.endswith("\n\n")
 
 
+def test_init_installs_collections_with_a_stub_galaxy(run_debops, tmp_path,
+                                                      debops_env):
+    log = tmp_path / "galaxy.log"
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    stub = bin_dir / "ansible-galaxy"
+    stub.write_text('#!/bin/sh\necho "$PWD" "$@" >> "{}"\n'.format(log))
+    stub.chmod(0o755)
+    env = dict(debops_env,
+               PATH=os.pathsep.join([str(bin_dir), os.environ["PATH"]]))
+    project_dir = tmp_path / "example"
+
+    result = run_debops("project", "init", str(project_dir), env=env)
+
+    assert result.returncode == 0
+    invocation = log.read_text()
+    assert "collection install -r" in invocation
+    assert "ansible/collections/requirements.yml" in invocation
+
+
+def test_init_reports_a_missing_galaxy_binary(run_debops, tmp_path,
+                                              debops_env):
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    (bin_dir / "git").symlink_to(shutil.which("git"))
+    env = dict(debops_env, PATH=str(bin_dir))
+    project_dir = tmp_path / "example"
+
+    result = run_debops("project", "init", "-v", str(project_dir), env=env)
+
+    assert result.returncode == 0
+    assert "ansible-galaxy not available in $PATH" in error_message(result)
+
+
+def test_init_git_crypt_without_keys_reports_an_error(run_debops, tmp_path,
+                                                      debops_env):
+    project_dir = tmp_path / "example"
+
+    result = run_debops("project", "init", "--encrypt", "git-crypt",
+                        "--no-requirements", str(project_dir),
+                        env=debops_env)
+
+    assert result.returncode == 1
+    assert "GPG recipients" in error_message(result)
+
+
 def test_init_without_git_support(run_debops, tmp_path, debops_env):
     project_dir = tmp_path / "example-nogit"
 
@@ -121,6 +168,186 @@ def test_refresh_updates_the_project(run_debops, tmp_path, debops_env):
 
     assert result.returncode == 0
     assert "Refreshed DebOps project" in result.stdout
+
+
+def test_init_with_template_reports_created_paths(run_debops, tmp_path,
+                                                  debops_env):
+    project_dir = tmp_path / "example-modern"
+
+    result = run_debops("project", "init", "-t", "modern", "-v",
+                        "--no-requirements", "--template", "hosts",
+                        str(project_dir), env=debops_env)
+
+    assert result.returncode == 0
+    output = error_message(result)
+    assert "Created hosts" in output
+    assert "Created group_vars/webservers" in output
+    assert "Applied the inventory specification." in result.stdout
+    hosts = (project_dir / "ansible" / "views" / "system" / "inventory"
+             / "hosts")
+    assert "[webservers]" in hosts.read_text()
+
+
+def test_refresh_with_template_reports_skipped_paths(run_debops, tmp_path,
+                                                     debops_env):
+    project_dir = tmp_path / "example-modern"
+    run_debops("project", "init", "-t", "modern", "--no-requirements",
+               "--template", "hosts", str(project_dir), env=debops_env,
+               check=True)
+    hosts = (project_dir / "ansible" / "views" / "system" / "inventory"
+             / "hosts")
+    before = hosts.read_text()
+
+    result = run_debops("project", "refresh", "-v", "--template", "hosts",
+                        str(project_dir), env=debops_env)
+
+    assert result.returncode == 0
+    assert "Skipped existing hosts" in error_message(result)
+    assert ("Use '--force' to overwrite or remove paths which already exist."
+            in result.stdout)
+    assert hosts.read_text() == before
+
+
+def test_refresh_dry_run_reports_planned_paths(run_debops, tmp_path,
+                                               debops_env):
+    project_dir = tmp_path / "example-modern"
+    run_debops("project", "init", "-t", "modern", "--no-requirements",
+               str(project_dir), env=debops_env, check=True)
+    spec = tmp_path / "dry-run.yml"
+    spec.write_text("version: 0\n"
+                    "files:\n"
+                    "  group_vars/dryrun/: ''\n"
+                    "  hosts_dryrun: |\n"
+                    "    [dryrun]\n"
+                    "    dry1\n")
+
+    result = run_debops("project", "refresh", "-n", "-vv", "--template",
+                        str(spec), str(project_dir), env=debops_env)
+
+    assert result.returncode == 0
+    output = error_message(result)
+    assert "Would create group_vars/dryrun" in output
+    assert "Would create hosts_dryrun" in output
+    assert "Inventory specification will not be written to disk" in output
+    assert "Applied the inventory specification." not in result.stdout
+    inventory = (project_dir / "ansible" / "views" / "system" / "inventory")
+    assert not (inventory / "group_vars" / "dryrun").exists()
+    assert not (inventory / "hosts_dryrun").exists()
+
+
+def test_refresh_force_reports_removals_and_kept_paths(run_debops, tmp_path,
+                                                       debops_env):
+    project_dir = tmp_path / "example-modern"
+    run_debops("project", "init", "-t", "modern", "--no-requirements",
+               "--template", "hosts", str(project_dir), env=debops_env,
+               check=True)
+
+    result = run_debops("project", "refresh", "--force", "-v", "--template",
+                        "clear", str(project_dir), env=debops_env)
+
+    assert result.returncode == 0
+    output = error_message(result)
+    assert "Removed group_vars/all/sshd.yml" in output
+    assert "Created host_vars" in output
+    assert "Kept group_vars/all/keyring.yml" in output
+    assert "Applied the inventory specification." in result.stdout
+
+
+def test_refresh_dry_run_reports_planned_removals(run_debops, tmp_path,
+                                                  debops_env):
+    project_dir = tmp_path / "example-modern"
+    run_debops("project", "init", "-t", "modern", "--no-requirements",
+               "--template", "hosts", str(project_dir), env=debops_env,
+               check=True)
+    inventory = (project_dir / "ansible" / "views" / "system" / "inventory")
+    hosts = inventory / "hosts"
+    before = hosts.read_text()
+
+    result = run_debops("project", "refresh", "-n", "--force", "-v",
+                        "--template", "clear", str(project_dir),
+                        env=debops_env)
+
+    assert result.returncode == 0
+    assert "Would remove group_vars/all/sshd.yml" in error_message(result)
+    assert "Applied the inventory specification." not in result.stdout
+    assert hosts.read_text() == before
+
+
+@ansible_inventory
+def test_refresh_inspects_inventory_as_list(run_debops, tmp_path, debops_env):
+    project_dir = tmp_path / "example-modern"
+    run_debops("project", "init", "-t", "modern", "--no-requirements",
+               "--template", "hosts", str(project_dir), env=debops_env,
+               check=True)
+
+    result = run_debops("project", "refresh", "--list", str(project_dir),
+                        env=debops_env)
+
+    assert result.returncode == 0
+    inventory = json.loads(result.stdout)
+    assert inventory["webservers"]["hosts"] == ["web1", "web2"]
+    assert "web1" in inventory["_meta"]["hostvars"]
+
+
+@ansible_inventory
+def test_refresh_inspects_one_host(run_debops, tmp_path, debops_env):
+    project_dir = tmp_path / "example-modern"
+    run_debops("project", "init", "-t", "modern", "--no-requirements",
+               "--template", "hosts", str(project_dir), env=debops_env,
+               check=True)
+
+    result = run_debops("project", "refresh", "--host", "web1",
+                        str(project_dir), env=debops_env)
+
+    assert result.returncode == 0
+    variables = json.loads(result.stdout)
+    assert variables["ansible_host"] == "web1.example.org"
+    assert "nginx__hostname_domains" in variables
+
+
+@ansible_inventory
+def test_refresh_dry_run_inspects_a_copy(run_debops, tmp_path, debops_env):
+    project_dir = tmp_path / "example-modern"
+    run_debops("project", "init", "-t", "modern", "--no-requirements",
+               str(project_dir), env=debops_env, check=True)
+    spec = tmp_path / "probe.yml"
+    spec.write_text("version: 0\n"
+                    "files:\n"
+                    "  hosts_probe: |\n"
+                    "    [probe]\n"
+                    "    probe1 ansible_host=192.0.2.99\n")
+
+    result = run_debops("project", "refresh", "-n", "--template", str(spec),
+                        "--list", str(project_dir), env=debops_env)
+
+    assert result.returncode == 0
+    inventory = json.loads(result.stdout)
+    assert inventory["probe"]["hosts"] == ["probe1"]
+    real = (project_dir / "ansible" / "views" / "system" / "inventory"
+            / "hosts_probe")
+    assert not real.exists()
+
+
+def test_refresh_aborts_on_a_failing_pre_refresh_hook(run_debops, tmp_path,
+                                                      debops_env):
+    project_dir = tmp_path / "example-modern"
+    run_debops("project", "init", "-t", "modern", "--no-requirements",
+               str(project_dir), env=debops_env, check=True)
+    hook_dir = project_dir / ".debops" / "hooks" / "pre-refresh"
+    hook_dir.mkdir(parents=True)
+    hook = hook_dir / "00-fail"
+    hook.write_text("#!/bin/sh\nexit 1\n")
+    hook.chmod(0o755)
+    inventory = (project_dir / "ansible" / "views" / "system" / "inventory")
+    hosts = inventory / "hosts"
+    before = hosts.read_text()
+
+    result = run_debops("project", "refresh", str(project_dir),
+                        env=debops_env)
+
+    assert result.returncode == 0
+    assert "Hook pre-refresh aborted" in result.stdout
+    assert hosts.read_text() == before
 
 
 @ansible_inventory
@@ -531,3 +758,24 @@ def test_commit_refuses_a_plain_directory(run_debops, tmp_path, debops_env):
                         env=debops_env)
     assert result.returncode == 1
     assert "project directory not found" in error_message(result)
+
+
+def test_project_commit_creates_a_commit(run_debops, tmp_path, debops_env):
+    project_dir = tmp_path / "example-modern"
+    run_debops("project", "init", "-t", "modern", "--no-requirements",
+               str(project_dir), env=debops_env, check=True)
+    config = project_dir / ".debops" / "conf.d" / "project.yml"
+    config.write_text(config.read_text() + "\n# commit trigger\n")
+
+    result = run_debops("project", "commit", cwd=str(project_dir),
+                        env=debops_env)
+
+    assert result.returncode == 0
+    log = subprocess.run(["git", "-C", str(project_dir), "log", "-1",
+                          "--format=%s"], capture_output=True, text=True,
+                         check=True)
+    assert log.stdout.strip() == "Changes committed automatically by DebOps"
+    status = subprocess.run(["git", "-C", str(project_dir), "status",
+                             "--porcelain"], capture_output=True, text=True,
+                            check=True)
+    assert status.stdout == ""
