@@ -145,6 +145,23 @@ def test_init_refuses_a_directory_inside_a_project(run_debops, tmp_path,
     assert "inside another" in result.stdout
 
 
+def test_init_aborts_on_a_failing_pre_init_hook(run_debops, tmp_path,
+                                                debops_env):
+    project_dir = tmp_path / "example-hook"
+    hook_dir = project_dir / ".debops" / "hooks" / "pre-init"
+    hook_dir.mkdir(parents=True)
+    hook = hook_dir / "00-fail"
+    hook.write_text("#!/bin/sh\nexit 1\n")
+    hook.chmod(0o755)
+
+    result = run_debops("project", "init", "--no-requirements",
+                        str(project_dir), env=debops_env)
+
+    assert result.returncode == 1
+    assert "Hook pre-init aborted" in error_message(result)
+    assert "Traceback" not in error_message(result)
+
+
 def test_mkview_creates_an_additional_view(run_debops, tmp_path, debops_env):
     project_dir = tmp_path / "example-modern"
     run_debops("project", "init", "-t", "modern", "--no-requirements",
