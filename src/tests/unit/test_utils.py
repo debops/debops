@@ -88,6 +88,13 @@ def test_write_file_writes_empty_content(tmp_path):
     assert target.read_text() == ""
 
 
+def test_write_file_without_a_directory(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    assert utils.write_file("file.txt", "hello\n") is True
+    assert (tmp_path / "file.txt").read_text() == "hello\n"
+
+
 def test_host_is_controller_on_debian(monkeypatch):
     monkeypatch.setattr(utils.platform, "system", lambda: "Linux")
     monkeypatch.setattr(utils.distro, "id", lambda: "Debian")
