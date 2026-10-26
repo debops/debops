@@ -165,7 +165,8 @@ test-integration:
 test-coverage:
 	@printf "%s\n" "Running all tests with a combined coverage report..."
 	@PYTHONPATH=src python3 -m pytest src/tests \
-		--cov=debops --cov-branch --cov-report=term-missing
+		--cov=debops --cov-branch --cov-report=term-missing \
+		--cov-fail-under=94
 
 .PHONY: test-pep8
 test-pep8:
