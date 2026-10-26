@@ -121,6 +121,15 @@ General
   ``dhcp-probe.service`` systemd service should now wait until the
   ``network-online.target`` target is reached before trying to start.
 
+:ref:`debops.machine` role
+''''''''''''''''''''''''''
+
+- The conditionals of the dynamic MOTD script tasks no longer fail with
+  ``ansible-core`` v2.19 or newer when an item defined in the
+  ``machine__motd_*_scripts`` variables does not contain the ``src`` or
+  ``content`` parameters, or when the resulting expression is an empty string
+  instead of a boolean.
+
 
 `debops v3.1.9`_ - 2026-09-28
 -----------------------------
