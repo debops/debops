@@ -26,3 +26,6 @@ class ManPagesTranslator(ManualPageTranslator):
 
 def setup(app):
     app.set_translator('man', ManPagesTranslator)
+
+    return {'parallel_read_safe': True,
+            'parallel_write_safe': True}
