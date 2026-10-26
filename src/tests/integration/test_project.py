@@ -4,6 +4,7 @@
 
 """End-to-end tests for the project directory lifecycle."""
 
+import os
 import re
 import shutil
 import socket
@@ -427,3 +428,106 @@ def test_venv_install_creates_a_collection_lockfile(run_debops, tmp_path,
                         str(project_dir), env=debops_env)
     assert result.returncode == 0
     assert lock.read_text() == content
+
+
+def error_message(result):
+    """The error line the command line printed, independent of the stream."""
+    return result.stdout + result.stderr
+
+
+def test_init_refuses_the_own_home_directory(run_debops, tmp_path, debops_env,
+                                             debops_source_dir):
+    """A project cannot live in the user home directory itself.
+
+    The swapping of $HOME for the test directory also removes the user's
+    Python site-packages from import reach; the real user site is appended
+    so the command line starts, and the home-detection guard can fire.
+    """
+    import site
+
+    env = dict(debops_env, HOME=str(tmp_path),
+               PYTHONPATH=os.pathsep.join(
+                   [debops_source_dir, site.getusersitepackages()]))
+
+    result = run_debops("project", "init", str(tmp_path), env=env)
+
+    assert result.returncode == 1
+    assert "home directory" in error_message(result)
+
+
+def test_mkview_refuses_an_unspecified_name(run_debops, tmp_path, debops_env):
+    project_dir = tmp_path / "example-modern"
+    run_debops("project", "init", "-t", "modern", "-V", "system",
+               "--no-requirements", str(project_dir), env=debops_env,
+               check=True)
+
+    result = run_debops("project", "mkview", cwd=str(project_dir),
+                        env=debops_env)
+    assert result.returncode == 1
+    assert "New view name not specified" in error_message(result)
+
+
+def test_mkview_refuses_a_view_inside_another_view(run_debops, tmp_path,
+                                                   debops_env):
+    project_dir = tmp_path / "example-modern"
+    run_debops("project", "init", "-t", "modern", "-V", "system",
+               "--no-requirements", str(project_dir), env=debops_env,
+               check=True)
+    run_debops("project", "mkview", "test", cwd=str(project_dir),
+               env=debops_env, check=True)
+
+    result = run_debops("project", "mkview", "test/inner",
+                        cwd=str(project_dir), env=debops_env)
+    assert result.returncode == 1
+    assert "cannot be placed inside another view" in error_message(result)
+
+
+def test_mkview_refuses_a_legacy_project(run_debops, tmp_path, debops_env):
+    project_dir = tmp_path / "example-legacy"
+    run_debops("project", "init", "--no-requirements", str(project_dir),
+               env=debops_env, check=True)
+
+    result = run_debops("project", "mkview", "test", cwd=str(project_dir),
+                        env=debops_env)
+    assert result.returncode == 1
+    assert 'only works in "modern"' in error_message(result)
+
+
+def test_commands_reject_an_unknown_view(run_debops, tmp_path, debops_env):
+    """A view selected on the command line needs to exist."""
+    project_dir = tmp_path / "example-modern"
+    run_debops("project", "init", "-t", "modern", "-V", "system",
+               "--no-requirements", str(project_dir), env=debops_env,
+               check=True)
+
+    result = run_debops("env", "-V", "unknown-view", "true",
+                        cwd=str(project_dir), env=debops_env)
+    assert result.returncode == 1
+    assert 'view is not present in the "example-modern" project' \
+        in error_message(result)
+
+
+def test_the_view_is_deduced_from_the_current_directory(run_debops, tmp_path,
+                                                       debops_env):
+    """Working inside a view directory selects that view."""
+    project_dir = tmp_path / "example-modern"
+    run_debops("project", "init", "-t", "modern", "-V", "system",
+               "--no-requirements", str(project_dir), env=debops_env,
+               check=True)
+    run_debops("project", "mkview", "test", cwd=str(project_dir),
+               env=debops_env, check=True)
+
+    result = run_debops("config", "get", "project.view",
+                        cwd=str(project_dir / "ansible" / "views" / "test"),
+                        env=debops_env)
+    assert result.returncode == 0
+    assert result.stdout.strip() == "test"
+
+
+def test_commit_refuses_a_plain_directory(run_debops, tmp_path, debops_env):
+    project_dir = tmp_path
+
+    result = run_debops("project", "commit", cwd=str(project_dir),
+                        env=debops_env)
+    assert result.returncode == 1
+    assert "project directory not found" in error_message(result)
