@@ -200,10 +200,30 @@ def test_execute_uses_the_check_hooks_in_check_mode(stub_project, monkeypatch):
                                                                "post-check"]
 
 
+@pytest.fixture(autouse=True)
+def _isolated_environment():
+    """The runners write the process environment directly as they run, and
+    the process environment is shared with every test which runs after
+    them in the pytest process: leak instances of 'ANSIBLE_CONFIG' have
+    broken integration tests in mysterious ways. The patch snapshots the
+    environment before each test and restores it afterwards.
+    """
+    patcher = mock.patch.dict(os.environ)
+    patcher.start()
+    yield
+    patcher.stop()
+
+
 def test_execute_sets_the_environment(stub_project, monkeypatch):
+    """The runner exports its environment for the spawned Ansible process.
+
+    The export writes the process environment directly, which would leak
+    into every test which runs afterwards through the shared pytest
+    environment; the patch isolates the writes and restores the original
+    state afterwards.
+    """
     project = stub_project()
     runner = AnsiblePlaybookRunner(project, ansible_args=["site.yml"])
-    monkeypatch.delenv("ANSIBLE_CONFIG", raising=False)
     executor = mock.Mock(returncode=0)
     executor.communicate.return_value = (b"", b"")
     monkeypatch.setattr(runner_module.subprocess, "Popen",
@@ -211,9 +231,10 @@ def test_execute_sets_the_environment(stub_project, monkeypatch):
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
     runner.inventory.unlock.return_value = False
 
-    runner.execute()
+    with mock.patch.dict(os.environ, clear=True):
+        runner.execute()
 
-    assert os.environ["ANSIBLE_CONFIG"] == project.ansible_cfg.path
+        assert os.environ["ANSIBLE_CONFIG"] == project.ansible_cfg.path
 
 
 def test_execute_aborts_when_the_pre_hook_fails(stub_project, monkeypatch):
