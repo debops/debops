@@ -379,3 +379,98 @@ def test_lock_returns_false_for_a_plain_inventory(stub_project):
     os.makedirs(os.path.join(project.path, "ansible"))
 
     assert inventory.lock() is False
+
+
+def test_lock_fails_when_the_inventory_directory_is_missing(stub_project):
+    inventory = make_inventory(stub_project())
+
+    with pytest.raises(NotADirectoryError):
+        inventory.lock()
+
+
+def test_encfs_mount_is_detected_at_init(stub_project, monkeypatch):
+    project = stub_project()
+    os.makedirs(os.path.join(project.path, "ansible", ".encfs.secret"))
+    monkeypatch.setattr(os.path, "ismount", lambda path: True)
+
+    inventory = make_inventory(project)
+
+    assert inventory.encfs_mounted
+
+
+def test_unlock_encfs_commits_before_mounting(stub_project, monkeypatch):
+    project = stub_project()
+    project.config.raw["project"] = {"git": {"auto_commit": True}}
+    project.commit = mock.Mock()
+    os.makedirs(os.path.join(project.path, "ansible", ".encfs.secret"))
+    monkeypatch.setattr(inventory_module.os, "mkfifo",
+                        lambda path: open(path, "w").close())
+    process = mock.Mock()
+    process.communicate.return_value = (b"", b"")
+    process.returncode = 0
+    monkeypatch.setattr(inventory_module.subprocess, "Popen",
+                        mock.Mock(return_value=process))
+    inventory = make_inventory(project)
+
+    assert inventory.unlock() is True
+    project.commit.assert_called_once_with()
+
+
+def test_unlock_git_crypt_commits_before_unlocking(stub_project, monkeypatch):
+    project = stub_project()
+    project.config.raw["project"] = {"git": {"auto_commit": True}}
+    project.commit = mock.Mock()
+    os.makedirs(os.path.join(project.path, ".git", "git-crypt", "keys"))
+    monkeypatch.setattr(inventory_module.AnsibleInventory, "_git_crypt_locked",
+                        mock.Mock(return_value=True))
+    process = mock.Mock()
+    process.communicate.return_value = (b"", b"")
+    process.returncode = 0
+    monkeypatch.setattr(inventory_module.subprocess, "Popen",
+                        mock.Mock(return_value=process))
+    inventory = make_inventory(project)
+
+    assert inventory.unlock() is True
+    project.commit.assert_called_once_with()
+
+
+def test_lock_commits_before_locking(stub_project):
+    project = stub_project()
+    project.config.raw["project"] = {"git": {"auto_commit": True}}
+    project.commit = mock.Mock()
+    os.makedirs(os.path.join(project.path, "ansible", ".encfs.secret"))
+    inventory = make_inventory(project)
+
+    inventory.lock()
+
+    project.commit.assert_called_once_with()
+
+
+def test_lock_uses_umount_on_macos(stub_project, monkeypatch):
+    project = stub_project()
+    os.makedirs(os.path.join(project.path, "ansible", ".encfs.secret"))
+    inventory = make_inventory(project)
+    monkeypatch.setattr(os.path, "ismount", lambda path: True)
+    monkeypatch.setattr(inventory_module.sys, "platform", "darwin")
+    call = mock.Mock(return_value=0)
+    monkeypatch.setattr(inventory_module.subprocess, "call", call)
+
+    assert inventory.lock() is True
+    call.assert_called_once_with([inventory._commands["umount"],
+                                  inventory.secret_path])
+
+
+def test_lock_git_crypt_reports_a_failure(stub_project, monkeypatch):
+    project = stub_project()
+    os.makedirs(os.path.join(project.path, ".git", "git-crypt", "keys"))
+    monkeypatch.setattr(inventory_module.AnsibleInventory, "_git_crypt_locked",
+                        mock.Mock(return_value=False))
+    process = mock.Mock()
+    process.communicate.return_value = (b"", b"error")
+    process.returncode = 1
+    monkeypatch.setattr(inventory_module.subprocess, "Popen",
+                        mock.Mock(return_value=process))
+    inventory = make_inventory(project)
+
+    with pytest.raises(ChildProcessError, match="Cannot lock"):
+        inventory.lock()
