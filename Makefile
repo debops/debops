@@ -23,7 +23,7 @@ check: fail-if-git-dirty
 
 .PHONY: clean
 clean:          ## Clean up project directory
-clean: clean-tests clean-sdist clean-wheel
+clean: clean-tests clean-sdist clean-wheel clean-collections
 
 .PHONY: clean-git
 clean-git:      ## Clean up directories and files ignored by git
@@ -120,6 +120,10 @@ make-collection: clean clean-git
 clean-sdist:
 	@rm -vrf debops.egg-info dist/debops-*.tar.gz*
 
+.PHONY: clean-collections
+clean-collections:
+	@rm -vrf dist/collections
+
 .PHONY: wheel
 wheel:          ## Create Python wheel package
 wheel: clean-wheel man
@@ -182,6 +186,11 @@ test-docker-build:
 test-smoke:     ## Test an installed DebOps wheel or sdist package
 	@printf "%s\n" "Running the installed DebOps package smoke test..."
 	@./lib/tests/check-installed-package
+
+.PHONY: test-smoke-collection
+test-smoke-collection:  ## Test an installed DebOps Ansible Collection
+	@printf "%s\n" "Running the installed DebOps Collection smoke test..."
+	@./lib/tests/check-installed-collection
 
 .PHONY: test-spdx
 test-spdx:
