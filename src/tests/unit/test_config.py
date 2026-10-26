@@ -418,8 +418,8 @@ def test_config_get_prints_nothing_for_a_missing_key(configuration, capsys):
 
 
 @pytest.mark.parametrize("fmt", ["json", "toml"])
-def test_config_get_formats_a_boolean_in_every_style(configuration, fmt,
-                                                    capsys):
+def test_config_get_formats_a_boolean_in_every_style(
+        configuration, fmt, capsys):
     """Boolean values print as JSON literals in the 'json' and 'toml'
     formats, keeping the output comparable across the callers.
     """
