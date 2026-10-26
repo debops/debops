@@ -586,7 +586,7 @@ def test_commit_unstages_changes_without_a_message(
     project.commit(interactive=True)
 
     repo.git.reset.assert_called_once_with()
-    assert "auto_commit_message" in capsys.readouterr().out
+    assert "auto_commit_message" in capsys.readouterr().err
     assert [call.args[1] for call in hooks.call_args_list] == [
         "pre-commit", "post-commit"]
 

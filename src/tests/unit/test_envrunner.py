@@ -43,7 +43,7 @@ def test_missing_inventory_option_aborts(stub_project, capsys):
         EnvRunner(project, command_args=["env"])
 
     assert exception.value.code == 1
-    assert "No inventory specified" in capsys.readouterr().out
+    assert "No inventory specified" in capsys.readouterr().err
 
 
 def test_show_env_local_prints_configured_variables(stub_project, capsys):

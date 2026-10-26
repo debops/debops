@@ -152,7 +152,7 @@ def test_execute_without_playbooks_aborts(stub_project, capsys):
         runner.execute()
 
     assert exception.value.code == 1
-    assert "No playbooks specified" in capsys.readouterr().out
+    assert "No playbooks specified" in capsys.readouterr().err
 
 
 def test_execute_returns_the_command_return_code(stub_project, monkeypatch):
@@ -300,7 +300,7 @@ def test_missing_inventory_option_aborts(stub_project, capsys):
         AnsiblePlaybookRunner(project, ansible_args=[])
 
     assert exception.value.code == 1
-    assert "No inventory specified" in capsys.readouterr().out
+    assert "No inventory specified" in capsys.readouterr().err
 
 
 def test_global_vars_are_added_as_extra_vars(stub_project, tmp_path):

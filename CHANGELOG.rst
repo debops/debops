@@ -60,6 +60,18 @@ General
   number of hosts in the Ansible inventory and provide an exact and rough
   estimate using Ansible local facts, to be used by other Ansible roles.
 
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- The :command:`debops` command line now prints failure reports on the
+  standard error stream instead of standard output. Machine-readable output
+  written to standard output, for example the output of
+  :command:`debops config get` or the Ansible inventory printed with
+  ``debops project refresh --list``, stays parseable.
+
 Fixed
 ~~~~~
 
