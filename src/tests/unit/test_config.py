@@ -182,11 +182,16 @@ def test_merge_env_reads_a_dotenv_directory(configuration, tmp_path,
     env_file = tmp_path / ".env"
     env_file.write_text("DEBOPS_TEST_FROM_ENV=value\n")
 
-    configuration.merge_env(str(tmp_path))
+    # The 'dotenv' machinery writes the process environment directly, which
+    # otherwise leaks into every test which runs afterwards through the
+    # shared pytest environment; the patch isolates the writes and restores
+    # the original state afterwards.
+    with mock.patch.dict(os.environ):
+        configuration.merge_env(str(tmp_path))
 
-    assert configuration._env_files == [str(env_file)]
-    assert configuration._env_vars == {"DEBOPS_TEST_FROM_ENV": "value"}
-    assert os.environ["DEBOPS_TEST_FROM_ENV"] == "value"
+        assert configuration._env_files == [str(env_file)]
+        assert configuration._env_vars == {"DEBOPS_TEST_FROM_ENV": "value"}
+        assert os.environ["DEBOPS_TEST_FROM_ENV"] == "value"
 
 
 def test_merge_env_reads_a_direct_file(configuration, tmp_path, monkeypatch):
@@ -194,11 +199,13 @@ def test_merge_env_reads_a_direct_file(configuration, tmp_path, monkeypatch):
     env_file = tmp_path / "environment"
     env_file.write_text("DEBOPS_TEST_FROM_ENV=value\n")
 
-    configuration.merge_env(str(env_file))
+    # See 'test_merge_env_reads_a_dotenv_directory' for the reason.
+    with mock.patch.dict(os.environ):
+        configuration.merge_env(str(env_file))
 
-    assert configuration._env_files == [str(env_file)]
-    assert configuration._env_vars == {"DEBOPS_TEST_FROM_ENV": "value"}
-    assert os.environ["DEBOPS_TEST_FROM_ENV"] == "value"
+        assert configuration._env_files == [str(env_file)]
+        assert configuration._env_vars == {"DEBOPS_TEST_FROM_ENV": "value"}
+        assert os.environ["DEBOPS_TEST_FROM_ENV"] == "value"
 
 
 def test_merge_env_applies_a_self_reference_once(configuration, tmp_path,
@@ -212,10 +219,12 @@ def test_merge_env_applies_a_self_reference_once(configuration, tmp_path,
     env_file = tmp_path / "environment"
     env_file.write_text("PATH=/venv/bin:${PATH}\n")
 
-    configuration.merge_env(str(env_file))
+    # See 'test_merge_env_reads_a_dotenv_directory' for the reason.
+    with mock.patch.dict(os.environ):
+        configuration.merge_env(str(env_file))
 
-    assert os.environ["PATH"] == "/venv/bin:/usr/bin"
-    assert configuration._env_vars["PATH"] == "/venv/bin:/usr/bin"
+        assert os.environ["PATH"] == "/venv/bin:/usr/bin"
+        assert configuration._env_vars["PATH"] == "/venv/bin:/usr/bin"
 
 
 def test_merge_env_expands_a_tilde_in_path(configuration, tmp_path,
@@ -228,11 +237,13 @@ def test_merge_env_expands_a_tilde_in_path(configuration, tmp_path,
     env_file = tmp_path / "environment"
     env_file.write_text("PATH=~/venv/bin:${PATH}\n")
 
-    configuration.merge_env(str(env_file))
+    # See 'test_merge_env_reads_a_dotenv_directory' for the reason.
+    with mock.patch.dict(os.environ):
+        configuration.merge_env(str(env_file))
 
-    expected = home + "/venv/bin:/usr/bin"
-    assert os.environ["PATH"] == expected
-    assert configuration._env_vars["PATH"] == expected
+        expected = home + "/venv/bin:/usr/bin"
+        assert os.environ["PATH"] == expected
+        assert configuration._env_vars["PATH"] == expected
 
 
 def test_merge_env_expands_a_tilde_in_other_path_variables(configuration,
@@ -240,11 +251,13 @@ def test_merge_env_expands_a_tilde_in_other_path_variables(configuration,
     env_file = tmp_path / "environment"
     env_file.write_text("PYTHONPATH=~/lib:~root/lib\n")
 
-    configuration.merge_env(str(env_file))
+    # See 'test_merge_env_reads_a_dotenv_directory' for the reason.
+    with mock.patch.dict(os.environ):
+        configuration.merge_env(str(env_file))
 
-    expected = (os.path.expanduser("~") + "/lib:"
-                + os.path.expanduser("~root") + "/lib")
-    assert configuration._env_vars["PYTHONPATH"] == expected
+        expected = (os.path.expanduser("~") + "/lib:"
+                    + os.path.expanduser("~root") + "/lib")
+        assert configuration._env_vars["PYTHONPATH"] == expected
 
 
 def test_merge_env_keeps_a_literal_tilde_in_other_variables(configuration,
@@ -252,9 +265,11 @@ def test_merge_env_keeps_a_literal_tilde_in_other_variables(configuration,
     env_file = tmp_path / "environment"
     env_file.write_text("DEBOPS_TEST_TILDE=~/literal\n")
 
-    configuration.merge_env(str(env_file))
+    # See 'test_merge_env_reads_a_dotenv_directory' for the reason.
+    with mock.patch.dict(os.environ):
+        configuration.merge_env(str(env_file))
 
-    assert configuration._env_vars["DEBOPS_TEST_TILDE"] == "~/literal"
+        assert configuration._env_vars["DEBOPS_TEST_TILDE"] == "~/literal"
 
 
 def test_merge_env_ignores_a_missing_path(configuration, tmp_path):
@@ -267,10 +282,12 @@ def test_merge_env_ignores_a_missing_path(configuration, tmp_path):
 def test_set_env_writes_the_environment(configuration, monkeypatch):
     monkeypatch.delenv("DEBOPS_TEST_ENV", raising=False)
 
-    configuration.set_env("DEBOPS_TEST_ENV", 1)
+    # See 'test_merge_env_reads_a_dotenv_directory' for the reason.
+    with mock.patch.dict(os.environ):
+        configuration.set_env("DEBOPS_TEST_ENV", 1)
 
-    assert os.environ["DEBOPS_TEST_ENV"] == "1"
-    assert configuration._env_vars["DEBOPS_TEST_ENV"] == "1"
+        assert os.environ["DEBOPS_TEST_ENV"] == "1"
+        assert configuration._env_vars["DEBOPS_TEST_ENV"] == "1"
 
 
 def test_get_env_returns_none_when_unset(configuration, monkeypatch):
