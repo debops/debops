@@ -8,6 +8,8 @@ The ``venv``, ``pip`` and ``ansible-galaxy`` commands are replaced with
 stubs; the file operations run against temporary directories.
 """
 
+import json
+import logging
 import os
 from pathlib import Path
 from types import SimpleNamespace
@@ -78,6 +80,23 @@ def test_requires_the_venv_to_be_enabled(tmp_path):
         make_venv(tmp_path, raw=raw)
 
 
+def test_venv_init_tolerates_a_config_without_get(tmp_path):
+    project = SimpleNamespace(path=str(tmp_path), project_type="modern",
+                              auto_commit=mock.Mock(),
+                              config=SimpleNamespace(raw=None))
+
+    with pytest.raises(ValueError, match="not enabled"):
+        ProjectVenv(project)
+
+
+def test_venv_init_accepts_a_string_enabled_flag(tmp_path):
+    raw = {"binaries": {"ansible-galaxy": "ansible-galaxy"},
+           "project": {"venv": {"enabled": "true"}}}
+    venv = make_venv(tmp_path, raw=raw)
+
+    assert venv.venv_path == str(tmp_path / ".debops" / "venv")
+
+
 def test_paths_come_from_the_configuration(tmp_path):
     raw = {"binaries": {},
            "project": {"venv": {"enabled": True,
@@ -133,6 +152,15 @@ def test_create_reports_a_failure(tmp_path, monkeypatch):
         venv.create()
 
 
+def test_create_reports_a_pip_upgrade_failure(tmp_path, monkeypatch):
+    venv = make_venv(tmp_path)
+    run = mock.Mock(side_effect=[0, 1])
+    monkeypatch.setattr(ProjectVenv, "_run", run)
+
+    with pytest.raises(ChildProcessError, match="upgrade pip"):
+        venv.create()
+
+
 def test_install_creates_and_installs_the_environment(tmp_path, monkeypatch):
     venv = make_venv(tmp_path)
     run = mock.Mock(return_value=0)
@@ -172,6 +200,18 @@ def test_install_keeps_an_existing_requirements_file(tmp_path, monkeypatch):
     assert open(venv.requirements_path).read() == "netaddr\n"
 
 
+def test_install_reports_a_pip_failure(tmp_path, monkeypatch):
+    venv = make_venv(tmp_path)
+    fake_venv_python(venv)
+    os.makedirs(os.path.dirname(venv.requirements_path), exist_ok=True)
+    with open(venv.requirements_path, "w") as fh:
+        fh.write("netaddr\n")
+    monkeypatch.setattr(ProjectVenv, "_run", mock.Mock(return_value=1))
+
+    with pytest.raises(ChildProcessError, match="install the Python"):
+        venv.install(scope="python")
+
+
 @pytest.mark.parametrize("scope", ["python", "collections", "all"])
 def test_install_honors_the_scope(tmp_path, monkeypatch, scope):
     venv = make_venv(tmp_path)
@@ -201,6 +241,24 @@ def test_upgrade_requires_an_existing_environment(tmp_path):
 
     with pytest.raises(FileNotFoundError, match="does not exist"):
         venv.upgrade()
+
+
+def test_upgrade_reports_a_pip_failure(tmp_path, monkeypatch):
+    venv = make_venv(tmp_path)
+    fake_venv_python(venv)
+    os.makedirs(os.path.dirname(venv.requirements_path), exist_ok=True)
+    with open(venv.requirements_path, "w") as fh:
+        fh.write("ansible==12.3.0\n")
+    monkeypatch.setattr(ProjectVenv, "_run", mock.Mock(return_value=1))
+
+    with pytest.raises(ChildProcessError, match="upgrade the Python"):
+        venv.upgrade(scope="python")
+
+
+def test_lock_names_without_requirements(tmp_path):
+    venv = make_venv(tmp_path)
+
+    assert venv._lock_names() == set()
 
 
 def test_upgrade_moves_only_the_seed_packages_in_the_lock(tmp_path,
@@ -389,6 +447,21 @@ def test_install_collections_reports_a_failure(tmp_path, monkeypatch):
         venv.install_collections()
 
 
+def test_install_collections_reports_a_lock_failure(tmp_path, monkeypatch):
+    collections = tmp_path / "ansible" / "collections"
+    collections.mkdir(parents=True)
+    (collections / "requirements.yml").write_text("---\ncollections: []\n")
+    (collections / "requirements.lock.yml").write_text(
+            "---\ncollections: []\n")
+    venv = make_venv(tmp_path)
+    monkeypatch.setattr(ProjectVenv, "_run", mock.Mock(return_value=1))
+    monkeypatch.setattr(projectvenv_module.shutil, "which",
+                        mock.Mock(return_value="ansible-galaxy"))
+
+    with pytest.raises(ChildProcessError, match="requirements.lock.yml"):
+        venv.install_collections()
+
+
 def make_include_dir(tmp_path):
     """A directory tree with all of the files the detection looks for."""
     include = tmp_path / "include"
@@ -489,6 +562,63 @@ def test_find_missing_without_an_interpreter(tmp_path, monkeypatch):
 
     assert list(find_missing_external_deps(["python-ldap"])) == [
         "python-ldap"]
+
+
+def test_python_include_dir_returns_none_when_the_interpreter_is_missing(
+        monkeypatch):
+    monkeypatch.setattr(projectvenv_module.subprocess, "Popen",
+                        mock.Mock(side_effect=OSError))
+
+    assert projectvenv_module._python_include_dir("python3") is None
+
+
+def test_python_include_dir_returns_none_on_a_nonzero_exit(monkeypatch):
+    process = mock.Mock(returncode=1)
+    process.communicate.return_value = (b"", b"")
+    monkeypatch.setattr(projectvenv_module.subprocess, "Popen",
+                        mock.Mock(return_value=process))
+
+    assert projectvenv_module._python_include_dir("python3") is None
+
+
+def test_python_include_dir_returns_the_header_directory(monkeypatch):
+    process = mock.Mock(returncode=0)
+    process.communicate.return_value = (b"/usr/include/python3.11\n", b"")
+    monkeypatch.setattr(projectvenv_module.subprocess, "Popen",
+                        mock.Mock(return_value=process))
+
+    assert projectvenv_module._python_include_dir("python3") == \
+        "/usr/include/python3.11"
+
+
+def test_header_dirs_include_the_macos_locations(monkeypatch):
+    monkeypatch.setattr(projectvenv_module.platform, "system",
+                        lambda: "Darwin")
+    monkeypatch.setattr(projectvenv_module.glob, "glob",
+                        lambda pattern: [])
+    process = mock.Mock(returncode=0)
+    process.communicate.return_value = (b"/sdk\n", b"")
+    monkeypatch.setattr(projectvenv_module.subprocess, "Popen",
+                        mock.Mock(return_value=process))
+
+    dirs = projectvenv_module._header_dirs()
+
+    assert "/opt/homebrew/include" in dirs
+    assert "/sdk/usr/include" in dirs
+
+
+def test_header_dirs_tolerate_a_missing_xcrun(monkeypatch):
+    monkeypatch.setattr(projectvenv_module.platform, "system",
+                        lambda: "Darwin")
+    monkeypatch.setattr(projectvenv_module.glob, "glob",
+                        lambda pattern: [])
+    monkeypatch.setattr(projectvenv_module.subprocess, "Popen",
+                        mock.Mock(side_effect=OSError))
+
+    dirs = projectvenv_module._header_dirs()
+
+    assert "/usr/include" in dirs
+    assert "/opt/homebrew/include" in dirs
 
 
 def test_comment_external_deps_replaces_the_package(monkeypatch):
@@ -723,6 +853,58 @@ def test_freeze_collections_writes_nothing_without_requirements(tmp_path,
     venv.freeze_collections()
 
     assert not Path(venv.collections_lock).exists()
+
+
+def test_freeze_collections_preserves_an_entry_without_a_name(tmp_path):
+    venv = make_venv(tmp_path)
+    write_collections_requirements(tmp_path,
+                                   "---\ncollections:\n  - subdirs: true\n")
+    mock_installed_collections(venv, {})
+
+    venv.freeze_collections()
+
+    content = Path(venv.collections_lock).read_text()
+    assert "  - subdirs: 'True'\n" in content
+
+
+def test_freeze_collections_reports_when_nothing_is_locked(tmp_path, caplog):
+    venv = make_venv(tmp_path)
+    write_collections_requirements(tmp_path, (
+            "---\ncollections:\n  - name: 'ansible.posix'\n"))
+    mock_installed_collections(venv, {})
+
+    with caplog.at_level(logging.NOTICE, logger="debops.projectvenv"):
+        venv.freeze_collections()
+
+    assert "not writing the lock file" in caplog.text
+    assert not Path(venv.collections_lock).exists()
+
+
+def test_freeze_collections_writes_list_values(tmp_path):
+    venv = make_venv(tmp_path)
+    write_collections_requirements(tmp_path, (
+            "---\ncollections:\n\n"
+            "  - name: 'example.collection'\n"
+            "    type: git\n"
+            "    source: 'git+https://git.example.org/example.git'\n"
+            "    version: 'main'\n"
+            "    subdirs:\n"
+            "      - 'plugins'\n"
+            "      - 'roles'\n"))
+    mock_installed_collections(venv, {"example.collection": "1.2.3"})
+
+    venv.freeze_collections()
+
+    content = Path(venv.collections_lock).read_text()
+    assert "    subdirs:\n      - 'plugins'\n      - 'roles'\n" in content
+
+
+def test_collection_requirements_normalizes_string_entries(tmp_path):
+    venv = make_venv(tmp_path)
+    write_collections_requirements(
+            tmp_path, "---\ncollections:\n  - 'debops.debops'\n")
+
+    assert venv._collection_requirements() == [{"name": "debops.debops"}]
 
 
 def test_freeze_collections_reports_a_list_failure(tmp_path, monkeypatch):
