@@ -104,6 +104,9 @@ def setup(app):
     app.add_css_file("theme_overrides.css")
     manpages.setup(app)
 
+    return {'parallel_read_safe': True,
+            'parallel_write_safe': True}
+
 
 # -- General configuration ------------------------------------------------
 
