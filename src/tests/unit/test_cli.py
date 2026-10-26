@@ -231,7 +231,7 @@ def test_project_venv_enable_reports_a_failure(monkeypatch, capsys):
                                               action="enable", scope="all"))
 
     assert caught.value.code == 1
-    assert "Error: boom" in capsys.readouterr().out
+    assert "Error: boom" in capsys.readouterr().err
 
 
 def test_project_venv_freezes_the_requirements(monkeypatch):
@@ -259,7 +259,7 @@ def test_project_venv_reports_a_failure(monkeypatch, capsys):
                                               action="install", scope="all"))
 
     assert caught.value.code == 1
-    assert "Error: boom" in capsys.readouterr().out
+    assert "Error: boom" in capsys.readouterr().err
 
 
 @pytest.mark.parametrize("exception", [
@@ -274,7 +274,7 @@ def test_project_init_reports_a_failure(monkeypatch, capsys, exception):
             project_dir="/tmp/example", type="legacy", default_view="system"))
 
     assert caught.value.code == 1
-    assert "Error: boom" in capsys.readouterr().out
+    assert "Error: boom" in capsys.readouterr().err
 
 
 def test_project_refresh_refreshes_the_project(monkeypatch):
@@ -310,7 +310,7 @@ def test_project_lock_ignores_a_missing_default_view(monkeypatch, capsys):
         interpreter.do_project_lock(make_args(project_dir=".", view="system"))
 
     assert caught.value.code == 1
-    assert "Error: no view" in capsys.readouterr().out
+    assert "Error: no view" in capsys.readouterr().err
 
 
 def test_project_unlock_unlocks_the_project(monkeypatch):
@@ -398,7 +398,7 @@ def test_exec_reports_a_runner_failure(monkeypatch, capsys, exception):
                                       eval=False, bell=False))
 
     assert caught.value.code == 1
-    assert "Error: boom" in capsys.readouterr().out
+    assert "Error: boom" in capsys.readouterr().err
 
 
 def test_exec_reports_an_aborted_hook(monkeypatch, capsys):
@@ -416,7 +416,7 @@ def test_exec_reports_an_aborted_hook(monkeypatch, capsys):
                                       eval=False, bell=False))
 
     assert caught.value.code == 1
-    assert "Hook pre-exec aborted" in capsys.readouterr().out
+    assert "Hook pre-exec aborted" in capsys.readouterr().err
 
 
 def test_run_executes_the_playbooks(monkeypatch):
@@ -452,7 +452,7 @@ def test_run_reports_a_child_process_failure(monkeypatch, capsys):
                                      eval=False, bell=False))
 
     assert caught.value.code == 1
-    assert "Error: dirty working tree" in capsys.readouterr().out
+    assert "Error: dirty working tree" in capsys.readouterr().err
 
 
 def test_env_executes_the_command(monkeypatch):
@@ -505,7 +505,7 @@ def test_env_reports_an_aborted_hook(monkeypatch, capsys):
                                      command_args=["ls"], scope="local"))
 
     assert caught.value.code == 1
-    assert "Hook pre-env aborted" in capsys.readouterr().out
+    assert "Hook pre-env aborted" in capsys.readouterr().err
 
 
 def test_config_list_lists_the_configuration(monkeypatch):
@@ -567,7 +567,7 @@ def test_project_refresh_reports_a_failure(monkeypatch, capsys):
         interpreter.do_project_refresh(make_args(project_dir="."))
 
     assert caught.value.code == 1
-    assert "Error: boom" in capsys.readouterr().out
+    assert "Error: boom" in capsys.readouterr().err
 
 
 def test_project_lock_reports_a_project_failure(monkeypatch, capsys):
@@ -579,7 +579,7 @@ def test_project_lock_reports_a_project_failure(monkeypatch, capsys):
         interpreter.do_project_lock(make_args(project_dir=".", view="system"))
 
     assert caught.value.code == 1
-    assert "Error: boom" in capsys.readouterr().out
+    assert "Error: boom" in capsys.readouterr().err
 
 
 def test_project_unlock_ignores_a_missing_default_view(monkeypatch, capsys):
@@ -594,7 +594,7 @@ def test_project_unlock_ignores_a_missing_default_view(monkeypatch, capsys):
                                                 view="system"))
 
     assert caught.value.code == 1
-    assert "Error: no view" in capsys.readouterr().out
+    assert "Error: no view" in capsys.readouterr().err
 
 
 def test_project_unlock_reports_a_project_failure(monkeypatch, capsys):
@@ -607,7 +607,7 @@ def test_project_unlock_reports_a_project_failure(monkeypatch, capsys):
                                                 view="system"))
 
     assert caught.value.code == 1
-    assert "Error: boom" in capsys.readouterr().out
+    assert "Error: boom" in capsys.readouterr().err
 
 
 def test_project_mkview_reports_a_failure(monkeypatch, capsys):
@@ -620,7 +620,7 @@ def test_project_mkview_reports_a_failure(monkeypatch, capsys):
             project_dir=".", new_view="webservers", encrypt=None, keys=None))
 
     assert caught.value.code == 1
-    assert "Error: boom" in capsys.readouterr().out
+    assert "Error: boom" in capsys.readouterr().err
 
 
 def test_project_commit_reports_a_failure(monkeypatch, capsys):
@@ -632,7 +632,7 @@ def test_project_commit_reports_a_failure(monkeypatch, capsys):
         interpreter.do_project_commit(make_args(project_dir="."))
 
     assert caught.value.code == 1
-    assert "Error: boom" in capsys.readouterr().out
+    assert "Error: boom" in capsys.readouterr().err
 
 
 def test_exec_reports_a_project_failure(monkeypatch, capsys):
@@ -645,7 +645,7 @@ def test_exec_reports_a_project_failure(monkeypatch, capsys):
                                       eval=False, bell=False))
 
     assert caught.value.code == 1
-    assert "Error: boom" in capsys.readouterr().out
+    assert "Error: boom" in capsys.readouterr().err
 
 
 def test_run_reports_a_project_failure(monkeypatch, capsys):
@@ -658,7 +658,7 @@ def test_run_reports_a_project_failure(monkeypatch, capsys):
                                      eval=False, bell=False))
 
     assert caught.value.code == 1
-    assert "Error: boom" in capsys.readouterr().out
+    assert "Error: boom" in capsys.readouterr().err
 
 
 def test_run_reports_a_runner_failure(monkeypatch, capsys):
@@ -674,7 +674,7 @@ def test_run_reports_a_runner_failure(monkeypatch, capsys):
                                      eval=False, bell=False))
 
     assert caught.value.code == 1
-    assert "Error: boom" in capsys.readouterr().out
+    assert "Error: boom" in capsys.readouterr().err
 
 
 def test_run_prints_the_command_in_eval_mode(monkeypatch):
@@ -705,7 +705,7 @@ def test_env_reports_a_project_failure(monkeypatch, capsys):
                                      command_args=[], scope="local"))
 
     assert caught.value.code == 1
-    assert "Error: boom" in capsys.readouterr().out
+    assert "Error: boom" in capsys.readouterr().err
 
 
 def test_env_reports_a_runner_failure(monkeypatch, capsys):
@@ -721,4 +721,4 @@ def test_env_reports_a_runner_failure(monkeypatch, capsys):
                                      command_args=[], scope="local"))
 
     assert caught.value.code == 1
-    assert "Error: boom" in capsys.readouterr().out
+    assert "Error: boom" in capsys.readouterr().err

@@ -2,7 +2,7 @@
 # Copyright (C) 2020-2024 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from .utils import unexpanduser
+from .utils import print_error, unexpanduser
 from .ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
 from .hooks import run_hooks
@@ -39,14 +39,15 @@ class AnsiblePlaybookRunner(object):
                 raise FileNotFoundError("Cannot find Ansible "
                                         "configuration file at " + path)
         except configparser.NoOptionError:
-            errmsg = ('Error: No inventory specified in the "ansible.cfg" '
+            errmsg = ('No inventory specified in the "ansible.cfg" '
                       'configuration file. You might want to run '
                       '"debops project refresh" command to ensure that it\'s '
                       'included in the generated file. If this is a legacy '
                       'project, check if the "inventory" option is present '
                       'in the ".debops.cfg" file. The default is:')
-            print(textwrap.fill(errmsg, 78))
-            print('\n    [ansible defaults]\n    inventory = ansible/inventory')
+            print_error(textwrap.fill(errmsg, 78) + '\n\n'
+                        '    [ansible defaults]\n'
+                        '    inventory = ansible/inventory')
             sys.exit(1)
 
         self._playbook_dirs = self._expand_playbook_paths(project)
@@ -336,7 +337,7 @@ class AnsiblePlaybookRunner(object):
     def execute(self):
         unlocked = False
         if not self._found_playbooks:
-            print('No playbooks specified, aborting')
+            print_error('No playbooks specified, aborting')
             sys.exit(1)
 
         for key, value in self._ansible_env.items():

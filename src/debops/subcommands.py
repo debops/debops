@@ -14,6 +14,8 @@ try:
 except ModuleNotFoundError:
     __version__ = "0.0.0"
 
+from .utils import print_error
+
 
 class Subcommands(object):
 
@@ -48,7 +50,7 @@ Sections:
         self._section = parser.parse_args(self.args[1:2])
         self.section = self._section.section
         if not hasattr(self, 'do_' + self._section.section):
-            print('Error: unrecognized section:', self._section.section)
+            print_error('unrecognized section: ' + self._section.section)
             parser.print_help()
             sys.exit(1)
         getattr(self, 'do_' + self._section.section)()
@@ -80,7 +82,7 @@ Commands:
         self._command = parser.parse_args(self.args[2:3])
         self.command = self._command.command
         if not hasattr(self, 'do_project_' + self._command.command):
-            print('Error: unrecognized command:', self._command.command)
+            print_error('unrecognized command: ' + self._command.command)
             parser.print_help()
             sys.exit(1)
         getattr(self, 'do_project_' + self._command.command)()
@@ -370,7 +372,7 @@ Commands:
         self._command = parser.parse_args(self.args[2:3])
         self.command = self._command.command
         if not hasattr(self, 'do_config_' + self._command.command):
-            print('Error: unrecognized command:', self._command.command)
+            print_error('unrecognized command: ' + self._command.command)
             parser.print_help()
             sys.exit(1)
         getattr(self, 'do_config_' + self._command.command)()
