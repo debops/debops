@@ -193,7 +193,7 @@ def test_execute_aborts_when_the_pre_hook_fails(stub_project, monkeypatch):
     runner = AnsibleRunner(stub_project(), ansible_args=["all"])
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=False))
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ChildProcessError):
         runner.execute()
 
 
