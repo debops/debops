@@ -178,6 +178,11 @@ test-shell:
 test-docker-build:
 	@./lib/tests/check-docker-build
 
+.PHONY: test-smoke
+test-smoke:     ## Test an installed DebOps wheel or sdist package
+	@printf "%s\n" "Running the installed DebOps package smoke test..."
+	@./lib/tests/check-installed-package
+
 .PHONY: test-spdx
 test-spdx:
 	@reuse lint
