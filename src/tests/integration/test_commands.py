@@ -4,17 +4,24 @@
 
 """End-to-end tests for the command sections which run Ansible.
 
-``ansible-playbook`` is replaced by a stub on ``PATH`` which records its
-invocation, so the tests can check the command DebOps built without running
-any real playbook.
+``ansible-playbook`` is normally replaced by a stub on ``PATH`` which records
+its invocation, so the tests can check the command DebOps built without
+running any real playbook. One smoke test uses the real binary when it is
+installed, to verify the configuration and environment end to end.
 """
 
 import os
+import shutil
 
 import pytest
 
 
 pytestmark = pytest.mark.integration
+
+
+ansible_playbook = pytest.mark.skipif(
+    shutil.which("ansible-playbook") is None,
+    reason="ansible-playbook is not installed")
 
 
 def make_stub(directory, name, log):
@@ -76,6 +83,55 @@ def test_check_runs_the_playbook_in_check_mode(run_debops, tmp_path,
     assert "site.yml" in invocation
     assert "--diff" in invocation
     assert "--check" in invocation
+
+
+@ansible_playbook
+def test_run_executes_a_real_local_playbook(run_debops, debops_env,
+                                            legacy_project):
+    playbook = legacy_project / "local.yml"
+    playbook.write_text("---\n"
+                        "- hosts: localhost\n"
+                        "  connection: local\n"
+                        "  gather_facts: false\n"
+                        "  tasks:\n"
+                        "    - name: Check the local connection\n"
+                        "      command: /bin/true\n"
+                        "      changed_when: false\n")
+
+    result = run_debops("run", "local.yml", cwd=str(legacy_project),
+                        env=debops_env)
+
+    assert result.returncode == 0
+    assert "ok=1" in result.stdout
+    assert "failed=0" in result.stdout
+
+
+def test_run_executes_the_project_hooks(run_debops, tmp_path, debops_env,
+                                        legacy_project):
+    markers = tmp_path / "hooks.log"
+    for hook_name in ("pre-run", "post-run"):
+        hook_dir = legacy_project / ".debops" / "hooks" / hook_name
+        hook_dir.mkdir(parents=True)
+        script = hook_dir / "00-marker"
+        script.write_text(
+            '#!/bin/sh\n'
+            'echo "$DEBOPS_HOOK_NAME $DEBOPS_PROJECT_PATH '
+            '${{DEBOPS_RETURN_CODE:-none}}" >> "{}"\n'.format(markers))
+        script.chmod(0o755)
+
+    log = tmp_path / "ansible-playbook.log"
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    make_stub(bin_dir, "ansible-playbook", log)
+    env = dict(debops_env,
+               PATH=os.pathsep.join([str(bin_dir), os.environ["PATH"]]))
+
+    result = run_debops("run", "site.yml", cwd=str(legacy_project), env=env)
+
+    assert result.returncode == 0
+    assert markers.read_text().splitlines() == [
+        "pre-run {} none".format(legacy_project),
+        "post-run {} 0".format(legacy_project)]
 
 
 def test_env_runs_a_command_in_the_project_environment(run_debops, debops_env,
