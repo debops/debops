@@ -89,7 +89,7 @@
   loop: '{{ machine__motd_combined_scripts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ item.filename | d(item.name) }}'
-  when: item.filename | d(item.name) and item.divert | d(False) | bool
+  when: (item.filename | d(item.name)) is truthy and item.divert | d(False) | bool
 
 - name: Remove dynamic MOTD scripts
   ansible.builtin.file:
@@ -99,7 +99,7 @@
   loop: '{{ q("flattened", machine__motd_combined_scripts) | debops.debops.parse_kv_items }}'
   register: machine__register_motd_scripts_removed
   when: (machine__enabled | bool and
-         item.filename | d(item.name) and
+         (item.filename | d(item.name)) is truthy and
          item.state | d('present') == 'absent' and not item.divert | d(False) | bool)
 
 - name: Install dynamic MOTD scripts
@@ -116,8 +116,8 @@
     label: '{{ item.filename | d() or item.name }}'
   register: machine__register_motd_scripts_created
   when: (machine__enabled | bool and
-         item.filename | d(item.name) and
-         item.src | d(item.content) and
+         (item.filename | d(item.name)) is truthy and
+         (item.src | d(item.content | d(''))) is truthy and
          item.state | d('present') not in ['init', 'absent', 'ignore', 'divert', 'revert'])
 
 - name: Remove unknown MOTD scripts
