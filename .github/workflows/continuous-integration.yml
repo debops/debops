@@ -6,6 +6,12 @@
 name: Continuous Integration
 on: [ 'push', 'pull_request' ]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   reuse-spdx:
     runs-on: 'ubuntu-latest'
@@ -15,7 +21,7 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
 
       - name: Prepare test environment
         run: |
@@ -37,7 +43,7 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
 
       - name: Prepare test environment
         run: |
@@ -61,7 +67,7 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
 
       - name: Prepare test environment
         run: |
@@ -84,7 +90,7 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
         with:
           fetch-depth: 0
 
@@ -117,7 +123,7 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
 
       - name: Prepare test environment
         run: |
@@ -139,7 +145,7 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
 
       - name: Prepare test environment
         run: |
@@ -161,7 +167,7 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
 
       - name: Prepare test environment
         # shellcheck v0.9.0 has bugs triggered by DebOps, so we install newer
@@ -183,7 +189,7 @@ jobs:
     steps:
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
 
       - name: Build and verify Docker image
         # https://github.com/actions/runner/issues/241
@@ -215,9 +221,16 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
         with:
           fetch-depth: 0
+
+      - name: Set up the matrix Python
+        uses: 'actions/setup-python@v7'
+        with:
+          python-version: '${{ matrix.python-version }}'
+          cache: 'pip'
+          cache-dependency-path: 'requirements-ci.txt'
 
       - name: Prepare test environment
         run: |
@@ -240,7 +253,7 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
         with:
           fetch-depth: 0
 
@@ -269,7 +282,7 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
         with:
           fetch-depth: 0
 
@@ -287,6 +300,7 @@ jobs:
           make clean-tests
           make check
           make test-man wheel-quiet
+          twine check dist/*
           make test-smoke
 
   debops-sdist:
@@ -298,7 +312,7 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
         with:
           fetch-depth: 0
 
@@ -316,6 +330,7 @@ jobs:
           make clean-tests
           make check
           make test-man sdist-quiet
+          twine check dist/*
           make test-smoke
 
   codespell:
@@ -326,7 +341,7 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
         with:
           fetch-depth: 0
 
@@ -350,7 +365,7 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
 
       - name: Prepare test environment
         run: |
