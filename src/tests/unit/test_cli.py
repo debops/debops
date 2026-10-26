@@ -401,6 +401,24 @@ def test_exec_reports_a_runner_failure(monkeypatch, capsys, exception):
     assert "Error: boom" in capsys.readouterr().out
 
 
+def test_exec_reports_an_aborted_hook(monkeypatch, capsys):
+    project = mock.Mock()
+    runner = mock.Mock()
+    runner.execute.side_effect = ChildProcessError(
+            'Hook pre-exec aborted, not executing Ansible command')
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    monkeypatch.setattr(cli_module, "AnsibleRunner", mock.Mock(return_value=runner))
+    interpreter = make_interpreter()
+
+    with pytest.raises(SystemExit) as caught:
+        interpreter.do_exec(make_args(project_dir=".", view="system",
+                                      eval=False, bell=False))
+
+    assert caught.value.code == 1
+    assert "Hook pre-exec aborted" in capsys.readouterr().out
+
+
 def test_run_executes_the_playbooks(monkeypatch):
     project = mock.Mock()
     runner = mock.Mock()
@@ -470,6 +488,24 @@ def test_env_shows_the_environment_without_a_command(monkeypatch):
                                      command_args=[], scope="full"))
 
     runner.show_env.assert_called_once_with(scope="full")
+
+
+def test_env_reports_an_aborted_hook(monkeypatch, capsys):
+    project = mock.Mock()
+    runner = mock.Mock()
+    runner.execute.side_effect = ChildProcessError(
+            'Hook pre-env aborted, not running command in environment')
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    monkeypatch.setattr(cli_module, "EnvRunner", mock.Mock(return_value=runner))
+    interpreter = make_interpreter()
+
+    with pytest.raises(SystemExit) as caught:
+        interpreter.do_env(make_args(project_dir=".", view="system",
+                                     command_args=["ls"], scope="local"))
+
+    assert caught.value.code == 1
+    assert "Hook pre-env aborted" in capsys.readouterr().out
 
 
 def test_config_list_lists_the_configuration(monkeypatch):
