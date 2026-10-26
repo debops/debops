@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+
+# Check that a built DebOps Python package can be installed and used
+# Usage: check-installed-package [<wheel-or-sdist>]
+
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+set -o nounset -o pipefail -o errexit
+
+workdir=""
+
+function clean_up () {
+    if [ -n "${workdir}" ] ; then
+        rm -rf "${workdir}"
+    fi
+}
+
+trap clean_up EXIT
+
+function error_exit () {
+    local message="${*}"
+    printf "Error: %s\\n" "${message}" >&2
+    exit 1
+}
+
+function find_artifact () {
+    local -a artifacts=()
+
+    shopt -s nullglob
+    artifacts=(dist/debops-*.whl)
+    if [ ${#artifacts[@]} -eq 0 ] ; then
+        artifacts=(dist/debops-*.tar.gz)
+    fi
+    shopt -u nullglob
+
+    if [ ${#artifacts[@]} -ne 1 ] ; then
+        error_exit "Expected one built package in dist/, found ${#artifacts[@]}; pass the artifact path explicitly"
+    fi
+
+    printf "%s\\n" "${artifacts[0]}"
+}
+
+function main () {
+    local artifact="${1:-}"
+    local venv
+    local config
+    local project
+    local modern
+    local name
+
+    if [ -z "${artifact}" ] ; then
+        artifact="$(find_artifact)"
+    fi
+
+    if [ ! -f "${artifact}" ] ; then
+        error_exit "Package artifact not found: ${artifact}"
+    fi
+
+    workdir="$(mktemp -d "${TMPDIR:-/tmp}/debops-package-smoke.XXXXXXXX")"
+    venv="${workdir}/venv"
+    config="${workdir}/config"
+    project="${workdir}/project"
+    modern="${workdir}/modern"
+    mkdir -p "${config}"
+
+    printf "Installing %s into a temporary virtual environment...\\n" \
+        "${artifact}"
+    python3 -m venv "${venv}"
+    "${venv}/bin/python" -m pip install --quiet --disable-pip-version-check \
+        "${artifact}"
+
+    printf "Checking the installed command line...\\n"
+    env XDG_CONFIG_HOME="${config}" "${venv}/bin/debops" --version
+
+    printf "Initializing a legacy project...\\n"
+    env XDG_CONFIG_HOME="${config}" "${venv}/bin/debops" project init \
+        --no-git --no-requirements "${project}"
+
+    [ -f "${project}/ansible.cfg" ] \
+        || error_exit "The legacy project has no ansible.cfg"
+    [ -f "${project}/.debops.cfg" ] \
+        || error_exit "The legacy project has no .debops.cfg"
+    [ -f "${project}/ansible/inventory/hosts" ] \
+        || error_exit "The legacy project has no inventory hosts file"
+
+    name="$(cd "${project}" && env XDG_CONFIG_HOME="${config}" \
+        "${venv}/bin/debops" config get project.name)"
+    [ "${name}" = "project" ] \
+        || error_exit "The legacy project name is '${name}', expected 'project'"
+
+    printf "Initializing a modern project...\\n"
+    env XDG_CONFIG_HOME="${config}" "${venv}/bin/debops" project init \
+        --type modern --default-view system --no-git --no-requirements \
+        "${modern}"
+
+    [ -f "${modern}/.debops/conf.d/project.yml" ] \
+        || error_exit "The modern project has no project configuration"
+    [ -f "${modern}/ansible/views/system/inventory/hosts" ] \
+        || error_exit "The modern project has no view inventory hosts file"
+
+    name="$(cd "${modern}" && env XDG_CONFIG_HOME="${config}" \
+        "${venv}/bin/debops" config get project.name)"
+    [ "${name}" = "modern" ] \
+        || error_exit "The modern project name is '${name}', expected 'modern'"
+
+    printf "The installed package smoke test passed.\\n"
+}
+
+main "${@}"
