@@ -190,3 +190,13 @@ def test_run_reports_a_keyboard_interrupt(clean_logging, monkeypatch):
         main_module.run()
 
     main_module.logger.notice.assert_called_once()
+
+
+def test_notice_is_a_noop_when_disabled():
+    logger = logging.getLogger("debops.test")
+    logger.setLevel(logging.WARNING)
+
+    with mock.patch.object(logger, "_log") as log:
+        logger.notice("message")
+
+    log.assert_not_called()

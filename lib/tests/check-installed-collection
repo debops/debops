@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+
+# Check that a built DebOps Ansible Collection can be installed and read
+# Usage: check-installed-collection [<collection-tarball>]
+
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+set -o nounset -o pipefail -o errexit
+
+workdir=""
+
+function clean_up () {
+    if [ -n "${workdir}" ] ; then
+        rm -rf "${workdir}"
+    fi
+}
+
+trap clean_up EXIT
+
+function error_exit () {
+    local message="${*}"
+    printf "Error: %s\\n" "${message}" >&2
+    exit 1
+}
+
+function find_artifact () {
+    local -a artifacts=()
+
+    shopt -s nullglob
+    artifacts=(dist/collections/debops-debops-*.tar.gz)
+    shopt -u nullglob
+
+    if [ ${#artifacts[@]} -ne 1 ] ; then
+        error_exit "Expected one collection tarball in dist/collections/, found ${#artifacts[@]}; pass the artifact path explicitly"
+    fi
+
+    printf "%s\\n" "${artifacts[0]}"
+}
+
+function main () {
+    local artifact="${1:-}"
+    local collections
+    local installed
+    local roles
+
+    if [ -z "${artifact}" ] ; then
+        artifact="$(find_artifact)"
+    fi
+
+    if [ ! -f "${artifact}" ] ; then
+        error_exit "Collection tarball not found: ${artifact}"
+    fi
+
+    if ! type ansible-galaxy > /dev/null 2>&1 ; then
+        error_exit "ansible-galaxy not found"
+    fi
+
+    if ! type ansible-doc > /dev/null 2>&1 ; then
+        error_exit "ansible-doc not found"
+    fi
+
+    workdir="$(mktemp -d "${TMPDIR:-/tmp}/debops-collection-smoke.XXXXXXXX")"
+    collections="${workdir}/collections"
+    export ANSIBLE_COLLECTIONS_PATH="${collections}"
+
+    printf "Installing %s into a temporary collection path...\\n" "${artifact}"
+    ansible-galaxy collection install --no-deps --force \
+        -p "${collections}" "${artifact}"
+
+    installed="${collections}/ansible_collections/debops/debops"
+    [ -d "${installed}" ] \
+        || error_exit "The DebOps Collection was not installed in ${installed}"
+    [ -f "${installed}/playbooks/common.yml" ] \
+        || error_exit "The installed collection has no common playbook"
+    [ -d "${installed}/roles" ] \
+        || error_exit "The installed collection has no roles directory"
+
+    printf "Checking that ansible-doc can read the installed roles...\\n"
+    roles="$(ansible-doc -t role -l)"
+    if [[ "${roles}" != *"debops.debops.core"* ]] ; then
+        error_exit "ansible-doc cannot find the debops.debops.core role"
+    fi
+
+    printf "The installed collection smoke test passed.\\n"
+}
+
+main "${@}"

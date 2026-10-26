@@ -432,5 +432,11 @@ for collection in "${collections[@]}" ; do
     fi
 done
 
+# Copy the tarballs where the smoke test and the CI pipeline can find them
+collection_output="${DEBOPS_COLLECTION_OUTPUT:-${repository_root}/dist/collections}"
+mkdir -p "${collection_output}"
+cp "${workdir_path}"/*.tar.gz "${collection_output}/"
+
 # Show the file sizes of collection tarballs
 du -h "${workdir_path}"/*.tar.gz
+printf "Collection tarballs written to %s\\n" "${collection_output}"

@@ -6,6 +6,12 @@
 name: Continuous Integration
 on: [ 'push', 'pull_request' ]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   reuse-spdx:
     runs-on: 'ubuntu-latest'
@@ -15,12 +21,13 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
 
       - name: Prepare test environment
         run: |
-          pip3 install --user --upgrade pip wheel setuptools
-          pip3 install --user --upgrade reuse
+          pip3 install --user -c requirements-ci.txt \
+            pip wheel setuptools reuse
+          pip3 check
 
       - name: Check codebase with REUSE linter
         run: |
@@ -36,14 +43,15 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
 
       - name: Prepare test environment
         run: |
           sudo apt-get remove --purge -yq ansible
           sudo apt-get install python3-netaddr
-          pip3 install --upgrade pip wheel setuptools
-          pip3 install --user --upgrade Jinja2 ansible ansible-lint
+          pip3 install --user -c requirements-ci.txt \
+            pip wheel setuptools Jinja2 ansible ansible-lint
+          pip3 check
 
       - name: Verify playbook with ansible-lint
         run: |
@@ -59,13 +67,14 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
 
       - name: Prepare test environment
         run: |
           sudo apt-get remove --purge -yq ansible
-          pip3 install --user --upgrade pip wheel setuptools
-          pip3 install --user --upgrade Jinja2 ansible
+          pip3 install --user -c requirements-ci.txt \
+            pip wheel setuptools Jinja2 ansible
+          pip3 check
 
       - name: Check playbook syntax with ansible-playbook
         run: |
@@ -81,7 +90,7 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
         with:
           fetch-depth: 0
 
@@ -90,8 +99,10 @@ jobs:
           sudo apt-get -qq update
           sudo apt-get -yq install pandoc pandoc-data
           sudo apt-get remove --purge -yq ansible
-          pip3 install --user --upgrade pip wheel setuptools
-          pip3 install --user --upgrade Jinja2 ansible ansible-lint yamllint galaxy-importer reuse
+          pip3 install --user -c requirements-ci.txt \
+            pip wheel setuptools Jinja2 ansible ansible-lint yamllint \
+            galaxy-importer reuse
+          pip3 check
 
       - name: Build DebOps Collections for Ansible Galaxy
         env:
@@ -101,6 +112,7 @@ jobs:
           ansible --version
           ansible-lint --version
           make collection
+          make test-smoke-collection
           make check
 
   yamllint:
@@ -111,12 +123,13 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
 
       - name: Prepare test environment
         run: |
-          pip3 install --user --upgrade pip wheel setuptools
-          pip3 install --user --upgrade yamllint
+          pip3 install --user -c requirements-ci.txt \
+            pip wheel setuptools yamllint
+          pip3 check
 
       - name: Check codebase with yamllint
         run: |
@@ -132,12 +145,13 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
 
       - name: Prepare test environment
         run: |
-          pip3 install --user --upgrade pip wheel setuptools
-          pip3 install --user --upgrade pycodestyle
+          pip3 install --user -c requirements-ci.txt \
+            pip wheel setuptools pycodestyle==2.15.0
+          pip3 check
 
       - name: Check codebase with pycodestyle
         run: |
@@ -153,7 +167,7 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
 
       - name: Prepare test environment
         # shellcheck v0.9.0 has bugs triggered by DebOps, so we install newer
@@ -175,7 +189,7 @@ jobs:
     steps:
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
 
       - name: Build and verify Docker image
         # https://github.com/actions/runner/issues/241
@@ -184,29 +198,74 @@ jobs:
           WITH_MANPAGES: '0'
         run: 'make test-docker-build'
 
-  debops-unit-test:
+  debops-python-matrix:
     runs-on: 'ubuntu-latest'
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
+        experimental: [false]
+        include:
+          - python-version: '3.14'
+            experimental: true
+          - python-version: '3.15'
+            experimental: true
     steps:
 
       - name: Add ~/.local/bin to $PATH
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
+        with:
+          fetch-depth: 0
+
+      - name: Set up the matrix Python
+        uses: 'actions/setup-python@v7'
+        with:
+          python-version: '${{ matrix.python-version }}'
+          cache: 'pip'
+          cache-dependency-path: 'requirements-ci.txt'
+
+      - name: Prepare test environment
+        run: |
+          pip3 install --user -c requirements-ci.txt \
+            pip wheel setuptools pytest pytest-cov future pyyaml python-dotenv \
+            toml pyxdg jinja2 distro GitPython
+          pip3 check
+
+      - name: Run DebOps unit tests
+        run: |
+          make clean-tests
+          make test-unit
+
+  debops-test-coverage:
+    runs-on: 'ubuntu-latest'
+    timeout-minutes: 30
+    steps:
+
+      - name: Add ~/.local/bin to $PATH
+        run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v7'
         with:
           fetch-depth: 0
 
       - name: Prepare test environment
         run: |
           sudo apt-get -qq update
-          pip3 install --user --upgrade pip wheel setuptools pypandoc
-          pip3 install --user --upgrade pytest pytest-cov future pyyaml python-dotenv toml pyxdg jinja2 distro gitpython
+          sudo apt-get -yq install git gnupg git-crypt
+          pip3 install --user -c requirements-ci.txt \
+            pip wheel setuptools pytest pytest-cov ansible-core \
+            future pyyaml python-dotenv toml pyxdg jinja2 distro GitPython
+          pip3 check
 
-      - name: Run DebOps unit tests
+      - name: Run unit and integration tests
         run: |
           make clean-tests
-          make test-unit
-          #make test-debops-tools test-debops-ansible_plugins
+          make test-coverage
           make test-debops-ansible_plugins
           make check
 
@@ -219,7 +278,7 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
         with:
           fetch-depth: 0
 
@@ -227,16 +286,18 @@ jobs:
         run: |
           sudo apt-get -qq update
           sudo apt-get -yq install pandoc pandoc-data graphviz
-          pip3 install --user --upgrade pip wheel setuptools pypandoc
-          pip3 install --user --upgrade sphinx==5.3.0 sphinx-autobuild sphinx_rtd_theme
+          pip3 install --user -c requirements-ci.txt \
+            pip wheel setuptools sphinx sphinx-autobuild \
+            sphinx-rtd-theme pypandoc
+          pip3 check
 
       - name: Build DebOps Python wheel package
         run: |
           make clean-tests
           make check
           make test-man wheel-quiet
-          pip3 install --user dist/*
-          pip3 list | grep debops
+          make test-metadata
+          make test-smoke
 
   debops-sdist:
     runs-on: 'ubuntu-latest'
@@ -247,7 +308,7 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
         with:
           fetch-depth: 0
 
@@ -255,16 +316,18 @@ jobs:
         run: |
           sudo apt-get -qq update
           sudo apt-get -yq install pandoc pandoc-data graphviz
-          pip3 install --user --upgrade pip wheel setuptools pypandoc
-          pip3 install --user --upgrade sphinx==5.3.0 sphinx-autobuild sphinx_rtd_theme
+          pip3 install --user -c requirements-ci.txt \
+            pip wheel setuptools sphinx sphinx-autobuild \
+            sphinx-rtd-theme pypandoc
+          pip3 check
 
       - name: Build DebOps Python sdist package
         run: |
           make clean-tests
           make check
           make test-man sdist-quiet
-          pip3 install --user dist/*
-          pip3 list | grep debops
+          make test-metadata
+          make test-smoke
 
   codespell:
     runs-on: 'ubuntu-latest'
@@ -274,14 +337,15 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
         with:
           fetch-depth: 0
 
       - name: Prepare test environment
         run: |
-          pip3 install --user --upgrade pip wheel setuptools
-          pip3 install --user --upgrade codespell tomli
+          pip3 install --user -c requirements-ci.txt \
+            pip wheel setuptools codespell tomli
+          pip3 check
 
       - name: Check common misspellings using codespell
         run: |
@@ -297,14 +361,15 @@ jobs:
         run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
 
       - name: Clone the repository
-        uses: 'actions/checkout@v3'
+        uses: 'actions/checkout@v7'
 
       - name: Prepare test environment
         run: |
           sudo apt-get -qq update
           sudo apt-get install -yq graphviz
-          pip3 install --user --upgrade pip wheel setuptools
-          pip3 install --user --upgrade sphinx==5.3.0 sphinx-autobuild sphinx_rtd-theme
+          pip3 install --user -c requirements-ci.txt \
+            pip wheel setuptools sphinx sphinx-autobuild sphinx-rtd-theme
+          pip3 check
 
       - name: Build documentation site
         run: |

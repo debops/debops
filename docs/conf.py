@@ -99,10 +99,24 @@ html_context = {
 # Add custom .css and .js files from '_static/' directory in a way compatible
 # with ReadTheDocs.org deployment
 # Source: https://github.com/rtfd/sphinx_rtd_theme/issues/117
+def disable_parallel_write(app):
+    """Disable the parallel write phase of the HTML builder.
+
+    Sphinx's parallel write phase intermittently crashes when a worker
+    dies without reporting the error, with an 'EOFError' in
+    '_write_parallel' (sphinx#14458 among others). This points the HTML
+    builder at the serial write phase, which is stable; the parallel
+    reading phase is still used, since it is where the reading-heavy
+    document work happens.
+    """
+    app.builder.allow_parallel = False
+
+
 def setup(app):
     # app.add_javascript("custom.js")
     app.add_css_file("theme_overrides.css")
     manpages.setup(app)
+    app.connect('builder-inited', disable_parallel_write)
 
 
 # -- General configuration ------------------------------------------------
