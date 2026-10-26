@@ -97,6 +97,19 @@ def test_venv_init_accepts_a_string_enabled_flag(tmp_path):
     assert venv.venv_path == str(tmp_path / ".debops" / "venv")
 
 
+def test_run_executes_the_command_without_pythonpath(tmp_path, monkeypatch):
+    venv = make_venv(tmp_path)
+    monkeypatch.setenv("PYTHONPATH", "/src")
+    process = mock.Mock(returncode=0)
+    popen = mock.Mock(return_value=process)
+    monkeypatch.setattr(projectvenv_module.subprocess, "Popen", popen)
+
+    assert venv._run(["python3", "-c", "pass"]) == 0
+
+    process.communicate.assert_called_once_with()
+    assert "PYTHONPATH" not in popen.call_args.kwargs["env"]
+
+
 def test_paths_come_from_the_configuration(tmp_path):
     raw = {"binaries": {},
            "project": {"venv": {"enabled": True,

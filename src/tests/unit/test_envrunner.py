@@ -146,3 +146,19 @@ def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch):
         runner.execute()
 
     assert runner.inventory.lock.called
+
+
+def test_execute_handles_interrupt_without_unlocking(stub_project,
+                                                     monkeypatch):
+    runner = EnvRunner(stub_project(), command_args=["true"])
+    executor = mock.Mock()
+    executor.communicate.side_effect = KeyboardInterrupt
+    monkeypatch.setattr(runner_module.subprocess, "Popen",
+                        mock.Mock(return_value=executor))
+    monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
+    runner.inventory.unlock.return_value = False
+
+    with pytest.raises(SystemExit):
+        runner.execute()
+
+    runner.inventory.lock.assert_not_called()
