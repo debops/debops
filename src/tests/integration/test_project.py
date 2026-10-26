@@ -734,8 +734,8 @@ def test_commands_reject_an_unknown_view(run_debops, tmp_path, debops_env):
         in error_message(result)
 
 
-def test_the_view_is_deduced_from_the_current_directory(run_debops, tmp_path,
-                                                       debops_env):
+def test_the_view_is_deduced_from_the_current_directory(
+        run_debops, tmp_path, debops_env):
     """Working inside a view directory selects that view."""
     project_dir = tmp_path / "example-modern"
     run_debops("project", "init", "-t", "modern", "-V", "system",
