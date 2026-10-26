@@ -60,8 +60,8 @@ class EnvRunner(object):
             os.environ[key] = value
 
         if not run_hooks(self.project.path, 'pre-env'):
-            raise RuntimeError('Hook pre-env aborted, '
-                               'not running command in environment')
+            raise ChildProcessError('Hook pre-env aborted, '
+                                    'not running command in environment')
 
         rc = 0
         try:

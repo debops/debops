@@ -157,3 +157,55 @@ def test_config_get_reports_the_project_name(run_debops, debops_env,
 
     assert result.returncode == 0
     assert result.stdout.strip() == "example-legacy"
+
+
+def make_failing_hook(project_dir, hook_name):
+    """Place a failing hook script in the project and return its directory."""
+    hook_dir = project_dir / ".debops" / "hooks" / hook_name
+    hook_dir.mkdir(parents=True)
+    hook = hook_dir / "00-fail"
+    hook.write_text("#!/bin/sh\nexit 1\n")
+    hook.chmod(0o755)
+    return hook
+
+
+def error_message(result):
+    """The error the command line printed, independent of the stream."""
+    return result.stdout + result.stderr
+
+
+def test_run_aborts_on_a_failing_pre_run_hook(run_debops, debops_env,
+                                              legacy_project):
+    (legacy_project / "site.yml").write_text("---\n")
+    make_failing_hook(legacy_project, "pre-run")
+
+    result = run_debops("run", "site.yml", cwd=str(legacy_project),
+                        env=debops_env)
+
+    assert result.returncode == 1
+    assert "Hook pre-run aborted" in error_message(result)
+    assert "Traceback" not in error_message(result)
+
+
+def test_exec_aborts_on_a_failing_pre_exec_hook(run_debops, debops_env,
+                                                legacy_project):
+    make_failing_hook(legacy_project, "pre-exec")
+
+    result = run_debops("exec", "all", "-m", "ping", cwd=str(legacy_project),
+                        env=debops_env)
+
+    assert result.returncode == 1
+    assert "Hook pre-exec aborted" in error_message(result)
+    assert "Traceback" not in error_message(result)
+
+
+def test_env_aborts_on_a_failing_pre_env_hook(run_debops, debops_env,
+                                              legacy_project):
+    make_failing_hook(legacy_project, "pre-env")
+
+    result = run_debops("env", "true", cwd=str(legacy_project),
+                        env=debops_env)
+
+    assert result.returncode == 1
+    assert "Hook pre-env aborted" in error_message(result)
+    assert "Traceback" not in error_message(result)
