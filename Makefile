@@ -150,7 +150,7 @@ test-unit:
 	@printf "%s\n" "Running unit tests using pytest..."
 	@PYTHONPATH=src python3 -m pytest src/tests \
 		--ignore=src/tests/integration \
-		--cov=debops --cov-report=term-missing
+		--cov=debops --cov-branch --cov-report=term-missing
 
 .PHONY: test-integration
 test-integration:
@@ -161,7 +161,7 @@ test-integration:
 test-coverage:
 	@printf "%s\n" "Running all tests with a combined coverage report..."
 	@PYTHONPATH=src python3 -m pytest src/tests \
-		--cov=debops --cov-report=term-missing
+		--cov=debops --cov-branch --cov-report=term-missing
 
 .PHONY: test-pep8
 test-pep8:
