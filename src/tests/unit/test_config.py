@@ -144,6 +144,20 @@ def test_load_merges_a_directory_in_sorted_order(configuration, tmp_path):
     assert configuration.load(str(tmp_path)) == {"a": 1, "b": 2}
 
 
+def test_load_ignores_subdirectories(configuration, tmp_path):
+    (tmp_path / "nested").mkdir()
+    (tmp_path / "a.toml").write_text('a = 1\n')
+
+    assert configuration.load(str(tmp_path)) == {"a": 1}
+
+
+def test_load_returns_empty_for_a_special_file(configuration, tmp_path):
+    path = tmp_path / "special"
+    os.mkfifo(str(path))
+
+    assert configuration.load(str(path)) == {}
+
+
 def test_load_ignores_hidden_files(configuration, tmp_path):
     (tmp_path / ".hidden.toml").write_text('a = 1\n')
     (tmp_path / "visible.toml").write_text('b = 2\n')
@@ -206,6 +220,23 @@ def test_merge_env_reads_a_direct_file(configuration, tmp_path, monkeypatch):
         assert configuration._env_files == [str(env_file)]
         assert configuration._env_vars == {"DEBOPS_TEST_FROM_ENV": "value"}
         assert os.environ["DEBOPS_TEST_FROM_ENV"] == "value"
+
+
+def test_merge_env_accepts_a_key_without_a_value(configuration, tmp_path):
+    (tmp_path / ".env").write_text("BARE_KEY\n")
+
+    with mock.patch.dict(os.environ):
+        configuration.merge_env(str(tmp_path))
+
+    assert configuration._env_vars["BARE_KEY"] is None
+    assert "BARE_KEY" not in os.environ
+
+
+def test_merge_env_ignores_a_directory_without_dotenv(configuration, tmp_path):
+    configuration.merge_env(str(tmp_path))
+
+    assert configuration._env_files == []
+    assert configuration._env_vars == {}
 
 
 def test_merge_env_applies_a_self_reference_once(configuration, tmp_path,
@@ -461,6 +492,16 @@ def test_config_list_prints_env_and_config_files(configuration, capsys,
     assert "# Configuration files:" in out
     assert ".env" in out
     assert ".debops.cfg" in out
+
+
+def test_config_list_without_env_files(configuration, capsys, tmp_path):
+    configuration._config_files = [str(tmp_path / "project" / ".debops.cfg")]
+
+    configuration.config_list()
+
+    out = capsys.readouterr().out
+    assert "# Environment files:" not in out
+    assert "# Configuration files:" in out
 
 
 def test_config_get_formats_a_dict_as_toml(configuration, capsys):

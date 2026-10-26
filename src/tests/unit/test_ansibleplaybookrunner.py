@@ -396,6 +396,23 @@ def test_playbook_in_a_view_collection_is_found(stub_project, tmp_path):
     assert runner._found_playbooks == [str(playbooks / "deploy.yml")]
 
 
+def test_collections_path_relative_to_the_view(stub_project, tmp_path,
+                                               monkeypatch):
+    view_collections = (tmp_path / "ansible" / "views" / "system"
+                        / "collections")
+    view_collections.mkdir(parents=True)
+    project = stub_project(collections="collections")
+    runner = AnsiblePlaybookRunner.__new__(AnsiblePlaybookRunner)
+    seen = []
+    monkeypatch.setattr(runner, "_walklevel",
+                        lambda directory, level: seen.append(directory)
+                        or iter(()))
+
+    runner._find_collections(project)
+
+    assert seen == [str(view_collections)]
+
+
 def test_execute_returns_a_nonzero_code(stub_project, monkeypatch):
     runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"])
     executor = mock.Mock(returncode=3)

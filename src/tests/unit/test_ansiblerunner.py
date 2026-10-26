@@ -83,6 +83,14 @@ def test_missing_inventory_means_no_extra_vars(stub_project):
     assert "--extra-vars" not in runner._ansible_command
 
 
+def test_existing_inventory_without_global_vars(stub_project, tmp_path):
+    (tmp_path / "ansible" / "inventory").mkdir(parents=True)
+
+    runner = AnsibleRunner(stub_project(), ansible_args=[])
+
+    assert "--extra-vars" not in runner._ansible_command
+
+
 def test_missing_ansible_cfg_is_reported(stub_project):
     project = stub_project(cfg_error=configparser.NoSectionError("defaults"))
     with pytest.raises(FileNotFoundError):
