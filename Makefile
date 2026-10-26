@@ -23,7 +23,7 @@ check: fail-if-git-dirty
 
 .PHONY: clean
 clean:          ## Clean up project directory
-clean: clean-tests clean-sdist clean-wheel
+clean: clean-tests clean-sdist clean-wheel clean-collections
 
 .PHONY: clean-git
 clean-git:      ## Clean up directories and files ignored by git
@@ -120,6 +120,10 @@ make-collection: clean clean-git
 clean-sdist:
 	@rm -vrf debops.egg-info dist/debops-*.tar.gz*
 
+.PHONY: clean-collections
+clean-collections:
+	@rm -vrf dist/collections
+
 .PHONY: wheel
 wheel:          ## Create Python wheel package
 wheel: clean-wheel man
@@ -150,7 +154,7 @@ test-unit:
 	@printf "%s\n" "Running unit tests using pytest..."
 	@PYTHONPATH=src python3 -m pytest src/tests \
 		--ignore=src/tests/integration \
-		--cov=debops --cov-report=term-missing
+		--cov=debops --cov-branch --cov-report=term-missing
 
 .PHONY: test-integration
 test-integration:
@@ -161,7 +165,8 @@ test-integration:
 test-coverage:
 	@printf "%s\n" "Running all tests with a combined coverage report..."
 	@PYTHONPATH=src python3 -m pytest src/tests \
-		--cov=debops --cov-report=term-missing
+		--cov=debops --cov-branch --cov-report=term-missing \
+		--cov-fail-under=94
 
 .PHONY: test-pep8
 test-pep8:
@@ -177,6 +182,21 @@ test-shell:
 .PHONY: test-docker-build
 test-docker-build:
 	@./lib/tests/check-docker-build
+
+.PHONY: test-smoke
+test-smoke:     ## Test an installed DebOps wheel or sdist package
+	@printf "%s\n" "Running the installed DebOps package smoke test..."
+	@./lib/tests/check-installed-package
+
+.PHONY: test-metadata
+test-metadata:  ## Check the metadata of a built DebOps package
+	@printf "%s\n" "Checking the built DebOps package metadata..."
+	@./lib/tests/check-package-metadata
+
+.PHONY: test-smoke-collection
+test-smoke-collection:  ## Test an installed DebOps Ansible Collection
+	@printf "%s\n" "Running the installed DebOps Collection smoke test..."
+	@./lib/tests/check-installed-collection
 
 .PHONY: test-spdx
 test-spdx:
@@ -204,7 +224,8 @@ test-docs:
 .PHONY: test-man
 test-man:
 	@printf "%s\n" "Testing man documentation generation..."
-	@cd docs && sphinx-build -t manpages -n -W -b man -d _build/doctrees . _build/man
+	@cd docs && sphinx-build -j auto -t manpages -n -W -b man \
+		-d _build/doctrees . _build/man
 
 .PHONY: check-links
 check-links:

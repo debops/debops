@@ -12,6 +12,7 @@ from debops.exceptions import InventorySpecError
 from debops.inventoryspec import (parse_spec, merge_specs, resolve_paths,
                                   apply_spec, render_spec, render_keep,
                                   resolve_keep, load_template,
+                                  _execute_command,
                                   DEFAULT_VERSION, PATH_RENDERED_VERSIONS,
                                   CONTENT_RENDERED_VERSIONS, SPEC_TEMPLATES,
                                   SPEC_VERSION)
@@ -126,6 +127,12 @@ class ParseSpecTestCase(unittest.TestCase):
             parse_spec('---\nfiles:\n  hosts: first\n  hosts: second\n')
 
         self.assertIn('duplicate key', str(cm.exception))
+
+    def test_non_string_file_path_rejected(self):
+        with self.assertRaises(InventorySpecError) as cm:
+            parse_spec('---\nfiles:\n  42: x\n')
+
+        self.assertIn('must be a string', str(cm.exception))
 
     def test_contents_are_not_expanded(self):
         spec = parse_spec('---\nfiles:\n  hosts: "$HOME and $PATH"\n')
@@ -423,6 +430,12 @@ class PipeTestCase(unittest.TestCase):
 
         self.assertIn('--allow-io', str(cm.exception))
 
+    def test_command_runs_and_returns_the_output(self):
+        result = _execute_command('printf hello', 30)
+
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, 'hello')
+
     @mock.patch('debops.inventoryspec._execute_command')
     def test_failed_command_is_reported(self, execute):
         execute.return_value = mock.Mock(returncode=2, stdout='',
@@ -535,6 +548,35 @@ class IncludeTestCase(unittest.TestCase):
             self.render('{{ include("x") }}', allow_io=False)
 
         self.assertIn('--allow-io', str(cm.exception))
+
+    def test_include_requires_a_non_empty_string(self):
+        for value in ('1', '""'):
+            with self.subTest(value=value):
+                with self.assertRaises(InventorySpecError) as cm:
+                    self.render('{{ include(%s) }}' % value)
+
+                self.assertIn('non-empty path string', str(cm.exception))
+
+    def test_include_notifies_the_caller(self):
+        self.write('x.yml', 'hello\n')
+        seen = []
+
+        render_spec({'file.yml': '{{ include("x.yml") }}'}, {}, 'doc.yml',
+                    version=3, allow_io=True, include_base=self.base_dir,
+                    notify=seen.append)
+
+        self.assertEqual(
+            seen, ['Including file: ' + os.path.join(self.base_dir, 'x.yml')])
+
+    def test_include_rejects_a_non_utf8_file(self):
+        path = os.path.join(self.base_dir, 'binary.yml')
+        with open(path, 'wb') as fh:
+            fh.write(b'\xff\xfe')
+
+        with self.assertRaises(InventorySpecError) as cm:
+            self.render('{{ include("binary.yml") }}')
+
+        self.assertIn('not a UTF-8 text file', str(cm.exception))
 
 
 class TemplateSourceTestCase(unittest.TestCase):
@@ -964,6 +1006,15 @@ class MergeSpecsTestCase(unittest.TestCase):
         # A document cannot drop the protection another one asked for
         self.assertEqual(keep, ['a.yml', 'b.yml'])
 
+    def test_duplicate_keep_patterns_are_unioned_once(self):
+        first = parse_spec('---\nfiles: {}\nkeep: [a.yml]\n')
+        second = parse_spec('---\nfiles: {}\nkeep: [a.yml]\n')
+
+        _merged, keep, _notices = merge_specs(
+            [('first', first), ('second', second)])
+
+        self.assertEqual(keep, ['a.yml'])
+
     def test_a_document_which_also_writes_a_kept_path_is_refused(self):
         first = parse_spec('---\nfiles: {}\nkeep: ["group_vars/*.yml"]\n')
         second = parse_spec('---\nfiles:\n  group_vars/all/nginx.yml: x\n')
@@ -1324,6 +1375,20 @@ class ApplySpecTestCase(unittest.TestCase):
         self.assertFalse(os.path.exists(os.path.join(self.base_dir,
                                                      'group_vars')))
 
+    def test_dry_run_plans_a_directory_removal(self):
+        os.makedirs(os.path.join(self.base_dir, 'group_vars', 'all'))
+
+        result = apply_spec({'group_vars/': None}, self.base_dir,
+                            dry_run=True)
+
+        group_vars = os.path.realpath(os.path.join(self.base_dir,
+                                                   'group_vars'))
+        nested = os.path.realpath(os.path.join(self.base_dir, 'group_vars',
+                                               'all'))
+        self.assertIn(group_vars, result['planned_removed'])
+        self.assertIn(nested, result['planned_removed'])
+        self.assertTrue(os.path.isdir(group_vars))
+
     def test_empty_directory_clears_existing_contents(self):
         os.makedirs(os.path.join(self.base_dir, 'host_vars'))
         with open(os.path.join(self.base_dir, 'host_vars', 'web1.yml'),
@@ -1342,6 +1407,49 @@ class ApplySpecTestCase(unittest.TestCase):
 
         self.assertTrue(os.path.isdir(os.path.join(self.base_dir,
                                                    'host_vars')))
+
+    def test_empty_directory_with_a_pre_existing_child_is_skipped(self):
+        child = os.path.join(self.base_dir, 'group_vars', 'all', 'keep.yml')
+        os.makedirs(os.path.dirname(child))
+        with open(child, 'w') as fh:
+            fh.write('mine\n')
+        group_vars = os.path.join(self.base_dir, 'group_vars')
+
+        result = apply_spec({'group_vars/': ''}, self.base_dir,
+                            pre_existing={os.path.realpath(child)})
+
+        self.assertEqual(result['skipped'], [os.path.realpath(group_vars)])
+        self.assertTrue(os.path.exists(child))
+
+    def test_empty_directory_replaces_a_file(self):
+        path = os.path.join(self.base_dir, 'host_vars')
+        with open(path, 'w') as fh:
+            fh.write('mine\n')
+
+        result = apply_spec({'host_vars/': ''}, self.base_dir)
+
+        self.assertTrue(os.path.isdir(path))
+        self.assertEqual(result['removed'], [os.path.realpath(path)])
+        self.assertEqual(result['written'], [os.path.realpath(path)])
+
+    def test_dry_run_empty_directory_replaces_a_file(self):
+        path = os.path.join(self.base_dir, 'host_vars')
+        with open(path, 'w') as fh:
+            fh.write('mine\n')
+
+        result = apply_spec({'host_vars/': ''}, self.base_dir, dry_run=True)
+
+        self.assertTrue(os.path.isfile(path))
+        self.assertEqual(result['planned_removed'], [os.path.realpath(path)])
+        self.assertEqual(result['planned'], [os.path.realpath(path)])
+
+    def test_write_over_an_existing_directory_rejected(self):
+        os.makedirs(os.path.join(self.base_dir, 'hosts'))
+
+        with self.assertRaises(InventorySpecError) as cm:
+            apply_spec({'hosts': 'x'}, self.base_dir)
+
+        self.assertIn('is a directory', str(cm.exception))
 
     def test_pre_existing_file_is_not_removed(self):
         with open(os.path.join(self.base_dir, 'hosts'), 'w') as fh:
@@ -1571,6 +1679,16 @@ class ApplySpecKeepTestCase(unittest.TestCase):
         self.assertEqual(self.read(self.keyring), 'seedvault: unchanged\n')
         self.assertEqual(result['written'], [])
         self.assertEqual(result['kept'], [self.keyring])
+
+    def test_empty_kept_directory_is_reported_as_kept(self):
+        group_vars = os.path.join(self.base_dir, 'group_vars')
+
+        result = apply_spec({'group_vars/': ''}, self.base_dir,
+                            keep=['group_vars'])
+
+        self.assertEqual(result['kept'], [os.path.realpath(group_vars)])
+        self.assertTrue(os.path.isdir(group_vars))
+        self.assertEqual(self.read(self.keyring), 'seedvault: unchanged\n')
 
 
 GRAPH_OUTPUT = """\

@@ -33,7 +33,7 @@ def test_unknown_section_exits_with_an_error(capsys):
         parse_cli("bogus")
 
     assert exc.value.code == 1
-    assert "unrecognized section" in capsys.readouterr().out
+    assert "unrecognized section" in capsys.readouterr().err
 
 
 def test_unknown_project_command_exits_with_an_error(capsys):
@@ -41,7 +41,7 @@ def test_unknown_project_command_exits_with_an_error(capsys):
         parse_cli("project", "bogus")
 
     assert exc.value.code == 1
-    assert "unrecognized command" in capsys.readouterr().out
+    assert "unrecognized command" in capsys.readouterr().err
 
 
 def test_unknown_config_command_exits_with_an_error(capsys):
@@ -49,7 +49,7 @@ def test_unknown_config_command_exits_with_an_error(capsys):
         parse_cli("config", "bogus")
 
     assert exc.value.code == 1
-    assert "unrecognized command" in capsys.readouterr().out
+    assert "unrecognized command" in capsys.readouterr().err
 
 
 def test_project_init_defaults():

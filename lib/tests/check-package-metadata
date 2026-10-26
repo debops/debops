@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+# Check that the built DebOps package metadata is valid
+# Usage: check-package-metadata [<wheel-or-sdist> ...]
+
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+set -o nounset -o pipefail -o errexit
+
+workdir=""
+
+function clean_up () {
+    if [ -n "${workdir}" ] ; then
+        rm -rf "${workdir}"
+    fi
+}
+
+trap clean_up EXIT
+
+function error_exit () {
+    local message="${*}"
+    printf "Error: %s\\n" "${message}" >&2
+    exit 1
+}
+
+function find_artifacts () {
+    local -a artifacts=()
+
+    shopt -s nullglob
+    artifacts=(dist/debops-*.whl dist/debops-*.tar.gz)
+    shopt -u nullglob
+
+    if [ ${#artifacts[@]} -eq 0 ] ; then
+        error_exit "No built package to check in dist/"
+    fi
+
+    printf "%s\\n" "${artifacts[@]}"
+}
+
+function main () {
+    local -a artifacts=()
+    local venv
+
+    if [ ${#} -gt 0 ] ; then
+        artifacts=("${@}")
+    else
+        mapfile -t artifacts < <(find_artifacts)
+    fi
+
+    if [ ${#artifacts[@]} -eq 0 ] ; then
+        error_exit "No package artifact to check"
+    fi
+
+    if [ ! -f requirements-ci.txt ] ; then
+        error_exit "run this script from the repository root"
+    fi
+
+    if ! type python3 > /dev/null 2>&1 ; then
+        error_exit "python3 not found"
+    fi
+
+    workdir="$(mktemp -d "${TMPDIR:-/tmp}/debops-metadata.XXXXXXXX")"
+    venv="${workdir}/venv"
+    python3 -m venv "${venv}"
+
+    printf "Checking %s with twine...\\n" "${artifacts[*]}"
+    "${venv}/bin/python" -m pip install --quiet --disable-pip-version-check \
+        -c requirements-ci.txt twine
+    "${venv}/bin/twine" check "${artifacts[@]}"
+
+    printf "The package metadata check passed.\\n"
+}
+
+main "${@}"

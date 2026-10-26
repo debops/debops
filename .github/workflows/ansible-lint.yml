@@ -11,6 +11,12 @@
 name: Checking codebase using ansible-lint main branch
 on: [ 'push', 'pull_request' ]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   build:
     runs-on: 'ubuntu-latest'
@@ -18,7 +24,7 @@ jobs:
     steps:
 
       - name: Clone the repository
-        uses: 'actions/checkout@v4'
+        uses: 'actions/checkout@v7'
 
       - name: Install Ansible Collections for ansible-lint
         run: 'make install-collections'

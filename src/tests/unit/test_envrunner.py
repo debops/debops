@@ -43,7 +43,7 @@ def test_missing_inventory_option_aborts(stub_project, capsys):
         EnvRunner(project, command_args=["env"])
 
     assert exception.value.code == 1
-    assert "No inventory specified" in capsys.readouterr().out
+    assert "No inventory specified" in capsys.readouterr().err
 
 
 def test_show_env_local_prints_configured_variables(stub_project, capsys):
@@ -97,7 +97,7 @@ def test_execute_aborts_when_the_pre_hook_fails(stub_project, monkeypatch):
     runner = EnvRunner(stub_project(), command_args=["true"])
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=False))
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ChildProcessError):
         runner.execute()
 
 
@@ -146,3 +146,19 @@ def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch):
         runner.execute()
 
     assert runner.inventory.lock.called
+
+
+def test_execute_handles_interrupt_without_unlocking(stub_project,
+                                                     monkeypatch):
+    runner = EnvRunner(stub_project(), command_args=["true"])
+    executor = mock.Mock()
+    executor.communicate.side_effect = KeyboardInterrupt
+    monkeypatch.setattr(runner_module.subprocess, "Popen",
+                        mock.Mock(return_value=executor))
+    monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
+    runner.inventory.unlock.return_value = False
+
+    with pytest.raises(SystemExit):
+        runner.execute()
+
+    runner.inventory.lock.assert_not_called()

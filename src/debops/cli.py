@@ -10,6 +10,7 @@ from .projectvenv import ProjectVenv
 from .ansiblerunner import AnsibleRunner
 from .ansibleplaybookrunner import AnsiblePlaybookRunner
 from .envrunner import EnvRunner
+from .utils import print_error
 import logging
 import getpass
 import sys
@@ -69,7 +70,7 @@ class Interpreter(object):
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError, InventorySpecError, FileNotFoundError,
                 ChildProcessError, ValueError) as errmsg:
-            print('Error:', errmsg)
+            print_error(errmsg)
             sys.exit(1)
 
     def do_project_refresh(self, args):
@@ -80,7 +81,7 @@ class Interpreter(object):
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError, InventorySpecError,
                 ChildProcessError, ValueError) as errmsg:
-            print('Error:', errmsg)
+            print_error(errmsg)
             sys.exit(1)
 
     def do_project_lock(self, args):
@@ -90,11 +91,11 @@ class Interpreter(object):
             try:
                 project.lock()
             except (NoDefaultViewException) as errmsg:
-                print('Error:', errmsg)
+                print_error(errmsg)
                 sys.exit(1)
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError, ChildProcessError) as errmsg:
-            print('Error:', errmsg)
+            print_error(errmsg)
             sys.exit(1)
 
     def do_project_unlock(self, args):
@@ -104,11 +105,11 @@ class Interpreter(object):
             try:
                 project.unlock()
             except (NoDefaultViewException) as errmsg:
-                print('Error:', errmsg)
+                print_error(errmsg)
                 sys.exit(1)
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError, ChildProcessError) as errmsg:
-            print('Error:', errmsg)
+            print_error(errmsg)
             sys.exit(1)
 
     def do_project_mkview(self, args):
@@ -119,7 +120,7 @@ class Interpreter(object):
         except (IsADirectoryError, NotADirectoryError,
                 InventorySpecError, ChildProcessError,
                 ValueError) as errmsg:
-            print('Error:', errmsg)
+            print_error(errmsg)
             sys.exit(1)
 
     def do_project_commit(self, args):
@@ -128,7 +129,7 @@ class Interpreter(object):
             project.commit(interactive=True)
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
-            print('Error:', errmsg)
+            print_error(errmsg)
             sys.exit(1)
 
     def do_project_venv(self, args):
@@ -150,7 +151,7 @@ class Interpreter(object):
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError, FileNotFoundError,
                 ChildProcessError, ValueError) as errmsg:
-            print('Error:', errmsg)
+            print_error(errmsg)
             sys.exit(1)
 
     def do_exec(self, args):
@@ -158,35 +159,14 @@ class Interpreter(object):
             project = ProjectDir(path=args.project_dir, config=self.config,
                                  view=args.view)
         except (IsADirectoryError, NotADirectoryError) as errmsg:
-            print('Error:', errmsg)
+            print_error(errmsg)
             sys.exit(1)
 
         try:
             runner = AnsibleRunner(project, **vars(args))
         except (NoDefaultViewException, ValueError,
                 FileNotFoundError) as errmsg:
-            print('Error:', errmsg)
-            sys.exit(1)
-
-        if args.eval:
-            runner.eval()
-            sys.exit(0)
-        else:
-            sys.exit(runner.execute())
-
-    def do_run(self, args):
-        try:
-            project = ProjectDir(path=args.project_dir, config=self.config,
-                                 view=args.view)
-        except (IsADirectoryError, NotADirectoryError, ChildProcessError) as errmsg:
-            print('Error:', errmsg)
-            sys.exit(1)
-
-        try:
-            runner = AnsiblePlaybookRunner(project, **vars(args))
-        except (NoDefaultViewException, ValueError,
-                FileNotFoundError, ChildProcessError) as errmsg:
-            print('Error:', errmsg)
+            print_error(errmsg)
             sys.exit(1)
 
         if args.eval:
@@ -196,7 +176,32 @@ class Interpreter(object):
             try:
                 sys.exit(runner.execute())
             except ChildProcessError as errmsg:
-                print('Error:', errmsg)
+                print_error(errmsg)
+                sys.exit(1)
+
+    def do_run(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 view=args.view)
+        except (IsADirectoryError, NotADirectoryError, ChildProcessError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        try:
+            runner = AnsiblePlaybookRunner(project, **vars(args))
+        except (NoDefaultViewException, ValueError,
+                FileNotFoundError, ChildProcessError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        if args.eval:
+            runner.eval()
+            sys.exit(0)
+        else:
+            try:
+                sys.exit(runner.execute())
+            except ChildProcessError as errmsg:
+                print_error(errmsg)
                 sys.exit(1)
 
     def do_env(self, args):
@@ -204,18 +209,22 @@ class Interpreter(object):
             project = ProjectDir(path=args.project_dir, config=self.config,
                                  view=args.view)
         except (IsADirectoryError, NotADirectoryError) as errmsg:
-            print('Error:', errmsg)
+            print_error(errmsg)
             sys.exit(1)
 
         try:
             runner = EnvRunner(project, **vars(args))
         except (NoDefaultViewException, ValueError,
                 FileNotFoundError) as errmsg:
-            print('Error:', errmsg)
+            print_error(errmsg)
             sys.exit(1)
 
         if args.command_args:
-            sys.exit(runner.execute())
+            try:
+                sys.exit(runner.execute())
+            except ChildProcessError as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
         else:
             sys.exit(runner.show_env(scope=args.scope))
 

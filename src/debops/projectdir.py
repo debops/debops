@@ -1115,7 +1115,8 @@ class ProjectDir(object):
                                     'DebOps project directory')
 
         if not run_hooks(self.path, 'pre-init'):
-            raise RuntimeError('Hook pre-init aborted, not creating project')
+            raise ChildProcessError('Hook pre-init aborted, '
+                                    'not creating project')
 
         # Let's make a new project
         if self.project_type == 'modern':
@@ -1593,7 +1594,8 @@ class ProjectDir(object):
                 repo.git.reset()
                 if interactive:
                     print('The "project.git.auto_commit_message" option is '
-                          'not defined. Not committing any changes.')
+                          'not defined. Not committing any changes.',
+                          file=sys.stderr)
         else:
             logger.debug('No new changes detected, nothing to commit')
 
@@ -1603,7 +1605,8 @@ class ProjectDir(object):
         logger.debug("Refresing project directory")
 
         if not run_hooks(self.path, 'pre-refresh'):
-            print('Hook pre-refresh aborted, not refreshing project')
+            print('Hook pre-refresh aborted, not refreshing project',
+                  file=sys.stderr)
             return
 
         if self.project_type == 'modern':

@@ -83,6 +83,14 @@ def test_missing_inventory_means_no_extra_vars(stub_project):
     assert "--extra-vars" not in runner._ansible_command
 
 
+def test_existing_inventory_without_global_vars(stub_project, tmp_path):
+    (tmp_path / "ansible" / "inventory").mkdir(parents=True)
+
+    runner = AnsibleRunner(stub_project(), ansible_args=[])
+
+    assert "--extra-vars" not in runner._ansible_command
+
+
 def test_missing_ansible_cfg_is_reported(stub_project):
     project = stub_project(cfg_error=configparser.NoSectionError("defaults"))
     with pytest.raises(FileNotFoundError):
@@ -104,7 +112,7 @@ def test_missing_inventory_option_aborts(stub_project, capsys):
         AnsibleRunner(project, ansible_args=[])
 
     assert exception.value.code == 1
-    assert "No inventory specified" in capsys.readouterr().out
+    assert "No inventory specified" in capsys.readouterr().err
 
 
 def test_eval_prints_the_command(stub_project, capsys):
@@ -130,10 +138,30 @@ def test_execute_returns_the_command_return_code(stub_project, monkeypatch):
     assert popen.call_args.kwargs["shell"] is True
 
 
+@pytest.fixture(autouse=True)
+def _isolated_environment():
+    """The runners write the process environment directly as they run, and
+    the process environment is shared with every test which runs after
+    them in the pytest process: leak instances of 'ANSIBLE_CONFIG' have
+    broken integration tests in mysterious ways. The patch snapshots the
+    environment before each test and restores it afterwards.
+    """
+    patcher = mock.patch.dict(os.environ)
+    patcher.start()
+    yield
+    patcher.stop()
+
+
 def test_execute_sets_the_environment(stub_project, monkeypatch):
+    """The runner exports its environment for the spawned Ansible process.
+
+    The export writes the process environment directly, which would leak
+    into every test which runs afterwards through the shared pytest
+    environment; the patch isolates the writes and restores the original
+    state afterwards.
+    """
     project = stub_project()
     runner = AnsibleRunner(project, ansible_args=["all"])
-    monkeypatch.delenv("ANSIBLE_CONFIG", raising=False)
     executor = mock.Mock(returncode=0)
     executor.communicate.return_value = (b"", b"")
     monkeypatch.setattr(runner_module.subprocess, "Popen",
@@ -141,9 +169,10 @@ def test_execute_sets_the_environment(stub_project, monkeypatch):
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
     runner.inventory.unlock.return_value = False
 
-    runner.execute()
+    with mock.patch.dict(os.environ, clear=True):
+        runner.execute()
 
-    assert os.environ["ANSIBLE_CONFIG"] == project.ansible_cfg.path
+        assert os.environ["ANSIBLE_CONFIG"] == project.ansible_cfg.path
 
 
 def test_execute_rings_the_bell(stub_project, monkeypatch, capsys):
@@ -164,7 +193,7 @@ def test_execute_aborts_when_the_pre_hook_fails(stub_project, monkeypatch):
     runner = AnsibleRunner(stub_project(), ansible_args=["all"])
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=False))
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ChildProcessError):
         runner.execute()
 
 

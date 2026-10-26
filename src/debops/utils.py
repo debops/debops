@@ -7,6 +7,17 @@ from .constants import DEBOPS_USER_HOME_DIR
 import distro
 import os
 import platform
+import sys
+
+
+def print_error(errmsg):
+    """Print a failure message to standard error.
+
+    Machine-readable output written to stdout, for example the inventory or
+    the configuration in JSON, must stay parseable, so the failure reports
+    never appear there.
+    """
+    print('Error:', errmsg, file=sys.stderr)
 
 
 def unexpanduser(path):

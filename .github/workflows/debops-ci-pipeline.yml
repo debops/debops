@@ -10,13 +10,19 @@
 name: 'DebOps CI Pipeline'
 on: [ 'push', 'pull_request' ]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   bootstrap_playbook:
     runs-on: 'ubuntu-latest'
     steps:
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare the CI pipeline environment
         uses: './.github/workflows/prepare-ci-pipeline'
@@ -37,7 +43,7 @@ jobs:
     steps:
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare the CI pipeline environment
         uses: './.github/workflows/prepare-ci-pipeline'
@@ -58,7 +64,7 @@ jobs:
     steps:
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare the CI pipeline environment
         uses: './.github/workflows/prepare-ci-pipeline'
@@ -79,7 +85,7 @@ jobs:
     steps:
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare the CI pipeline environment
         uses: './.github/workflows/prepare-ci-pipeline'
@@ -100,7 +106,7 @@ jobs:
     steps:
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare the CI pipeline environment
         uses: './.github/workflows/prepare-ci-pipeline'
@@ -125,7 +131,7 @@ jobs:
     steps:
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare the CI pipeline environment
         uses: './.github/workflows/prepare-ci-pipeline'
@@ -150,7 +156,7 @@ jobs:
     steps:
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare the CI pipeline environment
         uses: './.github/workflows/prepare-ci-pipeline'
