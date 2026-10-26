@@ -125,8 +125,8 @@ class AnsibleRunner(object):
             os.environ[key] = value
 
         if not run_hooks(self.project.path, 'pre-exec'):
-            raise RuntimeError('Hook pre-exec aborted, '
-                               'not executing Ansible command')
+            raise ChildProcessError('Hook pre-exec aborted, '
+                                    'not executing Ansible command')
 
         rc = 0
         try:

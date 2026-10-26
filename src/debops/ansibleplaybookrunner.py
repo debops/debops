@@ -346,8 +346,8 @@ class AnsiblePlaybookRunner(object):
 
         hook_name = 'pre-' + run_check_mode
         if not run_hooks(self.project.path, hook_name):
-            raise RuntimeError('Hook {} aborted, not running playbooks'
-                               .format(hook_name))
+            raise ChildProcessError('Hook {} aborted, '
+                                    'not running playbooks'.format(hook_name))
 
         rc = 0
         try:

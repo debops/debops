@@ -97,7 +97,7 @@ def test_execute_aborts_when_the_pre_hook_fails(stub_project, monkeypatch):
     runner = EnvRunner(stub_project(), command_args=["true"])
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=False))
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ChildProcessError):
         runner.execute()
 
 

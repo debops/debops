@@ -172,7 +172,11 @@ class Interpreter(object):
             runner.eval()
             sys.exit(0)
         else:
-            sys.exit(runner.execute())
+            try:
+                sys.exit(runner.execute())
+            except ChildProcessError as errmsg:
+                print('Error:', errmsg)
+                sys.exit(1)
 
     def do_run(self, args):
         try:
@@ -215,7 +219,11 @@ class Interpreter(object):
             sys.exit(1)
 
         if args.command_args:
-            sys.exit(runner.execute())
+            try:
+                sys.exit(runner.execute())
+            except ChildProcessError as errmsg:
+                print('Error:', errmsg)
+                sys.exit(1)
         else:
             sys.exit(runner.show_env(scope=args.scope))
 
