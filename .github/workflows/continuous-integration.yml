@@ -210,6 +210,34 @@ jobs:
           make test-debops-ansible_plugins
           make check
 
+  debops-test-coverage:
+    runs-on: 'ubuntu-latest'
+    timeout-minutes: 30
+    steps:
+
+      - name: Add ~/.local/bin to $PATH
+        run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v3'
+        with:
+          fetch-depth: 0
+
+      - name: Prepare test environment
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -yq install git gnupg git-crypt
+          pip3 install --user --upgrade pip wheel setuptools pypandoc
+          pip3 install --user --upgrade pytest pytest-cov ansible-core \
+            future pyyaml python-dotenv toml pyxdg jinja2 distro gitpython
+
+      - name: Run unit and integration tests
+        run: |
+          make clean-tests
+          make test-coverage
+          make test-debops-ansible_plugins
+          make check
+
   debops-wheel:
     runs-on: 'ubuntu-latest'
     timeout-minutes: 120
