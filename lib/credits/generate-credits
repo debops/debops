@@ -1,0 +1,390 @@
+#!/usr/bin/env python3
+
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+"""Generate the CREDITS file from the git commit history.
+
+Run 'make credits' in the root of the repository. The sections of the
+CREDITS file, the banner and the LLM assistance filter are defined in the
+'lib/credits/credits.yml' configuration file.
+"""
+
+from __future__ import annotations
+
+import subprocess
+import sys
+import textwrap
+from datetime import date
+from pathlib import Path
+
+import yaml
+
+US = "\x1f"  # Field separator between git author name and e-mail address
+
+
+def commit_count_key(item: tuple[str, int]) -> tuple:
+    """Sort key for contributors: by the number of commits descending,
+    then by surname, then by the full name."""
+
+    tokens = item[0].split()
+    surname = tokens[-1] if tokens else ""
+    return (-item[1], surname.casefold(), item[0].casefold())
+
+
+def git_output(*args: str) -> str | None:
+    """Return the output of a git command, None when it fails."""
+
+    try:
+        result = subprocess.run(
+            ["git", *args], capture_output=True, check=True
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+    return result.stdout.decode("utf-8", errors="replace")
+
+
+def repository_root() -> Path:
+    """Return the absolute path of the current git repository root."""
+
+    root = git_output("rev-parse", "--show-toplevel")
+    if root is None:
+        print("Error: this script needs to be executed in the root of the "
+              "DebOps git repository", file=sys.stderr)
+        sys.exit(1)
+    return Path(root.strip())
+
+
+def released_version() -> str:
+    """Return the tagged version of the repository, 'unknown' if absent."""
+
+    version = git_output("describe", "--tags", "--always")
+    if version is not None:
+        return version.strip()
+    try:
+        return Path("VERSION").read_text(encoding="utf-8").strip()
+    except OSError:
+        return "unknown"
+
+
+def collect_contributors(
+        paths: list[str] | None = None,
+        exclude_merges: bool = True,
+        refs: list[str] | None = None,
+) -> dict[tuple[str, str], int]:
+    """Count commits per author identity, optionally limited to paths.
+
+    Author names and e-mail addresses are normalized using the .mailmap
+    file. Keys of the returned mapping are (name, e-mail) tuples.
+    """
+
+    command = ["log", "--full-history", "--format=%aN" + US + "%aE"]
+    if exclude_merges:
+        command.append("--no-merges")
+    command.extend(refs or ["HEAD"])
+    if paths:
+        command.extend(["--", *paths])
+
+    output = git_output(*command)
+    if output is None:
+        return {}
+
+    identities: dict[tuple[str, str], int] = {}
+    for line in output.splitlines():
+        if not line:
+            continue
+        name, _, email = line.partition(US)
+        key = (name.strip(), email.strip().lower())
+        identities[key] = identities.get(key, 0) + 1
+    return identities
+
+
+def is_assisted(identity: tuple[str, str], entries: list) -> bool:
+    """Check if a git author identity matches the LLM assistance filter.
+
+    An entry with a 'name' or 'email' field matches the corresponding
+    author field, case-insensitively.
+    """
+
+    name, email = identity
+    for entry in entries:
+        if entry.get("email") and email == entry["email"].strip().lower():
+            return True
+        if entry.get("name") and name.casefold() == entry["name"].casefold():
+            return True
+    return False
+
+
+def aggregate_by_name(
+        identities: dict[tuple[str, str], int],
+) -> dict[str, int]:
+    """Merge author identities sharing a name, summing commit counts."""
+
+    counts: dict[str, int] = {}
+    for (name, _email), commits in identities.items():
+        counts[name] = counts.get(name, 0) + commits
+    return counts
+
+
+def center(line: str, width: int) -> str:
+    """Center a line around a given width, without trailing whitespace.
+
+    Lines longer than the width are left as they are.
+    """
+
+    line = line.rstrip()
+    if len(line) > width:
+        return line
+    return line.center(width).rstrip()
+
+
+def center_block(lines: list[str], width: int) -> list[str]:
+    """Center a block of text around a given width, preserving the
+    internal alignment of the block."""
+
+    longest = max(len(line.rstrip()) for line in lines)
+    pad = max(0, (width - longest) // 2)
+    return [f"{' ' * pad}{line.rstrip()}" for line in lines]
+
+
+def render_header(version: str, years: str, width: int) -> list[str]:
+    """Render the project header block, centered around the width."""
+
+    return [
+        center("DebOps", width),
+        center("Your Debian-based data center in a box", width),
+        center("https://debops.org/", width),
+        center(version, width),
+        center(years, width),
+    ]
+
+
+def render_section(title: str, entries: list[str], width: int) -> list[str]:
+    """Render a section title with its contents, centered around width."""
+
+    title = title.upper()
+    lines = [
+        center(title, width),
+        center("-" * len(title), width),
+        "",
+        *(center(entry, width) for entry in entries),
+    ]
+    return lines
+
+
+def render_people(entries: list) -> list[str]:
+    """Render a list of people with their descriptions."""
+
+    lines: list[str] = []
+    for entry in entries:
+        lines.append(entry.get("name", ""))
+        if entry.get("description"):
+            lines.append(entry["description"])
+        also = entry.get("also") or []
+        if also:
+            lines.append(f"also: {', '.join(also)}")
+        lines.append("")
+    return lines
+
+
+def render_software(entries: list) -> list[str]:
+    """Render a list of software used by the project."""
+
+    lines: list[str] = []
+    for entry in entries:
+        if entry.get("url"):
+            lines.append(f"{entry.get('name', '')} <{entry['url']}>")
+        else:
+            lines.append(entry.get("name", ""))
+        if entry.get("description"):
+            lines.append(entry["description"])
+        lines.append("")
+    return lines
+
+
+def main() -> None:
+    root = repository_root()
+
+    config_path = root / "lib" / "credits" / "credits.yml"
+    try:
+        config = yaml.safe_load(
+            config_path.read_text(encoding="utf-8")) or {}
+    except (OSError, yaml.YAMLError) as errmsg:
+        print(f"Error: cannot read configuration {config_path}: {errmsg}",
+              file=sys.stderr)
+        sys.exit(1)
+
+    settings = config.get("credits", {})
+    width = settings.get("width", 80)
+    exclude_merges = settings.get("exclude_merges", True)
+    assisted_entries = (config.get("llm_assistance", {}) or {}).get(
+        "contributors", []) or []
+
+    # Count everyone in a single list, then split the contributors into
+    # sections: most active authors are listed in the main authors
+    # section, everyone else is assigned to the section they contributed
+    # to the most, depending on the commit counts in the section paths
+    # Walk the project history plus the configured additional refs
+    # (skipping the ones missing in the local clone)
+    refs = ["HEAD"]
+    for ref in settings.get("additional_refs", []):
+        if git_output("rev-parse", "--verify", "--quiet", ref):
+            refs.append(ref)
+
+    total = collect_contributors(refs=refs, exclude_merges=exclude_merges)
+    totals = aggregate_by_name({
+        identity: commits for identity, commits in total.items()
+        if not is_assisted(identity, assisted_entries)
+    })
+
+    main_count = settings.get("main_authors", {}).get("count", 20)
+
+    # The founders are listed in their own section, excluded from the
+    # tally ranking of the remaining contributors
+    founders = config.get("founder") or []
+    founder_tallies = {}
+    for entry in founders:
+        name = entry.get("name", "")
+        if name and name in totals:
+            founder_tallies[name] = totals.pop(name)
+
+    ranked = sorted(totals.items(), key=commit_count_key)
+
+    def path_section_counts(section: str) -> dict[str, int]:
+        identities = collect_contributors(
+            paths=settings.get(section, {}).get("paths"),
+            exclude_merges=exclude_merges, refs=refs)
+        filtered = {
+            identity: commits for identity, commits in identities.items()
+            if not is_assisted(identity, assisted_entries)
+        }
+        return aggregate_by_name(filtered)
+
+    # Sections with paths defined split the remaining contributors by the
+    # paths they committed to the most, in the configuration order
+    scoped_keys = [key for key, conf in settings.items()
+                   if isinstance(conf, dict) and conf.get("paths")]
+    path_counts = {key: path_section_counts(key) for key in scoped_keys}
+
+    sections: dict[str, dict[str, int]] = {
+        "main_authors": dict(ranked[:main_count]),
+        **{key: {} for key in scoped_keys},
+        "contributors": {},
+    }
+    for name, commits in ranked[main_count:]:
+        best_key, best_count = None, 0
+        for key in scoped_keys:
+            if path_counts[key].get(name, 0) > best_count:
+                best_key, best_count = key, path_counts[key][name]
+        if best_key:
+            sections[best_key][name] = best_count
+        else:
+            sections["contributors"][name] = commits
+
+    def entries_for(counts: dict[str, int]) -> list[str]:
+        ranked_counts = sorted(counts.items(), key=commit_count_key)
+        return [f"{name} ({commits})" for name, commits in ranked_counts]
+
+    logo_path = root / "lib" / "credits" / "debops-logo.txt"
+    try:
+        logo_lines = logo_path.read_text(
+            encoding="utf-8").strip("\n").splitlines()
+    except OSError as errmsg:
+        print(f"Error: cannot read the logo {logo_path}: {errmsg}",
+              file=sys.stderr)
+        sys.exit(1)
+
+    blocks: list[list[str]] = []
+    blocks.append(center_block(logo_lines, width))
+    blocks.append(render_header(
+        released_version(),
+        f"{settings.get('since', 2013)}-{date.today().year}", width))
+
+    if founder_tallies:
+        founder_entries = []
+        for entry in sorted(
+                (entry for entry in founders
+                 if entry.get("name") in founder_tallies),
+                key=lambda entry: -founder_tallies[entry["name"]]):
+            name = entry["name"]
+            founder_entries.extend([
+                f"{name} ({founder_tallies[name]})",
+                entry.get("description", ""),
+                "",
+            ])
+        blocks.append(render_section("Founders", founder_entries, width))
+
+    for key, counts in sections.items():
+        title = settings.get(key, {}).get("title")
+        if title and counts:
+            blocks.append(render_section(
+                title, entries_for(counts), width))
+
+    logo_design = config.get("logo_design") or []
+    if logo_design:
+        blocks.append(render_section(
+            "Logo design", render_people(logo_design), width))
+
+    people = config.get("people") or []
+    if people:
+        blocks.append(render_section(
+            "Special thanks", render_people(people), width))
+
+    software = config.get("software") or []
+    if software:
+        blocks.append(render_section(
+            "Software used in the DebOps project",
+            render_software(software), width))
+
+    assisted_counts = aggregate_by_name({
+        identity: commits for identity, commits in total.items()
+        if is_assisted(identity, assisted_entries)
+    })
+    if assisted_counts:
+        llm_conf = config.get("llm_assistance", {}) or {}
+        description = textwrap.wrap(
+            llm_conf.get("description", ""), width=width)
+        entries = [
+            *description,
+            "",
+            *entries_for(assisted_counts),
+        ]
+        blocks.append(render_section(
+            llm_conf.get("title", "LLM assistance"), entries, width))
+
+    # Closing quotes, rendered without a section header
+    for quote in config.get("quotes") or []:
+        text = quote.get("text", "").replace('"', "'")
+        text = '"' + text + '"'
+        text = textwrap.wrap(text, width=width)
+        attribution = "-- " + quote.get("author", "")
+        if quote.get("source"):
+            attribution += ", " + quote["source"]
+        blocks.append([
+            *(center(line, width) for line in text),
+            "",
+            center(attribution, width),
+        ])
+
+    # Join the blocks, separated by two blank lines, with two blank
+    # lines of padding at the top of the file
+    lines: list[str] = []
+    for block in blocks:
+        while block and not block[-1].strip():
+            block.pop()
+        if not block:
+            continue
+        if lines:
+            lines.extend(["", ""])
+        lines.extend(block)
+    lines = ["", "", *lines]
+
+    output_path = root / "CREDITS"
+    output_path.write_text(
+        "\n".join(lines).rstrip() + "\n", encoding="utf-8")
+    print(f"Generated {output_path}")
+
+
+if __name__ == "__main__":
+    main()

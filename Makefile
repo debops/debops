@@ -34,6 +34,12 @@ clean-git:
 collection:     ## Build collection of Ansible artifacts with ansible-galaxy
 collection: make-collection
 
+.PHONY: credits
+credits:        ## Generate the CREDITS file from git history
+credits:
+	@lib/credits/generate-credits
+	@git add -f CREDITS
+
 .PHONY: spdx
 spdx:          ## Check copyright and license information (REUSE, SPDX)
 spdx: test-spdx
