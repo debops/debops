@@ -34,6 +34,16 @@ clean-git:
 collection:     ## Build collection of Ansible artifacts with ansible-galaxy
 collection: make-collection
 
+.PHONY: credits
+credits:        ## Generate the CREDITS file from git history
+credits: test-credits
+	@git add -f CREDITS
+
+.PHONY: test-credits
+test-credits:   ## Generate the CREDITS file without staging it
+test-credits:
+	@lib/credits/generate-credits
+
 .PHONY: spdx
 spdx:          ## Check copyright and license information (REUSE, SPDX)
 spdx: test-spdx
@@ -100,11 +110,11 @@ coverage: test-coverage
 
 .PHONY: sdist
 sdist:          ## Create Python sdist package
-sdist: clean-sdist man
+sdist: clean-sdist man test-credits
 	@python3 setup.py sdist
 
 .PHONY: sdist-quiet
-sdist-quiet: clean-sdist
+sdist-quiet: clean-sdist test-credits
 	@python3 setup.py --quiet sdist
 
 .PHONY: sdist-sign
@@ -114,6 +124,7 @@ sdist-sign: sdist
 
 .PHONY: make-collection
 make-collection: clean clean-git
+	@if [ ! -f CREDITS ] ; then lib/credits/generate-credits ; fi
 	@lib/ansible-galaxy/make-collection
 
 .PHONY: clean-sdist
@@ -126,11 +137,11 @@ clean-collections:
 
 .PHONY: wheel
 wheel:          ## Create Python wheel package
-wheel: clean-wheel man
+wheel: clean-wheel man test-credits
 	@python3 setup.py bdist_wheel
 
 .PHONY: wheel-quiet
-wheel-quiet: clean-wheel
+wheel-quiet: clean-wheel test-credits
 	@python3 setup.py --quiet bdist_wheel
 
 .PHONY: wheel-sign

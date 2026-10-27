@@ -45,6 +45,11 @@ New DebOps roles
 General
 '''''''
 
+- The :file:`CREDITS` file with the list of project contributors is now
+  generated from the git commit history using the :command:`make credits`
+  command and is included in the Python packages and the DebOps Ansible
+  Collection released by the project.
+
 - Added :ref:`debops_policy__ai_contributions` policy document defining
   project requirements for contributions that use LLM and AI-assisted
   coding tools.
