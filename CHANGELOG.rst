@@ -29,6 +29,11 @@ Added
 General
 '''''''
 
+- The :file:`CREDITS` file with the list of project contributors is now
+  generated from the git commit history using the :command:`make credits`
+  command and is included in the Python packages and the DebOps Ansible
+  Collection released by the project.
+
 - Added :ref:`hook scripts <debops_hooks>` support for extending DebOps CLI
   behavior at various execution points.
 
