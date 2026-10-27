@@ -43,8 +43,8 @@ jobs:
           # The linters kept here match the ones enforced by the Continuous
           # Integration workflow: Ansible (with the repository's own
           # ansible-lint configuration), shell scripts, YAML, the GitHub
-          # Actions definitions, secrets, spelling and merge conflict
-          # markers.
+          # Actions definitions, the Dockerfile lint, secrets, spelling
+          # and merge conflict markers.
           ANSIBLE_CONFIG_FILE: '.ansible-lint'
           VALIDATE_ANSIBLE: True
           VALIDATE_BASH: True
@@ -53,6 +53,7 @@ jobs:
           VALIDATE_GITHUB_ACTIONS_ZIZMOR: True
           VALIDATE_GITLEAKS: True
           VALIDATE_SPELL_CODESPELL: True
+          VALIDATE_DOCKERFILE_HADOLINT: True
           VALIDATE_GIT_MERGE_CONFLICT_MARKERS: True
 
           # The remaining linter families are disabled: they flag third-party
@@ -64,7 +65,6 @@ jobs:
           VALIDATE_CHECKOV: False
           VALIDATE_CSS: False
           VALIDATE_CSS_PRETTIER: False
-          VALIDATE_DOCKERFILE_HADOLINT: False
           VALIDATE_HTML: False
           VALIDATE_HTML_PRETTIER: False
           VALIDATE_JSCPD: False
