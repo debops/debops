@@ -365,6 +365,13 @@ General
   ``dhcp-probe.service`` systemd service should now wait until the
   ``network-online.target`` target is reached before trying to start.
 
+:ref:`debops.dovecot` role
+'''''''''''''''''''''''''''
+
+- The task which generates the :file:`/etc/dovecot/dovecot-sql.conf.ext`
+  configuration file no longer fails with ansible-core 2.19 and later, which
+  require the ``when`` condition to evaluate to a boolean.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
