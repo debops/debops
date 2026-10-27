@@ -81,14 +81,14 @@ RUN apt-get -q update \
        make \
        git \
        man-db \
-    && pip3 install --break-system-packages ansible \
+    && pip3 install --no-cache-dir --break-system-packages ansible \
     && echo "Cleaning up cache directories..." \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*.deb /root/.cache/*
 
 COPY --from=builder /root/src/debops/dist /root/src/debops/dist
 COPY --from=builder /usr/local/bin/docker-entrypoint /usr/local/bin/docker-entrypoint
 
-RUN pip3 install --break-system-packages /root/src/debops/dist/debops-*.whl \
+RUN pip3 install --no-cache-dir --break-system-packages /root/src/debops/dist/debops-*.whl \
     && chmod +x /usr/local/bin/docker-entrypoint \
     && rm -rf /root/src /root/.cache/*
 
