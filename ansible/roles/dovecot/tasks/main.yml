@@ -137,7 +137,7 @@
     group: 'root'
     mode: '0600'
   notify: [ 'Restart dovecot' ]
-  when: "dovecot__user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite'])"
+  when: "(dovecot__user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite'])) | length > 0"
   tags: [ "role::dovecot:conf", "role::dovecot:conf:sql" ]
 
 - name: Generate Dovecot ldap configuration
