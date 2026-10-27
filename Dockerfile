@@ -35,6 +35,7 @@ RUN apt-get -q update \
        python3-setuptools \
        python3-toml \
        python3-wheel \
+       python3-yaml \
        make \
        git \
     && if [ "${WITH_MANPAGES}" = "1" ] ; then \
