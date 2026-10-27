@@ -1,0 +1,225 @@
+---
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Configuration of the CREDITS file generator. Run 'make credits' in the
+# root of the repository to regenerate the CREDITS file using the git
+# commit history and the sections defined in this file.
+
+credits:
+
+  # Width around which the contents of the CREDITS file are centered.
+  # Lines longer than this are left unindented.
+  width: 80
+
+  # Git-derived sections. The contributors are counted in a single list
+  # and split between the sections: the 'main_authors' section contains
+  # the most active contributors of the whole project, the remaining
+  # contributors are assigned to the section whose paths they committed
+  # to the most. Each contributor is listed only once, with the number
+  # of commits that placed them in their section.
+  main_authors:
+    title: "Main authors"
+    count: 20
+
+  ansible_content:
+    title: "Ansible content creators"
+    paths:
+      - 'ansible/'
+      - 'playbooks/'
+      - 'tasks/'
+      - 'defaults/'
+      - 'templates/'
+      - 'handlers/'
+      - 'meta/'
+      - 'vars/'
+      - 'files/'
+      - 'library/'
+      - 'filter_plugins/'
+      - 'roles/'
+      - 'galaxy/'
+
+  scripts:
+    title: "DebOps scripts contributors"
+    paths:
+      - 'src/'
+      - 'lib/'
+      - 'bin/'
+      - 'debops/'
+      - 'tests/'
+      - 'setup.py'
+      - 'setup.cfg'
+      - 'pyproject.toml'
+      - 'MANIFEST.in'
+      - 'Makefile'
+      - 'PKGBUILD'
+      - 'Dockerfile'
+      - 'Vagrantfile'
+      - '.gitlab-ci.yml'
+      - '.travis.yml'
+      - '.github/'
+
+  documentation:
+    title: "Documentation contributors"
+    paths:
+      - 'docs/'
+      - 'doc/'
+      - 'README.md'
+      - 'README.rst'
+      - 'INSTALL.rst'
+      - 'CONTRIBUTING.rst'
+      - 'DEVELOPMENT.rst'
+      - 'UPGRADE.rst'
+      - 'CHANGES.rst'
+      - 'CHANGELOG.rst'
+
+  contributors:
+    title: "Contributors"
+
+  # Skip merge commits in the commit statistics
+  exclude_merges: true
+
+  # Year the project started, shown in the header as 'since-<current>'
+  since: 2013
+
+  # Additional git refs included in the commit statistics — the private
+  # history of the project before it was published on GitHub. Refs that
+  # don't exist in the local clone are skipped.
+  additional_refs:
+    - 'origin/ginas-historical'
+
+# The founders of the DebOps project, listed above the main authors
+# and excluded from the tally ranking
+founder:
+  - name: "Maciej Delmanowski"
+    description: "Founder and lead developer of the DebOps project"
+  - name: "Robin Schneider"
+    description: "Co-founder of the DebOps project"
+  - name: "Nick Janetakis"
+    description: "Co-founder of the DebOps project"
+  - name: "Reto Gantenbein"
+    description: "Co-founder of the DebOps project"
+  - name: "Hartmut Goebel"
+    description: "Co-founder of the DebOps project"
+
+# People that deserve special thanks, sorted by the reverse order of
+# dependency between the tools they created: each entry depends on the
+# entries below it
+people:
+  - name: "Michael DeHaan"
+    description: "Creator of the Ansible automation framework"
+  - name: "Armin Ronacher"
+    description: "Creator of the Jinja2 templating engine"
+  - name: "Clark Evans"
+    description: "Creator of the YAML data format"
+    also:
+      - "Ingy döt Net"
+      - "Oren Ben-Ki"
+  - name: "Georg Brandl"
+    description: "Creator of the Sphinx documentation tool"
+  - name: "David Goodger"
+    description: "Creator of reStructuredText and Docutils"
+  - name: "Theo de Raadt"
+    description: "Creator of OpenSSH, founder of the OpenBSD project"
+  - name: "Guido van Rossum"
+    description: "Creator of the Python programming language"
+  - name: "Ian Murdock"
+    description: "Founder of the Debian Project"
+  - name: "Ian Jackson"
+    description: "Creator of the dpkg package manager"
+  - name: "Lennart Poettering"
+    description: "Creator of the systemd init system"
+  - name: "Brian Fox"
+    description: "Original author of the GNU Bash shell"
+  - name: "Werner Koch"
+    description: "Creator of GnuPG, the GNU Privacy Guard"
+  - name: "Richard M. Stallman"
+    description: "Founder of the GNU Project"
+  - name: "Linus Torvalds"
+    description: "Creator of the Linux kernel and Git"
+  - name: "Ken Thompson"
+    description: "Co-creator of the Unix operating system and the UTF-8 encoding"
+    also:
+      - "Dennis Ritchie (creator of the C programming language)"
+  - name: "Brian Kernighan"
+    description: "Co-creator of the AWK language and co-author of The C Programming Language"
+    also:
+      - "Alfred V. Aho"
+      - "Peter Weinberger"
+  - name: "Rob Pike"
+    description: "Co-creator of UTF-8 and the Go programming language"
+  - name: "Bram Moolenaar"
+    description: "Creator of the Vim text editor"
+  - name: "Bill Joy"
+    description: "Creator of the Vi text editor"
+  - name: "Bruce Perens"
+    description: "Co-founder of the Open Source Initiative, author of The Open Source Definition"
+    also:
+      - "Eric S. Raymond (co-founder and first president)"
+
+# People behind the logo artwork
+logo_design:
+  - name: "Tasos Alvas"
+    description: "Designer of the DebOps SVG logo"
+  - name: "metallo"
+    description: "Author of the Debian logo ASCII art rendition"
+  - name: "Maciej Delmanowski"
+    description: "Author of the ASCII art gear"
+
+# Software used in the DebOps project, in the reverse stack order
+software:
+  - name: "Ansible"
+    url: "https://docs.ansible.com/"
+    description: "Automation framework that DebOps is built on"
+  - name: "Jinja2"
+    url: "https://jinja.palletsprojects.com/"
+    description: "Template engine for the Ansible roles and the DebOps CLI"
+  - name: "Sphinx"
+    url: "https://www.sphinx-doc.org/"
+    description: "Documentation system that DebOps relies on"
+  - name: "Python"
+    url: "https://www.python.org/"
+    description: "Programming language of the DebOps CLI and Ansible"
+  - name: "Debian GNU/Linux"
+    url: "https://www.debian.org/"
+    description: "The universal operating system"
+  - name: "Git"
+    url: "https://git-scm.com/"
+    description: "Distributed version control system"
+  - name: "GNU Bash"
+    url: "https://www.gnu.org/software/bash/"
+    description: "Shell used by the DebOps scripts"
+  - name: "GnuPG"
+    url: "https://www.gnupg.org/"
+    description: "Encryption of the DebOps keyring and secret storage"
+  - name: "git-crypt"
+    url: "https://www.agwa.name/projects/git-crypt/"
+    description: "Transparent encryption of files in the project repository"
+  - name: "encfs"
+    url: "https://encfs.readthedocs.io/"
+    description: "Encrypted directory for the DebOps project secrets"
+
+# Closing quotes, rendered at the end of the file without a header
+quotes:
+  - text: >-
+      In my experience, the basis for having sustainable and maintainable
+      systems have been well known and tested in Debian, and several other
+      distributions, for over two decades. At FOSDEM, we thought that we
+      need a name for such a mindset. Between beers, that name came to be
+      "debops".
+    author: "Enrico Zini"
+    source: "\"Debops\", 2014"
+  - text: "Talk is cheap. Show me the code."
+    author: "Linus Torvalds"
+
+# Contributions made with assistance of large language models. Entries
+# defined here are removed from the git-derived sections and acknowledged
+# in the 'LLM assistance' section instead. Entries can be filtered by
+# name, e-mail address or both.
+llm_assistance:
+  title: "LLM assistance"
+  description: "Developed with assistance from LLMs"
+  contributors:
+    - name: "Cogito Mens"
+      email: "drybjed+cogito@gmail.com"
