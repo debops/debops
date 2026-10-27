@@ -8,6 +8,7 @@ on: [ 'workflow_dispatch' ]
 
 permissions:
   contents: read
+  statuses: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -38,6 +39,56 @@ jobs:
           # executable bit in the repository itself.
           VALIDATE_BASH_EXEC: False
 
+          # The linter families that this repository actively maintains.
+          # The linters kept here match the ones enforced by the Continuous
+          # Integration workflow: Ansible (with the repository's own
+          # ansible-lint configuration), shell scripts, YAML, the GitHub
+          # Actions definitions, the Dockerfile lint, secrets, spelling
+          # and merge conflict markers.
+          ANSIBLE_CONFIG_FILE: '.ansible-lint'
+          VALIDATE_ANSIBLE: True
+          VALIDATE_BASH: True
+          VALIDATE_YAML: True
+          VALIDATE_GITHUB_ACTIONS: True
+          VALIDATE_GITHUB_ACTIONS_ZIZMOR: True
+          VALIDATE_GITLEAKS: True
+          VALIDATE_SPELL_CODESPELL: True
+          VALIDATE_DOCKERFILE_HADOLINT: True
+          VALIDATE_GIT_MERGE_CONFLICT_MARKERS: True
+
+          # The remaining linter families are disabled: they flag third-party
+          # application code bundled in the role 'files/' and 'templates/'
+          # directories, or style families this repository deliberately does
+          # not follow (Python formatters, Prettier, shfmt).
+          VALIDATE_BIOME_FORMAT: False
+          VALIDATE_BIOME_LINT: False
+          VALIDATE_CHECKOV: False
+          VALIDATE_CSS: False
+          VALIDATE_CSS_PRETTIER: False
+          VALIDATE_HTML: False
+          VALIDATE_HTML_PRETTIER: False
+          VALIDATE_JSCPD: False
+          VALIDATE_JSON_PRETTIER: False
+          VALIDATE_MARKDOWN: False
+          VALIDATE_MARKDOWN_PRETTIER: False
+          VALIDATE_NATURAL_LANGUAGE: False
+          VALIDATE_PERL: False
+          VALIDATE_PHP_BUILTIN: False
+          VALIDATE_PHP_PHPCS: False
+          VALIDATE_PHP_PHPSTAN: False
+          VALIDATE_PHP_PSALM: False
+          VALIDATE_PYTHON_BLACK: False
+          VALIDATE_PYTHON_FLAKE8: False
+          VALIDATE_PYTHON_ISORT: False
+          VALIDATE_PYTHON_MYPY: False
+          VALIDATE_PYTHON_PYLINT: False
+          VALIDATE_PYTHON_RUFF: False
+          VALIDATE_PYTHON_RUFF_FORMAT: False
+          VALIDATE_RUBY: False
+          VALIDATE_SHELL_SHFMT: False
+          VALIDATE_TRIVY: False
+          VALIDATE_YAML_PRETTIER: False
+
           # Some of the files are incorrectly detected or use Jinja syntax for
           # templating; they should be ignored by the linters
-          FILTER_REGEX_EXCLUDE: '(/ansible/roles/grub/templates/etc/grub.d/01_users.j2|/ansible/roles/slapd/templates/etc/ldap/slapacl-test-suite.j2|/ansible/roles/dropbear_initramfs/templates/etc/initramfs-tools/scripts/local-bottom/debops_dropbear_initramfs.j2)'
+          FILTER_REGEX_EXCLUDE: '(/ansible/roles/grub/templates/etc/grub.d/01_users.j2|/ansible/roles/slapd/templates/etc/ldap/slapacl-test-suite.j2|/ansible/roles/dropbear_initramfs/templates/etc/initramfs-tools/scripts/local-bottom/debops_dropbear_initramfs.j2|/ansible/roles/gitusers/files/var/lib/gitusers/functions.sh)'

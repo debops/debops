@@ -1,0 +1,15 @@
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# GitLeaks configuration for the Super-Linter workflow: the default
+# rule set plus an allowlist for the role default values which hash
+# representations flag as API keys.
+[extend]
+useDefault = true
+
+[[allowlists]]
+  description = "DebOps role default recipes which trigger generic-api-key"
+  condition = "AND"
+  paths = ['ansible/roles/dovecot/defaults/main\.yml$']
+  regexes = ['(?i)sha512[_-]?crypt']

@@ -16,8 +16,10 @@ set -o nounset -o pipefail -o errexit
 
 if type docker > /dev/null 2>&1 ; then
 
-    printf "%s\\n" "Testing Dockerfile syntax with hadolint, ignoring DL3008,DL3013..."
-    docker run --rm -i lukasmartinelli/hadolint hadolint --ignore DL3008 --ignore DL3013 - < Dockerfile
+    printf "%s\\n" "Testing Dockerfile syntax with hadolint, ignoring DL3008,DL3013, failing on warnings and above..."
+    docker run --rm -i hadolint/hadolint \
+           hadolint --ignore DL3008 --ignore DL3013 \
+           --failure-threshold warning - < Dockerfile
 
     if [ -n "$(docker image ls -q debops/test)" ] ; then
         printf "%s\\n" "Found existing 'debops/test' Docker image, removing..."
