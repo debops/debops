@@ -103,6 +103,7 @@ setup(
     package_dir={'': 'src'},
     packages=find_packages('src', exclude=('tests', 'tests.*', 'docs')),
     data_files=[
+        ('share/doc/debops', ['CREDITS'] if os.path.exists('CREDITS') else []),
         ('share/man/man1', MANPAGES_1),
         ('share/man/man5', MANPAGES_5),
     ],
