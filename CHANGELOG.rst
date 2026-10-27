@@ -397,6 +397,15 @@ General
   queried before normal DNS services, if they are installed on the hypervisor
   host.
 
+:ref:`debops.machine` role
+''''''''''''''''''''''''''
+
+- The conditionals of the dynamic MOTD script tasks no longer fail with
+  ``ansible-core`` v2.19 or newer when an item defined in the
+  ``machine__motd_*_scripts`` variables does not contain the ``src`` or
+  ``content`` parameters, or when the resulting expression is an empty string
+  instead of a boolean.
+
 :ref:`debops.mariadb_server` role
 '''''''''''''''''''''''''''''''''
 
