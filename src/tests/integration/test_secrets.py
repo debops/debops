@@ -74,20 +74,30 @@ def test_init_can_encrypt_secrets_with_encfs(run_debops, tmp_path, gpg_env):
                         "--no-requirements", str(project_dir), env=gpg_env)
 
     assert result.returncode == 0
+    # '.encfs.secret' is the encrypted (cipher) volume, 'secret' is its
+    # mount point while unlocked; the volume config is stored encrypted
+    # alongside the keyfile.
     assert (project_dir / "ansible" / ".encfs.secret").is_dir()
-    assert (project_dir / "ansible" / ".encfs" / ".encfs6.keyfile").is_file()
-    assert (project_dir / "ansible" / ".encfs" / ".encfs6.xml.asc").is_file()
+    assert (project_dir / "ansible" / "secret").is_dir()
+    assert (project_dir / "ansible" / ".encfs.secret" /
+            ".encfs6.keyfile").is_file()
+    assert (project_dir / "ansible" / ".encfs.secret" /
+            ".encfs6.xml.asc").is_file()
 
 
 @encfs
 def test_project_unlock_and_lock_an_encfs_project(run_debops, tmp_path,
                                                   gpg_env):
     """The EncFS unlock mounts the secrets volume, the lock unmounts it,
-    and the passphrase file survives the round trip encrypted."""
+    and the passphrase file survives the round trip encrypted.
+
+    '.encfs.secret' is the encrypted volume, 'secret' is where it is
+    mounted while unlocked.
+    """
     project_dir = tmp_path / "example-encfs"
-    secrets = project_dir / "ansible" / ".encfs.secret"
+    secrets = project_dir / "ansible" / "secret"
     plaintext_file = secrets / "passphrase.txt"
-    encfs_dir = project_dir / "ansible" / ".encfs"
+    encfs_dir = project_dir / "ansible" / ".encfs.secret"
 
     run_debops("project", "init", "--encrypt", "encfs",
                "--keys", "debops-tests@example.org", "--no-requirements",
@@ -113,3 +123,100 @@ def test_project_unlock_and_lock_an_encfs_project(run_debops, tmp_path,
     result = run_debops("project", "unlock", cwd=str(project_dir), env=gpg_env)
     assert result.returncode == 0
     assert plaintext_file.read_text() == "hunter2\n"
+
+    result = run_debops("project", "lock", cwd=str(project_dir), env=gpg_env)
+    assert result.returncode == 0
+    assert not os.path.ismount(str(secrets)), \
+        "the secrets directory was still mounted at the end of the test"
+
+
+@encfs
+def test_init_can_encrypt_secrets_with_encfs_in_modern_layout(run_debops,
+                                                              tmp_path,
+                                                              gpg_env):
+    project_dir = tmp_path / "example-encfs-modern"
+
+    result = run_debops("project", "init", "-t", "modern",
+                        "--encrypt", "encfs",
+                        "--keys", "debops-tests@example.org",
+                        "--no-requirements", str(project_dir), env=gpg_env)
+
+    assert result.returncode == 0
+    # In a modern project each view keeps its own EncFS volume:
+    # '.encfs.secret' inside the view is the encrypted volume, 'secret'
+    # is its mount point while unlocked.
+    assert (project_dir / "ansible" / "views" / "system" /
+            ".encfs.secret").is_dir()
+    assert (project_dir / "ansible" / "views" / "system" /
+            "secret").is_dir()
+    assert (project_dir / "ansible" / "views" / "system" /
+            ".encfs.secret" / ".encfs6.keyfile").is_file()
+    assert (project_dir / "ansible" / "views" / "system" /
+            ".encfs.secret" / ".encfs6.xml.asc").is_file()
+
+
+@encfs
+def test_project_encfs_views_have_separate_volumes(run_debops, tmp_path,
+                                                   gpg_env):
+    """Each view in a modern project has its own EncFS volume.
+
+    Unlocking one view does not mount the secrets of another, and files
+    written into one view's secrets stay invisible in the other.
+    """
+    project_dir = tmp_path / "example-encfs-modern"
+    system_secret = (project_dir / "ansible" / "views" / "system" /
+                     "secret")
+    other_secret = (project_dir / "ansible" / "views" / "other" /
+                    "secret")
+    system_encfs = (project_dir / "ansible" / "views" / "system" /
+                    ".encfs.secret")
+    marker_file = system_secret / "marker.txt"
+
+    run_debops("project", "init", "-t", "modern",
+               "--encrypt", "encfs",
+               "--keys", "debops-tests@example.org", "--no-requirements",
+               str(project_dir), env=gpg_env, check=True)
+
+    result = run_debops("project", "mkview", "--encrypt", "encfs",
+                        "--keys", "debops-tests@example.org", "other",
+                        cwd=str(project_dir), env=gpg_env)
+    assert result.returncode == 0
+    assert (project_dir / "ansible" / "views" / "other" /
+            ".encfs.secret" / ".encfs6.keyfile").is_file()
+    assert (project_dir / "ansible" / "views" / "other" /
+            ".encfs.secret" / ".encfs6.xml.asc").is_file()
+
+    result = run_debops("project", "unlock", "-V", "system",
+                        cwd=str(project_dir), env=gpg_env)
+    assert result.returncode == 0
+    assert os.path.ismount(str(system_secret)), \
+        "the 'system' view secrets were not mounted after 'project unlock'"
+    assert not os.path.ismount(str(other_secret)), \
+        "the 'other' view secrets were mounted by 'project unlock -V system'"
+
+    marker_file.write_text("system view\n")
+    os.chmod(str(marker_file), 0o600)
+
+    result = run_debops("project", "lock", "-V", "system",
+                        cwd=str(project_dir), env=gpg_env)
+    assert result.returncode == 0
+    assert not os.path.ismount(str(system_secret)), \
+        "the 'system' view secrets were still mounted after 'project lock'"
+
+    # The written file is encrypted in place: no plaintext name may leak
+    # into the encrypted area while the volume is locked.
+    assert "marker.txt" not in os.listdir(str(system_encfs))
+
+    result = run_debops("project", "unlock", "-V", "other",
+                        cwd=str(project_dir), env=gpg_env)
+    assert result.returncode == 0
+    assert os.path.ismount(str(other_secret)), \
+        "the 'other' view secrets were not mounted after 'project unlock'"
+    assert not (other_secret / "marker.txt").exists(), \
+        "the file written in the 'system' view leaked into 'other'"
+
+    result = run_debops("project", "lock", "-V", "other",
+                        cwd=str(project_dir), env=gpg_env)
+    assert result.returncode == 0
+    assert not os.path.ismount(str(other_secret)), \
+        "the 'other' view secrets were still mounted at the end of the test"
