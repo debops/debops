@@ -39,22 +39,17 @@ jobs:
           # executable bit in the repository itself.
           VALIDATE_BASH_EXEC: False
 
-          # The linter families that this repository actively maintains.
-          # The linters kept here match the ones enforced by the Continuous
-          # Integration workflow: Ansible (with the repository's own
-          # ansible-lint configuration), shell scripts, YAML, the GitHub
-          # Actions definitions, the Dockerfile lint, secrets, spelling
-          # and merge conflict markers.
+          # Super-Linter accepts either an include list or an exclude
+          # list of lint families, never both. This workflow uses the
+          # exclude form: the default set minus the families disabled
+          # below. What remains is what this repository actively
+          # maintains, the same families the Continuous Integration
+          # workflow enforces: Ansible (with the repository's own
+          # ansible-lint configuration), shell scripts, YAML, the
+          # GitHub Actions definitions, the Dockerfile lint, secrets,
+          # spelling and merge conflict markers.
           ANSIBLE_CONFIG_FILE: '.ansible-lint'
-          VALIDATE_ANSIBLE: True
-          VALIDATE_BASH: True
-          VALIDATE_YAML: True
-          VALIDATE_GITHUB_ACTIONS: True
-          VALIDATE_GITHUB_ACTIONS_ZIZMOR: True
-          VALIDATE_GITLEAKS: True
-          VALIDATE_SPELL_CODESPELL: True
-          VALIDATE_DOCKERFILE_HADOLINT: True
-          VALIDATE_GIT_MERGE_CONFLICT_MARKERS: True
+          SAVE_SUPER_LINTER_SUMMARY: True
 
           # The remaining linter families are disabled: they flag third-party
           # application code bundled in the role 'files/' and 'templates/'
