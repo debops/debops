@@ -74,20 +74,30 @@ def test_init_can_encrypt_secrets_with_encfs(run_debops, tmp_path, gpg_env):
                         "--no-requirements", str(project_dir), env=gpg_env)
 
     assert result.returncode == 0
+    # '.encfs.secret' is the encrypted (cipher) volume, 'secret' is its
+    # mount point while unlocked; the volume config is stored encrypted
+    # alongside the keyfile.
     assert (project_dir / "ansible" / ".encfs.secret").is_dir()
-    assert (project_dir / "ansible" / ".encfs" / ".encfs6.keyfile").is_file()
-    assert (project_dir / "ansible" / ".encfs" / ".encfs6.xml.asc").is_file()
+    assert (project_dir / "ansible" / "secret").is_dir()
+    assert (project_dir / "ansible" / ".encfs.secret" /
+            ".encfs6.keyfile").is_file()
+    assert (project_dir / "ansible" / ".encfs.secret" /
+            ".encfs6.xml.asc").is_file()
 
 
 @encfs
 def test_project_unlock_and_lock_an_encfs_project(run_debops, tmp_path,
                                                   gpg_env):
     """The EncFS unlock mounts the secrets volume, the lock unmounts it,
-    and the passphrase file survives the round trip encrypted."""
+    and the passphrase file survives the round trip encrypted.
+
+    '.encfs.secret' is the encrypted volume, 'secret' is where it is
+    mounted while unlocked.
+    """
     project_dir = tmp_path / "example-encfs"
-    secrets = project_dir / "ansible" / ".encfs.secret"
+    secrets = project_dir / "ansible" / "secret"
     plaintext_file = secrets / "passphrase.txt"
-    encfs_dir = project_dir / "ansible" / ".encfs"
+    encfs_dir = project_dir / "ansible" / ".encfs.secret"
 
     run_debops("project", "init", "--encrypt", "encfs",
                "--keys", "debops-tests@example.org", "--no-requirements",
