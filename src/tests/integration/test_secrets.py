@@ -124,6 +124,11 @@ def test_project_unlock_and_lock_an_encfs_project(run_debops, tmp_path,
     assert result.returncode == 0
     assert plaintext_file.read_text() == "hunter2\n"
 
+    result = run_debops("project", "lock", cwd=str(project_dir), env=gpg_env)
+    assert result.returncode == 0
+    assert not os.path.ismount(str(secrets)), \
+        "the secrets directory was still mounted at the end of the test"
+
 
 @encfs
 def test_init_can_encrypt_secrets_with_encfs_in_modern_layout(run_debops,
@@ -209,3 +214,9 @@ def test_project_encfs_views_have_separate_volumes(run_debops, tmp_path,
         "the 'other' view secrets were not mounted after 'project unlock'"
     assert not (other_secret / "marker.txt").exists(), \
         "the file written in the 'system' view leaked into 'other'"
+
+    result = run_debops("project", "lock", "-V", "other",
+                        cwd=str(project_dir), env=gpg_env)
+    assert result.returncode == 0
+    assert not os.path.ismount(str(other_secret)), \
+        "the 'other' view secrets were still mounted at the end of the test"
