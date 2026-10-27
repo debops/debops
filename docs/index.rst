@@ -130,6 +130,7 @@ infrastructure environments.
    meta/timeline
    meta/references
    meta/logo
+   meta/credits
    meta/other-projects
    meta/debops-oid-registry
 
