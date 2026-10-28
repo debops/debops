@@ -44,7 +44,7 @@
 ##
 ## Python re.sub seems to default to re.MULTILINE in Ansible.
 #}
-{{ content | indent(width, indentfirst) | regex_replace("[ \\t\\r\\f\\v]+(\\n|$)", "\\1") -}}
+{{ content | d('', True) | indent(width, indentfirst) | regex_replace("[ \\t\\r\\f\\v]+(\\n|$)", "\\1") -}}
 {% endmacro %}
 {% macro get_min_version_wrapped(content, version, compare_operator) %}{# [[[ #}
 {# Examples:
@@ -346,7 +346,7 @@ ServerSignature {{ apache__server_signature }}
 TraceEnable {{ apache__trace_enabled }}
 LogLevel {{ apache__log_level }}
 
-{{ get_common_headers(item) | indent(4) }}
+{{ get_common_headers(item) | d('', True) | indent(4) }}
 
 {# Don’t use apache__combined_modules because of heavy use of template macros. #}
 <IfModule ssl_module>
