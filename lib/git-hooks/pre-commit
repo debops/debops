@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Run the pre-commit checks before each commit. The hook skips itself
+# when 'pre-commit' or the config file is not available; CI runs the
+# same checks against the whole tree. Enable the hooks with:
+# git config core.hooksPath lib/git-hooks
+
+set -o nounset -o pipefail -o errexit
+
+if [ -f '.pre-commit-config.yaml' ] && command -v pre-commit > /dev/null 2>&1 ; then
+    pre-commit hook-impl --config=.pre-commit-config.yaml \
+        --hook-type=pre-commit --hook-dir "$(dirname "${0}")" -- "$@"
+fi
