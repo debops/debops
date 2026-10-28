@@ -504,6 +504,19 @@ General
   intermediate X.509 certificates directly from the issuer URI, the script
   extracts them from the full certificate chain received from the ACME issuer.
 
+:ref:`debops.rabbitmq_server` role
+''''''''''''''''''''''''''''''''''
+
+- The ``Manage RabbitMQ feature flags`` task no longer fails when the
+  inventory references feature flags that have become ``required`` in the
+  running RabbitMQ version. Required flags are auto-enabled and no longer
+  appear in ``rabbitmqctl list_feature_flags`` output; they are now detected
+  and skipped. Fixes a hard failure observed with RabbitMQ 4.x on Debian
+  Trixie where ``detailed_queues_endpoint`` was required.
+
+- The RabbitMQ Server parameters defined in the role variables will be filtered
+  through the ``to_json`` filter to ensure JSON formatting.
+
 :ref:`debops.redis_server` role
 '''''''''''''''''''''''''''''''
 
@@ -531,19 +544,6 @@ General
   password on the host itself. Now the lookup plugin will be used conditionally
   and when password update is disabled via the inventory, passwords for the
   ``root`` UNIX accounts will not be generated.
-
-:ref:`debops.rabbitmq_server` role
-''''''''''''''''''''''''''''''''''
-
-- The ``Manage RabbitMQ feature flags`` task no longer fails when the
-  inventory references feature flags that have become ``required`` in the
-  running RabbitMQ version. Required flags are auto-enabled and no longer
-  appear in ``rabbitmqctl list_feature_flags`` output; they are now detected
-  and skipped. Fixes a hard failure observed with RabbitMQ 4.x on Debian
-  Trixie where ``detailed_queues_endpoint`` was required.
-
-- The RabbitMQ Server parameters defined in the role variables will be filtered
-  through the ``to_json`` filter to ensure JSON formatting.
 
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
