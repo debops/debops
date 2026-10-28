@@ -150,6 +150,15 @@ General
   ``content`` parameters, or when the resulting expression is an empty string
   instead of a boolean.
 
+:ref:`debops.redis_server` role
+'''''''''''''''''''''''''''''''
+
+- The :file:`/etc/redis/*` configuration directories will be owned by the
+  ``redis:redis`` UNIX account and group respectively, to set them in line with
+  the default :file:`/etc/redis/` directory permissions. This should fix issues
+  with Redis configuration being inaccessible by other ``redis`` UNIX group
+  members.
+
 
 `debops v3.3.2`_ - 2026-09-28
 -----------------------------
