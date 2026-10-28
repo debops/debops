@@ -311,6 +311,14 @@ General
 - The ``debops.debops.to_toml`` and ``debops.debops.from_toml`` filter plugins
   should now work correctly with :command:`ansible-core` v2.19 and newer.
 
+:ref:`debops.apache` role
+'''''''''''''''''''''''''
+
+- The configuration templates no longer fail with ansible-core 2.19 and later
+  when the ``X-Clacks-Overhead`` header is disabled with the
+  ``apache__http_clacks_overhead`` variable. An empty macro result is
+  now passed as an empty string to the ``indent`` filter.
+
 :ref:`debops.apparmor` role
 '''''''''''''''''''''''''''
 
