@@ -504,6 +504,10 @@ General
   intermediate X.509 certificates directly from the issuer URI, the script
   extracts them from the full certificate chain received from the ACME issuer.
 
+- The :command:`acme-tiny` repository cloned via ``git`` will be set with the
+  ``0755`` permissions to fix an issue with the :command:`acme-tiny` symlinked
+  binary being not accessible by other UNIX accounts.
+
 :ref:`debops.rabbitmq_server` role
 ''''''''''''''''''''''''''''''''''
 
