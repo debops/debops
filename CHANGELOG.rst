@@ -172,6 +172,14 @@ General
   :command:`debops config get` or the Ansible inventory printed with
   ``debops project refresh --list``, stays parseable.
 
+- The DebOps Ansible Collection can be installed from the release archives
+  attached to the GitHub releases using the
+  :command:`ansible-galaxy collection install` command. Installation of the
+  Collection directly from the DebOps git repository is not supported
+  anymore, since recent :command:`ansible-galaxy` releases don't follow the
+  content symbolic links of the monorepo layout. Check the
+  :file:`INSTALL.rst` documentation for details.
+
 :ref:`debops.ansible_plugins` role
 ''''''''''''''''''''''''''''''''''
 
