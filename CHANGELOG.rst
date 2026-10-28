@@ -324,6 +324,11 @@ General
   ``apache__http_clacks_overhead`` variable. An empty macro result is
   now passed as an empty string to the ``indent`` filter.
 
+- The task which enables or disables Apache modules no longer fails with
+  ansible-core 2.19 and later when a module entry in the
+  :envvar:`apache__combined_modules` dictionary has its ``enabled`` parameter
+  set to ``omit``. Such entries are now skipped.
+
 :ref:`debops.apparmor` role
 '''''''''''''''''''''''''''
 
