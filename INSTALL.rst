@@ -381,6 +381,14 @@ After saving the file, you can use the command:
 
 to install the collection.
 
+The release archives are signed with a detached GPG signature, attached
+next to the archive. Download the ``.asc`` signature file and check the
+archive with the :command:`gpg` command before installing it:
+
+.. code-block:: console
+
+   gpg --verify debops-debops-3.2.0.tar.gz.asc debops-debops-3.2.0.tar.gz
+
 The DebOps Collections will be available in the directory:
 
 .. code-block:: none
