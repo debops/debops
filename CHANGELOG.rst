@@ -311,6 +311,14 @@ General
 - The ``debops.debops.to_toml`` and ``debops.debops.from_toml`` filter plugins
   should now work correctly with :command:`ansible-core` v2.19 and newer.
 
+:ref:`debops.apache` role
+'''''''''''''''''''''''''
+
+- The task which enables or disables Apache modules no longer fails with
+  ansible-core 2.19 and later when a module entry in the
+  :envvar:`apache__combined_modules` dictionary has its ``enabled`` parameter
+  set to ``omit``. Such entries are now skipped.
+
 :ref:`debops.apparmor` role
 '''''''''''''''''''''''''''
 
