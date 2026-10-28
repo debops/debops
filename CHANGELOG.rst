@@ -504,6 +504,15 @@ General
   intermediate X.509 certificates directly from the issuer URI, the script
   extracts them from the full certificate chain received from the ACME issuer.
 
+:ref:`debops.redis_server` role
+'''''''''''''''''''''''''''''''
+
+- The :file:`/etc/redis/*` configuration directories will be owned by the
+  ``redis:redis`` UNIX account and group respectively, to set them in line with
+  the default :file:`/etc/redis/` directory permissions. This should fix issues
+  with Redis configuration being inaccessible by other ``redis`` UNIX group
+  members.
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 
