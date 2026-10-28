@@ -19,7 +19,7 @@ help:
 
 .PHONY: check
 check:          ## Perform project sanity checks
-check: fail-if-git-dirty
+check: dev-version fail-if-git-dirty
 
 .PHONY: clean
 clean:          ## Clean up project directory
@@ -51,6 +51,16 @@ spdx: test-spdx
 .PHONY: versions
 versions:       ## Check versions of upstream software
 versions: check-versions
+
+.PHONY: dev-version
+dev-version:    ## Stamp the generated version files from git describe
+dev-version:
+	@lib/ansible-galaxy/stamp-version
+
+.PHONY: git-hooks
+git-hooks:      ## Enable the git hooks for this development tree
+git-hooks:
+	@git config core.hooksPath lib/git-hooks
 
 .PHONY: docker
 docker:         ## Check Docker image build

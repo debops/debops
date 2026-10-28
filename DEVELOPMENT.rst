@@ -59,6 +59,25 @@ stash`. After a rebase, you might need to resolve any conflicts manually.
    # Get back stashed changes
    git stash pop
 
+Generated version files
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The version of the DebOps package (``src/debops/__version__.py`` and
+``VERSION``) is generated from the git history and is not tracked in the
+repository. Without it, the package reports a placeholder version. After
+cloning the repository, create it with:
+
+.. code-block:: console
+
+   make dev-version
+
+To keep it up to date automatically after pulls and branch switches,
+enable the git hooks shipped in the ``lib/git-hooks/`` directory:
+
+.. code-block:: console
+
+   make git-hooks
+
 Using git with style
 ~~~~~~~~~~~~~~~~~~~~
 
