@@ -34,6 +34,11 @@ clean-git:
 collection:     ## Build collection of Ansible artifacts with ansible-galaxy
 collection: make-collection
 
+.PHONY: collection-sign
+collection-sign: ## Create signed Ansible Collection tarball
+collection-sign: collection
+	@gpg --detach-sign --armor dist/collections/debops-debops-*.tar.gz
+
 .PHONY: credits
 credits:        ## Generate the CREDITS file from git history
 credits: test-credits

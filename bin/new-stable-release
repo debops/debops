@@ -138,8 +138,9 @@ make clean
 # cause problems with publishing the tarball on Galaxy
 rm -rf /tmp/debops-collections.*
 
-# Create new DebOps Collection based on the monorepo
-make collection
+# Create new DebOps Collection based on the monorepo, signed with a
+# detached signature
+make collection-sign
 
 # Find the generated tarball in the 'dist/' directory
 collection_tarball="$(find dist/collections -maxdepth 1 -type f -name 'debops-debops-*.tar.gz')"
@@ -168,6 +169,14 @@ if [ "${COMMAND}" == "publish" ] ; then
         -H "Content-Type: application/gzip" \
         --data-binary "@${collection_tarball}" \
         "https://uploads.github.com/repos/debops/debops/releases/${release_id}/assets?name=$(basename "${collection_tarball}")"
+
+    printf "Uploading the Collection tarball signature to the GitHub release...\n"
+    curl -L \
+        -X POST \
+        -H "Authorization: Bearer ${github_token}" \
+        -H "Content-Type: application/pgp-signature" \
+        --data-binary "@${collection_tarball}.asc" \
+        "https://uploads.github.com/repos/debops/debops/releases/${release_id}/assets?name=$(basename "${collection_tarball}").asc"
 else
     printf "Not creating a GitHub release, local operations only.\n"
 fi
