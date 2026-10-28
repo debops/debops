@@ -150,6 +150,13 @@ General
   ``content`` parameters, or when the resulting expression is an empty string
   instead of a boolean.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- The :command:`acme-tiny` repository cloned via ``git`` will be set with the
+  ``0755`` permissions to fix an issue with the :command:`acme-tiny` symlinked
+  binary being not accessible by other UNIX accounts.
+
 :ref:`debops.redis_server` role
 '''''''''''''''''''''''''''''''
 
