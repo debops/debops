@@ -62,6 +62,11 @@ git-hooks:      ## Enable the git hooks for this development tree
 git-hooks:
 	@git config core.hooksPath lib/git-hooks
 
+.PHONY: new-release
+new-release:    ## Prepare a new DebOps release from the Changelog
+new-release:
+	@RELEASE_VERSION="$(RELEASE_VERSION)" bin/new-stable-release local
+
 .PHONY: docker
 docker:         ## Check Docker image build
 docker: test-docker-build
