@@ -77,6 +77,14 @@ General
   :command:`debops config get` or the Ansible inventory printed with
   ``debops project refresh --list``, stays parseable.
 
+- The DebOps Ansible Collection can be installed from the release archives
+  attached to the GitHub releases using the
+  :command:`ansible-galaxy collection install` command. Installation of the
+  Collection directly from the DebOps git repository is not supported
+  anymore, since recent :command:`ansible-galaxy` releases don't follow the
+  content symbolic links of the monorepo layout. Check the
+  :file:`INSTALL.rst` documentation for details.
+
 Fixed
 ~~~~~
 
@@ -323,7 +331,7 @@ General
 ''''''''''''''''''''''''''''''''''
 
 - The RabbitMQ Server parameters defined in the role variables will be filtered
-  trough the ``to_json`` filter to ensure JSON formatting.
+  through the ``to_json`` filter to ensure JSON formatting.
 
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
