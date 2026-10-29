@@ -124,6 +124,15 @@ def main():
                                                        syslog_address[1]))
     logger.debug('Logging subsystem initialized')
 
+    # Check for DebOps updates (opt-in, best-effort). Runs after config and
+    # logging are ready but before the interpreter, so the notice appears
+    # first. Lazy import keeps the module out of the common execution path.
+    try:
+        from .versioncheck import VersionCheck
+        VersionCheck(config, logger).check()
+    except Exception:
+        logger.debug('Version check initialization failed', exc_info=True)
+
     interpreter = debops.Interpreter(args)
 
 

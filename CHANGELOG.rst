@@ -45,6 +45,14 @@ New DebOps roles
 General
 '''''''
 
+- The :command:`debops` command supports an opt-in check for new project
+  versions at CLI startup. When enabled in the global DebOps configuration
+  using the ``[version_check]`` configuration section, the check detects the
+  installation type and periodically verifies the corresponding upstream
+  source for updates, printing a notice on the standard error stream with an
+  install-specific hint. Network failures are ignored and the result is
+  cached for the configured interval.
+
 - The :file:`CREDITS` file with the list of project contributors is now
   generated from the git commit history using the :command:`make credits`
   command and is included in the Python packages and the DebOps Ansible
@@ -171,6 +179,14 @@ General
   written to standard output, for example the output of
   :command:`debops config get` or the Ansible inventory printed with
   ``debops project refresh --list``, stays parseable.
+
+- The DebOps Ansible Collection can be installed from the release archives
+  attached to the GitHub releases using the
+  :command:`ansible-galaxy collection install` command. Installation of the
+  Collection directly from the DebOps git repository is not supported
+  anymore, since recent :command:`ansible-galaxy` releases don't follow the
+  content symbolic links of the monorepo layout. Check the
+  :file:`INSTALL.rst` documentation for details.
 
 :ref:`debops.ansible_plugins` role
 ''''''''''''''''''''''''''''''''''

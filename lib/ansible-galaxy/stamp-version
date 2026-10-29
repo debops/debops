@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Stamp the git-derived version into the generated files in the
+# development tree: the Python '__version__.py' and the 'VERSION'
+# file. The generated files are not tracked in git. Run
+# 'make dev-version' after cloning or pulling; package builds stamp
+# them via setup.py. The manifest of the bundled Ansible Collection is
+# tracked in git and is updated in release commits instead.
+
+import os
+import re
+import subprocess
+
+# The script lives at lib/ansible-galaxy/, two levels below the root of
+# the tree it stamps; its own location is the truth, not the caller's
+# working directory
+REPO_ROOT = os.path.realpath(os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), '..', '..'))
+
+VERSION_PY = os.path.join('src', 'debops', '__version__.py')
+VERSION_FILE = 'VERSION'
+
+
+def describe():
+    """The version from the git state, without the leading 'v'.
+
+    Without git (a source tarball), fall back to the VERSION file and
+    then the changelog, like setup.py does.
+    """
+    try:
+        result = subprocess.run(
+                ['git', 'describe'], cwd=REPO_ROOT, check=True,
+                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                universal_newlines=True)
+        return result.stdout.strip().lstrip('v')
+    except (OSError, subprocess.CalledProcessError):
+        pass
+    try:
+        with open(os.path.join(REPO_ROOT, 'VERSION')) as fp:
+            return fp.read().strip()
+    except OSError:
+        pass
+    try:
+        with open(os.path.join(REPO_ROOT, 'CHANGELOG.rst')) as fp:
+            for line in fp:
+                if re.match(r'^`debops v', line):
+                    return line.split()[1].rstrip('`_').lstrip('v')
+    except OSError:
+        pass
+    return '0.0.0'
+
+
+def pep440(version):
+    """'3.3.0-487-g54772709' in PEP 440: '3.3.0.dev487+g54772709'."""
+    if '-' not in version:
+        return version
+    release, remainder = version.split('-', 1)
+    count, _, ghash = remainder.partition('-')
+    return '{}.dev{}+{}'.format(release, count, ghash)
+
+
+def stamp(relative, content, version):
+    """Write content to the file when it changed, and say so."""
+    path = os.path.join(REPO_ROOT, relative)
+    current = None
+    try:
+        with open(path) as fp:
+            current = fp.read()
+    except OSError:
+        pass
+    if current == content:
+        return
+    with open(path, 'w') as fp:
+        fp.write(content)
+    print('Stamped {} ({})'.format(relative, version))
+
+
+def main():
+    version = describe()
+    stamp(VERSION_PY,
+          '__version__ = "{}"\n'.format(pep440(version)), version)
+    stamp(VERSION_FILE, pep440(version) + '\n', version)
+
+
+if __name__ == '__main__':
+    main()

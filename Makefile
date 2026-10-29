@@ -19,7 +19,7 @@ help:
 
 .PHONY: check
 check:          ## Perform project sanity checks
-check: fail-if-git-dirty
+check: dev-version fail-if-git-dirty
 
 .PHONY: clean
 clean:          ## Clean up project directory
@@ -33,6 +33,11 @@ clean-git:
 .PHONY: collection
 collection:     ## Build collection of Ansible artifacts with ansible-galaxy
 collection: make-collection
+
+.PHONY: collection-sign
+collection-sign: ## Create signed Ansible Collection tarball
+collection-sign: collection
+	@gpg --detach-sign --armor dist/collections/debops-debops-*.tar.gz
 
 .PHONY: credits
 credits:        ## Generate the CREDITS file from git history
@@ -51,6 +56,21 @@ spdx: test-spdx
 .PHONY: versions
 versions:       ## Check versions of upstream software
 versions: check-versions
+
+.PHONY: dev-version
+dev-version:    ## Stamp the generated version files from git describe
+dev-version:
+	@lib/ansible-galaxy/stamp-version
+
+.PHONY: git-hooks
+git-hooks:      ## Enable the git hooks for this development tree
+git-hooks:
+	@git config core.hooksPath lib/git-hooks
+
+.PHONY: new-release
+new-release:    ## Prepare a new DebOps release from the Changelog
+new-release:
+	@RELEASE_VERSION="$(RELEASE_VERSION)" bin/new-stable-release local
 
 .PHONY: docker
 docker:         ## Check Docker image build

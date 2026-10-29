@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Refresh the generated version files after git updates the working
+# tree. Git runs the hooks from the top of the repository, so the
+# relative path is correct. The guard keeps the hook a no-op in trees
+# without the stamping script, for example a source tarball. Enable the
+# hooks with: git config core.hooksPath lib/git-hooks
+
+set -o nounset -o pipefail -o errexit
+
+if [ -x 'lib/ansible-galaxy/stamp-version' ] ; then
+    'lib/ansible-galaxy/stamp-version'
+fi
