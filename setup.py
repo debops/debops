@@ -14,6 +14,7 @@ import subprocess
 import glob
 import os
 import re
+import sys
 
 
 def find_files(directory, strip):
@@ -79,6 +80,14 @@ with open('VERSION', 'w') as version_file:
 with open('src/debops/__version__.py', 'w') as version_file:
     version_file.write('__version__ = "{}"\n'
                        .format(RELEASE))
+
+# Stamp the rest of the generated version files (the bundled collection
+# manifest, which carries the SemVer form) via the standalone script;
+# it lives in the repository but might not in a build context
+STAMP_VERSION = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             'lib', 'ansible-galaxy', 'stamp-version')
+if os.path.exists(STAMP_VERSION):
+    subprocess.call([sys.executable, STAMP_VERSION])
 
 MANPAGES_1 = []
 MANPAGES_5 = []

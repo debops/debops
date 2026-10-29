@@ -357,20 +357,21 @@ To install the DebOps Collections, run the command:
 
    ansible-galaxy collection install debops.debops
 
-You can also install DebOps as a Collection directly from the monorepo using the command:
+If the Ansible Galaxy service is not accessible, the Collection can be
+installed from the release archive attached to the GitHub releases, using
+the command:
 
 .. code-block:: console
 
-   ansible-galaxy collection install git+https://github.com/debops/debops#/ansible/,master
+   ansible-galaxy collection install https://github.com/debops/debops/releases/download/v3.3.0/debops-debops-3.3.0.tar.gz
 
-This will install the collection from the ``master`` branch of the repository.
 This form can also be used in the :file:`requirements.yml` file, like this:
 
 .. code-block:: yaml
 
    ---
    collections:
-     - name: 'git+https://github.com/debops/debops#/ansible/,master'
+     - name: 'https://github.com/debops/debops/releases/download/v3.3.0/debops-debops-3.3.0.tar.gz'
 
 After saving the file, you can use the command:
 
@@ -379,6 +380,14 @@ After saving the file, you can use the command:
    ansible-galaxy install -r requirements.yml
 
 to install the collection.
+
+The release archives are signed with a detached GPG signature, attached
+next to the archive. Download the ``.asc`` signature file and check the
+archive with the :command:`gpg` command before installing it:
+
+.. code-block:: console
+
+   gpg --verify debops-debops-3.3.0.tar.gz.asc debops-debops-3.3.0.tar.gz
 
 The DebOps Collections will be available in the directory:
 

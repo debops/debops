@@ -44,9 +44,13 @@ if [ ! -f "${CHANGELOG}" ] ; then
     exit 1
 fi
 
-current_branch="$(grep '.. _debops stable-' "${CHANGELOG}" | head -n 1 | awk '{print $3}' | sed -e 's/:$//')"
+current_branch="$(grep '.. _debops stable-' "${CHANGELOG}" | head -n 1 | awk '{print $3}' | sed -e 's/:$//' || true)"
+if [ -z "${current_branch}" ] ; then
+    # No stable branch marker in the Changelog, release from the current branch
+    current_branch="$(git rev-parse --abbrev-ref HEAD)"
+fi
 previous_version="$(grep '.. _debops v' "${CHANGELOG}" | head -n 1 | awk '{print $3}' | sed -e 's/^v//' -e 's/:$//')"
-new_version="$(printf "%s" "${previous_version}" | awk -F. -v OFS=. '{$NF += 1 ; print}')"
+new_version="${RELEASE_VERSION:-$(printf "%s" "${previous_version}" | awk -F. -v OFS=. '{$NF += 1 ; print}')}"
 major_version="$(cut -d '.' -f 1 <<< "${new_version}")"."$(cut -d '.' -f 2 <<< "${new_version}")"
 timestamp="$(date +"%Y-%m-%d")"
 header_string="\`debops v${new_version}\`_ - ${timestamp}"
@@ -63,10 +67,18 @@ printf "Previous version: %s\nNew version: %s\n" "${previous_version}" "${new_ve
 # Apply the changes and commit them in git
 # ----------------------------------------
 
-sed -i "/^\.\. _debops\s${current_branch}.*$/a \
+# Update the version in the tracked Ansible Collection manifest, so that
+# the release commit and the git tag carry the released version. This is
+# what 'ansible-galaxy collection install git+...' reads
+readonly COLLECTION_MANIFEST="ansible/collections/ansible_collections/debops/debops/galaxy.yml"
+sed -i "s/^version:.*/version: \"${new_version}\"/" "${COLLECTION_MANIFEST}"
+
+# Escape the slashes in the branch name for the sed expression
+branch_marker="${current_branch//\//\\/}"
+sed -i "/^\.\. _debops\s${branch_marker}.*$/a \
 \\\n\n${header_string}\n${header_line}\n\n${header_ref} ${header_url}" "${CHANGELOG}"
 
-git add "${CHANGELOG}"
+git add "${CHANGELOG}" "${COLLECTION_MANIFEST}"
 git status
 git --no-pager diff --cached
 
@@ -76,8 +88,16 @@ read -r -n 1 -p "Check git status and press [Enter] or ^C to abort"
 printf "Committing changes...\n"
 git commit -m "Prepare v${new_version} release"
 
+# Create the tag first, so that the CREDITS file generated from the git
+# history carries the released version string; amend it into the release
+# commit and move the tag onto the amended commit afterwards
 printf "Creating new git tag for v%s...\n" "${new_version}"
 git tag -s -m "debops v${new_version}" "v${new_version}"
+
+printf "Generating the CREDITS file for v%s...\n" "${new_version}"
+make credits
+git commit --amend --no-edit
+git tag -f -s -m "debops v${new_version}" "v${new_version}"
 
 
 # Publish git changes to GitHub
@@ -89,16 +109,6 @@ if [ "${COMMAND}" == "publish" ] ; then
 
     printf "Pushing tags to origin repository...\n"
     git push origin "${current_branch}" --tags
-
-    printf "Creating a new draft release on GitHub...\n"
-    github_token="$(<"${GITHUB_TOKEN_FILE}")"
-    curl -L \
-        -X POST \
-        -H "Accept: application/vnd.github+json" \
-        -H "Authorization: Bearer ${github_token}" \
-        -H "X-GitHub-Api-Version: 2022-11-28" \
-        -d "{\"tag_name\": \"v${new_version}\", \"name\": \"DebOps v${new_version}\", \"draft\": true, \"body\": \"${github_description}\"}" \
-        https://api.github.com/repos/debops/debops/releases
 else
     printf "Not pushing changes via git, local operations only.\n"
 fi
@@ -128,11 +138,48 @@ make clean
 # cause problems with publishing the tarball on Galaxy
 rm -rf /tmp/debops-collections.*
 
-# Create new DebOps Collection based on the monorepo
-make collection
+# Create new DebOps Collection based on the monorepo, signed with a
+# detached signature
+make collection-sign
 
-# Find the generated tarball
-collection_tarball="$(find /tmp/debops-collections.* -maxdepth 1 -type f -name 'debops-debops-*.tar.gz')"
+# Find the generated tarball in the 'dist/' directory
+collection_tarball="$(find dist/collections -maxdepth 1 -type f -name 'debops-debops-*.tar.gz')"
+
+# Create a draft release on GitHub and attach the Collection tarball as
+# an asset, so that the Collection can be installed directly from the
+# release archive when the Ansible Galaxy service is not accessible
+if [ "${COMMAND}" == "publish" ] ; then
+    printf "Creating a new draft release on GitHub...\n"
+    github_token="$(<"${GITHUB_TOKEN_FILE}")"
+    github_release="$(curl -L \
+        -X POST \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer ${github_token}" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        -d "{\"tag_name\": \"v${new_version}\", \"name\": \"DebOps v${new_version}\", \"draft\": true, \"body\": \"${github_description}\"}" \
+        https://api.github.com/repos/debops/debops/releases)"
+
+    release_id="$(printf "%s" "${github_release}" | python3 -c \
+        'import json, sys ; print(json.load(sys.stdin)["id"])')"
+
+    printf "Uploading the Collection tarball to the GitHub release...\n"
+    curl -L \
+        -X POST \
+        -H "Authorization: Bearer ${github_token}" \
+        -H "Content-Type: application/gzip" \
+        --data-binary "@${collection_tarball}" \
+        "https://uploads.github.com/repos/debops/debops/releases/${release_id}/assets?name=$(basename "${collection_tarball}")"
+
+    printf "Uploading the Collection tarball signature to the GitHub release...\n"
+    curl -L \
+        -X POST \
+        -H "Authorization: Bearer ${github_token}" \
+        -H "Content-Type: application/pgp-signature" \
+        --data-binary "@${collection_tarball}.asc" \
+        "https://uploads.github.com/repos/debops/debops/releases/${release_id}/assets?name=$(basename "${collection_tarball}").asc"
+else
+    printf "Not creating a GitHub release, local operations only.\n"
+fi
 
 if [ "${COMMAND}" == "publish" ] ; then
     printf "Publishing DebOps Collection on Ansible Galaxy...\n"
