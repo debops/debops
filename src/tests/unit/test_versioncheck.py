@@ -241,6 +241,88 @@ class NotifyHintTestCase(VersionCheckTestCase):
         self.assertIn('(git pull --tags)', self.hints('git_stable'))
 
 
+class BranchUpstreamTestCase(VersionCheckTestCase):
+    """Branches with a remote-tracking ref are compared against it."""
+
+    def fix_branch(self, remote_commits=0, local_commits=0):
+        """Branch 'fix-thing' at 'local_commits' commits and its
+        remote-tracking ref at 'remote_commits' commits, both on top of
+        the same base commit."""
+        repo_dir = os.path.join(self.tmpdir, 'repo-branch')
+        git_fixture(repo_dir, 'fix-thing', commits=1)
+        subprocess.run(['git', '-C', repo_dir, 'checkout', '-q', '-b',
+                        'remote-side'], check=True, capture_output=True,
+                       env=GIT_ENV)
+        for index in range(remote_commits):
+            subprocess.run(['git', '-C', repo_dir, 'commit', '-q',
+                            '--allow-empty', '-m', 'remote {}'.format(index)],
+                           check=True, capture_output=True, env=GIT_ENV)
+        subprocess.run(['git', '-C', repo_dir, 'update-ref',
+                        'refs/remotes/origin/fix-thing', 'HEAD'],
+                       check=True, capture_output=True, env=GIT_ENV)
+        subprocess.run(['git', '-C', repo_dir, 'checkout', '-q', 'fix-thing'],
+                       check=True, capture_output=True, env=GIT_ENV)
+        for index in range(local_commits):
+            subprocess.run(['git', '-C', repo_dir, 'commit', '-q',
+                            '--allow-empty', '-m', 'local {}'.format(index)],
+                           check=True, capture_output=True, env=GIT_ENV)
+        check = make_check({'enabled': True})
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = os.path.join(repo_dir, 'src', 'debops')
+        os.makedirs(check._pkg_dir)
+        return check
+
+    def test_branch_with_upstream_is_detected(self):
+        check = self.fix_branch(remote_commits=1, local_commits=1)
+        self.assertEqual(check._detect_install_method(), 'git_branch')
+
+    def test_branch_without_upstream_is_unknown_and_logged(self):
+        repo_dir = os.path.join(self.tmpdir, 'repo-no-upstream')
+        git_fixture(repo_dir, 'fix-thing', commits=1)
+        check = make_check({'enabled': True})
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = os.path.join(repo_dir, 'src', 'debops')
+        os.makedirs(check._pkg_dir)
+        self.assertEqual(check._detect_install_method(), 'unknown')
+        self.assertIn('fix-thing', check._logger.debug.call_args[0][1])
+
+    def test_detached_checkout_is_unknown_and_logged(self):
+        repo_dir = os.path.join(self.tmpdir, 'repo-detached')
+        git_fixture(repo_dir, 'master', commits=1)
+        subprocess.run(['git', '-C', repo_dir, 'checkout', '-q',
+                        '--detach', 'HEAD'], check=True,
+                       capture_output=True, env=GIT_ENV)
+        check = make_check({'enabled': True})
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = os.path.join(repo_dir, 'src', 'debops')
+        os.makedirs(check._pkg_dir)
+        self.assertEqual(check._detect_install_method(), 'unknown')
+        self.assertIn('detached', check._logger.debug.call_args[0][0])
+
+    def test_remote_branch_ahead_is_an_update(self):
+        check = self.fix_branch(remote_commits=2, local_commits=0)
+        with unittest.mock.patch.object(check, '_git_fetch',
+                                        return_value=True):
+            result = check._check_git_branch()
+        self.assertTrue(result['update_available'])
+        self.assertIn('2 commits ahead', result['latest_version'])
+
+    def test_local_commits_ahead_are_not_an_update(self):
+        check = self.fix_branch(remote_commits=0, local_commits=2)
+        with unittest.mock.patch.object(check, '_git_fetch',
+                                        return_value=True):
+            result = check._check_git_branch()
+        self.assertFalse(result['update_available'])
+
+    def test_fetch_failure_is_logged(self):
+        check = self.fix_branch(remote_commits=1, local_commits=1)
+        # Point the cache aside so nothing stale interferes; the fetch
+        # fails because the fixture repository has no 'origin' remote
+        check._settings['git_remote'] = 'nonexistent-remote'
+        self.assertFalse(check._git_fetch())
+        self.assertIn('failed', check._logger.debug.call_args[0][0])
+
+
 class CacheTestCase(VersionCheckTestCase):
     """The cached result is replayed without contacting the source."""
 
@@ -297,6 +379,11 @@ class CacheTestCase(VersionCheckTestCase):
             check.check()
         master_check.assert_called_once()
         check._logger.notice.assert_not_called()
+
+    def test_cache_file_ends_with_a_newline(self):
+        self.save_fresh_cache(self.cache_result('git_master', False))
+        with open(self.cache_file()) as fp:
+            self.assertTrue(fp.read().endswith('\n'))
 
 
 if __name__ == '__main__':
