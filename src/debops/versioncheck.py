@@ -48,8 +48,11 @@ class VersionCheck(object):
 
         # Source or unknown installations are managed directly by the user,
         # so there's nothing to check against.
-        if method not in ('git_master', 'git_stable', 'pypi', 'pipx'):
+        if method not in ('git_master', 'git_stable', 'git_branch',
+                          'pypi', 'pipx'):
             return
+
+        self._logger.debug('Version check: install method %s', method)
 
         if self._cache_is_fresh():
             cached = self._load_cache()
@@ -66,6 +69,8 @@ class VersionCheck(object):
             result = self._check_git_master()
         elif method == 'git_stable':
             result = self._check_git_stable()
+        elif method == 'git_branch':
+            result = self._check_git_branch()
         elif method in ('pypi', 'pipx'):
             result = self._check_pypi()
 
@@ -87,11 +92,21 @@ class VersionCheck(object):
             try:
                 branch = repo.active_branch.name
             except Exception:
+                self._logger.debug(
+                    'Version check: detached checkout, nothing to check')
                 return 'unknown'
             if branch == 'master':
                 return 'git_master'
             if re.match(r'^stable-\d+\.\d+$', branch):
                 return 'git_stable'
+            # Any other branch with a remote-tracking ref is compared
+            # against it; local commits ahead of the upstream keep the
+            # check silent, so work in progress is never interrupted
+            if self._has_upstream(branch):
+                return 'git_branch'
+            self._logger.debug(
+                "Version check: no upstream for branch '%s', skipping",
+                branch)
             return 'unknown'
 
         if self._is_editable():
@@ -143,6 +158,15 @@ class VersionCheck(object):
                                   search_parent_directories=True)
         return self._repo
 
+    def _has_upstream(self, branch):
+        """Does a remote-tracking ref exist for the branch?"""
+        ref = self._settings.get('git_remote', 'origin') + '/' + branch
+        try:
+            self._git_repo().commit(ref)
+            return True
+        except Exception:
+            return False
+
     def _git_fetch(self, with_tags=False):
         timeout = self._settings.get('timeout', 5)
         repo_url = self._settings.get('git_repo_url', '')
@@ -160,6 +184,8 @@ class VersionCheck(object):
             return True
         except (subprocess.TimeoutExpired, subprocess.CalledProcessError,
                 FileNotFoundError):
+            self._logger.debug('Version check: fetch from %s failed',
+                               command[-2], exc_info=True)
             return False
 
     def _compare_ref(self, ref_name):
@@ -193,6 +219,13 @@ class VersionCheck(object):
             # A fetch from a bare URL leaves refs in FETCH_HEAD; compare there
             return self._compare_ref('FETCH_HEAD')
         return self._compare_ref(remote + '/master')
+
+    def _check_git_branch(self):
+        branch = self._git_repo().active_branch.name
+        if not self._git_fetch():
+            return None
+        return self._compare_ref(
+            self._settings.get('git_remote', 'origin') + '/' + branch)
 
     def _check_git_stable(self):
         if not self._git_fetch(with_tags=True):
@@ -297,6 +330,7 @@ class VersionCheck(object):
             result['timestamp'] = time.time()
             with open(self._cache_file, 'w') as fp:
                 json.dump(result, fp, indent=2)
+                fp.write('\n')
         except OSError:
             pass
 
@@ -309,7 +343,7 @@ class VersionCheck(object):
                 hint = ' (python -m pip install --upgrade debops)'
             else:
                 hint = ' (pip install --upgrade debops)'
-        elif source == 'git_master':
+        elif source in ('git_master', 'git_branch'):
             hint = ' (git pull)'
         elif source == 'git_stable':
             hint = ' (git pull --tags)'
