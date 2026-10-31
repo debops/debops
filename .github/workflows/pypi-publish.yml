@@ -1,0 +1,66 @@
+---
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Publish the DebOps Python packages on PyPI using Trusted Publishing.
+# The workflow is triggered by pushing a release tag (done by the
+# 'bin/new-stable-release' script). PyPI validates the workflow's OIDC
+# identity against the project's Trusted Publisher configuration and
+# generates PEP 740 attestations for the published files automatically.
+# The 'release' environment must exist in the repository settings and
+# match the pending publisher configured on PyPI.
+
+name: 'Publish DebOps on PyPI'
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  pypi_publish:
+    runs-on: 'ubuntu-latest'
+    environment: 'release'
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+
+      - name: 'Add ~/.local/bin to $PATH'
+        run: 'printf "%s/.local/bin\n" "${HOME}" >> "${GITHUB_PATH}"'
+
+      - name: 'Clone the repository'
+        uses: 'actions/checkout@v7'
+        with:
+          fetch-depth: 0
+
+      - name: 'Prepare the build environment'
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -yq install pandoc pandoc-data graphviz
+          pip3 install --user -c requirements-ci.txt \
+            pip wheel setuptools sphinx sphinx-autobuild \
+            sphinx-rtd-theme pypandoc
+          pip3 check
+
+      - name: 'Build and check the DebOps Python packages'
+        run: |
+          make clean-tests
+          make check
+          make test-man sdist-quiet wheel-quiet
+          make test-metadata
+          make test-smoke
+
+      - name: 'Publish the packages on PyPI'
+        uses: 'pypa/gh-action-pypi-publish@release/v1'
+        with:
+          packages-dir: 'dist/pypi/'
