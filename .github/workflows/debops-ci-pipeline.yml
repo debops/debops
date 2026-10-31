@@ -1,11 +1,13 @@
 ---
-# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021-2026 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2023 Berkhan Berkdemir <berkhan@tekdanisman.com>
-# Copyright (C) 2021-2024 DebOps <https://debops.org/>
+# Copyright (C) 2021-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# TODO: The CI pipeline is not finished yet, it needs more work around
-# preparing the environment and Ansible configuration for execution.
+# The playbook tests are defined by the role manifest in
+# lib/tests/gh-ci-pipeline/; the schema, the path filtering rules and the
+# role exclusion policy are documented in the GitHub Actions CI pipeline
+# page of the developer guide.
 
 name: 'DebOps CI Pipeline'
 on: [ 'push', 'pull_request' ]
@@ -17,160 +19,107 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
-  bootstrap_playbook:
-    runs-on: 'ubuntu-latest'
+
+  prepare:
+    runs-on: 'ubuntu-24.04'
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
     steps:
 
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: 'actions/checkout@v7'
+        with:
+          fetch-depth: 0
 
-      - name: Prepare the CI pipeline environment
-        uses: './.github/workflows/prepare-ci-pipeline'
-
-      - name: Apply the playbook on the host
+      - name: Compute the job matrix
+        id: matrix
         env:
-          PY_COLORS: 1
-          ANSIBLE_FORCE_COLOR: 1
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
-          source venv/bin/activate
-          cd ~/src/controller
-          debops run bootstrap --diff
-          debops run bootstrap --diff
+          python3 -c 'import yaml' 2> /dev/null || \
+            pip3 install --break-system-packages pyyaml
+          if [ "${GITHUB_EVENT_NAME}" = 'pull_request' ]; then
+            git diff --name-only "origin/${BASE_REF}...HEAD" \
+              > "${RUNNER_TEMP}/changed-files.txt"
+            args=(--changed-files "${RUNNER_TEMP}/changed-files.txt")
+          else
+            args=(--all)
+          fi
+          python3 lib/tests/gh-ci-pipeline/matrix.py "${args[@]}" \
+            --output "${RUNNER_TEMP}/matrix.json"
+          {
+            echo 'matrix<<EOF'
+            cat "${RUNNER_TEMP}/matrix.json"
+            echo 'EOF'
+          } >> "${GITHUB_OUTPUT}"
 
-
-  common_playbook:
-    runs-on: 'ubuntu-latest'
+  roles:
+    needs: 'prepare'
+    name: 'Playbook: ${{ matrix.playbooks }}'
+    runs-on: '${{ matrix.runner }}'
+    timeout-minutes: '${{ matrix.timeout }}'
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
     steps:
 
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: 'actions/checkout@v7'
 
       - name: Prepare the CI pipeline environment
         uses: './.github/workflows/prepare-ci-pipeline'
+        with:
+          extra_packages: '${{ matrix.packages }}'
+          extra_groups: '${{ matrix.groups }}'
+          inventory_spec: '${{ matrix.inventoryspec }}'
+          pre_script: '${{ matrix.pre_script }}'
 
-      - name: Apply the playbook on the host
+      - name: Apply the playbooks on the host
         env:
           PY_COLORS: 1
           ANSIBLE_FORCE_COLOR: 1
+          CI_PLAYBOOKS: '${{ matrix.playbooks }}'
         run: |
           source venv/bin/activate
           cd ~/src/controller
-          debops run common --diff
-          debops run common --diff
+          for playbook in ${CI_PLAYBOOKS}; do
+            debops run "${playbook}" --diff
+          done
 
-
-  apt_role:
-    runs-on: 'ubuntu-latest'
-    steps:
-
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Prepare the CI pipeline environment
-        uses: './.github/workflows/prepare-ci-pipeline'
-
-      - name: Apply the role on the host
+      - name: Verify idempotency
         env:
           PY_COLORS: 1
           ANSIBLE_FORCE_COLOR: 1
+          CI_PLAYBOOKS: '${{ matrix.playbooks }}'
         run: |
           source venv/bin/activate
           cd ~/src/controller
-          debops run service/apt --diff
-          debops run service/apt --diff
+          set -o pipefail
+          for playbook in ${CI_PLAYBOOKS}; do
+            log="${RUNNER_TEMP}/idempotency-${playbook//\//-}.log"
+            debops run "${playbook}" --diff 2>&1 | tee "${log}"
+          done
+          if sed 's/\x1B\[[0-9;]*[A-Za-z]//g' \
+              "${RUNNER_TEMP}"/idempotency-*.log | \
+              grep -q 'changed=[1-9][0-9]*'; then
+            message="Second run of '${{ matrix.playbooks }}' was not idempotent"
+            if [ '${{ matrix.idempotency }}' = 'strict' ]; then
+              echo "::error title=Not idempotent::${message}"
+              exit 1
+            else
+              echo "::warning title=Not idempotent::${message}"
+            fi
+          fi
 
-
-  apt_listchanges_role:
-    runs-on: 'ubuntu-latest'
-    steps:
-
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Prepare the CI pipeline environment
-        uses: './.github/workflows/prepare-ci-pipeline'
-
-      - name: Apply the role on the host
+      - name: Test the service
+        if: "matrix.post_script != ''"
         env:
           PY_COLORS: 1
           ANSIBLE_FORCE_COLOR: 1
+          CI_POST_SCRIPT: '${{ matrix.post_script }}'
         run: |
           source venv/bin/activate
           cd ~/src/controller
-          debops run service/apt_listchanges --diff
-          debops run service/apt_listchanges --diff
-
-
-  mariadb_server_role:
-    runs-on: 'ubuntu-latest'
-    steps:
-
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Prepare the CI pipeline environment
-        uses: './.github/workflows/prepare-ci-pipeline'
-
-      - name: Apply the role on the host
-        env:
-          PY_COLORS: 1
-          ANSIBLE_FORCE_COLOR: 1
-        run: |
-          source venv/bin/activate
-          cd ~/src/controller
-          cat <<EOL >> ansible/inventory/hosts
-          [debops_service_mariadb_server]
-          localhost
-          EOL
-          debops run service/mariadb_server --diff
-          debops run service/mariadb_server --diff
-
-
-  postgresql_server_role:
-    runs-on: 'ubuntu-latest'
-    steps:
-
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Prepare the CI pipeline environment
-        uses: './.github/workflows/prepare-ci-pipeline'
-
-      - name: Apply the role on the host
-        env:
-          PY_COLORS: 1
-          ANSIBLE_FORCE_COLOR: 1
-        run: |
-          source venv/bin/activate
-          cd ~/src/controller
-          cat <<EOL >> ansible/inventory/hosts
-          [debops_service_postgresql_server]
-          localhost
-          EOL
-          debops run service/postgresql_server --diff
-          debops run service/postgresql_server --diff
-
-
-  python_role:
-    runs-on: 'ubuntu-latest'
-    steps:
-
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Prepare the CI pipeline environment
-        uses: './.github/workflows/prepare-ci-pipeline'
-
-      - name: Apply the role on the host
-        env:
-          PY_COLORS: 1
-          ANSIBLE_FORCE_COLOR: 1
-        run: |
-          source venv/bin/activate
-          cd ~/src/controller
-          cat <<EOL >> ansible/inventory/hosts
-          [debops_service_python]
-          localhost
-          EOL
-          debops run service/python --diff
-          debops run service/python --diff
+          printf '%s' "${CI_POST_SCRIPT}" | bash -s

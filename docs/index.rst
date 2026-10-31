@@ -115,6 +115,7 @@ infrastructure environments.
    developer-guide/contribution-workflow
    developer-guide/contributing-docs
    developer-guide/testing
+   developer-guide/gh-ci-pipeline
    developer-guide/development-model
    dep/index
 
