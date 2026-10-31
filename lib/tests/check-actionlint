@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+# Check GitHub Actions workflow files using actionlint
+
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+
+set -o nounset -o pipefail -o errexit
+
+if ! type actionlint > /dev/null 2>&1 ; then
+    printf "%s\\n" "Skipping GitHub Actions workflow check: actionlint not found"
+    exit 0
+fi
+
+printf "%s\\n" "Checking GitHub Actions workflows using actionlint..."
+
+# Check the workflow files explicitly: the default file discovery treats
+# the composite actions in the subdirectories of '.github/workflows/' as
+# workflow files. The actions are validated through the 'uses:' references
+# in the workflows instead.
+actionlint .github/workflows/*.yml

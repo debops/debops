@@ -178,7 +178,7 @@ twine-upload:    ## Upload Python packages to PyPI
 	@twine upload dist/pypi/debops-*.tar.gz dist/pypi/debops-*.whl
 
 .PHONY: test-all
-test-all: clean-tests test-spdx test-pep8 test-unit test-integration test-debops-ansible_plugins test-spell test-docs test-man test-playbook-syntax test-ansible-lint test-yaml test-shell
+test-all: clean-tests test-spdx test-pep8 test-unit test-integration test-debops-ansible_plugins test-spell test-docs test-man test-playbook-syntax test-ansible-lint test-yaml test-shell test-actionlint
 
 .PHONY: test-unit
 test-unit:
@@ -209,6 +209,11 @@ test-pep8:
 test-shell:
 	@printf "%s\n" "Testing shell syntax using shellcheck..."
 	@./lib/tests/check-shell
+
+.PHONY: test-actionlint
+test-actionlint:
+	@printf "%s\n" "Testing GitHub Actions workflows using actionlint..."
+	@./lib/tests/check-actionlint
 
 .PHONY: test-docker-build
 test-docker-build:
