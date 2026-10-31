@@ -184,6 +184,25 @@ jobs:
           make test-shell
           make check
 
+  actionlint:
+    runs-on: 'ubuntu-latest'
+    steps:
+
+      - name: Add ~/.local/bin to $PATH
+        run: 'printf "%s/.local/bin\n" "${HOME}" >> "${GITHUB_PATH}"'
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v7'
+
+      - name: Prepare test environment
+        run: './lib/tests/ci-install-actionlint'
+
+      - name: Check workflow files with actionlint
+        run: |
+          actionlint --version
+          make test-actionlint
+          make check
+
   docker-image:
     runs-on: 'ubuntu-latest'
     steps:
