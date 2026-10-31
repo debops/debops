@@ -1,11 +1,36 @@
 ---
-# Copyright (C) 2021-2024 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021-2026 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2023      Berkhan Berkdemir <berkhan@tekdanisman.com>
-# Copyright (C) 2021-2024 DebOps <https://debops.org/>
+# Copyright (C) 2021-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 name: Prepare CI pipeline environment
+description: >-
+  Prepare the runner environment for applying DebOps playbooks in CI:
+  install the system dependencies, set up the Python virtual environment
+  with the 'debops' package and initialize the test project directory.
 on: [ 'push', 'pull_request' ]
+
+inputs:
+  extra_packages:
+    description: 'APT packages to install in addition to the base set'
+    required: false
+    default: ''
+
+  extra_groups:
+    description: 'Comma-separated Ansible inventory groups that the test host is added to'
+    required: false
+    default: ''
+
+  inventory_spec:
+    description: 'Inventory specification (YAML document) applied to the test project after initialization'
+    required: false
+    default: ''
+
+  pre_script:
+    description: 'Shell commands executed in the project directory after initialization'
+    required: false
+    default: ''
 
 runs:
   using: 'composite'
@@ -19,7 +44,8 @@ runs:
       run: |
         sudo apt-get -qq update
         sudo apt-get install build-essential python3-dev libffi-dev libssl-dev \
-                 libsasl2-dev libldap2-dev libpq-dev python3-pip python3-psycopg2
+                 libsasl2-dev libldap2-dev libpq-dev python3-pip python3-psycopg2 \
+                 ${{ inputs.extra_packages }}
       shell: bash
 
     - name: Configure VirtualEnv and install Python dependencies
@@ -32,6 +58,8 @@ runs:
       shell: bash
 
     - name: Initialize DebOps project
+      env:
+        CI_EXTRA_GROUPS: '${{ inputs.extra_groups }}'
       run: |
         source venv/bin/activate
         debops project init ~/src/controller
@@ -42,4 +70,21 @@ runs:
         [all:vars]
         debops__no_log=false
         EOL
+        if [ -n "${CI_EXTRA_GROUPS}" ]; then
+          IFS=',' read -r -a ci_groups <<< "${CI_EXTRA_GROUPS}"
+          for ci_group in "${ci_groups[@]}"; do
+            printf '[%s]\nlocalhost\n' "${ci_group}" >> ansible/inventory/hosts
+          done
+        fi
+        ${{ inputs.pre_script }}
+      shell: bash
+
+    - name: Apply the inventory specification
+      if: "inputs.inventory_spec != ''"
+      env:
+        CI_INVENTORY_SPEC: '${{ inputs.inventory_spec }}'
+      run: |
+        source venv/bin/activate
+        printf '%s' "${CI_INVENTORY_SPEC}" | \
+          debops project refresh --template - --force ~/src/controller
       shell: bash
