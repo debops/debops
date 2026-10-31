@@ -17,7 +17,9 @@
 # Requirements:
 #   - GitHub API token with access to debops/debops repository and ability to
 #     create new releases, stored in configurable location
-#   - PyPI upload credentials, stored in ~/.pypirc
+#   - PyPI publishing uses GitHub Actions Trusted Publishing: pushing the
+#     release tag triggers the 'pypi-publish' workflow, which builds the
+#     Python packages and publishes them with attestations
 #   - Ansible Galaxy API token, stored in ~/.ansible/galaxy_token
 
 # Warning: script removes files in /tmp/debops-collections.*
@@ -100,36 +102,10 @@ git commit --amend --no-edit
 git tag -f -s -m "debops v${new_version}" "v${new_version}"
 
 
-# Publish git changes to GitHub
-# -----------------------------
-
-if [ "${COMMAND}" == "publish" ] ; then
-    printf "Pushing changes to origin repository...\n"
-    git push origin "${current_branch}"
-
-    printf "Pushing tags to origin repository...\n"
-    git push origin "${current_branch}" --tags
-else
-    printf "Not pushing changes via git, local operations only.\n"
-fi
-
-
-# Create new Python packages and publish them on PyPI
-# ---------------------------------------------------
-
-printf "Creating Python sdist and wheel packages...\n"
-make sdist-sign wheel-sign
-
-if [ "${COMMAND}" == "publish" ] ; then
-    printf "Publishing Python packages on PyPI...\n"
-    make twine-upload
-else
-    printf "Not publishing Python packages, local operations only.\n"
-fi
-
-
-# Create new DebOps Collection and publish it on Ansible Galaxy
-# -------------------------------------------------------------
+# Create new DebOps Collection tarball
+# ------------------------------------
+# The build cleans the repository and the 'dist/' directory first, so
+# it runs before the Python packages are built and signed
 
 printf "Cleaning repository...\n"
 make clean
@@ -144,6 +120,38 @@ make collection-sign
 
 # Find the generated tarball in the 'dist/' directory
 collection_tarball="$(find dist/collections -maxdepth 1 -type f -name 'debops-debops-*.tar.gz')"
+
+
+# Create new Python packages
+# --------------------------
+# Publishing to PyPI happens on GitHub Actions with Trusted Publishing
+# (PEP 740 attestations are generated automatically). The
+# 'make twine-upload' command is the manual fallback path
+
+printf "Creating Python sdist and wheel packages...\n"
+make sdist-sign wheel-sign
+
+if [ "${COMMAND}" == "publish" ] ; then
+    printf "The Python packages will be published on PyPI by the\n"
+    printf "tag-triggered GitHub Actions workflow, with attestations:\n"
+    printf "https://github.com/debops/debops/actions/workflows/pypi-publish.yml\n"
+else
+    printf "Python packages not published, local operations only.\n"
+fi
+
+
+# Publish git changes to GitHub
+# -----------------------------
+
+if [ "${COMMAND}" == "publish" ] ; then
+    printf "Pushing changes to origin repository...\n"
+    git push origin "${current_branch}"
+
+    printf "Pushing tags to origin repository...\n"
+    git push origin "${current_branch}" --tags
+else
+    printf "Not pushing changes via git, local operations only.\n"
+fi
 
 # Create a draft release on GitHub and attach the Collection tarball as
 # an asset, so that the Collection can be installed directly from the

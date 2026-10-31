@@ -131,16 +131,16 @@ coverage: test-coverage
 .PHONY: sdist
 sdist:          ## Create Python sdist package
 sdist: clean-sdist man test-credits
-	@python3 setup.py sdist
+	@python3 setup.py sdist --dist-dir dist/pypi
 
 .PHONY: sdist-quiet
 sdist-quiet: clean-sdist test-credits
-	@python3 setup.py --quiet sdist
+	@python3 setup.py --quiet sdist --dist-dir dist/pypi
 
 .PHONY: sdist-sign
 sdist-sign:     ## Create signed Python sdist package
 sdist-sign: sdist
-	@gpg --detach-sign --armor dist/debops-*.tar.gz
+	@gpg --detach-sign --armor dist/pypi/debops-*.tar.gz
 
 .PHONY: make-collection
 make-collection: clean clean-git
@@ -149,7 +149,7 @@ make-collection: clean clean-git
 
 .PHONY: clean-sdist
 clean-sdist:
-	@rm -vrf debops.egg-info dist/debops-*.tar.gz*
+	@rm -vrf debops.egg-info dist/pypi/debops-*.tar.gz*
 
 .PHONY: clean-collections
 clean-collections:
@@ -158,24 +158,24 @@ clean-collections:
 .PHONY: wheel
 wheel:          ## Create Python wheel package
 wheel: clean-wheel man test-credits
-	@python3 setup.py bdist_wheel
+	@python3 setup.py bdist_wheel --dist-dir dist/pypi
 
 .PHONY: wheel-quiet
 wheel-quiet: clean-wheel test-credits
-	@python3 setup.py --quiet bdist_wheel
+	@python3 setup.py --quiet bdist_wheel --dist-dir dist/pypi
 
 .PHONY: wheel-sign
 wheel-sign:     ## Create signed Python wheel package
 wheel-sign: wheel
-	@gpg --detach-sign --armor dist/debops-*.whl
+	@gpg --detach-sign --armor dist/pypi/debops-*.whl
 
 .PHONY: clean-wheel
 clean-wheel:
-	@rm -vrf build dist/debops-*.whl*
+	@rm -vrf build dist/pypi/debops-*.whl*
 
 .PHONY: twine-upload
 twine-upload:    ## Upload Python packages to PyPI
-	@twine upload dist/*
+	@twine upload dist/pypi/debops-*.tar.gz dist/pypi/debops-*.whl
 
 .PHONY: test-all
 test-all: clean-tests test-spdx test-pep8 test-unit test-integration test-debops-ansible_plugins test-spell test-docs test-man test-playbook-syntax test-ansible-lint test-yaml test-shell
