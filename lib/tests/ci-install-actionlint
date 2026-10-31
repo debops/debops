@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Install actionlint in CI environment
+
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# actionlint is not packaged in Debian or Ubuntu. The version is pinned so
+# that a new release with new checks does not break the CI pipeline without
+# review; bump it deliberately.
+
+# This script should run only in CI pipeline
+
+set -o nounset -o pipefail -o errexit
+
+actionlint_version="1.7.7"
+actionlint_url="https://github.com/rhysd/actionlint/releases/download/v${actionlint_version}/actionlint_${actionlint_version}_linux_amd64.tar.gz"
+actionlint_tarball="actionlint.tar.gz"
+source_dir="$(mktemp -d)"
+
+cd "${source_dir}"
+curl --location --output "${actionlint_tarball}" "${actionlint_url}"
+tar xf "${actionlint_tarball}"
+
+mkdir -p "${HOME}/.local/bin"
+cp "actionlint" "${HOME}/.local/bin"
