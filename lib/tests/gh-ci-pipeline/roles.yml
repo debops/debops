@@ -1,0 +1,42 @@
+---
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# DebOps CI pipeline role manifest. Each entry describes a single test job
+# executed by the 'DebOps CI Pipeline' GitHub Actions workflow. See the
+# GitHub Actions CI pipeline documentation in docs/developer-guide/ for the
+# entry schema and the role exclusion rules.
+
+- name: 'bootstrap'
+  playbook: 'bootstrap'
+  always: True
+  idempotency: 'advisory'
+
+- name: 'common'
+  playbook: 'common'
+  always: True
+  idempotency: 'advisory'
+
+- name: 'apt'
+  playbook: 'service/apt'
+  idempotency: 'advisory'
+
+- name: 'apt_listchanges'
+  playbook: 'service/apt_listchanges'
+  idempotency: 'advisory'
+
+- name: 'mariadb_server'
+  playbook: 'service/mariadb_server'
+  groups: [ 'debops_service_mariadb_server' ]
+  idempotency: 'advisory'
+
+- name: 'postgresql_server'
+  playbook: 'service/postgresql_server'
+  groups: [ 'debops_service_postgresql_server' ]
+  idempotency: 'advisory'
+
+- name: 'python'
+  playbook: 'service/python'
+  groups: [ 'debops_service_python' ]
+  idempotency: 'advisory'
