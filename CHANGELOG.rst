@@ -143,6 +143,14 @@ General
   the pin the following task creates, so the file changed on every run. It
   now removes only the old dotted filename.
 
+:ref:`debops.auth` role
+'''''''''''''''''''''''
+
+- Fixed a problem with the ``pwhistory`` PAM module configuration causing
+  issues with the :command:`pam-auth-update` command warning about
+  "uninitialized values" due to presence of comments and not supported
+  configuration option, which have been removed from the template.
+
 :ref:`debops.dhcp_probe` role
 '''''''''''''''''''''''''''''
 
