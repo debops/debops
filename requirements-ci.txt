@@ -8,8 +8,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # Core Python packaging tools
-pip==26.2.2 ; python_version >= '3.10'
-pip==24.0 ; python_version < '3.10'
+#
+# 'pip' is intentionally not listed: the CI jobs install the rest of the
+# packages into the user site while the interpreter keeps its own pip.
+# Installing a pip pin into the user site shadows the interpreter's pip and
+# breaks 'pip3 check' when the interpreter pip is newer (script/package
+# version skew).
 wheel==0.48.0 ; python_version >= '3.10'
 wheel==0.45.1 ; python_version < '3.10'
 setuptools==84.2.1 ; python_version >= '3.10'
