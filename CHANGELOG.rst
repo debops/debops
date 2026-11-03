@@ -203,6 +203,15 @@ General
   with Redis configuration being inaccessible by other ``redis`` UNIX group
   members.
 
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- Fixed an issue with LDAP authentication scripts not being able to
+  authenticate for SSH key lookups in LDAP server due to the password file
+  containing a new line (introduced by a different commit). The password file
+  template has been added to :command:`pre-commit` ignore list to avoid
+  repeated "fixes".
+
 
 `debops v3.3.2`_ - 2026-09-28
 -----------------------------
