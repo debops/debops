@@ -277,7 +277,25 @@ def main() -> None:
         **{key: {} for key in scoped_keys},
         "contributors": {},
     }
+
+    # Promote the contributors tied with the last main author's tally
+    if len(ranked) > main_count:
+        boundary = ranked[main_count - 1][1]
+        for name, commits in ranked[main_count:]:
+            if commits == boundary:
+                sections["main_authors"][name] = commits
+    # Promote the contributors tied with the last main author's tally
+    promoted = set()
+    if len(ranked) > main_count:
+        boundary = ranked[main_count - 1][1]
+        promoted = {name for name, commits in ranked[main_count:]
+                    if commits == boundary}
+        for name in promoted:
+            sections["main_authors"][name] = boundary
+
     for name, commits in ranked[main_count:]:
+        if name in promoted:
+            continue
         best_key, best_count = None, 0
         for key in scoped_keys:
             if path_counts[key].get(name, 0) > best_count:
