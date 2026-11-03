@@ -212,6 +212,12 @@ General
   template has been added to :command:`pre-commit` ignore list to avoid
   repeated "fixes".
 
+:ref:`debops.yadm` role
+'''''''''''''''''''''''
+
+- Fixed Ansible fact script which checked the :command:`yadm` version
+  incorrectly.
+
 
 `debops v3.1.9`_ - 2026-09-28
 -----------------------------
