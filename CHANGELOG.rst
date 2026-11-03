@@ -332,6 +332,12 @@ General
 - The ``debops.debops.to_toml`` and ``debops.debops.from_toml`` filter plugins
   should now work correctly with :command:`ansible-core` v2.19 and newer.
 
+- Fixed issues with multiple roles that created passwords in the
+  :file:`secret/` store in Ansible ``--check`` mode or when passwords were
+  specified via inventory and not using the ``lookup("password")`` Ansible
+  lookup plugin. Affected roles: :ref:`debops.mariadb`,
+  :ref:`debops.postgresql`, :ref:`debops.rabbitmq_server`.
+
 :ref:`debops.apache` role
 '''''''''''''''''''''''''
 
