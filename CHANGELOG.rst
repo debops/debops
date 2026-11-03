@@ -174,6 +174,13 @@ General
   ``content`` parameters, or when the resulting expression is an empty string
   instead of a boolean.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Fixed an issue with the ``SESSION_FILE_PATH`` configuration option
+  incorrectly setting an empty string instead of ``None`` when NetBox sessions
+  should be stored in a database.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
