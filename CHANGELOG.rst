@@ -606,6 +606,12 @@ General
   configuration changes; now the role will detect the socket configuration and
   restart the service when it's configured in a single daemon mode.
 
+- Fixed an issue with LDAP authentication scripts not being able to
+  authenticate for SSH key lookups in LDAP server due to the password file
+  containing a new line (introduced by a different commit). The password file
+  template has been added to :command:`pre-commit` ignore list to avoid
+  repeated "fixes".
+
 Removed
 ~~~~~~~
 
