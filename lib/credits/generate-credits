@@ -238,6 +238,11 @@ def main() -> None:
         if not is_assisted(identity, assisted_entries)
     })
 
+    # Summary of the git-derived sections (captured before the founder
+    # exclusion, which only affects the section placement)
+    summary = "(%d contributors, %d commits)" % (
+        len(totals), sum(totals.values()))
+
     main_count = settings.get("main_authors", {}).get("count", 20)
 
     # The founders are listed in their own section, excluded from the
@@ -320,6 +325,9 @@ def main() -> None:
         if title and counts:
             blocks.append(render_section(
                 title, entries_for(counts), width))
+
+    # Summary of the git-derived sections, before the non-git sections
+    blocks.append([center(summary, width)])
 
     logo_design = config.get("logo_design") or []
     if logo_design:
