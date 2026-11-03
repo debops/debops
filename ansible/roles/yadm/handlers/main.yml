@@ -1,0 +1,12 @@
+---
+# Copyright (C) 2026 seven-beep <github@soulintheshell.com>
+# Copyright (C) 2019 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Fix /etc/gitconfig permissions
+  ansible.builtin.file:
+    dest: '/etc/gitconfig'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: yadm__enabled is truthy
