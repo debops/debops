@@ -457,6 +457,13 @@ General
   parameter in the :command:`ansible.mysql.mysql_user` module, required since
   the rename to the ``ansible.mysql`` collection.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Fixed an issue with the ``SESSION_FILE_PATH`` configuration option
+  incorrectly setting an empty string instead of ``None`` when NetBox sessions
+  should be stored in a database.
+
 :ref:`debops.nfs_server` role
 '''''''''''''''''''''''''''''
 
