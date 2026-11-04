@@ -5,6 +5,7 @@
 import argparse
 import os
 import sys
+import textwrap
 
 # Detect the DebOps version from the Python module. If the version is not
 # available, we are in a development environment in which case we use a stub
@@ -64,6 +65,132 @@ Sections:
         group.add_argument('--no-' + name, dest=name,
                            help=no_help, action='store_false')
         parser.set_defaults(**{name: default})
+
+    # The ansible options the 'run', 'check' and 'exec' subcommands
+    # recognize as first-class options, in the order they are injected
+    # into the ansible arguments. Each entry: (dest, short option, long
+    # option, metavar, group, one-line description used by the
+    # '--help-ansible' output). The options are hidden from the regular
+    # '--help' output to keep it readable; '--help-ansible' lists them.
+    PLAYBOOK_ANSIBLE_OPTIONS = (
+        ('check', '-C', '--check', None, 'mode',
+         "don't make any changes; predict what would change"),
+        ('diff', '-D', '--diff', None, 'mode',
+         'show the differences of files and templates when changing'),
+        ('syntax_check', None, '--syntax-check', None, 'mode',
+         'parse the playbooks and exit; nothing runs'),
+        ('step', None, '--step', None, 'mode',
+         'one-step-at-a-time; confirm each task before running'),
+        ('list_hosts', None, '--list-hosts', None, 'mode',
+         'list the affected hosts and exit; nothing runs'),
+        ('list_tasks', None, '--list-tasks', None, 'mode',
+         'list the tasks and exit; nothing runs'),
+        ('list_tags', None, '--list-tags', None, 'mode',
+         'list all available tags and exit; nothing runs'),
+        ('limit', '-l', '--limit', 'SUBSET', 'shaping',
+         'only run plays and tasks whose hosts match the pattern'),
+        ('tags', '-t', '--tags', 'TAGS', 'shaping',
+         'only run plays and tasks with these tags'),
+        ('skip_tags', None, '--skip-tags', 'TAGS', 'shaping',
+         'skip plays and tasks with these tags'),
+        ('forks', '-f', '--forks', 'N', 'shaping',
+         'run this many parallel host processes'),
+        ('start_at_task', None, '--start-at-task', 'NAME', 'shaping',
+         'start at the task with this name'),
+        ('force_handlers', None, '--force-handlers', None, 'shaping',
+         'run the notified handlers even if a task fails'),
+        ('flush_cache', None, '--flush-cache', None, 'shaping',
+         'clear the fact cache for every host'),
+        ('user', '-u', '--user', 'NAME', 'connection',
+         'connection user'),
+        ('become', '-b', '--become', None, 'connection',
+         'run operations with become'),
+        ('become_user', None, '--become-user', 'NAME', 'connection',
+         'user to become (default: root)'),
+        ('ask_become_pass', '-K', '--ask-become-pass', None, 'connection',
+         'ask for the privilege escalation password'),
+        ('ask_pass', '-k', '--ask-pass', None, 'connection',
+         'ask for the connection password'),
+        ('connection', '-c', '--connection', 'NAME', 'connection',
+         'connection type to use'),
+        ('timeout', '-T', '--timeout', 'T', 'connection',
+         'connection timeout in seconds'),
+    )
+
+    # The 'exec' subcommand runs the ad-hoc 'ansible' command, which
+    # accepts only the subset below; in particular '-t' is '--tree'
+    # there, not '--tags'
+    ADHOC_ANSIBLE_OPTIONS = frozenset((
+        'limit', 'forks', 'user', 'become', 'become_user',
+        'ask_become_pass', 'ask_pass', 'connection', 'timeout'))
+
+    def add_ansible_options(self, parser, adhoc=False):
+        """Add the hidden first-class ansible options to a subcommand
+        parser, along with the visible '--help-ansible' option."""
+        for dest, short, long_option, metavar, group, option_help in \
+                self.PLAYBOOK_ANSIBLE_OPTIONS:
+            if adhoc and dest not in self.ADHOC_ANSIBLE_OPTIONS:
+                continue
+            names = [long_option] + ([short] if short else [])
+            if metavar is None:
+                parser.add_argument(*names, dest=dest,
+                                    help=argparse.SUPPRESS,
+                                    action='store_true')
+            else:
+                parser.add_argument(*names, dest=dest, metavar=metavar,
+                                    help=argparse.SUPPRESS,
+                                    action='store')
+        parser.add_argument('--help-ansible', action='store_true',
+                            help='show the recognized ansible options '
+                                 'and exit')
+
+    def ansible_options_to_args(self, options, adhoc=False):
+        """The recognized ansible options given on the command line,
+        as ansible arguments to prepend to the pass-through arguments."""
+        result = []
+        for dest, _short, long_option, metavar, _group, _option_help in \
+                self.PLAYBOOK_ANSIBLE_OPTIONS:
+            if adhoc and dest not in self.ADHOC_ANSIBLE_OPTIONS:
+                continue
+            value = options.get(dest)
+            if not value:
+                continue
+            if metavar is None:
+                result.append(long_option)
+            else:
+                result.extend([long_option, value])
+        return result
+
+    def print_ansible_help(self, command, adhoc=False):
+        """Print the recognized ansible options; the '--help-ansible'
+        output."""
+        binary = 'ansible' if adhoc else 'ansible-playbook'
+        print('debops {} recognizes these ansible options directly:'
+              .format(command))
+        print()
+        for group, title in (('mode', 'execution mode:'),
+                             ('shaping', 'run shaping:'),
+                             ('connection', 'connection:')):
+            spellings = []
+            for dest, short, long_option, metavar, option_group, _help in \
+                    self.PLAYBOOK_ANSIBLE_OPTIONS:
+                if option_group != group:
+                    continue
+                if adhoc and dest not in self.ADHOC_ANSIBLE_OPTIONS:
+                    continue
+                spelling = short + ', ' + long_option if short else long_option
+                if metavar:
+                    spelling += ' ' + metavar
+                spellings.append(spelling)
+            if not spellings:
+                continue
+            print('  ' + title)
+            print(textwrap.fill(', '.join(spellings), width=74,
+                                initial_indent='    ',
+                                subsequent_indent='    ') + '\n')
+        print('Everything after the playbook name(s) is passed to '
+              + binary + ' unchanged; see \'' + binary
+              + ' --help\' for its full option set.')
 
     def do_project(self):
         parser = argparse.ArgumentParser(
@@ -269,7 +396,11 @@ Actions:
         parser = argparse.ArgumentParser(
                 parents=[self.global_parser],
                 usage='debops exec [<args>] [--] <[ansible_args]>',
-                description='run Ansible commands directly against hosts')
+                description='run Ansible commands directly against hosts',
+                epilog='A subset of the ansible options is recognized '
+                       'directly; run \'debops exec --help-ansible\' for '
+                       'the list. Any other options must be specified '
+                       'after the command arguments.')
         parser.add_argument('-V', '--view', type=str,
                             help='select the infrastructure view '
                                  'to use for the "ansible" command')
@@ -281,10 +412,19 @@ Actions:
                             help='print the Ansible command '
                                  'generated by DebOps',
                             action='store_true')
+        self.add_ansible_options(parser, adhoc=True)
         parser.add_argument('ansible_args', type=str, nargs=argparse.REMAINDER,
                             help='arguments for the '
                                  '"ansible" command')
         self.args = parser.parse_args(self.args[2:])
+
+        if self.args.help_ansible:
+            self.print_ansible_help('exec', adhoc=True)
+            sys.exit(0)
+
+        self.args.ansible_args = (self.ansible_options_to_args(
+                                      vars(self.args), adhoc=True)
+                                  + self.args.ansible_args)
 
     def do_run(self):
         parser = argparse.ArgumentParser(
@@ -292,8 +432,10 @@ Actions:
                 usage='debops run [<args>] [--] <[<namespace>.<collection>/]'
                       'playbook> [playbook] ... [ansible_args]',
                 description='run Ansible playbook(s) against hosts',
-                epilog='The Ansible options must be specified after the '
-                       'playbook name(s).')
+                epilog='A subset of the ansible-playbook options is '
+                       'recognized directly; run \'debops run '
+                       '--help-ansible\' for the list. Any other options '
+                       'must be specified after the playbook name(s).')
         parser.add_argument('-V', '--view', type=str,
                             help='select the infrastructure view '
                                  'to use for the "ansible-playbook" command')
@@ -305,10 +447,19 @@ Actions:
                             help='print the Ansible command '
                                  'generated by DebOps',
                             action='store_true')
+        self.add_ansible_options(parser)
         parser.add_argument('ansible_args', type=str, nargs=argparse.REMAINDER,
                             help='arguments for the '
                                  '"ansible-playbook" command')
         self.args = parser.parse_args(self.args[2:])
+
+        if self.args.help_ansible:
+            self.print_ansible_help('run')
+            sys.exit(0)
+
+        self.args.ansible_args = (self.ansible_options_to_args(
+                                      vars(self.args))
+                                  + self.args.ansible_args)
 
     def do_check(self):
         parser = argparse.ArgumentParser(
@@ -316,8 +467,11 @@ Actions:
                 usage='debops check [<args>] [--] <[<namespace>.<collection>/]'
                       'playbook> [playbook] ... [ansible_args]',
                 description='run Ansible playbook(s) in check mode',
-                epilog='The Ansible options must be specified after the '
-                       'playbook name(s).')
+                epilog='Check mode with diff output is enabled '
+                       'automatically. A subset of the ansible-playbook '
+                       'options is recognized directly; run \'debops check '
+                       '--help-ansible\' for the list. Any other options '
+                       'must be specified after the playbook name(s).')
         parser.add_argument('-V', '--view', type=str,
                             help='select the infrastructure view '
                                  'to use for the "ansible-playbook" command')
@@ -329,19 +483,28 @@ Actions:
                             help='print the Ansible command '
                                  'generated by DebOps',
                             action='store_true')
+        self.add_ansible_options(parser)
         parser.add_argument('ansible_args', type=str,
                             nargs=argparse.REMAINDER,
                             help='arguments for the '
                                  '"ansible-playbook" command')
         self.args = parser.parse_args(self.args[2:])
 
-        # Run in check mode with diff output; add the flags only if the user
-        # did not already specify them, in either long or short form
-        ansible_args = self.args.ansible_args
+        if self.args.help_ansible:
+            self.print_ansible_help('check')
+            sys.exit(0)
+
+        # Run in check mode with diff output; the flags are added only
+        # if the user did not already choose them, as first-class
+        # options on either side of the playbook name(s), or as
+        # pass-through options after them
+        ansible_args = (self.ansible_options_to_args(vars(self.args))
+                        + self.args.ansible_args)
         if '--diff' not in ansible_args and '-D' not in ansible_args:
             ansible_args.append('--diff')
         if '--check' not in ansible_args and '-C' not in ansible_args:
             ansible_args.append('--check')
+        self.args.ansible_args = ansible_args
 
     def do_env(self):
         parser = argparse.ArgumentParser(
