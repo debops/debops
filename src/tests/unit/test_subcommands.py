@@ -400,3 +400,18 @@ def test_regular_help_hides_the_ansible_options(capsys):
     output = capsys.readouterr().out
     assert "--help-ansible" in output
     assert "--skip-tags" not in output
+
+
+def test_help_ansible_wraps_at_the_terminal_width(capsys, monkeypatch):
+    monkeypatch.setenv("COLUMNS", "50")
+
+    with pytest.raises(SystemExit) as exc:
+        parse_cli("run", "--help-ansible")
+
+    assert exc.value.code == 0
+    output = capsys.readouterr().out.splitlines()
+    assert output
+    # The header is a fixed line which cannot wrap; the rest of the
+    # output wraps at the terminal width
+    for line in output[1:]:
+        assert len(line) <= 50
