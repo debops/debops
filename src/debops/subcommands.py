@@ -33,7 +33,8 @@ def help_width():
 
 
 class HelpFormatter(argparse.HelpFormatter):
-    """The help formatter of the subcommands: the capped wrap width."""
+    """The help formatter of the subcommands: the capped wrap width
+    and no mid-word breaks."""
 
     def __init__(self, prog, indent_increment=2, max_help_position=24,
                  width=None):
@@ -42,6 +43,24 @@ class HelpFormatter(argparse.HelpFormatter):
         super().__init__(prog, indent_increment=indent_increment,
                          max_help_position=max_help_position,
                          width=width)
+
+    def _fill_text(self, text, width, indent):
+        # Wrap without breaking the option names at the hyphens; a
+        # '--skip-tags' split in the middle would confuse an
+        # unfamiliar user
+        wrapped = []
+        for line in text.split('\n'):
+            wrapped.append(textwrap.fill(
+                    line, width=width,
+                    initial_indent=indent, subsequent_indent=indent,
+                    break_long_words=False, break_on_hyphens=False))
+        return '\n'.join(wrapped)
+
+    def _split_lines(self, text, width):
+        text = self._whitespace_matcher.sub(' ', text).strip()
+        return textwrap.wrap(text, width=width,
+                             break_long_words=False,
+                             break_on_hyphens=False)
 
 
 def _argument_parser(**kwargs):
@@ -220,11 +239,14 @@ Sections:
             print('  ' + title)
             print(textwrap.fill(', '.join(spellings), width=width,
                                 initial_indent='    ',
-                                subsequent_indent='    ') + '\n')
+                                subsequent_indent='    ',
+                                break_long_words=False,
+                                break_on_hyphens=False) + '\n')
         print(textwrap.fill(
             'Everything after the playbook name(s) is passed to '
             + binary + ' unchanged; see \'' + binary
-            + ' --help\' for its full option set.', width=width))
+            + ' --help\' for its full option set.', width=width,
+            break_long_words=False, break_on_hyphens=False))
 
     def do_project(self):
         parser = _argument_parser(
