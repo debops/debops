@@ -632,6 +632,14 @@ General
   template has been added to :command:`pre-commit` ignore list to avoid
   repeated "fixes".
 
+:ref:`debops.tzdata` role
+'''''''''''''''''''''''''
+
+- Fixed an issue on newest Debian and Ubuntu releases which have removed the
+  static :file:`/etc/timezone` file read by the role facts. In this case the
+  fact script will check the :file:`/etc/localtime` symlink to find the host's
+  timezone information.
+
 :ref:`debops.yadm` role
 '''''''''''''''''''''''
 
