@@ -26,14 +26,19 @@ import shutil
 HELP_WIDTH = 78
 
 
+def help_width():
+    """The width the help output wraps at: the terminal width minus
+    two, capped at :data:`HELP_WIDTH`."""
+    return min(shutil.get_terminal_size().columns - 2, HELP_WIDTH)
+
+
 class HelpFormatter(argparse.HelpFormatter):
     """The help formatter of the subcommands: the capped wrap width."""
 
     def __init__(self, prog, indent_increment=2, max_help_position=24,
                  width=None):
         if width is None:
-            width = min(shutil.get_terminal_size().columns - 2,
-                        HELP_WIDTH)
+            width = help_width()
         super().__init__(prog, indent_increment=indent_increment,
                          max_help_position=max_help_position,
                          width=width)
@@ -192,6 +197,7 @@ Sections:
         """Print the recognized ansible options; the '--help-ansible'
         output."""
         binary = 'ansible' if adhoc else 'ansible-playbook'
+        width = help_width()
         print('debops {} recognizes these ansible options directly:'
               .format(command))
         print()
@@ -212,12 +218,13 @@ Sections:
             if not spellings:
                 continue
             print('  ' + title)
-            print(textwrap.fill(', '.join(spellings), width=74,
+            print(textwrap.fill(', '.join(spellings), width=width,
                                 initial_indent='    ',
                                 subsequent_indent='    ') + '\n')
-        print('Everything after the playbook name(s) is passed to '
-              + binary + ' unchanged; see \'' + binary
-              + ' --help\' for its full option set.')
+        print(textwrap.fill(
+            'Everything after the playbook name(s) is passed to '
+            + binary + ' unchanged; see \'' + binary
+            + ' --help\' for its full option set.', width=width))
 
     def do_project(self):
         parser = _argument_parser(
