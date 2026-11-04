@@ -219,7 +219,25 @@
         path: '{{ dist_upgrade_lockfile }}'
         state: 'absent'
 
-    - name: Send mail with information about the upgrade
+    - name: Send mail with information about the upgrade (sendmail)
+      ansible.builtin.command:  # noqa no-handler
+        cmd: '{{ dist_upgrade_mail_sendmail | default("/usr/sbin/sendmail") }} -t -i'
+        stdin: |
+          From: root@{{ ansible_fqdn }}
+          To: {{ dist_upgrade_mail_to | join(", ") }}
+          Subject: {{ dist_upgrade_mail_subject }}
+          MIME-Version: 1.0
+          Content-Type: text/plain; charset=utf-8
+          Content-Transfer-Encoding: 8bit
+
+          {{ dist_upgrade_mail_body }}
+      register: dist_upgrade_register_sendmail
+      changed_when: dist_upgrade_register_sendmail.rc | default(1) == 0
+      failed_when: false
+      when: dist_upgrade_register_upgrade is defined and
+            dist_upgrade_register_upgrade is changed
+
+    - name: Send mail with information about the upgrade (smtp)
       community.general.mail:  # noqa no-handler
         host: '{{ dist_upgrade_mail_host }}'
         port: '{{ dist_upgrade_mail_port }}'
@@ -229,5 +247,7 @@
         subject: '{{ dist_upgrade_mail_subject }}'
         charset: 'utf8'
         body: '{{ dist_upgrade_mail_body }}'
-      when: dist_upgrade_register_upgrade is defined and
-            dist_upgrade_register_upgrade is changed
+      when:
+        - dist_upgrade_register_upgrade is defined
+        - dist_upgrade_register_upgrade is changed
+        - dist_upgrade_register_sendmail.rc | default(1) != 0
