@@ -1114,7 +1114,7 @@ class ProjectDir(object):
             raise IsADirectoryError('You are inside another '
                                     'DebOps project directory')
 
-        if not run_hooks(self.path, 'pre-init'):
+        if not run_hooks(self.path, 'pre-init', require_project=False):
             raise ChildProcessError('Hook pre-init aborted, '
                                     'not creating project')
 

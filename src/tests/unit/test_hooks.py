@@ -32,9 +32,12 @@ def hook_dirs(tmp_path, monkeypatch):
 
     ``run_hooks`` looks up the user-global hooks under ``xdg_config_home``,
     which is imported into the module, so it has to be replaced there.
+    The fixture project carries the legacy marker file so that the
+    project-directory guard admits it.
     """
     project = tmp_path / "project"
     project.mkdir()
+    (project / ".debops.cfg").touch()
     user_config = tmp_path / "config"
     user_config.mkdir()
     monkeypatch.setattr(hooks_module, "xdg_config_home", str(user_config))
@@ -189,3 +192,26 @@ def test_discover_hooks_returns_sorted_absolute_paths(hook_dirs):
 
 def test_discover_hooks_is_empty_for_a_missing_directory(tmp_path):
     assert hooks_module._discover_hooks(str(tmp_path / "nope")) == []
+
+
+def test_run_hooks_refuses_a_non_project_directory(hook_dirs, tmp_path):
+    project, user_config = hook_dirs
+    (project / ".debops.cfg").unlink()
+    # Even a user-global hook — which would run from any directory the
+    # runner is handed — must not fire outside of a project
+    marker = tmp_path / "fired"
+    make_hook(user_hooks(user_config, "pre-run"), "canary",
+              body="touch {}".format(marker))
+    assert run_hooks(str(project), "pre-run") is False
+    assert not marker.exists()
+
+
+def test_run_hooks_require_project_false_allows_init(hook_dirs, tmp_path):
+    project, user_config = hook_dirs
+    (project / ".debops.cfg").unlink()
+    marker = tmp_path / "fired"
+    make_hook(user_hooks(user_config, "pre-init"), "canary",
+              body="touch {}".format(marker))
+    assert run_hooks(str(project), "pre-init",
+                     require_project=False) is True
+    assert marker.exists()
