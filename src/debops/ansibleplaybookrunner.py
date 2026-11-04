@@ -1,15 +1,13 @@
-# Copyright (C) 2020-2024 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2020-2024 DebOps <https://debops.org/>
+# Copyright (C) 2020-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from .projectrunner import ProjectRunner
 from .utils import print_error, unexpanduser
-from .ansibleconfig import AnsibleConfig
-from .ansible.inventory import AnsibleInventory
 from .hooks import run_hooks
 import subprocess
-import datetime
 import configparser
-import textwrap
+import datetime
 import logging
 import os
 import sys
@@ -17,38 +15,12 @@ import sys
 logger = logging.getLogger(__name__)
 
 
-class AnsiblePlaybookRunner(object):
+class AnsiblePlaybookRunner(ProjectRunner):
+    """Run the :command:`ansible-playbook` command in the project
+    environment."""
 
-    def __init__(self, project, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-
-        self.project = project
-        self.inventory = AnsibleInventory(project, name=project.view)
-
-        try:
-            self._inventory_paths = (
-                    project.ansible_cfg.get_option('inventory').split(','))
-        except configparser.NoSectionError:
-            path = project.ansible_cfg.path
-            if (os.path.exists(path) and os.path.isfile(path)):
-                logger.error('Cannot find [defaults] section in '
-                             '{}'.format(path))
-                raise ValueError("Cannot find [defaults] section in " + path)
-            else:
-                raise FileNotFoundError("Cannot find Ansible "
-                                        "configuration file at " + path)
-        except configparser.NoOptionError:
-            errmsg = ('No inventory specified in the "ansible.cfg" '
-                      'configuration file. You might want to run '
-                      '"debops project refresh" command to ensure that it\'s '
-                      'included in the generated file. If this is a legacy '
-                      'project, check if the "inventory" option is present '
-                      'in the ".debops.cfg" file. The default is:')
-            print_error(textwrap.fill(errmsg, 78) + '\n\n'
-                        '    [ansible defaults]\n'
-                        '    inventory = ansible/inventory')
-            sys.exit(1)
+    def __init__(self, project, **kwargs):
+        super().__init__(project, **kwargs)
 
         self._playbook_dirs = self._expand_playbook_paths(project)
         self._known_collections = self._find_collections(project)
@@ -59,20 +31,7 @@ class AnsiblePlaybookRunner(object):
         ]
         self._found_playbooks = []
 
-        # Add the --extra-vars with 'global-vars.yml' files first so that they
-        # can overridden by the user on the command line
-        for inventory in self._inventory_paths:
-            inventory_dir = os.path.abspath(
-                    os.path.join(
-                        os.path.expanduser(
-                            project.path), inventory))
-            if os.path.isdir(inventory_dir):
-                extra_vars_file = os.path.normpath(
-                        os.path.join(inventory_dir, '..', 'global-vars.yml'))
-                if os.path.isfile(extra_vars_file):
-                    self._ansible_command.extend(
-                            ['--extra-vars',
-                             '@' + os.path.relpath(extra_vars_file)])
+        self._add_global_vars()
 
         # List of ansible-playbook options which don't expect arguments
         ansible_playbook_flags = ['--ask-vault-password', '--ask-vault-pass',
@@ -86,43 +45,7 @@ class AnsiblePlaybookRunner(object):
                                   '-vvvvvv', '--verbose',
                                   '-b', '--become']
 
-        self._parsed_args = []
-        arg_length = len(self.kwargs['ansible_args'])
-        for index, argument in enumerate(self.kwargs['ansible_args']):
-
-            if argument == '--':
-                continue
-            elif index in self._parsed_args:
-                continue
-            elif (argument.startswith('-') or argument.startswith('--')):
-                # This is an 'ansible-playbook' option which may have an
-                # argument, in which case we need to add both of them in the
-                # preserved order
-                if (index + 1 < arg_length and
-                        argument not in ansible_playbook_flags):
-                    next_arg = self.kwargs['ansible_args'][index + 1]
-                    if not next_arg.startswith('-'):
-                        self._ansible_command.extend(
-                                [argument, self._quote_spaces(next_arg)])
-                        self._parsed_args.extend([index, index + 1])
-                        continue
-
-                # This is an 'ansible-playbook' option without an argument
-                self._ansible_command.append(argument)
-                self._parsed_args.append(index)
-            else:
-                # Most likely a name of a playbook which we can expand
-
-                # Check the arguments for possible playbook sets and expand them
-                # if they're found
-                parsed_set = self._expand_playbook_set(project, argument)
-
-                for element in parsed_set:
-                    self._ansible_command.append(self._quote_spaces(
-                        self._expand_playbook(project, element)))
-                    self._found_playbooks.append(self._quote_spaces(
-                        self._expand_playbook(project, element)))
-                    self._parsed_args.append(index)
+        self._parse_ansible_args(project, ansible_playbook_flags)
 
         # Implement configurable read-only Fridays on a project level
         if project.config.raw['project'].get('read_only_friday', False):
@@ -134,11 +57,19 @@ class AnsiblePlaybookRunner(object):
                     print("It's Read-Only Friday, switching to check mode")
                     self._ansible_command.extend(['--diff', '--check'])
 
-    def _quote_spaces(self, string):
-        if ' ' in string:
-            return '"{}"'.format(string)
-        else:
-            return string
+    def _expand_positional_argument(self, project, argument, index):
+        # Most likely a name of a playbook which we can expand
+
+        # Check the arguments for possible playbook sets and expand them
+        # if they're found
+        parsed_set = self._expand_playbook_set(project, argument)
+
+        for element in parsed_set:
+            self._ansible_command.append(self._quote_spaces(
+                self._expand_playbook(project, element)))
+            self._found_playbooks.append(self._quote_spaces(
+                self._expand_playbook(project, element)))
+            self._parsed_args.append(index)
 
     def _expand_playbook_set(self, project, argument):
         logger.debug('Checking if playbook "{}" is a playbook set'
@@ -161,11 +92,6 @@ class AnsiblePlaybookRunner(object):
         except KeyError:
             logger.debug('No playbook set found')
             return [argument]
-
-    def _ring_bell(self):
-        # Notify user at end of execution
-        if self.kwargs.get('bell', False):
-            print('\a', end='')
 
     def _get_check_mode(self):
         if ('--check' in self._ansible_command or
@@ -328,11 +254,6 @@ class AnsiblePlaybookRunner(object):
             return playbook_path
         else:
             return playbook
-
-    def eval(self):
-        for key, value in self._ansible_env.items():
-            print('export', key + '=' + value)
-        print(' '.join(self._ansible_command))
 
     def execute(self):
         unlocked = False

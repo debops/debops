@@ -9,13 +9,15 @@ from unittest import mock
 
 import pytest
 
+import debops.projectrunner as projectrunner_module
 import debops.ansibleplaybookrunner as runner_module
 from debops.ansibleplaybookrunner import AnsiblePlaybookRunner
 
 
 @pytest.fixture(autouse=True)
 def stub_ansible_inventory(monkeypatch):
-    monkeypatch.setattr(runner_module, "AnsibleInventory", mock.Mock())
+    monkeypatch.setattr(projectrunner_module, "AnsibleInventory",
+                        mock.Mock())
 
 
 class Friday(datetime.date):
