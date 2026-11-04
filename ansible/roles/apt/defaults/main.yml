@@ -234,11 +234,13 @@ apt__debian_sources:
                    apt__distribution_version != "n/a")
                else "ignore" }}'
 
-  - name: 'debian-release'
+  - name: 'debian-release-backports'
     suites:
       - '{{ apt__distribution_release + "-backports" }}'
     state: '{{ "present"
                if (apt__distribution == "Debian" and
+                   apt__distribution_release not in ["wheezy", "jessie", "stretch",
+                                                     "buster", "bullseye"] and
                    apt__distribution_version != "n/a")
                else "ignore" }}'
 
@@ -341,12 +343,13 @@ apt__devuan_sources:
                    apt__distribution_version != "n/a")
                else "ignore" }}'
 
-  - name: 'devuan-release'
+  - name: 'devuan-release-backports'
     suites:
       - '{{ apt__distribution_release + "-backports" }}'
     state: '{{ "present"
                if (apt__distribution == "Devuan" and
-                   apt__distribution_release not in ["jessie"] and
+                   apt__distribution_release not in ["wheezy", "jessie", "stretch",
+                                                     "buster", "bullseye"] and
                    apt__distribution_version != "n/a")
                else "ignore" }}'
 
