@@ -396,5 +396,58 @@ class CacheTestCase(VersionCheckTestCase):
             self.assertTrue(fp.read().endswith('\n'))
 
 
+class DoCheckTestCase(VersionCheckTestCase):
+    """The live check path: source routing and notification."""
+
+    def routed(self, method, result):
+        check = make_check({'enabled': True})
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = self.tmpdir
+        with unittest.mock.patch.object(check, '_cache_is_fresh',
+                                        return_value=False), \
+                unittest.mock.patch.object(check, '_detect_install_method',
+                                           return_value=method), \
+                unittest.mock.patch.object(
+                    check, '_check_pypi',
+                    return_value=result) as pypi_check:
+            check._do_check()
+        return check, pypi_check
+
+    def test_pypi_method_runs_the_pypi_check(self):
+        result = {'update_available': True, 'latest_version': '9.9.9',
+                  'source': 'pypi'}
+        check, pypi_check = self.routed('pypi', result)
+
+        pypi_check.assert_called_once()
+        notice = check._logger.notice.call_args[0][0]
+        self.assertIn('9.9.9', notice)
+        self.assertIn('pip install', notice)
+
+    def test_pipx_method_runs_the_pypi_check(self):
+        result = {'update_available': True, 'latest_version': '9.9.9',
+                  'source': 'pipx'}
+        check, pypi_check = self.routed('pipx', result)
+
+        pypi_check.assert_called_once()
+        self.assertIn('9.9.9', check._logger.notice.call_args[0][0])
+
+    def test_fresh_cache_with_matching_source_is_replayed(self):
+        result = {'update_available': True, 'latest_version': '1.2.3',
+                  'source': 'pypi'}
+        check = make_check({'enabled': True})
+        check._save_cache(result)
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = self.tmpdir
+        with unittest.mock.patch.object(check, '_detect_install_method',
+                                        return_value='pypi'), \
+                unittest.mock.patch.object(check, '_check_pypi',
+                                           return_value=None) as pypi_check:
+            check.check()
+
+        # The cached result is replayed without contacting the source
+        pypi_check.assert_not_called()
+        self.assertIn('1.2.3', check._logger.notice.call_args[0][0])
+
+
 if __name__ == '__main__':
     unittest.main()
