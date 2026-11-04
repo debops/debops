@@ -412,6 +412,20 @@ def test_help_ansible_wraps_at_the_terminal_width(capsys, monkeypatch):
     output = capsys.readouterr().out.splitlines()
     assert output
     # The header is a fixed line which cannot wrap; the rest of the
-    # output wraps at the terminal width
+    # output wraps at the terminal width, without breaking the option
+    # names at the hyphens
     for line in output[1:]:
         assert len(line) <= 50
+        assert not line.rstrip().endswith('-')
+
+
+def test_help_does_not_break_words(capsys, monkeypatch):
+    monkeypatch.setenv("COLUMNS", "50")
+
+    with pytest.raises(SystemExit):
+        parse_cli("run", "--help")
+
+    output = capsys.readouterr().out.splitlines()
+    assert output
+    for line in output:
+        assert not line.rstrip().endswith('-')
