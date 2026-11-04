@@ -429,3 +429,19 @@ def test_help_does_not_break_words(capsys, monkeypatch):
     assert output
     for line in output:
         assert not line.rstrip().endswith('-')
+
+
+def test_run_takes_the_debug_option():
+    subcommands = parse_cli("run", "--debug", "site.yml")
+    args = subcommands.args
+
+    assert args.debug is True
+    assert args.ansible_args == ["site.yml"]
+
+
+def test_check_takes_the_debug_option():
+    subcommands = parse_cli("check", "--debug", "site.yml")
+    args = subcommands.args
+
+    assert args.debug is True
+    assert args.ansible_args == ["site.yml", "--diff", "--check"]
