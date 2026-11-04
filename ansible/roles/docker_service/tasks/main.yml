@@ -53,38 +53,26 @@
 
 - name: Create persistent data directories for bind mounts
   ansible.builtin.file:
-    path: '{{ item.1.split(":") | first }}'
+    path: '{{ item.item.1.split(":") | first }}'
     state: 'directory'
     mode: '0755'
-  loop: '{{ docker_service__combined_services | d([])
-            | subelements("volumes", skip_missing=True) }}'
+  loop: '{{ docker_service__register_volume_stat.results | d([])
+            | rejectattr("skipped", "defined") }}'
   loop_control:
-    label: '{{ item.0.name }}: {{ item.1.split(":") | first }}'
+    label: '{{ item.item.0.name }}: {{ item.item.1.split(":") | first }}'
   when:
-    - item.0.state | d('present') not in ['absent', 'ignore']
-    - item.0.create_volume_dirs | d(docker_service__create_volume_dirs) | bool
-    - item.1.split(":") | first is match("/")
-    - ((item.1.split(":") | first | regex_replace("/+$", "")) or "/")
+    - (item.stat | d() | length > 0)
+    - (item.stat.isdir | d(false)) or not (item.stat.exists | d(false))
+    - ((item.item.1.split(":") | first | regex_replace("/+$", "")) or "/")
       not in
-      (item.0.config_files | d([])
+      (item.item.0.config_files | d([])
        | map(attribute="dest")
        | map("regex_replace", "/+$", "")
        | map("regex_replace", "^$", "/") | list)
-    - ((item.1.split(":") | first | regex_replace("/+$", "")) or "/")
+    - ((item.item.1.split(":") | first | regex_replace("/+$", "")) or "/")
       not in
-      (item.0.data_dirs | d([])
+      (item.item.0.data_dirs | d([])
        | map(attribute="path")
-       | map("regex_replace", "/+$", "")
-       | map("regex_replace", "^$", "/") | list)
-    - ((item.1.split(":") | first | regex_replace("/+$", "")) or "/")
-      not in
-      (docker_service__register_volume_stat.results | d([])
-       | selectattr("stat", "defined")
-       | selectattr("stat.exists", "true")
-       | rejectattr("stat.isdir", "true")
-       | map(attribute="item.1")
-       | map("split", ":")
-       | map("first")
        | map("regex_replace", "/+$", "")
        | map("regex_replace", "^$", "/") | list)
   tags: ['role::docker_service:config']
