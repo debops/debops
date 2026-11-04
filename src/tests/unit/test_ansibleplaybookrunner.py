@@ -452,3 +452,12 @@ def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch):
 
     with pytest.raises(ChildProcessError):
         runner.execute()
+
+
+def test_debug_mode_adds_verbosity_and_env(stub_project):
+    runner = AnsiblePlaybookRunner(stub_project(), debug=True,
+                                   ansible_args=[])
+
+    assert "-vv" in runner._ansible_command
+    assert runner._ansible_env["ANSIBLE_DEBUG"] == "true"
+    assert runner._ansible_env["ANSIBLE_KEEP_REMOTE_FILES"] == "1"
