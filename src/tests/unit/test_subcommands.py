@@ -289,3 +289,114 @@ def test_config_get_format_choice():
                             "project.name")
 
     assert subcommands.args.format == "json"
+
+
+# The first-class ansible options of the run/check/exec subcommands
+
+def test_run_parses_leading_ansible_options():
+    subcommands = parse_cli("run", "--diff", "site.yml", "-l", "web")
+    args = subcommands.args
+
+    assert args.diff is True
+    assert args.limit is None
+    # The recognized options are injected before the pass-through
+    # arguments, which stay untouched
+    assert args.ansible_args == ["--diff", "site.yml", "-l", "web"]
+
+
+def test_run_parses_the_short_options():
+    subcommands = parse_cli("run", "-b", "-K", "-k", "site.yml")
+    args = subcommands.args
+
+    assert args.become is True
+    assert args.ask_become_pass is True
+    assert args.ask_pass is True
+    assert args.ansible_args == ["--become", "--ask-become-pass",
+                                 "--ask-pass", "site.yml"]
+
+
+def test_run_injects_valued_options_before_the_playbooks():
+    subcommands = parse_cli("run", "--limit", "web", "--forks", "10",
+                            "site.yml", "extra.yml", "--tags", "one,two")
+    args = subcommands.args
+
+    # The pass-through options after the playbook name(s) are not
+    # parsed, they reach ansible-playbook as given
+    assert args.ansible_args == ["--limit", "web", "--forks", "10",
+                                 "site.yml", "extra.yml", "--tags", "one,two"]
+
+
+def test_check_keeps_the_implicit_flags_at_the_end():
+    subcommands = parse_cli("check", "site.yml")
+    args = subcommands.args
+
+    assert args.ansible_args == ["site.yml", "--diff", "--check"]
+
+
+def test_check_does_not_duplicate_parsed_flags():
+    subcommands = parse_cli("check", "--diff", "--check", "site.yml")
+    args = subcommands.args
+
+    assert args.ansible_args == ["--check", "--diff", "site.yml"]
+
+
+def test_check_does_not_duplicate_passthrough_flags():
+    subcommands = parse_cli("check", "site.yml", "-D", "-C")
+    args = subcommands.args
+
+    assert args.ansible_args == ["site.yml", "-D", "-C"]
+
+
+def test_exec_parses_its_ansible_subset():
+    subcommands = parse_cli("exec", "-f", "10", "-u", "alice",
+                            "all", "-m", "ping")
+    args = subcommands.args
+
+    assert args.forks == "10"
+    assert args.user == "alice"
+    assert args.ansible_args == ["--forks", "10", "--user", "alice",
+                                 "all", "-m", "ping"]
+
+
+def test_exec_does_not_take_the_playbook_only_options():
+    # '-t' means '--tree' for the ad-hoc 'ansible' command, so it is
+    # not a first-class option and is rejected before the command
+    # arguments; the pass-through form after them still works
+    with pytest.raises(SystemExit):
+        parse_cli("exec", "-t", "/tmp/out", "all", "-m", "ping")
+
+    subcommands = parse_cli("exec", "all", "-m", "ping", "-t", "/tmp/out")
+    assert subcommands.args.ansible_args == ["all", "-m", "ping",
+                                             "-t", "/tmp/out"]
+
+
+def test_help_ansible_lists_the_recognized_options(capsys):
+    with pytest.raises(SystemExit) as exc:
+        parse_cli("run", "--help-ansible")
+
+    assert exc.value.code == 0
+    output = capsys.readouterr().out
+    assert "--skip-tags" in output
+    assert "--become-user" in output
+    assert "ansible-playbook" in output
+
+
+def test_help_ansible_lists_only_the_exec_subset(capsys):
+    with pytest.raises(SystemExit) as exc:
+        parse_cli("exec", "--help-ansible")
+
+    assert exc.value.code == 0
+    output = capsys.readouterr().out
+    assert "--forks" in output
+    assert "--syntax-check" not in output
+    assert "'ansible --help'" in output
+
+
+def test_regular_help_hides_the_ansible_options(capsys):
+    with pytest.raises(SystemExit) as exc:
+        parse_cli("run", "--help")
+
+    assert exc.value.code == 0
+    output = capsys.readouterr().out
+    assert "--help-ansible" in output
+    assert "--skip-tags" not in output
