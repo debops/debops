@@ -16,6 +16,33 @@ except ModuleNotFoundError:
     __version__ = "0.0.0"
 
 from .utils import print_error
+import shutil
+
+
+# argparse wraps the help at the terminal width minus two; the full
+# width of a modern terminal is a strain to read, so cap it at the
+# width an 80-column terminal would get. A narrower terminal still
+# wins
+HELP_WIDTH = 78
+
+
+class HelpFormatter(argparse.HelpFormatter):
+    """The help formatter of the subcommands: the capped wrap width."""
+
+    def __init__(self, prog, indent_increment=2, max_help_position=24,
+                 width=None):
+        if width is None:
+            width = min(shutil.get_terminal_size().columns - 2,
+                        HELP_WIDTH)
+        super().__init__(prog, indent_increment=indent_increment,
+                         max_help_position=max_help_position,
+                         width=width)
+
+
+def _argument_parser(**kwargs):
+    """The subcommand parsers share the comfortable help width."""
+    return argparse.ArgumentParser(formatter_class=HelpFormatter,
+                                   **kwargs)
 
 
 class Subcommands(object):
@@ -23,7 +50,7 @@ class Subcommands(object):
     def __init__(self, args=None):
         self.args = args
 
-        self.global_parser = argparse.ArgumentParser(add_help=False)
+        self.global_parser = _argument_parser(add_help=False)
         self.global_parser.add_argument('-v', '--verbose', action="count",
                                         help='increase output verbosity '
                                              '(e.g., -vv is more than -v)')
@@ -31,7 +58,7 @@ class Subcommands(object):
                                         nargs='?', default=os.getcwd(),
                                         help='path to the project directory')
 
-        parser = argparse.ArgumentParser(
+        parser = _argument_parser(
                 description="DebOps CLI",
                 usage='''debops <section> [<args>]
 
@@ -193,7 +220,7 @@ Sections:
               + ' --help\' for its full option set.')
 
     def do_project(self):
-        parser = argparse.ArgumentParser(
+        parser = _argument_parser(
                 description='manage project directory',
                 usage='''debops project <command> [<args>]
 
@@ -240,7 +267,7 @@ Commands:
                              help='display selected host variables as JSON')
 
     def do_project_init(self):
-        parser = argparse.ArgumentParser(
+        parser = _argument_parser(
                 description='initialize new project directory',
                 usage='debops project init [<args>] <project_dir>')
         parser.add_argument('-t', '--type', type=str, nargs='?',
@@ -282,7 +309,7 @@ Commands:
         self.args = parser.parse_args(self.args[3:])
 
     def do_project_refresh(self):
-        parser = argparse.ArgumentParser(
+        parser = _argument_parser(
                 description='refresh existing project directory',
                 usage='debops project refresh [<args>] <project_dir>')
         parser.add_argument('-V', '--view', type=str,
@@ -298,7 +325,7 @@ Commands:
         self.args = parser.parse_args(self.args[3:])
 
     def do_project_lock(self):
-        parser = argparse.ArgumentParser(
+        parser = _argument_parser(
                 description='encrypt secrets inside project directory',
                 usage='debops project lock [<args>] <project_dir>')
         parser.add_argument('-V', '--view', type=str,
@@ -313,7 +340,7 @@ Commands:
         self.args = parser.parse_args(self.args[3:])
 
     def do_project_unlock(self):
-        parser = argparse.ArgumentParser(
+        parser = _argument_parser(
                 description='decrypt secrets inside project directory',
                 usage='debops project unlock [<args>] <project_dir>')
         parser.add_argument('-V', '--view', type=str,
@@ -328,7 +355,7 @@ Commands:
         self.args = parser.parse_args(self.args[3:])
 
     def do_project_mkview(self):
-        parser = argparse.ArgumentParser(
+        parser = _argument_parser(
                 parents=[self.global_parser],
                 description='create new infrastructure view',
                 usage='debops project mkview [<args>] <new_view>')
@@ -344,7 +371,7 @@ Commands:
         self.args = parser.parse_args(self.args[3:])
 
     def do_project_commit(self):
-        parser = argparse.ArgumentParser(
+        parser = _argument_parser(
                 description='commit current changes in git repository',
                 usage='debops project commit [<args>] <project_dir>')
         parser.add_argument('-v', '--verbose', action="count",
@@ -356,7 +383,7 @@ Commands:
         self.args = parser.parse_args(self.args[3:])
 
     def do_project_venv(self):
-        parser = argparse.ArgumentParser(
+        parser = _argument_parser(
                 description='manage Python virtual environment in project '
                             'directory',
                 usage='''debops project venv <action> [<args>] [<project_dir>]
@@ -393,7 +420,7 @@ Actions:
         self.args = parser.parse_intermixed_args(self.args[3:])
 
     def do_exec(self):
-        parser = argparse.ArgumentParser(
+        parser = _argument_parser(
                 parents=[self.global_parser],
                 usage='debops exec [<args>] [--] <[ansible_args]>',
                 description='run Ansible commands directly against hosts',
@@ -427,7 +454,7 @@ Actions:
                                   + self.args.ansible_args)
 
     def do_run(self):
-        parser = argparse.ArgumentParser(
+        parser = _argument_parser(
                 parents=[self.global_parser],
                 usage='debops run [<args>] [--] <[<namespace>.<collection>/]'
                       'playbook> [playbook] ... [ansible_args]',
@@ -462,7 +489,7 @@ Actions:
                                   + self.args.ansible_args)
 
     def do_check(self):
-        parser = argparse.ArgumentParser(
+        parser = _argument_parser(
                 parents=[self.global_parser],
                 usage='debops check [<args>] [--] <[<namespace>.<collection>/]'
                       'playbook> [playbook] ... [ansible_args]',
@@ -507,7 +534,7 @@ Actions:
         self.args.ansible_args = ansible_args
 
     def do_env(self):
-        parser = argparse.ArgumentParser(
+        parser = _argument_parser(
                 parents=[self.global_parser],
                 usage='debops env [<args>] [command_args]',
                 description='run shell commands in project environment')
@@ -524,7 +551,7 @@ Actions:
         self.args = parser.parse_args(self.args[2:])
 
     def do_config(self):
-        parser = argparse.ArgumentParser(
+        parser = _argument_parser(
                 description='manage DebOps configuration state',
                 usage='''debops config <command> [<args>]
 
@@ -541,7 +568,7 @@ Commands:
         getattr(self, 'do_config_' + self._command.command)()
 
     def do_config_list(self):
-        parser = argparse.ArgumentParser(
+        parser = _argument_parser(
                 usage='debops config list [<args>] <project_dir>',
                 description='list configuration files parsed by DebOps')
         parser.add_argument('-v', '--verbose', action="count",
@@ -553,7 +580,7 @@ Commands:
         self.args = parser.parse_args(self.args[3:])
 
     def do_config_get(self):
-        parser = argparse.ArgumentParser(
+        parser = _argument_parser(
                 parents=[self.global_parser],
                 usage='debops config get [<args>] [--] <key>',
                 description='return value of specific DebOps option')
