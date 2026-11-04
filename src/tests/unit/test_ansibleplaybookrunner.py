@@ -104,7 +104,8 @@ def test_find_collections_discovers_collection_playbooks(stub_project,
     assert runner._known_collections["debops.debops"] == str(playbooks)
 
 
-def test_read_only_friday_switches_to_check_mode(stub_project, monkeypatch):
+def test_read_only_friday_switches_to_check_mode(stub_project, monkeypatch,
+                                                 capsys):
     project = stub_project()
     project.config.raw["project"] = {"read_only_friday": True}
     monkeypatch.setattr(runner_module.datetime, "date", Friday)
@@ -113,6 +114,12 @@ def test_read_only_friday_switches_to_check_mode(stub_project, monkeypatch):
 
     assert runner._ansible_command == ["ansible-playbook", "site.yml",
                                        "--diff", "--check"]
+
+    # The notice goes to stderr; the stdout stays reserved for the
+    # generated Ansible command ('--eval' consumers)
+    captured = capsys.readouterr()
+    assert "Read-Only Friday" in captured.err
+    assert captured.out == ""
 
 
 def test_read_only_friday_respects_existing_check_mode(stub_project,
@@ -452,3 +459,12 @@ def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch):
 
     with pytest.raises(ChildProcessError):
         runner.execute()
+
+
+def test_debug_mode_adds_verbosity_and_env(stub_project):
+    runner = AnsiblePlaybookRunner(stub_project(), debug=True,
+                                   ansible_args=[])
+
+    assert "-vv" in runner._ansible_command
+    assert runner._ansible_env["ANSIBLE_DEBUG"] == "true"
+    assert runner._ansible_env["ANSIBLE_KEEP_REMOTE_FILES"] == "1"

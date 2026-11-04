@@ -49,6 +49,16 @@ The options below need to be specified before any playbooks to take effect.
   Do not execute :command:`ansible-playbook` command; instead print out all the
   environment variables and the command itself to stdout.
 
+``--debug``
+  Run with debugging output: increase the Ansible verbosity, enable the
+  ``ANSIBLE_DEBUG`` mode and keep the remote module files on the hosts
+  for inspection.
+
+``--help-ansible``
+  Display the list of the :command:`ansible-playbook` options which the
+  :command:`debops run` and :command:`debops check` commands recognize
+  directly and exit.
+
 ``-v, --verbose``
   Increase output verbosity. More letters means higher verbosity.
 
@@ -74,13 +84,22 @@ The options below need to be specified before any playbooks to take effect.
   playbooks easier.
 
 ``[ansible_args]``
-  You can specify all arguments supported by the :command:`ansible-playbook`
-  command to augment the execution, for example ``--diff``, ``--check``,
-  ``--limit``, and so on. See :command:`ansible-playbook --help` for more
-  details.
+  A common subset of the :command:`ansible-playbook` options is recognized by
+  DebOps directly and can be specified before the playbook name(s). Run
+  :command:`debops run --help-ansible` for the list. Any other arguments
+  supported by the :command:`ansible-playbook` command must be specified
+  after the playbook name(s) and are passed through unchanged. See
+  :command:`ansible-playbook --help` for its full option set.
 
 Examples
 ~~~~~~~~
+
+Run the :file:`site.yml` DebOps playbook with the diff output enabled against
+specific hosts in the Ansible inventory:
+
+.. code-block:: shell
+
+   debops run --diff site -l webserver,dbserver,appserver
 
 Execute the :file:`site.yml` DebOps playbook against all hosts in the Ansible
 inventory:
