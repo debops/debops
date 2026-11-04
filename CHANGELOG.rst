@@ -157,6 +157,15 @@ General
   "uninitialized values" due to presence of comments and not supported
   configuration option, which have been removed from the template.
 
+:ref:`debops.authorized_keys` role
+''''''''''''''''''''''''''''''''''
+
+- Fixed an issue with the role breaking when the SSH authorized keys are meant
+  to be managed in an UNIX account's home directory, but the ``group``
+  parameter is not specified. The group is not needed in such case and the
+  ``loop_control`` statements in relevant tasks were fixed to not break the
+  role execution.
+
 :ref:`debops.dhcp_probe` role
 '''''''''''''''''''''''''''''
 
