@@ -35,8 +35,14 @@ def _discover_hooks(hook_dir):
     return scripts
 
 
+def _is_project_dir(path):
+    """Whether the directory carries the DebOps project markers."""
+    return (os.path.isfile(os.path.join(path, '.debops.cfg'))
+            or os.path.isdir(os.path.join(path, '.debops', 'conf.d')))
+
+
 def run_hooks(project_path, hook_name, timeout=DEFAULT_HOOK_TIMEOUT,
-              extra_env=None):
+              extra_env=None, require_project=True):
     """Run all executable scripts for a given hook name.
 
     Searches for scripts in two locations, in priority order:
@@ -63,12 +69,25 @@ def run_hooks(project_path, hook_name, timeout=DEFAULT_HOOK_TIMEOUT,
         timeout: Maximum seconds to wait for each script. Default: 300.
         extra_env: Optional dict of additional environment variables
             to pass to the hook scripts. Values are converted to strings.
+        require_project: Refuse to run when the path carries no project
+            markers (default: True). Hooks execute project code — the
+            user-global ones run from any directory they are invoked
+            with — so the refusal fails closed. The one designed
+            exception is 'pre-init', which runs on the directory being
+            initialized as a project.
 
     Returns:
         True if all hooks executed successfully (exit code 0).
         False if any hook failed (non-zero exit code).
+        False if the path is not a project directory (refused).
         True if no hooks were found (no-op).
     """
+    if require_project and not _is_project_dir(project_path):
+        logger.warning('Refusing to run "{}" hooks: {} is not a DebOps '
+                       'project directory'.format(hook_name, project_path),
+                       extra={'block': 'stderr'})
+        return False
+
     project_hooks_dir = os.path.join(project_path, '.debops', 'hooks',
                                      hook_name)
     user_hooks_dir = os.path.join(xdg_config_home, 'debops', 'hooks',
