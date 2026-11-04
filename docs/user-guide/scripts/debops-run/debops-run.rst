@@ -49,6 +49,11 @@ The options below need to be specified before any playbooks to take effect.
   Do not execute :command:`ansible-playbook` command; instead print out all the
   environment variables and the command itself to stdout.
 
+``--debug``
+  Run with debugging output: increase the Ansible verbosity, enable the
+  ``ANSIBLE_DEBUG`` mode and keep the remote module files on the hosts
+  for inspection.
+
 ``--help-ansible``
   Display the list of the :command:`ansible-playbook` options which the
   :command:`debops run` and :command:`debops check` commands recognize
