@@ -11,6 +11,7 @@ from __future__ import print_function
 from json import loads, dumps
 import subprocess
 import os
+from pathlib import Path
 
 
 timezone_file = '/etc/timezone'
@@ -26,5 +27,16 @@ if os.path.exists(timezone_file) and os.path.isfile(timezone_file):
                 output.update({'timezone': line.strip()})
     except Exception:
         pass
+else:
+    localtime = Path("/etc/localtime")
+    target = localtime.resolve(strict=True)
+    zoneinfo = Path("/usr/share/zoneinfo")
+
+    try:
+        timezone = target.relative_to(zoneinfo).as_posix()
+        output.update({'timezone': timezone.strip()})
+    except ValueError:
+        pass
+
 
 print(dumps(output, sort_keys=True, indent=4))
