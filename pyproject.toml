@@ -16,3 +16,8 @@ addopts = "-ra --strict-markers"
 markers = [
     "integration: exercises several components with real external tools",
 ]
+
+[tool.mutmut]
+source_paths = ["src/debops"]
+also_copy = ["src/tests", "CHANGELOG.rst", "ansible", "LICENSES", "lib"]
+pytest_add_cli_args_test_selection = ["-m", "not integration", "src/tests"]
