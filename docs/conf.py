@@ -1,6 +1,6 @@
 #
 # DebOps documentation build configuration file
-# Copyright (C) 2014-2022 DebOps <https://debops.org/>
+# Copyright (C) 2013-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 # This file is execfile()d with the current directory set to its
@@ -14,6 +14,7 @@
 
 import sys
 import os
+import time
 
 import sphinx.environment
 from docutils.utils import get_source_line
@@ -166,7 +167,14 @@ master_doc = 'index'
 # General information about the project.
 project = u'DebOps'
 author = u'Maciej Delmanowski, Nick Janetakis, Robin Schneider and others'
-copyright = u'2014-2024, {}'.format(author)
+
+# Keep the copyright year range current: the end year is the year of the
+# most recent commit in the repository, with the current year as a fallback
+# when git metadata is unavailable, e.g. when building from a source tarball.
+last_year = os.popen('git log -1 --format=%cd --date=short').read().strip()[:4]
+if not last_year.isdigit():
+    last_year = time.strftime('%Y')
+copyright = u'2013-{}, {}'.format(last_year, author)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
