@@ -29,6 +29,12 @@ Added
 General
 '''''''
 
+- The :command:`debops run`, :command:`debops check` and :command:`debops exec`
+  subcommands recognize a common subset of the :command:`ansible-playbook` and
+  :command:`ansible` options directly, which can be specified before the
+  playbook name(s). Run :command:`debops run --help-ansible` (and the same
+  option on the other subcommands) to see the recognized options.
+
 - The :command:`debops` command supports an opt-in check for new project
   versions at CLI startup. When enabled in the global DebOps configuration
   using the ``[version_check]`` configuration section, the check detects the
