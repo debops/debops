@@ -72,14 +72,20 @@ def collect_contributors(
         paths: list[str] | None = None,
         exclude_merges: bool = True,
         refs: list[str] | None = None,
-) -> dict[tuple[str, str], int]:
+) -> dict[tuple[str, str], dict[str, int]]:
     """Count commits per author identity, optionally limited to paths.
 
     Author names and e-mail addresses are normalized using the .mailmap
-    file. Keys of the returned mapping are (name, e-mail) tuples.
+    file. Keys of the returned mapping are (name, e-mail) tuples, values
+    are dicts with the 'total' commit count and the 'llm' count of the
+    commits carrying the 'Generated-By: LLM' trailer.
     """
 
-    command = ["log", "--full-history", "--format=%aN" + US + "%aE"]
+    command = [
+        "log", "--full-history",
+        "--format=%x1e%aN" + US + "%aE" + US
+        + "%(trailers:key=Generated-By,valueonly)",
+    ]
     if exclude_merges:
         command.append("--no-merges")
     command.extend(refs or ["HEAD"])
@@ -90,13 +96,16 @@ def collect_contributors(
     if output is None:
         return {}
 
-    identities: dict[tuple[str, str], int] = {}
-    for line in output.splitlines():
-        if not line:
+    identities: dict[tuple[str, str], dict[str, int]] = {}
+    for record in output.split("\x1e"):
+        fields = record.split(US)
+        if len(fields) < 3 or not fields[0].strip():
             continue
-        name, _, email = line.partition(US)
-        key = (name.strip(), email.strip().lower())
-        identities[key] = identities.get(key, 0) + 1
+        key = (fields[0].strip(), fields[1].strip().lower())
+        entry = identities.setdefault(key, {"total": 0, "llm": 0})
+        entry["total"] += 1
+        if fields[2].strip():
+            entry["llm"] += 1
     return identities
 
 
@@ -117,13 +126,15 @@ def is_assisted(identity: tuple[str, str], entries: list) -> bool:
 
 
 def aggregate_by_name(
-        identities: dict[tuple[str, str], int],
-) -> dict[str, int]:
+        identities: dict[tuple[str, str], dict[str, int]],
+) -> dict[str, dict[str, int]]:
     """Merge author identities sharing a name, summing commit counts."""
 
-    counts: dict[str, int] = {}
-    for (name, _email), commits in identities.items():
-        counts[name] = counts.get(name, 0) + commits
+    counts: dict[str, dict[str, int]] = {}
+    for (name, _email), entry in identities.items():
+        merged = counts.setdefault(name, {"total": 0, "llm": 0})
+        merged["total"] += entry["total"]
+        merged["llm"] += entry["llm"]
     return counts
 
 
@@ -233,15 +244,25 @@ def main() -> None:
             refs.append(ref)
 
     total = collect_contributors(refs=refs, exclude_merges=exclude_merges)
-    totals = aggregate_by_name({
-        identity: commits for identity, commits in total.items()
-        if not is_assisted(identity, assisted_entries)
-    })
+
+    # Split the identities: the configured LLM identities move wholly to
+    # the LLM assistance section, everyone else splits into their manual
+    # and LLM-assisted commit counts
+    llm_section: dict[str, int] = {}
+    manual: dict[str, dict[str, int]] = {}
+    for identity, entry in total.items():
+        name = identity[0]
+        if is_assisted(identity, assisted_entries):
+            llm_section[name] = llm_section.get(name, 0) + entry["total"]
+        else:
+            merged = manual.setdefault(name, {"total": 0, "llm": 0})
+            merged["total"] += entry["total"]
+            merged["llm"] += entry["llm"]
 
     # Summary of the git-derived sections (captured before the founder
     # exclusion, which only affects the section placement)
     summary = "(%d contributors, %d commits)" % (
-        len(totals), sum(totals.values()))
+        len(manual), sum(entry["total"] for entry in manual.values()))
 
     main_count = settings.get("main_authors", {}).get("count", 20)
 
@@ -251,20 +272,27 @@ def main() -> None:
     founder_tallies = {}
     for entry in founders:
         name = entry.get("name", "")
-        if name and name in totals:
-            founder_tallies[name] = totals.pop(name)
+        if name and name in manual:
+            data = manual.pop(name)
+            founder_tallies[name] = data["total"] - data["llm"]
+            if data["llm"] > 0:
+                llm_section[name] = data["llm"]
 
-    ranked = sorted(totals.items(), key=commit_count_key)
+    ranked = sorted(
+        ((name, entry["total"] - entry["llm"]) for name, entry in manual.items()),
+        key=commit_count_key)
 
     def path_section_counts(section: str) -> dict[str, int]:
         identities = collect_contributors(
             paths=settings.get(section, {}).get("paths"),
             exclude_merges=exclude_merges, refs=refs)
-        filtered = {
-            identity: commits for identity, commits in identities.items()
-            if not is_assisted(identity, assisted_entries)
-        }
-        return aggregate_by_name(filtered)
+        counts: dict[str, int] = {}
+        for identity, entry in identities.items():
+            if is_assisted(identity, assisted_entries):
+                continue
+            name = identity[0]
+            counts[name] = counts.get(name, 0) + entry["total"] - entry["llm"]
+        return counts
 
     # Sections with paths defined split the remaining contributors by the
     # paths they committed to the most, in the configuration order
@@ -278,12 +306,6 @@ def main() -> None:
         "contributors": {},
     }
 
-    # Promote the contributors tied with the last main author's tally
-    if len(ranked) > main_count:
-        boundary = ranked[main_count - 1][1]
-        for name, commits in ranked[main_count:]:
-            if commits == boundary:
-                sections["main_authors"][name] = commits
     # Promote the contributors tied with the last main author's tally
     promoted = set()
     if len(ranked) > main_count:
@@ -363,18 +385,23 @@ def main() -> None:
             "Software used in the DebOps project",
             render_software(software), width))
 
-    assisted_counts = aggregate_by_name({
-        identity: commits for identity, commits in total.items()
-        if is_assisted(identity, assisted_entries)
-    })
-    if assisted_counts:
+    # The LLM assistance section: the configured LLM identities (their
+    # full totals) plus the LLM-assisted commits of everyone else
+    for name, entry in manual.items():
+        if entry["llm"] > 0:
+            llm_section[name] = entry["llm"]
+
+    if llm_section:
         llm_conf = config.get("llm_assistance", {}) or {}
         description = textwrap.wrap(
             llm_conf.get("description", ""), width=width)
         entries = [
             *description,
             "",
-            *entries_for(assisted_counts),
+            *(f"{name} [LLM] ({llm_section[name]})"
+              for name in sorted(
+                  llm_section,
+                  key=lambda name: (-llm_section[name], name.casefold()))),
         ]
         blocks.append(render_section(
             llm_conf.get("title", "LLM assistance"), entries, width))
