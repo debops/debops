@@ -10,6 +10,7 @@ from unittest import mock
 import pytest
 
 from debops import config as config_module
+from debops.utils import unexpanduser
 
 
 def test_expand_env_vars_expands_a_string(configuration, monkeypatch):
@@ -460,6 +461,29 @@ def test_init_loads_the_default_configuration(tmp_path, monkeypatch):
     assert config.raw["git"]["init_message"] == \
         "Initialize new DebOps project directory"
     assert os.environ["DEBOPS_ANSIBLE_COLLECTIONS_PATH"] != "sentinel"
+
+
+def test_init_reads_the_user_configuration_and_paths(tmp_path, monkeypatch):
+    monkeypatch.setattr(config_module, "xdg_config_home", str(tmp_path))
+    monkeypatch.setenv("DEBOPS_ANSIBLE_COLLECTIONS_PATH", "sentinel")
+    monkeypatch.setenv("DEBOPS_TEST_MARKER", "sentinel")
+    user_conf_d = tmp_path / "debops" / "conf.d"
+    user_conf_d.mkdir(parents=True)
+    (user_conf_d / "10-user.toml").write_text(
+        'git = { init_message = "custom" }\n')
+    (tmp_path / "debops" / "environment").write_text(
+        "DEBOPS_TEST_MARKER=from-user-env\n")
+
+    config = config_module.Configuration()
+
+    # The user configuration directory and environment file are read from
+    # the lowercase 'debops' directory under the XDG configuration home
+    assert config.raw["git"]["init_message"] == "custom"
+    assert os.environ["DEBOPS_TEST_MARKER"] == "from-user-env"
+    # The variable is stored with the home directory collapsed to '~'
+    assert os.environ["DEBOPS_ANSIBLE_COLLECTIONS_PATH"] == unexpanduser(
+        os.path.join(config_module.DEBOPS_PACKAGE_DATA, "ansible",
+                     "collections"))
 
 
 def test_merge_accepts_a_dictionary(configuration):
