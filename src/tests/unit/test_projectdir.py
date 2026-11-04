@@ -2,11 +2,14 @@
 # Copyright (C) 2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Tests for the self-contained helpers in ``debops.projectdir``.
+"""Tests for ``debops.projectdir``.
 
-``ProjectDir`` is constructed with a full project on disk and therefore
-belongs to the integration tests; these cover the pure helpers that can be
-exercised against small directory trees.
+The helper tests bypass the constructor with ``__new__`` and exercise the
+pure methods against small directory trees. The construction tests at the
+bottom run the real ``__init__`` against project trees in temporary
+directories, using a real ``Configuration`` instance with its system-wide
+constructor bypassed; the integration tests complement these by driving the
+whole project lifecycle through the command line.
 """
 
 import logging
@@ -19,6 +22,7 @@ from unittest import mock
 import pytest
 
 import debops.projectdir as projectdir_module
+from debops.config import Configuration
 from debops.projectdir import ProjectDir
 
 
@@ -951,3 +955,230 @@ def test_process_spec_inspects_without_files(tmp_path):
 
     project.show_inventory.assert_called_once_with(
             inventory, {}, frozenset(), [])
+
+
+# ProjectDir construction
+#
+# The tests below run the real '__init__' against project trees in
+# temporary directories. The 'Configuration' instance is real, but its
+# system-wide constructor is bypassed: the merge, load and environment
+# methods behave as in production without reading system paths.
+
+DEFAULT_PROJECT_RAW = {
+    "binaries": {
+        "ansible": "ansible",
+        "ansible-inventory": "ansible-inventory",
+        "ansible-galaxy": "ansible-galaxy",
+        "ansible-playbook": "ansible-playbook",
+        "git": "git",
+        "git-crypt": "git-crypt",
+        "encfs": "encfs",
+        "gpg": "gpg",
+        "umount": "umount",
+        "fusermount": "fusermount",
+    },
+}
+
+
+@pytest.fixture(autouse=True)
+def _restore_environ():
+    """'Configuration.set_env()' mutates 'os.environ'; undo the changes
+    after each test."""
+    saved = os.environ.copy()
+    yield
+    os.environ.clear()
+    os.environ.update(saved)
+
+
+def make_configuration(raw=None):
+    config = Configuration.__new__(Configuration)
+    config._env_files = []
+    config._env_vars = {}
+    config._config_files = []
+    config._config = (dict(DEFAULT_PROJECT_RAW) if raw is None
+                      else dict(raw))
+    return config
+
+
+def write_legacy_project(tmp_path):
+    (tmp_path / ".debops.cfg").write_text(
+            "[debops]\nnamespace = debops\n")
+    return tmp_path
+
+
+def write_modern_project(tmp_path, conf_d=None):
+    conf_d_dir = tmp_path / ".debops" / "conf.d"
+    conf_d_dir.mkdir(parents=True)
+    if conf_d is not None:
+        (conf_d_dir / "project.yml").write_text(conf_d)
+    return tmp_path
+
+
+def test_init_detects_a_legacy_project(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    write_legacy_project(tmp_path)
+
+    project = ProjectDir(str(tmp_path), config=make_configuration())
+
+    assert project.project_type == "legacy"
+    assert project.name == os.path.basename(tmp_path)
+    assert os.getcwd() == str(tmp_path)
+    assert project.config.raw["views"]["system"]["debops"] == {
+            "namespace": "debops"}
+    assert os.environ["DEBOPS_PROJECT_PATH"] == str(tmp_path)
+    assert os.environ["ANSIBLE_CONFIG"] == str(tmp_path / "ansible.cfg")
+    assert (os.environ["DEBOPS_ANSIBLE_INVENTORY"]
+            == str(tmp_path / "ansible" / "inventory"))
+
+
+def test_init_detects_a_modern_project_from_a_subdirectory(
+        tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    write_modern_project(tmp_path)
+    subdir = tmp_path / "src" / "roles"
+    subdir.mkdir(parents=True)
+
+    project = ProjectDir(str(subdir), config=make_configuration())
+
+    assert project.project_type == "modern"
+    assert project.path == str(tmp_path)
+    assert project.name == os.path.basename(tmp_path)
+    assert project.view == "system"
+    assert os.environ["DEBOPS_PROJECT_VIEW"] == "system"
+    assert (os.environ["DEBOPS_ANSIBLE_INVENTORY"]
+            == str(tmp_path / "ansible" / "views" / "system" / "inventory"))
+
+
+def test_init_rejects_a_directory_without_a_project(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    with pytest.raises(NotADirectoryError):
+        ProjectDir(str(tmp_path), config=make_configuration())
+
+
+def test_init_create_flag_accepts_a_missing_project(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    project = ProjectDir(str(tmp_path), create=True,
+                         config=make_configuration())
+
+    assert project.project_type == "legacy"
+    assert project.name == os.path.basename(tmp_path)
+    assert os.environ["DEBOPS_PROJECT_PATH"] == str(tmp_path)
+
+
+def test_init_create_flag_honors_the_type_argument(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    project = ProjectDir(str(tmp_path), create=True, type="modern",
+                         config=make_configuration())
+
+    assert project.project_type == "modern"
+    assert project.name == os.path.basename(tmp_path)
+
+
+def test_init_rejects_the_home_directory(tmp_path, monkeypatch):
+    monkeypatch.setattr(projectdir_module, "DEBOPS_USER_HOME_DIR",
+                        str(tmp_path))
+    monkeypatch.chdir(tmp_path)
+
+    with pytest.raises(IsADirectoryError):
+        ProjectDir(str(tmp_path), config=make_configuration())
+
+
+def test_init_switches_to_the_ansible_config_directory(tmp_path, monkeypatch):
+    project_dir = write_modern_project(tmp_path / "example")
+    (project_dir / "ansible.cfg").write_text("")
+    monkeypatch.setenv("ANSIBLE_CONFIG", str(project_dir / "ansible.cfg"))
+    (tmp_path / "elsewhere").mkdir()
+
+    project = ProjectDir(str(tmp_path / "elsewhere"),
+                         config=make_configuration())
+
+    assert project.path == str(project_dir)
+    assert project.project_type == "modern"
+    assert os.getcwd() == str(project_dir)
+
+
+def test_init_picks_the_view_from_the_current_directory(tmp_path, monkeypatch):
+    project_dir = tmp_path / "example"
+    (project_dir / "ansible" / "views" / "web" / "site").mkdir(parents=True)
+    raw = dict(DEFAULT_PROJECT_RAW, views={"web": {}, "db": {}})
+    monkeypatch.chdir(project_dir / "ansible" / "views" / "web" / "site")
+
+    project = ProjectDir(str(project_dir / "fresh"), project_type="modern",
+                         create=True, config=make_configuration(raw))
+
+    assert project.path == str(project_dir / "fresh")
+    assert project.view == "web"
+    assert os.environ["DEBOPS_PROJECT_VIEW"] == "web"
+
+
+def test_init_rejects_an_unknown_view(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    write_modern_project(tmp_path)
+
+    with pytest.raises(NotADirectoryError):
+        ProjectDir(str(tmp_path), view="nonexistent",
+                   config=make_configuration())
+
+
+def test_init_honors_the_default_view_option(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    write_modern_project(tmp_path, conf_d=(
+        "project:\n"
+        "  default_view: web\n"
+        "views:\n"
+        "  web: {}\n"))
+
+    project = ProjectDir(str(tmp_path), config=make_configuration())
+
+    assert project.view == "web"
+    assert (os.environ["DEBOPS_ANSIBLE_INVENTORY"]
+            == str(tmp_path / "ansible" / "views" / "web" / "inventory"))
+
+
+def test_init_merges_the_project_environment_file(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    write_modern_project(tmp_path)
+    (tmp_path / ".debops" / "environment").write_text(
+            "DEBOPS_TEST_MARKER=from-file\n")
+
+    ProjectDir(str(tmp_path), config=make_configuration())
+
+    assert os.environ["DEBOPS_TEST_MARKER"] == "from-file"
+
+
+def test_init_keeps_an_existing_inventory_environment(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    write_legacy_project(tmp_path)
+    monkeypatch.setenv("DEBOPS_ANSIBLE_INVENTORY", "/custom/inventory")
+
+    ProjectDir(str(tmp_path), config=make_configuration())
+
+    assert os.environ["DEBOPS_ANSIBLE_INVENTORY"] == "/custom/inventory"
+
+
+def test_init_applies_the_venv_runtime(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    write_legacy_project(tmp_path)
+    raw = dict(DEFAULT_PROJECT_RAW, project={"venv": {"enabled": True}})
+
+    project = ProjectDir(str(tmp_path), config=make_configuration(raw))
+
+    venv_bin = str(tmp_path / ".debops" / "venv" / "bin")
+    assert project._commands["ansible-galaxy"] == os.path.join(
+            venv_bin, "ansible-galaxy")
+    assert os.environ["PATH"].startswith(venv_bin + os.pathsep)
+
+
+def test_init_detects_an_encrypted_inventory(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    write_modern_project(tmp_path, conf_d="views:\n  system: {}\n")
+    (tmp_path / "ansible" / "views" / "system" / ".encfs.secret").mkdir(
+            parents=True)
+
+    project = ProjectDir(str(tmp_path), config=make_configuration())
+
+    assert project.config.raw["views"]["system"]["encryption"] == {
+            "enabled": True, "mounted": False, "type": "encfs"}

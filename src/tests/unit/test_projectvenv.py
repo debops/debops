@@ -1026,3 +1026,25 @@ def test_install_collections_upgrade_ignores_the_lock_file(tmp_path,
     assert venv.collections_requirements in argv
     assert "--force" in argv
     assert "Force-upgrading Ansible Collections" in capsys.readouterr().out
+
+
+def test_freeze_runs_the_venv_python(tmp_path, monkeypatch):
+    venv = make_venv(tmp_path)
+    fake_venv_python(venv)
+    monkeypatch.setattr(ProjectVenv, "_subprocess_env", lambda self: {})
+    process = mock.Mock(returncode=0)
+    process.communicate.return_value = (b"ansible-core==2.18.0\n", b"")
+    popen = mock.Mock(return_value=process)
+    monkeypatch.setattr(projectvenv_module.subprocess, "Popen", popen)
+    write = mock.Mock()
+    monkeypatch.setattr(projectvenv_module, "write_file", write)
+
+    venv._freeze_python()
+
+    # The python interpreter of the project virtual environment runs the
+    # freeze, not whatever 'python' happens to be on the PATH
+    python = os.path.join(venv.venv_path, "bin", "python")
+    popen.assert_called_once()
+    assert popen.call_args.args[0] == [python, "-m", "pip", "freeze"]
+    content = write.call_args.args[1]
+    assert "ansible-core==2.18.0" in content

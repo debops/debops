@@ -1,48 +1,18 @@
-# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2023 DebOps <https://debops.org/>
+# Copyright (C) 2023-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2023-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from .utils import print_error, unexpanduser
-from .ansibleconfig import AnsibleConfig
-from .ansible.inventory import AnsibleInventory
+from .projectrunner import ProjectRunner
 from .hooks import run_hooks
 import subprocess
-import configparser
-import textwrap
 import os
-import sys
 
 
-class EnvRunner(object):
+class EnvRunner(ProjectRunner):
+    """Run a command in the DebOps project environment."""
 
-    def __init__(self, project, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-
-        self.project = project
-        self.inventory = AnsibleInventory(project, name=project.view)
-
-        try:
-            self._inventory_paths = (
-                    project.ansible_cfg.get_option('inventory').split(','))
-        except configparser.NoSectionError:
-            path = project.ansible_cfg.path
-            if (os.path.exists(path) and os.path.isfile(path)):
-                raise ValueError("Cannot find [defaults] section in " + path)
-            else:
-                raise FileNotFoundError("Cannot find Ansible "
-                                        "configuration file at " + path)
-        except configparser.NoOptionError:
-            errmsg = ('No inventory specified in the "ansible.cfg" '
-                      'configuration file. You might want to run '
-                      '"debops project refresh" command to ensure that it\'s '
-                      'included in the generated file. If this is a legacy '
-                      'project, check if the "inventory" option is present '
-                      'in the ".debops.cfg" file. The default is:')
-            print_error(textwrap.fill(errmsg, 78) + '\n\n'
-                        '    [ansible defaults]\n'
-                        '    inventory = ansible/inventory')
-            sys.exit(1)
+    def __init__(self, project, **kwargs):
+        super().__init__(project, **kwargs)
 
         self._command = self.kwargs['command_args']
 
