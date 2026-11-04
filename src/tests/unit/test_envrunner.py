@@ -8,13 +8,15 @@ from unittest import mock
 
 import pytest
 
+import debops.projectrunner as projectrunner_module
 import debops.envrunner as runner_module
 from debops.envrunner import EnvRunner
 
 
 @pytest.fixture(autouse=True)
 def stub_ansible_inventory(monkeypatch):
-    monkeypatch.setattr(runner_module, "AnsibleInventory", mock.Mock())
+    monkeypatch.setattr(projectrunner_module, "AnsibleInventory",
+                        mock.Mock())
 
 
 def test_command_is_the_user_supplied_arguments(stub_project):
