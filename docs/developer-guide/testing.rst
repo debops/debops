@@ -136,3 +136,46 @@ Checks the documentation for broken links.
 Does not run as part of the Travis CI pipeline.
 
 The script writes its output at :file:`docs/_build/linkcheck/output.txt`.
+
+
+.. _testing_mutation:
+
+Mutation testing
+----------------
+
+Code coverage tells you which lines the test suite executes. Mutation testing
+tells you which lines the test suite actually validates. The `mutmut`__ tool
+generates small mutations of the :file:`src/debops/` sources — flipped
+comparisons, changed constants, removed statements — and runs the tests
+against each mutant. A mutant that *survives* means the suite passes with
+broken code: a gap in the assertions.
+
+.. __: https://mutmut.readthedocs.io/
+
+Run it locally with:
+
+.. code-block:: console
+
+   mutmut run
+
+A full pass over the package generates around 11k mutants and takes a few
+minutes on a typical workstation. Review the results with
+:command:`mutmut results`, and inspect an individual mutant with
+:command:`mutmut show <mutant-id>`. The configuration lives in the
+``[tool.mutmut]`` section of :file:`pyproject.toml`.
+
+A few things to keep in mind when reading the results:
+
+- Integration tests are excluded from the mutation loop. They drive the real
+  :command:`debops` command line in subprocesses, which cannot see the
+  mutated code, so they would always pass regardless of the mutations.
+- Surviving mutants in code that only builds :command:`git` or
+  :command:`ansible-playbook` command lines are expected. The interesting
+  findings are in the logic modules: configuration handling, inventory
+  parsing, version comparison.
+- The goal is not a 100% mutation score. Triage the survivors, fix the
+  assertion gaps that matter, and accept the rest.
+
+The :file:`mutants/` directory created during a run is a scratch copy of the
+project used to apply the mutations. It is ignored by Git and can be removed
+at any time.
