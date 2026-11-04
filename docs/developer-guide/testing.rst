@@ -1,5 +1,5 @@
 .. Copyright (C) 2019 Tasos Alvas <tasos.alvas@qwertyuiopia.com>
-.. Copyright (C) 2019 DebOps <https://debops.org/>
+.. Copyright (C) 2019-2026 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. _testing:
