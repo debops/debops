@@ -14,6 +14,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 import unittest.mock
@@ -231,8 +232,17 @@ class NotifyHintTestCase(VersionCheckTestCase):
         self.assertIn('(pipx upgrade debops)', self.hints('pipx'))
 
     def test_pypi_hint(self):
-        self.assertIn('(pip install --upgrade debops)',
-                      self.hints('pypi'))
+        # The hint depends on whether Python runs in a virtual environment,
+        # which must not be inherited from the ambient pytest environment
+        # (a venv running the tests would select the wrong branch).
+        with unittest.mock.patch.object(sys, 'prefix', '/home/user/.venv'), \
+                unittest.mock.patch.object(sys, 'base_prefix', '/usr'):
+            venv_hint = self.hints('pypi')
+        with unittest.mock.patch.object(sys, 'prefix', '/usr'), \
+                unittest.mock.patch.object(sys, 'base_prefix', '/usr'):
+            system_hint = self.hints('pypi')
+        self.assertIn('(python -m pip install --upgrade debops)', venv_hint)
+        self.assertIn('(pip install --upgrade debops)', system_hint)
 
     def test_git_master_hint(self):
         self.assertIn('(git pull)', self.hints('git_master'))
