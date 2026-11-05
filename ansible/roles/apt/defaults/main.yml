@@ -194,6 +194,22 @@ apt__distribution_repository_map:
 # a given OS release is archived.
 apt__debian_archived_releases: [ 'wheezy', 'jessie', 'stretch',
                                  'buster', 'bullseye' ]
+
+                                                                   # ]]]
+# .. envvar:: apt__debian_archived_updates_releases [[[
+#
+# List of Debian releases which '<release>-updates' suites have been archived
+# and are not available in the default APT repositories. This variable is used
+# conditionally to detect if a given OS release is archived.
+apt__debian_archived_updates_releases: [ 'buster', 'bullseye' ]
+
+                                                                   # ]]]
+# .. envvar:: apt__debian_archived_security_releases [[[
+#
+# List of Debian releases which '<release>-security' suites have been archived
+# and are not available in the default APT repositories. This variable is used
+# conditionally to detect if a given OS release is archived.
+apt__debian_archived_security_releases: [ 'bullseye' ]
                                                                    # ]]]
                                                                    # ]]]
 # The :file:`/etc/apt/sources.list` configuration entries [[[
@@ -231,7 +247,8 @@ apt__debian_sources:
       - '{{ apt__distribution_release + "-updates" }}'
     state: '{{ "present"
                if (apt__distribution == "Debian" and
-                   apt__distribution_release not in apt__debian_archived_releases and
+                   (apt__distribution_release not in apt__debian_archived_releases or
+                    apt__distribution_release in apt__debian_archived_updates_releases) and
                    apt__distribution_version != "n/a")
                else "ignore" }}'
 
@@ -269,7 +286,8 @@ apt__debian_sources:
     components: [ 'main' ]
     state: '{{ "present"
                if (apt__distribution == "Debian" and
-                   apt__distribution_release not in apt__debian_archived_releases and
+                   (apt__distribution_release not in apt__debian_archived_releases or
+                    apt__distribution_release in apt__debian_archived_security_releases) and
                    apt__distribution_version != "n/a")
                else "ignore" }}'
 
@@ -289,6 +307,13 @@ apt__debian_sources:
                    apt__distribution_release not in apt__debian_archived_releases and
                    apt__distribution_release in ["buster"] and
                    apt__distribution_version != "n/a")
+               else "ignore" }}'
+
+  - name: 'debian-release-security'
+    uri: 'http://archive.debian.org/debian-security'
+    state: '{{ "present"
+               if (apt__distribution == "Debian" and
+                   apt__distribution_release in apt__debian_archived_security_releases)
                else "ignore" }}'
 
   - name: 'debian-release-security'
