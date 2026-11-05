@@ -15,6 +15,10 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+
+v3.4.0 (2026-11-05)
+-------------------
+
 Changes in inventory variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
