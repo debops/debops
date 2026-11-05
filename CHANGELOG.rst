@@ -17,11 +17,19 @@ The detailed changelog can be seen using :command:`git log` command.
 You can read information about required changes between releases in the
 :ref:`upgrade_notes` documentation.
 
+.. note:: The ``stable-3.1`` branch has been retired, there will be no more
+   updates. Consider upgrade to the newer release of DebOps.
 
-`debops stable-3.1`_ - unreleased
----------------------------------
+`debops stable-3.1`_ - retired
+------------------------------
 
 .. _debops stable-3.1: https://github.com/debops/debops/compare/v3.1.0...stable-3.1
+
+
+`debops v3.1.10`_ - 2026-11-05
+------------------------------
+
+.. _debops v3.1.10: https://github.com/debops/debops/compare/v3.1.9...v3.1.10
 
 Added
 ~~~~~
