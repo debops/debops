@@ -111,6 +111,10 @@ General
   Archive CDN and is now available on the https://archive.debian.org/ server.
   The role will configure the APT repositories on Bullseye hosts accordingly.
 
+- The Debian backports sources are now configured in a separate
+  ``debian-release-backports`` configuration section and can be easily disabled
+  through Ansible inventory if preferred.
+
 Fixed
 ~~~~~
 
