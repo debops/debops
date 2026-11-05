@@ -513,6 +513,15 @@ Add an archive repository in :file:`/etc/apt/sources.list` configuration file:
        suite: 'sarge'
        components: [ 'main' ]
 
+Disable Debian Backports suite configured by default:
+
+.. code-block:: yaml
+
+   apt__sources:
+
+     - name: 'debian-release-backports'
+       state: 'absent'
+
 Add custom options to existing ``debian-release`` APT source configuration (see
 :man:`sources.list(5)` manual page for details):
 
