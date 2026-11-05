@@ -104,6 +104,13 @@ General
   content symbolic links of the monorepo layout. Check the
   :file:`INSTALL.rst` documentation for details.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The Debian 11 (Bullseye) release has been removed from the official Debian
+  Archive CDN and is now available on the https://archive.debian.org/ server.
+  The role will configure the APT repositories on Bullseye hosts accordingly.
+
 Fixed
 ~~~~~
 
