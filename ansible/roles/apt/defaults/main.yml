@@ -253,14 +253,6 @@ apt__debian_sources:
                else "ignore" }}'
 
   - name: 'debian-release'
-    suites:
-      - '{{ apt__distribution_release + "-backports" }}'
-    state: '{{ "present"
-               if (apt__distribution == "Debian" and
-                   apt__distribution_version != "n/a")
-               else "ignore" }}'
-
-  - name: 'debian-release'
     components: [ 'non-free-firmware' ]
     state: '{{ "ignore"
                if (apt__distribution == "Debian" and
@@ -272,6 +264,42 @@ apt__debian_sources:
                      else "ignore") }}'
 
   - name: 'debian-release'
+    components: [ 'contrib', 'non-free' ]
+    state: '{{ "present"
+               if (apt__distribution == "Debian" and
+                   apt__nonfree | bool)
+               else "ignore" }}'
+
+  - name: 'debian-release-backports'
+    types: '{{ apt__archive_types }}'
+    uri: '{{ apt__distribution_repository_map.Debian | d() }}'
+    suites:
+      - '{{ apt__distribution_release + "-backports" }}'
+    components: [ 'main' ]
+    state: '{{ "present"
+               if (apt__distribution == "Debian" and
+                   apt__distribution_version != "n/a")
+               else "ignore" }}'
+
+  - name: 'debian-release-backports'
+    uri: 'http://archive.debian.org/debian'
+    state: '{{ "present"
+               if (apt__distribution == "Debian" and
+                   apt__distribution_release in apt__debian_archived_releases)
+               else "ignore" }}'
+
+  - name: 'debian-release-backports'
+    components: [ 'non-free-firmware' ]
+    state: '{{ "ignore"
+               if (apt__distribution == "Debian" and
+                   apt__distribution_release in ["wheezy", "jessie", "stretch",
+                                                 "buster", "bullseye"])
+               else ("present"
+                     if (apt__distribution == "Debian" and
+                         apt__nonfree_firmware | bool)
+                     else "ignore") }}'
+
+  - name: 'debian-release-backports'
     components: [ 'contrib', 'non-free' ]
     state: '{{ "present"
                if (apt__distribution == "Debian" and
