@@ -214,6 +214,17 @@ General
   the configuration. The filters now also accept an optional ``alias`` key as
   a synonym for the ``option`` key.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The Debian 11 (Bullseye) release has been removed from the official Debian
+  Archive CDN and is now available on the https://archive.debian.org/ server.
+  The role will configure the APT repositories on Bullseye hosts accordingly.
+
+- The Debian backports sources are now configured in a separate
+  ``debian-release-backports`` configuration section and can be easily disabled
+  through Ansible inventory if preferred.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
