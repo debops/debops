@@ -1,9 +1,19 @@
 # ReadTheDocs external requirements
-# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2021 DebOps <https://debops.org/>
+# Copyright (C) 2021-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# Fix for https://github.com/readthedocs/readthedocs.org/issues/8616
-docutils<0.18
+# Sphinx 5.3.0 is the newest Sphinx release that runs the reading phase
+# of this documentation set at full speed. Sphinx 7.4 and 9.x measure up
+# to 13x slower (https://github.com/sphinx-doc/sphinx/issues/14277), so
+# the toolchain stays on 5.3.0 until upstream resolves the issue.
+sphinx==5.3.0
 
-sphinx_rtd_theme
+# Pin docutils to the release supported by Sphinx 5.3.0 explicitly.
+# This replaces the obsolete 'docutils<0.18' pin, which was a workaround
+# for https://github.com/readthedocs/readthedocs.org/issues/8616 and made
+# the dependency installation downgrade Sphinx on every Read the Docs
+# build.
+docutils==0.17.1
+
+sphinx_rtd_theme==2.0.0
