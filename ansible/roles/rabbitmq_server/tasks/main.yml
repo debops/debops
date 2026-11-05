@@ -265,17 +265,14 @@
 
     # Avoid a password lookup if the password is defined, or if the account
     # is meant to be absent (in which case the password is omitted).
-    password:       '{{ item.password | d(omit) if (
-                            (item.password is defined)
-                            or
-                            (item.state | d("present") == "absent")
-                        ) else lookup("password",
-                          secret + "/rabbitmq_server/accounts/"
-                          + (item.user | d(item.name | d(item)))
-                          + "/password length="
-                          + rabbitmq_server__account_password_length
-                        )
-                    }}'
+    password:       '{{ item.password | d(omit)
+                        if ((item.password is defined)
+                            or (item.state | d("present") == "absent"))
+                        else lookup("password",
+                                    secret + "/rabbitmq_server/accounts/"
+                                    + (item.user | d(item.name | d(item)))
+                                    + "/password length="
+                                    + rabbitmq_server__account_password_length) }}'
     tags:           '{{ (((item.tags.split(",") | list)
                           if (item.tags | d() and item.tags is string)
                           else item.tags) | join(","))
