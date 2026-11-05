@@ -145,27 +145,29 @@ you can install DebOps in various ways.
 Current release schedule
 ------------------------
 
-- Latest "stable" release: ``stable-3.3`` (`GitHub branch`__, `differences from
+- Latest "stable" release: ``stable-3.4`` (`GitHub branch`__, `differences from
   master`__, `Changelog`__)
 
-.. __: https://github.com/debops/debops/tree/stable-3.3
-.. __: https://github.com/debops/debops/compare/stable-3.3
-.. __: https://docs.debops.org/en/stable-3.3/news/changelog.html
+.. __: https://github.com/debops/debops/tree/stable-3.4
+.. __: https://github.com/debops/debops/compare/stable-3.4
+.. __: https://docs.debops.org/en/stable-3.4/news/changelog.html
 
 =============== ============ =============== ================
  Branch/Tag      Status       First release   End of support
 --------------- ------------ --------------- ----------------
-``stable-4.0``  Planned LTS  2027-06-xx      2029-06-xx
+``stable-4.0``  Planned LTS  2028-06-xx      2030-06-xx
 --------------- ------------ --------------- ----------------
 ...             ...          ...             ...
 --------------- ------------ --------------- ----------------
-``stable-3.4``  Planned      2026-06-xx      2029-06-xx
+``stable-3.5``  Planned      2027-06-xx      2030-06-xx
+--------------- ------------ --------------- ----------------
+``stable-3.4``  Supported    2026-11-xx      2029-11-xx
 --------------- ------------ --------------- ----------------
 ``stable-3.3``  Supported    2026-03-13      2028-03-xx
 --------------- ------------ --------------- ----------------
 ``stable-3.2``  Supported    2024-09-16      2027-01-xx
 --------------- ------------ --------------- ----------------
-``stable-3.1``  Supported    2023-11-29      2025-11-xx
+``stable-3.1``  Retired      2023-11-29      2026-11-05
 --------------- ------------ --------------- ----------------
 ``stable-3.0``  Retired      2022-02-17      2026-03-13
 --------------- ------------ --------------- ----------------
