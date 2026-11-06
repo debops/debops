@@ -10,7 +10,9 @@ against fixture repositories in temporary directories and the network
 access is mocked.
 """
 
+import io
 import json
+import logging
 import os
 import shutil
 import subprocess
@@ -18,6 +20,8 @@ import sys
 import tempfile
 import unittest
 import unittest.mock
+
+from packaging.version import Version
 
 from debops.versioncheck import VersionCheck
 
@@ -39,6 +43,12 @@ class FakeConfig(object):
 def make_check(settings=None):
     """A VersionCheck instance with its cache in a temporary directory."""
     return VersionCheck(FakeConfig(settings or {}))
+
+
+def next_minor_version(version):
+    """The next minor release after the given version string."""
+    release = Version(version).release
+    return '{}.{}.0'.format(release[0], release[1] + 1)
 
 
 def git_fixture(path, branch, commits=1, tags=()):
@@ -447,6 +457,42 @@ class DoCheckTestCase(VersionCheckTestCase):
         # The cached result is replayed without contacting the source
         pypi_check.assert_not_called()
         self.assertIn('1.2.3', check._logger.notice.call_args[0][0])
+
+
+class NoticeVisibilityTestCase(VersionCheckTestCase):
+    """The notice survives the real logging path, not just the call.
+
+    The 'debops' logger runs at the default WARNING level, which sinks
+    every NOTICE-level record before a handler is reached. The update
+    check publishes through its own logger, so an opt-in check prints
+    its notice on stderr without raising the level of other 'debops'
+    messages.
+    """
+
+    def install_stderr(self, level):
+        """Attach a capturing stderr handler to the 'debops' logger."""
+        parent = logging.getLogger('debops')
+        stream = io.StringIO()
+        handlers = unittest.mock.patch.object(
+            parent, 'handlers', [logging.StreamHandler(stream)])
+        record_level = unittest.mock.patch.object(parent, 'level', level)
+        for patcher in (handlers, record_level):
+            patcher.start()
+            self.addCleanup(patcher.stop)
+        return stream
+
+    def test_notice_prints_on_stderr_at_the_default_level(self):
+        stream = self.install_stderr(logging.WARNING)
+        check = make_check({'enabled': True})
+        latest = next_minor_version(check._version)
+        check._notify(latest, 'pypi')
+        self.assertIn('DebOps {} is available, you have {}'.format(
+            latest, check._version), stream.getvalue())
+
+    def test_other_notices_remain_hidden_at_the_default_level(self):
+        stream = self.install_stderr(logging.WARNING)
+        logging.getLogger('debops').notice('Regular notice')
+        self.assertEqual(stream.getvalue(), '')
 
 
 if __name__ == '__main__':
