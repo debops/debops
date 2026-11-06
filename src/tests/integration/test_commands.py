@@ -50,6 +50,30 @@ def test_exec_eval_prints_the_ansible_command(run_debops, debops_env,
     assert "ansible all -m ping" in result.stdout
 
 
+def test_run_eval_prints_the_ansible_command(run_debops, debops_env,
+                                             legacy_project):
+    result = run_debops("run", "--eval", "site.yml",
+                        cwd=str(legacy_project), env=debops_env)
+
+    assert result.returncode == 0
+    assert "export ANSIBLE_CONFIG=" in result.stdout
+    assert "ansible-playbook" in result.stdout
+    assert "site.yml" in result.stdout
+
+
+def test_check_eval_prints_the_ansible_command(run_debops, debops_env,
+                                               legacy_project):
+    result = run_debops("check", "--eval", "site.yml",
+                        cwd=str(legacy_project), env=debops_env)
+
+    assert result.returncode == 0
+    assert "export ANSIBLE_CONFIG=" in result.stdout
+    assert "ansible-playbook" in result.stdout
+    assert "site.yml" in result.stdout
+    assert "--diff" in result.stdout
+    assert "--check" in result.stdout
+
+
 def test_run_executes_the_playbook(run_debops, tmp_path, debops_env,
                                    legacy_project):
     log = tmp_path / "ansible-playbook.log"
