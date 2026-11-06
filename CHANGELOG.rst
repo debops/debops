@@ -32,6 +32,9 @@ Changed
 - The role will disable password-based ``root`` logins over SSH if the ``root``
   account doesn't have configured SSH public keys.
 
+- Password authentication over SSH will be explicitly disabled in the default
+  configuration without any conditional activation.
+
 Fixed
 ~~~~~
 

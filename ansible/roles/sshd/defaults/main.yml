@@ -656,16 +656,12 @@ sshd__default_configuration:
                else False }}'
     state: 'present'
 
-  # Enable or disable password authentication. This option will be enabled if
-  # the 'root' account does not have SSH authorized keys present, to allow the
-  # 'root' account to login to the host. Alternatively, sysadmin access
-  # configured by the 'debops.system_users' role disables password
-  # authentication.
+  # Disable password authentication by default. This configuration assumes
+  # that a deployment infrastructure (cloud-init, bootstrap playbook,
+  # preseeding) has configured the ``root`` account or UNIX system user
+  # accounts with the SSH public keys.
   - name: 'PasswordAuthentication'
-    value: '{{ False
-               if (ansible_local.root_account.ssh_authorized_keys | d() | bool or
-                   ansible_local.system_users.configured | d() | bool)
-               else True }}'
+    value: False
     state: 'present'
 
   # Disable ChallengeResponseAuthentication by default. Otherwise, setting
