@@ -299,7 +299,7 @@ def test_project_lock_locks_the_project(monkeypatch):
     project.lock.assert_called_once_with()
 
 
-def test_project_lock_ignores_a_missing_default_view(monkeypatch, capsys):
+def test_project_lock_reports_a_missing_default_view(monkeypatch, capsys):
     project = mock.Mock()
     project.lock.side_effect = NoDefaultViewException("no view")
     monkeypatch.setattr(cli_module, "ProjectDir",
@@ -367,7 +367,7 @@ def test_exec_runs_the_runner(monkeypatch):
     runner.execute.assert_called_once_with()
 
 
-def test_exec_prints_the_command_in_eval_mode(monkeypatch, capsys):
+def test_exec_eval_mode_delegates_to_the_runner(monkeypatch, capsys):
     project = mock.Mock()
     runner = mock.Mock()
     monkeypatch.setattr(cli_module, "ProjectDir",
@@ -382,6 +382,7 @@ def test_exec_prints_the_command_in_eval_mode(monkeypatch, capsys):
 
     assert caught.value.code == 0
     runner.eval.assert_called_once_with()
+    runner.execute.assert_not_called()
 
 
 @pytest.mark.parametrize("exception", [ValueError, FileNotFoundError])
@@ -582,7 +583,7 @@ def test_project_lock_reports_a_project_failure(monkeypatch, capsys):
     assert "Error: boom" in capsys.readouterr().err
 
 
-def test_project_unlock_ignores_a_missing_default_view(monkeypatch, capsys):
+def test_project_unlock_reports_a_missing_default_view(monkeypatch, capsys):
     project = mock.Mock()
     project.unlock.side_effect = NoDefaultViewException("no view")
     monkeypatch.setattr(cli_module, "ProjectDir",
@@ -677,7 +678,7 @@ def test_run_reports_a_runner_failure(monkeypatch, capsys):
     assert "Error: boom" in capsys.readouterr().err
 
 
-def test_run_prints_the_command_in_eval_mode(monkeypatch):
+def test_run_eval_mode_delegates_to_the_runner(monkeypatch):
     project = mock.Mock()
     runner = mock.Mock()
     monkeypatch.setattr(cli_module, "ProjectDir",
