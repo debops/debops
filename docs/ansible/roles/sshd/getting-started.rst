@@ -77,14 +77,24 @@ file is present on the host, using Ansible local facts defined by the
 :ref:`debops.root_account` role. If the file is present, we assume that the
 sysadmin SSH keys are on the host, and password-based access to the ``root``
 account is disabled by setting the ``PermitRootLogin`` option to
-``prohibit-password`` and the ``PasswordAuthentication`` option to ``no``.
+``prohibit-password`` to ``no``. The ``PasswordAuthentication`` option is set
+to ``no`` by default.
 
 If the SSH authorized keys file is not present, the host is assumed to not be
-fully provisioned yet. The ``PermitRootLogin`` option as well as the
-``PasswordAuthentication`` option will be set to ``yes`` to permit access to
-the ``root`` account via SSH. Note that the default PAM access policy set in
-the :envvar:`sshd__pam_access__dependent_rules` variable still applies and
-access to the ``root`` account will be limited to hosts on the same DNS domain.
+fully provisioned yet. The ``PermitRootLogin`` option will be set to ``no`` to
+deny access to the ``root`` account via SSH. Note that the default PAM access
+policy set in the :envvar:`sshd__pam_access__dependent_rules` variable still
+applies and access to the ``root`` account will be limited to hosts on the same
+DNS domain.
+
+To avoid locking the ``root`` account out, host deployments done with
+provisioning tools (``cloud-init``, Debian Preseeding, DebOps ``bootstrap``
+playbooks) should include one or more SSH public keys configured on the
+``root`` account to permit secure access. In an emergency, the
+:ref:`debops.root_account` role configures a strong password on the ``root``
+account which can be used on the host's console to login locally and restore
+access; generated passwords are stored in the :file:`secret/credentials/`
+directories, managed by the :ref:`debops.secret` role.
 
 Alternatively, if the sysadmin accounts are configured using the
 :ref:`debops.system_users` Ansible role, access to the ``root`` account via
