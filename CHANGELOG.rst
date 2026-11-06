@@ -23,6 +23,22 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v3.4.0...master
 
+Changed
+~~~~~~~
+
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The role will disable password-based ``root`` logins over SSH if the ``root``
+  account doesn't have configured SSH public keys.
+
+- Password authentication over SSH will be explicitly disabled in the default
+  configuration without any conditional activation.
+
+- SSH agent forwarding and X11 forwarding will be disabled by default. The
+  configuration can be enabled selectively through Ansible inventory when
+  needed.
+
 Fixed
 ~~~~~
 
