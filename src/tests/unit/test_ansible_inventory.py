@@ -91,20 +91,26 @@ def test_git_crypt_locked_detects_an_unlocked_state(stub_project, monkeypatch):
     inventory = make_inventory(stub_project())
     process = mock.Mock()
     process.communicate.return_value = (b"smudge", b"")
-    monkeypatch.setattr(inventory_module.subprocess, "Popen",
-                        mock.Mock(return_value=process))
+    popen = mock.Mock(return_value=process)
+    monkeypatch.setattr(inventory_module.subprocess, "Popen", popen)
 
     assert inventory._git_crypt_locked() is False
+    assert popen.call_args.args[0] == [
+        inventory._commands["git"], "config", "--local", "--get",
+        "filter.git-crypt.smudge"]
 
 
 def test_git_crypt_locked_detects_a_locked_state(stub_project, monkeypatch):
     inventory = make_inventory(stub_project())
     process = mock.Mock()
     process.communicate.return_value = (b"", b"")
-    monkeypatch.setattr(inventory_module.subprocess, "Popen",
-                        mock.Mock(return_value=process))
+    popen = mock.Mock(return_value=process)
+    monkeypatch.setattr(inventory_module.subprocess, "Popen", popen)
 
     assert inventory._git_crypt_locked() is True
+    assert popen.call_args.args[0] == [
+        inventory._commands["git"], "config", "--local", "--get",
+        "filter.git-crypt.smudge"]
 
 
 def test_random_string_uses_sixty_four_characters(stub_project):
