@@ -478,16 +478,18 @@ def test_env_executes_the_command(monkeypatch):
 def test_env_shows_the_environment_without_a_command(monkeypatch):
     project = mock.Mock()
     runner = mock.Mock()
+    runner.show_env.return_value = 7
     monkeypatch.setattr(cli_module, "ProjectDir",
                         mock.Mock(return_value=project))
     monkeypatch.setattr(cli_module, "EnvRunner",
                         mock.Mock(return_value=runner))
     interpreter = make_interpreter()
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as caught:
         interpreter.do_env(make_args(project_dir=".", view="system",
                                      command_args=[], scope="full"))
 
+    assert caught.value.code == 7
     runner.show_env.assert_called_once_with(scope="full")
 
 
