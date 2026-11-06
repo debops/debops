@@ -646,14 +646,14 @@ sshd__default_configuration:
   # Specify if access to "root" UNIX account should be granted. By default, if
   # the 'debops.root_account' role has been applied on the host, the "root"
   # UNIX account can be accessed only using SSH public keys, since the role is
-  # expected to set them up. Otherwise, access via password is allowed.
+  # expected to set them up. Otherwise, access via password is denied.
   # Alternatively, configured sysadmin accounts via the 'debops.system_users'
-  # role disable password-based access.
+  # role disable password-based access and leave only SSH public keys.
   - name: 'PermitRootLogin'
     value: '{{ "prohibit-password"
                if (ansible_local.root_account.ssh_authorized_keys | d() | bool or
                    ansible_local.system_users.configured | d() | bool)
-               else True }}'
+               else False }}'
     state: 'present'
 
   # Enable or disable password authentication. This option will be enabled if

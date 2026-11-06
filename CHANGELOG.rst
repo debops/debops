@@ -23,6 +23,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.2: https://github.com/debops/debops/compare/v3.2.0...stable-3.2
 
+Changed
+~~~~~~~
+
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The role will disable password-based ``root`` logins over SSH if the ``root``
+  account doesn't have configured SSH public keys.
+
 Fixed
 ~~~~~
 
