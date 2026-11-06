@@ -40,6 +40,9 @@ def test_modern_project_uses_the_view_directory(stub_project):
 
     assert inventory.path == os.path.join(project.path, "ansible", "views",
                                           "webservers", "inventory")
+    assert inventory.secret_path == os.path.join(project.path, "ansible",
+                                                 "views", "webservers",
+                                                 "secret")
 
 
 def test_modern_project_requires_a_view(stub_project):
