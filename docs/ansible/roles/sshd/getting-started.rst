@@ -19,6 +19,10 @@ hostnames in DNS by setting the ``UseDNS`` option to ``yes`` (the Debian and
 upstream default is ``no``). This allows use of the DNS hostnames and domains
 in the authorized keys files and PAM access control rules.
 
+The ``AllowAgentForwarding`` and ``X11Forwarding`` options are set to ``no`` by
+default (Debian by default allows them). This should mitigate potential agent
+takeover attacks on remote hosts.
+
 The role will divert the original :file:`/etc/pam.d/sshd` configuration file
 and generate a new one, with PAM access control enabled and using the separate
 :file:`/etc/security/access-sshd.conf` configuration file. The ACL rules are
