@@ -23,6 +23,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.3: https://github.com/debops/debops/compare/v3.3.0...stable-3.3
 
+Fixed
+~~~~~
+
+General
+'''''''
+
+- The version update notice printed by the :command:`debops` command is now
+  visible on the standard error stream when the check runs at the default
+  log level.
+
 
 `debops v3.3.3`_ - 2026-11-05
 -----------------------------
