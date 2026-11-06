@@ -35,6 +35,10 @@ Changed
 - Password authentication over SSH will be explicitly disabled in the default
   configuration without any conditional activation.
 
+- SSH agent forwarding and X11 forwarding will be disabled by default. The
+  configuration can be enabled selectively through Ansible inventory when
+  needed.
+
 Fixed
 ~~~~~
 
