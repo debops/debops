@@ -23,7 +23,17 @@ except ModuleNotFoundError:
 class VersionCheck(object):
 
     def __init__(self, config, logger=None):
-        self._logger = logger or logging.getLogger(__name__)
+        if logger is None:
+            # The shared 'debops' logger defaults to WARNING, which sinks
+            # every NOTICE-level record before any handler sees it. Publish
+            # the update notice through a module logger with its own level
+            # so that an opt-in check prints its notice on stderr regardless
+            # of the configured level, while other notices keep their
+            # current visibility.
+            self._logger = logging.getLogger(__name__)
+            self._logger.setLevel(logging.NOTICE)
+        else:
+            self._logger = logger
         self._settings = config.raw.get('version_check', {})
         self._version = __version__
         self._cache_dir = os.path.join(xdg_cache_home, 'debops')

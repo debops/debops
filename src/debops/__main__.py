@@ -129,7 +129,7 @@ def main():
     # first. Lazy import keeps the module out of the common execution path.
     try:
         from .versioncheck import VersionCheck
-        VersionCheck(config, logger).check()
+        VersionCheck(config).check()
     except Exception:
         logger.debug('Version check initialization failed', exc_info=True)
 
