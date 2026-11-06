@@ -687,6 +687,19 @@ sshd__default_configuration:
     value: True
     state: 'present'
 
+  # Disable SSH agent forwarding by default. It is not needed on all servers,
+  # and the ones it is useful for can enable it explicitly through the
+  # inventory.
+  - name: 'AllowAgentForwarding'
+    value: False
+    state: 'present'
+
+  # Disable X11 forwarding by default. It's not useful on headless servers, and
+  # can be explicitly enabled through the Ansible inventory when needed.
+  - name: 'X11Forwarding'
+    value: False
+    state: 'present'
+
   - name: 'Ciphers'
     comment: 'List of ciphers which are allowed for connections'
     raw: |
