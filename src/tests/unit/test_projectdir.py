@@ -15,6 +15,7 @@ whole project lifecycle through the command line.
 import logging
 import os
 import re
+import subprocess
 import sys
 from types import SimpleNamespace
 from unittest import mock
@@ -571,16 +572,23 @@ def test_auto_commit_tolerates_a_missing_option():
     project.commit.assert_not_called()
 
 
-def test_commit_is_a_noop_outside_a_git_repository(tmp_path):
+def test_commit_is_a_noop_outside_a_git_repository(tmp_path, monkeypatch):
+    """Outside a git repository commit() returns before doing any
+    work; the commit hooks never fire outside a project."""
     project = make_project_at(tmp_path)
+    hooks = mock.Mock()
+    monkeypatch.setattr(projectdir_module, "run_hooks", hooks)
 
     project.commit()
+
+    hooks.assert_not_called()
 
 
 def test_commit_unstages_changes_without_a_message(
         tmp_path, monkeypatch, capsys):
     project = make_project({"project": {}})
     project.path = str(tmp_path)
+    (tmp_path / ".debops.cfg").write_text("")
     project._is_git_repo = lambda path: True
     hooks = mock.Mock()
     monkeypatch.setattr(projectdir_module, "run_hooks", hooks)
@@ -602,6 +610,7 @@ def test_commit_commits_when_there_are_changes(tmp_path, monkeypatch):
     project = make_project({"project": {"git": {
         "auto_commit_message": "Changes committed automatically"}}})
     project.path = str(tmp_path)
+    (tmp_path / ".debops.cfg").write_text("")
     project._is_git_repo = lambda path: True
     monkeypatch.setattr(projectdir_module, "run_hooks", mock.Mock())
     repo = mock.Mock()
@@ -613,6 +622,33 @@ def test_commit_commits_when_there_are_changes(tmp_path, monkeypatch):
 
     repo.index.commit.assert_called_once_with(
             "Changes committed automatically")
+
+
+def test_commit_ignores_a_foreign_git_repository(tmp_path, monkeypatch):
+    """A git directory which is not a DebOps project directory is left
+    alone: the auto-commit must not touch repositories DebOps does not
+    own, like /etc managed by etckeeper."""
+    subprocess.run(["git", "init", "-q"], cwd=str(tmp_path), check=True)
+    (tmp_path / "tracked").write_text("initial\n")
+    subprocess.run(["git", "-C", str(tmp_path), "add", "tracked"],
+                   check=True)
+    subprocess.run(["git", "-C", str(tmp_path),
+                    "-c", "user.name=DebOps Tests",
+                    "-c", "user.email=debops-tests@example.org",
+                    "commit", "-q", "-m", "initial"], check=True)
+    project = make_project_at(tmp_path, raw={
+        "project": {"git": {
+            "auto_commit_message": "Changes committed automatically"}}})
+    hooks = mock.Mock()
+    monkeypatch.setattr(projectdir_module, "run_hooks", hooks)
+
+    project.commit()
+
+    hooks.assert_not_called()
+    head_count = subprocess.run(
+        ["git", "-C", str(tmp_path), "rev-list", "--count", "HEAD"],
+        capture_output=True, text=True, check=True)
+    assert head_count.stdout.strip() == "1"
 
 
 def test_create_aborts_on_a_failing_pre_init_hook(tmp_path):

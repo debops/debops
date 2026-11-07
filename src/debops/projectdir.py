@@ -1565,9 +1565,27 @@ class ProjectDir(object):
             # The configuration option might not exist at this time
             pass
 
+    def _in_debops_project(self):
+        """The project path is the root of a DebOps project directory,
+        detected the same way the constructor detects one. This guards
+        the git automation against acting on an unrelated git
+        repository which the path could point at, for example /etc
+        managed by etckeeper."""
+        return bool(
+            self._find_up_dir(self.path, ['.debops', 'conf.d'])
+            or self._find_up_dir(self.path, ['.debops.cfg']))
+
     def commit(self, interactive=False):
-        """Commit the current contents of the project directory to the git
-        repository automatically."""
+        """Commit the current contents of the project directory to the
+        git repository automatically.
+
+        Only DebOps project directories are committed: the guard keeps
+        the automation away from unrelated git repositories which the
+        project path could point at, for example /etc managed by
+        etckeeper."""
+        if not self._in_debops_project():
+            return
+
         if not self._is_git_repo(self.path):
             return
 
