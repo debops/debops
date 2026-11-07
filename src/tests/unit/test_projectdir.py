@@ -174,7 +174,10 @@ def test_inventory_spec_config_tolerates_a_config_without_get():
                       "allow_io": False}
 
 
-def test_status_stream_uses_stderr_for_json_outputs():
+def test_status_stream_is_stderr_when_the_output_is_json():
+    """Inventory JSON goes to standard output; the status messages move
+    to standard error so that 'debops project refresh --list' stays
+    usable in a pipe."""
     assert make_project({}, {"list": True})._status_stream() is sys.stderr
     assert make_project({}, {"host": "web01"})._status_stream() is sys.stderr
 
