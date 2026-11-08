@@ -30,13 +30,15 @@ def test_missing_ansible_cfg_is_reported(stub_project):
         EnvRunner(project, command_args=["env"])
 
 
-def test_missing_defaults_section_in_an_existing_file(stub_project):
+def test_missing_defaults_section_in_an_existing_file(stub_project, caplog):
     project = stub_project(cfg_error=configparser.NoSectionError("defaults"))
     with open(project.ansible_cfg.path, "w") as handle:
         handle.write("[other]\n")
 
     with pytest.raises(ValueError):
         EnvRunner(project, command_args=["env"])
+
+    assert project.ansible_cfg.path in caplog.text
 
 
 def test_missing_inventory_option_aborts(stub_project, capsys):
