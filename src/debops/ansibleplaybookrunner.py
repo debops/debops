@@ -211,12 +211,18 @@ class AnsiblePlaybookRunner(ProjectRunner):
 
         for collection, path in self._known_collections.items():
             if playbook_name.startswith(collection + '/'):
-                playbook_name = '/'.join(playbook_name.split('/')[1:])
-                playbook_name = os.path.expanduser(
-                        os.path.join(path, playbook_name))
-                if os.path.isfile(playbook_name):
-                    playbook_path = playbook_name
-                    break
+                stripped = '/'.join(playbook_name.split('/')[1:])
+            elif playbook_name.startswith(collection + '.'):
+                # The dot-separated name is how ansible-playbook itself
+                # addresses collection playbooks
+                stripped = playbook_name[len(collection) + 1:]
+            else:
+                continue
+            candidate = os.path.expanduser(
+                    os.path.join(path, stripped))
+            if os.path.isfile(candidate):
+                playbook_path = candidate
+                break
         return playbook_path
 
     def _expand_playbook(self, project, playbook):
