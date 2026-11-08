@@ -92,6 +92,21 @@ def test_playbook_in_a_collection_is_found(stub_project, tmp_path):
     assert runner._found_playbooks == [str(playbooks / "site.yml")]
 
 
+def test_playbook_in_a_collection_with_dots_is_found(stub_project, tmp_path):
+    """The dot-separated name is the format ansible-playbook itself
+    uses for collection playbooks."""
+    playbooks = (tmp_path / "ansible" / "collections"
+                 / "ansible_collections" / "debops" / "debops" / "playbooks")
+    playbooks.mkdir(parents=True)
+    (playbooks / "site.yml").write_text("---\n")
+
+    project = stub_project(collections=str(tmp_path / "ansible" / "collections"))
+    runner = AnsiblePlaybookRunner(project,
+                                   ansible_args=["debops.debops.site"])
+
+    assert runner._found_playbooks == [str(playbooks / "site.yml")]
+
+
 def test_find_collections_discovers_collection_playbooks(stub_project,
                                                          tmp_path):
     playbooks = (tmp_path / "ansible" / "collections"
