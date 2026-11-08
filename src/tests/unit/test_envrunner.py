@@ -163,7 +163,7 @@ def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch):
     with pytest.raises(SystemExit):
         runner.execute()
 
-    assert runner.inventory.lock.called
+    runner.inventory.lock.assert_called_once_with()
 
 
 def test_execute_handles_interrupt_without_unlocking(stub_project,
