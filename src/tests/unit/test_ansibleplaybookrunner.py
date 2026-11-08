@@ -336,6 +336,16 @@ def test_option_with_an_argument_is_kept_in_order(stub_project):
     assert runner._found_playbooks == ["site.yml"]
 
 
+def test_option_followed_by_an_option_is_kept(stub_project):
+    runner = AnsiblePlaybookRunner(stub_project(),
+                                   ansible_args=["--limit", "--verbose",
+                                                 "site.yml"])
+
+    assert runner._ansible_command[:3] == ["ansible-playbook", "--limit",
+                                           "--verbose"]
+    assert runner._found_playbooks == ["site.yml"]
+
+
 def test_option_argument_with_spaces_is_quoted(stub_project):
     runner = AnsiblePlaybookRunner(stub_project(),
                                    ansible_args=["-e", "a=b c", "site.yml"])
