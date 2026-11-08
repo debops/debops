@@ -152,6 +152,7 @@ def test_eval_prints_the_command(stub_project, capsys):
     output = capsys.readouterr().out
     assert "export ANSIBLE_CONFIG=" in output
     assert "ansible-playbook" in output
+    assert "site.yml" in output
 
 
 def test_execute_without_playbooks_aborts(stub_project, capsys):
