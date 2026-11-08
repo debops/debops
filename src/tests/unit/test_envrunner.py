@@ -50,13 +50,17 @@ def test_missing_inventory_option_aborts(stub_project, capsys):
     assert "No inventory specified" in capsys.readouterr().err
 
 
-def test_show_env_local_prints_configured_variables(stub_project, capsys):
+def test_show_env_local_prints_configured_variables(stub_project, capsys,
+                                                    monkeypatch):
+    monkeypatch.setenv("DEBOPS_UNCONFIGURED", "1")
     project = stub_project(env_vars={"DEBOPS_PROJECT_VIEW": "system"})
     runner = EnvRunner(project, command_args=["env"])
 
     runner.show_env("local")
 
-    assert capsys.readouterr().out.strip() == "DEBOPS_PROJECT_VIEW=system"
+    output = capsys.readouterr().out
+    assert output.strip() == "DEBOPS_PROJECT_VIEW=system"
+    assert "DEBOPS_UNCONFIGURED" not in output
 
 
 def test_show_env_full_prints_process_environment(stub_project, capsys,
