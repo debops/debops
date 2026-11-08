@@ -71,12 +71,13 @@ def test_execute_returns_the_command_return_code(stub_project, monkeypatch):
     runner = EnvRunner(stub_project(), command_args=["true"])
     executor = mock.Mock(returncode=3)
     executor.communicate.return_value = (b"", b"")
-    monkeypatch.setattr(runner_module.subprocess, "Popen",
-                        mock.Mock(return_value=executor))
+    popen = mock.Mock(return_value=executor)
+    monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
     runner.inventory.unlock.return_value = False
 
     assert runner.execute() == 3
+    assert popen.call_args.kwargs["shell"] is True
 
 
 def test_execute_sets_the_configured_environment(stub_project, monkeypatch):
