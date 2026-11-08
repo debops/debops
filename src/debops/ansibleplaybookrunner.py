@@ -311,10 +311,6 @@ class AnsiblePlaybookRunner(ProjectRunner):
                              'return code {}'.format(executor.returncode))
             rc = executor.returncode
 
-        except ChildProcessError:
-            raise ChildProcessError('Cannot unlock project secrets, '
-                                    'git working directory not clean')
-
         except KeyboardInterrupt:
             logger.notice('Playbook execution interrupted by user',
                           extra={'block': 'stderr'})
