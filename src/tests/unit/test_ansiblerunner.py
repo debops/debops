@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import configparser
+import logging
 import os
 from unittest import mock
 
@@ -242,7 +243,8 @@ def test_execute_locks_the_inventory_when_it_was_unlocked(stub_project,
     runner.inventory.lock.assert_called_once_with()
 
 
-def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch):
+def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch,
+                                            caplog):
     runner = AnsibleRunner(stub_project(), ansible_args=["all"])
     executor = mock.Mock()
     executor.communicate.side_effect = KeyboardInterrupt
@@ -251,7 +253,9 @@ def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch):
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
     runner.inventory.unlock.return_value = True
 
-    with pytest.raises(SystemExit):
-        runner.execute()
+    with caplog.at_level(logging.NOTICE, logger="debops.ansiblerunner"):
+        with pytest.raises(SystemExit):
+            runner.execute()
 
     runner.inventory.lock.assert_called_once_with()
+    assert "interrupted by user" in caplog.text
