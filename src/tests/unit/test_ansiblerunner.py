@@ -201,6 +201,15 @@ def test_execute_aborts_when_the_pre_hook_fails(stub_project, monkeypatch):
         runner.execute()
 
 
+def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch):
+    runner = AnsibleRunner(stub_project(), ansible_args=["all"])
+    runner.inventory.unlock.side_effect = ChildProcessError("dirty tree")
+    monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
+
+    with pytest.raises(ChildProcessError, match="dirty tree"):
+        runner.execute()
+
+
 def test_execute_runs_post_hook_with_return_code(stub_project, monkeypatch):
     runner = AnsibleRunner(stub_project(), ansible_args=["all"])
     executor = mock.Mock(returncode=2)

@@ -470,7 +470,7 @@ def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch):
     monkeypatch.setattr(runner_module, "run_hooks",
                         mock.Mock(return_value=True))
 
-    with pytest.raises(ChildProcessError):
+    with pytest.raises(ChildProcessError, match="dirty tree"):
         runner.execute()
 
 
