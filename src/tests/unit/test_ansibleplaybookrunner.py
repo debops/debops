@@ -191,6 +191,7 @@ def test_execute_uses_the_run_hooks(stub_project, monkeypatch):
 
     assert [call.args[1] for call in hooks.call_args_list] == ["pre-run",
                                                                "post-run"]
+    assert hooks.call_args.kwargs["extra_env"] == {"DEBOPS_RETURN_CODE": 0}
 
 
 def test_execute_uses_the_check_hooks_in_check_mode(stub_project, monkeypatch):
