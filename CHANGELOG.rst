@@ -50,6 +50,16 @@ General
   log level.
 
 
+Removed
+~~~~~~~
+
+General
+'''''''
+
+- The unused ``debops.config.Configuration.section()`` method was removed
+  from the Python API. It had no callers in the project.
+
+
 `debops v3.4.0`_ - 2026-11-05
 -----------------------------
 
