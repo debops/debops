@@ -861,7 +861,8 @@ class ProjectSpecConfigTestCase(TemplateSourceTestCase):
     def test_no_options_means_defaults(self):
         config = self.project._inventory_spec_config()
 
-        self.assertEqual(config, {'enabled': True, 'max_version': 3,
+        self.assertEqual(config, {'enabled': True,
+                                  'max_version': SPEC_VERSION,
                                   'allow_io': False})
 
     def test_a_null_tree_means_defaults(self):
@@ -870,7 +871,8 @@ class ProjectSpecConfigTestCase(TemplateSourceTestCase):
 
         config = self.project._inventory_spec_config()
 
-        self.assertEqual(config, {'enabled': True, 'max_version': 3,
+        self.assertEqual(config, {'enabled': True,
+                                  'max_version': SPEC_VERSION,
                                   'allow_io': False})
 
     def test_options_written_as_strings_are_honored(self):
