@@ -291,6 +291,23 @@ def test_config_get_format_choice():
     assert subcommands.args.format == "json"
 
 
+# The global --project-dir option of the sections which do not take a
+# project directory as a positional argument. The option comes after
+# the section name; for 'config' it comes after the command level as
+# well, because the command is a positional of its own.
+
+@pytest.mark.parametrize("argv", [
+    ("run", "--project-dir", "/tmp/example", "site.yml"),
+    ("check", "--project-dir", "/tmp/example", "site.yml"),
+    ("exec", "--project-dir", "/tmp/example", "all", "-m", "ping"),
+    ("config", "get", "--project-dir", "/tmp/example", "project.name"),
+])
+def test_global_project_dir_option_is_taken(argv):
+    subcommands = parse_cli(*argv)
+
+    assert subcommands.args.project_dir == "/tmp/example"
+
+
 # The first-class ansible options of the run/check/exec subcommands
 
 def test_run_parses_leading_ansible_options():
