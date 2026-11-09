@@ -49,6 +49,15 @@ General
   visible on the standard error stream when the check runs at the default
   log level.
 
+Removed
+~~~~~~~
+
+General
+'''''''
+
+- The unused ``debops.config.Configuration.section()`` method was removed
+  from the Python API. It had no callers in the project.
+
 
 `debops v3.2.9`_ - 2026-11-05
 -----------------------------
