@@ -89,12 +89,6 @@ class Configuration(object):
                 else:
                     d1[k] = v2
 
-    def section(self, section):
-        if self._config.has_section(section):
-            return self._config.items(section)
-        else:
-            return list()
-
     @property
     def raw(self):
         return self._config

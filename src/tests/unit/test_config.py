@@ -334,21 +334,6 @@ def test_get_env_returns_the_value(configuration, monkeypatch):
     assert configuration.get_env("DEBOPS_TEST_ENV") == "value"
 
 
-def test_section_returns_items_for_a_known_section(configuration):
-    configuration._config = mock.Mock()
-    configuration._config.has_section.return_value = True
-    configuration._config.items.return_value = [("a", "b")]
-
-    assert configuration.section("general") == [("a", "b")]
-
-
-def test_section_returns_empty_for_an_unknown_section(configuration):
-    configuration._config = mock.Mock()
-    configuration._config.has_section.return_value = False
-
-    assert configuration.section("general") == []
-
-
 def test_config_get_prints_a_scalar(configuration, capsys):
     configuration._config = {"a": "b"}
 
