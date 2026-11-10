@@ -80,7 +80,7 @@ def test_requires_the_venv_to_be_enabled(tmp_path):
         make_venv(tmp_path, raw=raw)
 
 
-def test_venv_init_tolerates_a_config_without_get(tmp_path):
+def test_venv_init_rejects_a_config_without_get(tmp_path):
     project = SimpleNamespace(path=str(tmp_path), project_type="modern",
                               auto_commit=mock.Mock(),
                               config=SimpleNamespace(raw=None))
