@@ -819,3 +819,29 @@ def test_project_commit_creates_a_commit(run_debops, tmp_path, debops_env):
                              "--porcelain"], capture_output=True, text=True,
                             check=True)
     assert status.stdout == ""
+
+
+def test_commit_refuses_a_foreign_git_repository(run_debops, tmp_path,
+                                                 debops_env):
+    """A git repository which is not a DebOps project directory is left
+    alone: the auto-commit must not touch repositories DebOps does not
+    own, like /etc managed by etckeeper."""
+    subprocess.run(["git", "init", "-q"], cwd=str(tmp_path), check=True)
+    tracked = tmp_path / "tracked"
+    tracked.write_text("initial\n")
+    subprocess.run(["git", "-C", str(tmp_path), "add", "tracked"],
+                   env=debops_env, check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "commit", "-q",
+                    "-m", "initial"], env=debops_env, check=True)
+    tracked.write_text("changed\n")
+
+    result = run_debops("project", "commit", cwd=str(tmp_path),
+                        env=debops_env)
+
+    assert result.returncode == 1
+    assert "project directory not found" in error_message(result)
+    head = subprocess.run(["git", "-C", str(tmp_path), "rev-list",
+                           "--count", "HEAD"], capture_output=True,
+                          text=True, check=True)
+    assert head.stdout.strip() == "1"
+    assert tracked.read_text() == "changed\n"
