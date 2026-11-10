@@ -95,8 +95,8 @@ class AnsiblePlaybookRunner(ProjectRunner):
                                               [project.view]
                                               ['playbook_sets']
                                               [argument])
-            logger.notice('Found playbook set "{}" in view "{}"'
-                          .format(argument, project.view))
+            logger.info('Found playbook set "{}" in view "{}"'
+                        .format(argument, project.view))
             if isinstance(playbook_set, list):
                 logger.debug('Playbook set "{}" expanded to: {}'
                              .format(argument, ' '.join(playbook_set)))
