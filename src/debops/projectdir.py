@@ -28,7 +28,6 @@ import shutil
 import subprocess
 import tempfile
 import sys
-import time
 import logging
 import re
 
@@ -1148,9 +1147,9 @@ class ProjectDir(object):
                                                  'init'],
                                                 stdin=subprocess.PIPE)
                 gitcrypt_cmd.communicate()
-                while not os.path.exists(
-                        os.path.join('.git', 'git-crypt', 'keys')):
-                    time.sleep(1)
+                if gitcrypt_cmd.returncode != 0:
+                    raise ChildProcessError(
+                        'git-crypt could not initialize the repository')
                 for gpg_key in gpg_keys:
                     gitcrypt_cmd = subprocess.Popen([self._commands['git-crypt'],
                                                      'add-gpg-user',
