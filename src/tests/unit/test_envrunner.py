@@ -20,6 +20,20 @@ def stub_ansible_inventory(monkeypatch):
                         mock.Mock())
 
 
+@pytest.fixture(autouse=True)
+def _isolated_environment():
+    """The runners write the process environment directly as they run, and
+    the process environment is shared with every test which runs after
+    them in the pytest process: leak instances of 'ANSIBLE_CONFIG' have
+    broken integration tests in mysterious ways. The patch snapshots the
+    environment before each test and restores it afterwards.
+    """
+    patcher = mock.patch.dict(os.environ)
+    patcher.start()
+    yield
+    patcher.stop()
+
+
 def test_command_is_the_user_supplied_arguments(stub_project):
     runner = EnvRunner(stub_project(), command_args=["env"])
     assert runner._command == ["env"]
