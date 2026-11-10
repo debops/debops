@@ -1625,9 +1625,8 @@ class ProjectDir(object):
         logger.debug("Refresing project directory")
 
         if not run_hooks(self.path, 'pre-refresh'):
-            print('Hook pre-refresh aborted, not refreshing project',
-                  file=sys.stderr)
-            return
+            raise ChildProcessError(
+                'Hook pre-refresh aborted, not refreshing project')
 
         if self.project_type == 'modern':
             self.createdirs(self.path)

@@ -385,7 +385,7 @@ def test_refresh_aborts_on_a_failing_pre_refresh_hook(run_debops, tmp_path,
     result = run_debops("project", "refresh", str(project_dir),
                         env=debops_env)
 
-    assert result.returncode == 0
+    assert result.returncode == 1
     assert "Hook pre-refresh aborted" in error_message(result)
     assert hosts.read_text() == before
 
