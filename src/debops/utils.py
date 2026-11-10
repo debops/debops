@@ -46,15 +46,26 @@ def strtobool(value):
     raise ValueError
 
 
-def write_file(path, content, overwrite=False):
+def write_file(path, content, overwrite=False, project=None):
     """Write text to path, creating missing parent directories.
 
     An existing file is left alone unless overwrite is True, which keeps
     hand-edited files from being replaced by generated content.
 
+    When the project directory is given, the write is refused when the
+    target path resolves outside of it, so that a mistyped path cannot
+    scatter generated files across the file system.
+
     Returns True if the file was written, False if it already existed and
     overwriting was not requested.
     """
+    if project is not None:
+        root = os.path.realpath(project)
+        target = os.path.realpath(path)
+        if not target.startswith(root + os.sep):
+            raise ValueError('Refusing to write outside of the project '
+                             'directory: ' + path)
+
     if os.path.exists(path) and not overwrite:
         return False
 

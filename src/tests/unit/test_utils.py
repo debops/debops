@@ -95,6 +95,25 @@ def test_write_file_without_a_directory(tmp_path, monkeypatch):
     assert (tmp_path / "file.txt").read_text() == "hello\n"
 
 
+def test_write_file_inside_the_project(tmp_path):
+    project = tmp_path / "project"
+    target = project / "generated" / "file.txt"
+
+    assert utils.write_file(str(target), "hello\n",
+                            project=str(project)) is True
+    assert target.read_text() == "hello\n"
+
+
+def test_write_file_refuses_a_target_outside_the_project(tmp_path):
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    project = tmp_path / "project"
+
+    with pytest.raises(ValueError):
+        utils.write_file(str(outside / "file.txt"), "hello\n",
+                         project=str(project))
+
+
 def test_host_is_controller_on_debian(monkeypatch):
     monkeypatch.setattr(utils.platform, "system", lambda: "Linux")
     monkeypatch.setattr(utils.distro, "id", lambda: "Debian")
