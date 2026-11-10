@@ -163,21 +163,22 @@ def test_main_maps_the_syslog_facility(clean_logging, monkeypatch):
     assert syslog_handler().facility == SysLogHandler.LOG_LOCAL0
 
 
-def test_main_filters_can_block_a_handler(clean_logging, monkeypatch):
+def test_main_filters_can_allow_a_handler(clean_logging, monkeypatch):
     stub_main_collaborators(monkeypatch)
 
     main_module.main()
 
     record = logging.LogRecord("debops", logging.INFO, __file__, 1,
                                "message", (), None)
-    record.block = "stderr"
-    assert stream_handler().filters[0](record) is False
-    assert syslog_handler().filters[0](record) is True
-    record.block = "syslog"
+    record.allow = "stderr"
     assert stream_handler().filters[0](record) is True
     assert syslog_handler().filters[0](record) is False
-    del record.block
+    record.allow = "syslog"
+    assert stream_handler().filters[0](record) is False
+    assert syslog_handler().filters[0](record) is True
+    del record.allow
     assert stream_handler().filters[0](record) is True
+    assert syslog_handler().filters[0](record) is True
 
 
 def test_run_reports_a_keyboard_interrupt(clean_logging, monkeypatch):
