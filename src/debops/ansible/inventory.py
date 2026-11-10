@@ -154,7 +154,7 @@ class AnsibleInventory(object):
                                                   for r in gpg_keys))
         except AttributeError:
             logger.error('List of GPG recipients not specified',
-                         extra={'block': 'stderr'})
+                         extra={'allow': 'syslog'})
             raise ValueError('List of GPG recipients not specified')
 
         if not os.path.exists(self.encfs_path):
@@ -227,7 +227,7 @@ class AnsibleInventory(object):
         except FileExistsError:
             logger.error('Cannot create view in {}, directory already '
                          'exists'.format(self.root_path),
-                         extra={'block': 'stderr'})
+                         extra={'allow': 'syslog'})
             raise IsADirectoryError("Cannot create view in "
                                     + self.root_path + ", directory "
                                     "already exists")
@@ -340,7 +340,7 @@ class AnsibleInventory(object):
                     else:
                         logger.error('Cannot unlock project secrets, '
                                      'git working directory not clean',
-                                     extra={'block': 'stderr'})
+                                     extra={'allow': 'syslog'})
                         raise ChildProcessError('Cannot unlock project secrets, '
                                                 'git working directory not clean')
                 else:
@@ -393,7 +393,7 @@ class AnsibleInventory(object):
                     else:
                         logger.error('Cannot lock project secrets, '
                                      'git working directory not clean',
-                                     extra={'block': 'stderr'})
+                                     extra={'allow': 'syslog'})
                         raise ChildProcessError('Cannot lock project secrets, '
                                                 'git working directory not clean')
 

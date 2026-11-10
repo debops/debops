@@ -361,4 +361,4 @@ class VersionCheck(object):
         self._logger.notice(
                 'DebOps {} is available, you have {}{}'.format(
                     latest_version, self._version, hint),
-                extra={'block': 'syslog'})
+                extra={'allow': 'stderr'})

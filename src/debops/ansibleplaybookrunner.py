@@ -100,7 +100,7 @@ class AnsiblePlaybookRunner(ProjectRunner):
                 return playbook_set
             else:
                 logger.error('Incorrect definition of playbook set',
-                             extra={'block': 'stderr'})
+                             extra={'allow': 'syslog'})
                 raise ValueError('Incorrect definition of playbook set')
         except KeyError:
             logger.debug('No playbook set found')
@@ -297,11 +297,11 @@ class AnsiblePlaybookRunner(ProjectRunner):
             if run_check_mode == 'check':
                 logger.info('Checking Ansible playbooks: {}'.format(
                         ','.join(self._found_playbooks)),
-                        extra={'block': 'stderr'})
+                        extra={'allow': 'syslog'})
             else:
                 logger.info('Running Ansible playbooks: {}'.format(
                         ','.join(self._found_playbooks)),
-                        extra={'block': 'stderr'})
+                        extra={'allow': 'syslog'})
             print('Executing Ansible playbooks:')
             for playbook in self._found_playbooks:
                 print(unexpanduser(playbook))
@@ -319,7 +319,7 @@ class AnsiblePlaybookRunner(ProjectRunner):
 
         except KeyboardInterrupt:
             logger.notice('Playbook execution interrupted by user',
-                          extra={'block': 'stderr'})
+                          extra={'allow': 'syslog'})
             raise SystemExit('... aborted by user')
         else:
             self._ring_bell()

@@ -57,7 +57,7 @@ class AnsibleRunner(ProjectRunner):
 
         except KeyboardInterrupt:
             logger.notice('Ansible execution interrupted by user',
-                          extra={'block': 'stderr'})
+                          extra={'allow': 'syslog'})
             raise SystemExit('... aborted by user')
 
         else:

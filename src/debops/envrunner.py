@@ -48,7 +48,7 @@ class EnvRunner(ProjectRunner):
 
         except KeyboardInterrupt:
             logger.notice('Command execution interrupted by user',
-                          extra={'block': 'stderr'})
+                          extra={'allow': 'syslog'})
             raise SystemExit('... aborted by user')
 
         finally:
