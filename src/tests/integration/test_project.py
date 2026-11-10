@@ -103,7 +103,7 @@ def test_init_reports_a_missing_galaxy_binary(run_debops, tmp_path,
     env = dict(debops_env, PATH=str(bin_dir))
     project_dir = tmp_path / "example"
 
-    result = run_debops("project", "init", "-v", str(project_dir), env=env)
+    result = run_debops("project", "init", "-vv", str(project_dir), env=env)
 
     assert result.returncode == 0
     assert "ansible-galaxy not available in $PATH" in error_message(result)

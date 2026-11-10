@@ -408,7 +408,7 @@ def test_rewrite_view_collections_path_ignores_a_missing_file(tmp_path,
                                                               caplog):
     project = make_project_at(tmp_path)
 
-    with caplog.at_level(logging.NOTICE, logger="debops.projectdir"):
+    with caplog.at_level(logging.INFO, logger="debops.projectdir"):
         assert project._rewrite_view_collections_path("system") is False
 
     assert "View configuration file not found" in caplog.text

@@ -886,7 +886,7 @@ def test_freeze_collections_reports_when_nothing_is_locked(tmp_path, caplog):
             "---\ncollections:\n  - name: 'ansible.posix'\n"))
     mock_installed_collections(venv, {})
 
-    with caplog.at_level(logging.NOTICE, logger="debops.projectvenv"):
+    with caplog.at_level(logging.INFO, logger="debops.projectvenv"):
         venv.freeze_collections()
 
     assert "not writing the lock file" in caplog.text
