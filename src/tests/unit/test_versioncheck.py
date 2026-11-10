@@ -371,9 +371,8 @@ class CacheTestCase(VersionCheckTestCase):
         with unittest.mock.patch.object(check, '_git_fetch',
                                         return_value=True) as fetch:
             check.check()
-        self.assertFalse(os.path.exists(
-            os.path.join(self.tmpdir, 'fetch-marker')))
-        self.assertNotIn(True, [fetch.call_count > 1])
+        # The cached result is replayed without contacting the source
+        fetch.assert_not_called()
         self.assertIn('1.2.3', check._logger.notice.call_args[0][0])
 
     def test_mismatched_source_is_rechecked_from_the_live_source(self):
