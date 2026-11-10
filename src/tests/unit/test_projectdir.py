@@ -671,6 +671,32 @@ def test_create_aborts_on_a_failing_pre_init_hook(tmp_path):
         project.create()
 
 
+def test_create_aborts_on_a_failed_git_crypt_init(tmp_path, monkeypatch):
+    """A git-crypt initialization failure aborts the project creation
+    instead of waiting forever for the keys to appear."""
+    project = make_project_at(tmp_path, raw=dict(
+        DEFAULT_PROJECT_RAW, git={"init_message": "Initialize"}))
+    project.kwargs = {"git": True, "encrypt": "git-crypt",
+                      "keys": "test@example.org"}
+    project._commands = {"git-crypt": "git-crypt"}
+    monkeypatch.setattr(projectdir_module, "run_hooks",
+                        mock.Mock(return_value=True))
+    monkeypatch.setattr(ProjectDir, "_create_modern_project", mock.Mock())
+    repo = mock.Mock()
+    monkeypatch.setattr(projectdir_module.git, "Repo",
+                        mock.Mock(init=mock.Mock(return_value=repo)))
+    process = mock.Mock(returncode=1)
+    process.communicate.return_value = (b"", b"")
+    monkeypatch.setattr(projectdir_module.subprocess, "Popen",
+                        mock.Mock(return_value=process))
+    monkeypatch.chdir(tmp_path)
+
+    with pytest.raises(ChildProcessError, match="git-crypt"):
+        project.create()
+
+    process.communicate.assert_called_once_with()
+
+
 def test_enable_venv_collections_requirements_without_the_comment(tmp_path):
     project = make_project_at(tmp_path)
     requirements = write_collections_requirements(
