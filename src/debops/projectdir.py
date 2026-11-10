@@ -260,12 +260,14 @@ class ProjectDir(object):
         """
         If file:`filename` does not exist, create it and write
         var:`content` into it. An existing file is only replaced when
-        var:`overwrite` is True.
+        var:`overwrite` is True. The write is contained in the project
+        directory.
 
         Returns True if the file was written, False if it already existed and
         overwriting was not requested.
         """
-        return write_file(filename, ''.join(content), overwrite=overwrite)
+        return write_file(filename, ''.join(content), overwrite=overwrite,
+                          project=self.path)
 
     def _venv_enabled(self):
         """Check if the project uses an encapsulated Python virtual

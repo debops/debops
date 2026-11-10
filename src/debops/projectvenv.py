@@ -409,7 +409,8 @@ class ProjectVenv(object):
                                seed_requirements(),
                                find_missing_external_deps(
                                    seed_names(), self.interpreter))
-                           + '\n')
+                           + '\n',
+                           project=self.project_path)
             print('Installing Python packages from '
                   + unexpanduser(self.requirements_path) + ':', flush=True)
             python = os.path.join(self.venv_path, 'bin', 'python')
@@ -535,7 +536,8 @@ class ProjectVenv(object):
             content += '\n' + '\n\n'.join(blocks) + '\n'
         print('Writing the pinned Python package versions to '
               + unexpanduser(self.requirements_path), flush=True)
-        write_file(self.requirements_path, content, overwrite=True)
+        write_file(self.requirements_path, content, overwrite=True,
+                   project=self.project_path)
 
     def install_collections(self, upgrade=False):
         """Install the Ansible Collections required by the project.
@@ -690,4 +692,4 @@ class ProjectVenv(object):
                                                        _yaml_quote(value)))
 
         write_file(self.collections_lock, '\n'.join(lines) + '\n',
-                   overwrite=True)
+                   overwrite=True, project=self.project_path)

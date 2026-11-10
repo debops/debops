@@ -26,6 +26,14 @@ You can read information about required changes between releases in the
 Changed
 ~~~~~~~
 
+General
+'''''''
+
+- The :func:`debops.utils.write_file` helper refuses to write files
+  which resolve outside of the project directory when the project root
+  is specified. All project writes performed by DebOps are contained
+  by this check.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
