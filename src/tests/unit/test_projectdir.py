@@ -651,6 +651,14 @@ def test_commit_ignores_a_foreign_git_repository(tmp_path, monkeypatch):
     assert head_count.stdout.strip() == "1"
 
 
+def test_write_file_guard_refuses_an_outside_target(tmp_path):
+    project = make_project_at(tmp_path)
+
+    with pytest.raises(ValueError):
+        project._write_file(os.path.join(str(tmp_path), "..", "escape"),
+                            "content\n")
+
+
 def test_create_aborts_on_a_failing_pre_init_hook(tmp_path):
     project = make_project_at(tmp_path)
     hook_dir = tmp_path / ".debops" / "hooks" / "pre-init"
