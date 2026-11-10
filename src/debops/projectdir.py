@@ -1185,8 +1185,8 @@ class ProjectDir(object):
                             stdin=subprocess.PIPE)
                     galaxy_cmd.communicate()
                 except FileNotFoundError:
-                    logger.notice('ansible-galaxy not available in $PATH, '
-                                  'not installing Ansible Collections')
+                    logger.info('ansible-galaxy not available in $PATH, '
+                                'not installing Ansible Collections')
                 logger.debug('Ansible Collections installed in project '
                              'directory')
 
@@ -1433,8 +1433,8 @@ class ProjectDir(object):
         path = os.path.join(self.path, '.debops', 'conf.d',
                             'view-' + filename_view + '.yml')
         if not os.path.isfile(path):
-            logger.notice('View configuration file not found in '
-                          + unexpanduser(path) + ', not updated')
+            logger.info('View configuration file not found in '
+                        + unexpanduser(path) + ', not updated')
             return False
         with open(path, encoding='utf-8') as fh:
             content = fh.read()
@@ -1447,8 +1447,8 @@ class ProjectDir(object):
                 fh.write(new_content)
             return True
         if not count:
-            logger.notice('The "collections_path" option not found in '
-                          + unexpanduser(path) + ', not updated')
+            logger.info('The "collections_path" option not found in '
+                        + unexpanduser(path) + ', not updated')
         return False
 
     def _ensure_collections_lock_unignored(self):
