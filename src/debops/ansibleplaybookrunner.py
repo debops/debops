@@ -14,6 +14,12 @@ import sys
 
 logger = logging.getLogger(__name__)
 
+# Operator-visible notices publish through a logger with its own level,
+# the same pattern as the version check: the notice reaches the
+# terminal even when the journal level keeps the 'debops' logger quiet.
+notice_logger = logging.getLogger('debops.notice')
+notice_logger.setLevel(logging.NOTICE)
+
 
 class AnsiblePlaybookRunner(ProjectRunner):
     """Run the :command:`ansible-playbook` command in the project
@@ -52,12 +58,9 @@ class AnsiblePlaybookRunner(ProjectRunner):
             if datetime.date.today().isoweekday() == 5:
                 if ('--check' not in self._ansible_command and
                         '-C' not in self._ansible_command):
-                    logger.notice("It's Read-Only Friday, switching to check mode",
-                                  extra={'block': 'stderr'})
-                    # The message goes to stderr so that embedders which
-                    # reserve stdout for their own protocol stay intact
-                    print("It's Read-Only Friday, switching to check mode",
-                          file=sys.stderr)
+                    notice_logger.notice(
+                        "It's Read-Only Friday, switching to check mode",
+                        extra={'allow': 'stderr'})
                     self._ansible_command.extend(['--diff', '--check'])
 
         if self.kwargs.get('debug'):

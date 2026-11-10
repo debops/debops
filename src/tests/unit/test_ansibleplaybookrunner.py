@@ -135,21 +135,22 @@ def test_find_collections_discovers_collection_playbooks(stub_project,
 
 
 def test_read_only_friday_switches_to_check_mode(stub_project, monkeypatch,
-                                                 capsys):
+                                                 capsys, caplog):
     project = stub_project()
     project.config.raw["project"] = {"read_only_friday": True}
     monkeypatch.setattr(runner_module.datetime, "date", Friday)
 
-    runner = AnsiblePlaybookRunner(project, ansible_args=["site.yml"])
+    with caplog.at_level(logging.NOTICE, logger="debops.notice"):
+        runner = AnsiblePlaybookRunner(project, ansible_args=["site.yml"])
 
     assert runner._ansible_command == ["ansible-playbook", "site.yml",
                                        "--diff", "--check"]
 
-    # The notice goes to stderr; the stdout stays reserved for the
-    # generated Ansible command ('--eval' consumers)
-    captured = capsys.readouterr()
-    assert "Read-Only Friday" in captured.err
-    assert captured.out == ""
+    # The notice reaches the journal and the terminal by default; the
+    # stdout stays reserved for the generated Ansible command
+    # ('--eval' consumers)
+    assert "Read-Only Friday" in caplog.text
+    assert capsys.readouterr().out == ""
 
 
 def test_read_only_friday_respects_existing_check_mode(stub_project,
