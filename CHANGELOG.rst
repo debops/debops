@@ -29,10 +29,22 @@ Changed
 General
 '''''''
 
+- The :command:`debops` command line keeps its terminal output quiet
+  at the WARNING log level, while the journal follows the configured
+  ``[syslog] level`` (now NOTICE by default), one step more verbose
+  than the terminal. Operator-relevant events such as hook executions
+  and interrupted runs are recorded in the journal without requiring
+  ``-v``, progress messages surface with ``-vv``, and CLI failures are
+  recorded in the journal as well.
+
 - The :func:`debops.utils.write_file` helper refuses to write files
   which resolve outside of the project directory when the project root
   is specified. All project writes performed by DebOps are contained
   by this check.
+
+- A failing pre-refresh hook aborts the :command:`debops project
+  refresh` command with an error exit code instead of exiting
+  successfully, matching the behavior of the other hook types.
 
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
