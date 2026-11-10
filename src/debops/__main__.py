@@ -23,13 +23,15 @@ def main():
     config = debops.config.Configuration()
 
     def build_handler_filters(handler: str):
-        """Add a way to block output of a specific log handler
-        Usage: logger.level('Message', extra={'block': 'handler'})"""
+        """Route records to a specific handler.
+
+        Usage: logger.notice('Message', extra={'allow': 'syslog'})
+        sends the record to the syslog handler only. Records without
+        the marker go to every handler whose gate admits them."""
 
         def handler_filter(record: logging.LogRecord):
-            if hasattr(record, 'block'):
-                if record.block == handler:
-                    return False
+            if hasattr(record, 'allow') and record.allow != handler:
+                return False
             return True
         return handler_filter
 
@@ -141,7 +143,7 @@ def run():
         main()
     except KeyboardInterrupt:
         logger.notice('User interrupted execution',
-                      extra={'block': 'stderr'})
+                      extra={'allow': 'syslog'})
         raise SystemExit('... aborted by user')
 
 

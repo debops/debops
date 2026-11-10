@@ -85,7 +85,7 @@ def run_hooks(project_path, hook_name, timeout=DEFAULT_HOOK_TIMEOUT,
     if require_project and not _is_project_dir(project_path):
         logger.warning('Refusing to run "{}" hooks: {} is not a DebOps '
                        'project directory'.format(hook_name, project_path),
-                       extra={'block': 'stderr'})
+                       extra={'allow': 'syslog'})
         return False
 
     project_hooks_dir = os.path.join(project_path, '.debops', 'hooks',
@@ -113,7 +113,7 @@ def run_hooks(project_path, hook_name, timeout=DEFAULT_HOOK_TIMEOUT,
 
     for script in all_scripts:
         logger.notice('Running hook script: {}'.format(script),
-                      extra={'block': 'stderr'})
+                      extra={'allow': 'syslog'})
         try:
             result = subprocess.run(
                 [script],
@@ -122,12 +122,12 @@ def run_hooks(project_path, hook_name, timeout=DEFAULT_HOOK_TIMEOUT,
                 timeout=timeout)
         except subprocess.TimeoutExpired:
             logger.error('Hook script {} timed out after {} seconds'.format(
-                script, timeout), extra={'block': 'stderr'})
+                script, timeout), extra={'allow': 'syslog'})
             return False
 
         if result.returncode != 0:
             logger.error('Hook script {} failed with exit code {}'.format(
-                script, result.returncode), extra={'block': 'stderr'})
+                script, result.returncode), extra={'allow': 'syslog'})
             return False
 
     return True
