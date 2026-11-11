@@ -24,6 +24,7 @@ import pytest
 
 import debops.core.projectdir as projectdir_module
 from debops.core.config import Configuration
+from debops.core.exceptions import ViewNotFoundError
 from debops.core.projectdir import ProjectDir
 
 
@@ -1200,7 +1201,7 @@ def test_init_rejects_an_unknown_view(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     write_modern_project(tmp_path)
 
-    with pytest.raises(NotADirectoryError):
+    with pytest.raises(ViewNotFoundError):
         ProjectDir(str(tmp_path), view="nonexistent",
                    config=make_configuration())
 
@@ -1218,6 +1219,75 @@ def test_init_honors_the_default_view_option(tmp_path, monkeypatch):
     assert project.view == "web"
     assert (os.environ["DEBOPS_ANSIBLE_INVENTORY"]
             == str(tmp_path / "ansible" / "views" / "web" / "inventory"))
+
+
+def test_resolve_view_selects_the_explicit_view():
+    assert ProjectDir.resolve_view(
+        "/proj", "/proj", ["system", "web"], explicit="web") == "web"
+
+
+def test_resolve_view_rejects_an_unknown_explicit_view():
+    with pytest.raises(ViewNotFoundError):
+        ProjectDir.resolve_view("/proj", "/proj", ["system"],
+                                explicit="web")
+
+
+def test_resolve_view_prefers_the_explicit_view_over_the_directory(tmp_path):
+    cwd = tmp_path / "ansible" / "views" / "web"
+    cwd.mkdir(parents=True)
+    root = tmp_path / "proj"
+    root.mkdir()
+    assert ProjectDir.resolve_view(
+        str(root), str(cwd), ["system", "web", "db"], explicit="db") == "db"
+
+
+def test_resolve_view_picks_the_view_from_the_working_directory(tmp_path):
+    # The cwd inside 'ansible/views/<name>' selects that view even when
+    # the project root lies elsewhere
+    cwd = tmp_path / "ansible" / "views" / "web" / "site"
+    cwd.mkdir(parents=True)
+    root = tmp_path / "proj"
+    root.mkdir()
+    assert ProjectDir.resolve_view(
+        str(root), str(cwd), ["system", "web"]) == "web"
+
+
+def test_resolve_view_walks_out_of_a_view_subdirectory(tmp_path):
+    cwd = tmp_path / "ansible" / "views" / "web" / "site" / "deeper"
+    cwd.mkdir(parents=True)
+    root = tmp_path / "proj"
+    root.mkdir()
+    assert ProjectDir.resolve_view(
+        str(root), str(cwd), ["system", "web"]) == "web"
+
+
+def test_resolve_view_ignores_the_working_directory_at_the_root(tmp_path):
+    # At the project root there is no view directory to walk out of
+    root = tmp_path / "proj"
+    (root / "ansible" / "views" / "web").mkdir(parents=True)
+    assert ProjectDir.resolve_view(
+        str(root), str(root), ["system", "web"]) == "system"
+
+
+def test_resolve_view_leaves_an_ambiguous_directory_to_the_default(tmp_path):
+    # Both 'web' and 'web/site' are prefixes of the current directory,
+    # so the match is ambiguous and the default view applies
+    cwd = tmp_path / "ansible" / "views" / "web" / "site"
+    cwd.mkdir(parents=True)
+    root = tmp_path / "proj"
+    root.mkdir()
+    assert ProjectDir.resolve_view(
+        str(root), str(cwd), ["system", "web", "web/site"],
+        default="system") == "system"
+
+
+def test_resolve_view_falls_back_to_the_default_view():
+    assert ProjectDir.resolve_view(
+        "/proj", "/proj", ["system", "web"], default="web") == "web"
+
+
+def test_resolve_view_defaults_to_the_system_view():
+    assert ProjectDir.resolve_view("/proj", "/proj", ["system"]) == "system"
 
 
 def test_init_merges_the_project_environment_file(tmp_path, monkeypatch):
