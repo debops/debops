@@ -19,6 +19,12 @@ class NoDefaultViewException(DebOpsError):
     pass
 
 
+class ViewNotFoundError(DebOpsError):
+    """Raised when an explicitly selected view is not defined in the
+    DebOps project"""
+    pass
+
+
 class InventorySpecError(DebOpsError):
     """Raised when an inventory file specification is invalid"""
     pass

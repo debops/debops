@@ -2,7 +2,8 @@
 # Copyright (C) 2020-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from .core.exceptions import NoDefaultViewException, InventorySpecError
+from .core.exceptions import (NoDefaultViewException, InventorySpecError,
+                              ViewNotFoundError)
 from .core.config import Configuration
 from .subcommands import Subcommands
 from .core.projectdir import ProjectDir
@@ -78,7 +79,7 @@ class Interpreter(object):
             project = ProjectDir(path=args.project_dir, config=self.config,
                                  **vars(args))
             project.refresh()
-        except (IsADirectoryError, NotADirectoryError,
+        except (IsADirectoryError, NotADirectoryError, ViewNotFoundError,
                 PermissionError, InventorySpecError,
                 ChildProcessError, ValueError) as errmsg:
             print_error(errmsg)
@@ -93,7 +94,7 @@ class Interpreter(object):
             except (NoDefaultViewException) as errmsg:
                 print_error(errmsg)
                 sys.exit(1)
-        except (IsADirectoryError, NotADirectoryError,
+        except (IsADirectoryError, NotADirectoryError, ViewNotFoundError,
                 PermissionError, ChildProcessError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
@@ -107,7 +108,7 @@ class Interpreter(object):
             except (NoDefaultViewException) as errmsg:
                 print_error(errmsg)
                 sys.exit(1)
-        except (IsADirectoryError, NotADirectoryError,
+        except (IsADirectoryError, NotADirectoryError, ViewNotFoundError,
                 PermissionError, ChildProcessError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
@@ -158,7 +159,8 @@ class Interpreter(object):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config,
                                  view=args.view)
-        except (IsADirectoryError, NotADirectoryError) as errmsg:
+        except (IsADirectoryError, NotADirectoryError,
+                ViewNotFoundError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
 
@@ -183,7 +185,8 @@ class Interpreter(object):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config,
                                  view=args.view)
-        except (IsADirectoryError, NotADirectoryError, ChildProcessError) as errmsg:
+        except (IsADirectoryError, NotADirectoryError, ViewNotFoundError,
+                ChildProcessError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
 
@@ -208,7 +211,8 @@ class Interpreter(object):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config,
                                  view=args.view)
-        except (IsADirectoryError, NotADirectoryError) as errmsg:
+        except (IsADirectoryError, NotADirectoryError,
+                ViewNotFoundError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
 
