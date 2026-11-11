@@ -502,10 +502,10 @@ def test_env_executes_the_command(monkeypatch):
     runner.show_env.assert_not_called()
 
 
-def test_env_shows_the_environment_without_a_command(monkeypatch):
+def test_env_shows_the_environment_without_a_command(monkeypatch, capsys):
     project = mock.Mock()
     runner = mock.Mock()
-    runner.show_env.return_value = 7
+    runner.show_env.return_value = ["DEBOPS_TEST_VARIABLE=1"]
     monkeypatch.setattr(cli_module, "ProjectDir",
                         mock.Mock(return_value=project))
     monkeypatch.setattr(cli_module, "EnvRunner",
@@ -516,8 +516,9 @@ def test_env_shows_the_environment_without_a_command(monkeypatch):
         interpreter.do_env(make_args(project_dir=".", view="system",
                                      command_args=[], scope="full"))
 
-    assert caught.value.code == 7
+    assert caught.value.code == 0
     runner.show_env.assert_called_once_with(scope="full")
+    assert "DEBOPS_TEST_VARIABLE=1" in capsys.readouterr().out
 
 
 def test_env_reports_an_aborted_hook(monkeypatch, capsys):
@@ -538,21 +539,25 @@ def test_env_reports_an_aborted_hook(monkeypatch, capsys):
     assert "Hook pre-env aborted" in capsys.readouterr().err
 
 
-def test_config_list_lists_the_configuration(monkeypatch):
+def test_config_list_lists_the_configuration(monkeypatch, capsys):
     project = mock.Mock()
     monkeypatch.setattr(cli_module, "ProjectDir",
                         mock.Mock(return_value=project))
     interpreter = make_interpreter()
+    interpreter.config.config_list.return_value = [
+        "# Configuration files:", "example"]
 
     interpreter.do_config_list(make_args(project_dir="."))
 
     interpreter.config.config_list.assert_called_once_with()
+    assert "example" in capsys.readouterr().out
 
 
 def test_config_list_works_outside_of_a_project(monkeypatch):
     monkeypatch.setattr(cli_module, "ProjectDir",
                         mock.Mock(side_effect=IsADirectoryError("not a dir")))
     interpreter = make_interpreter()
+    interpreter.config.config_list.return_value = []
 
     interpreter.do_config_list(make_args(project_dir="."))
 

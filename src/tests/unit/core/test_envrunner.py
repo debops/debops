@@ -56,36 +56,31 @@ def test_missing_defaults_section_in_an_existing_file(stub_project, caplog):
     assert project.ansible_cfg.path in caplog.text
 
 
-def test_missing_inventory_option_aborts(stub_project, capsys):
+def test_missing_inventory_option_aborts(stub_project):
     project = stub_project(cfg_options={})
-    with pytest.raises(SystemExit) as exception:
+    with pytest.raises(ValueError, match="No inventory specified"):
         EnvRunner(project, command_args=["env"])
 
-    assert exception.value.code == 1
-    assert "No inventory specified" in capsys.readouterr().err
 
-
-def test_show_env_local_prints_configured_variables(stub_project, capsys,
-                                                    monkeypatch):
+def test_show_env_local_returns_configured_variables(stub_project,
+                                                     monkeypatch):
     monkeypatch.setenv("DEBOPS_UNCONFIGURED", "1")
     project = stub_project(env_vars={"DEBOPS_PROJECT_VIEW": "system"})
     runner = EnvRunner(project, command_args=["env"])
 
-    runner.show_env("local")
+    lines = runner.show_env("local")
 
-    output = capsys.readouterr().out
-    assert output.strip() == "DEBOPS_PROJECT_VIEW=system"
-    assert "DEBOPS_UNCONFIGURED" not in output
+    assert lines == ["DEBOPS_PROJECT_VIEW=system"]
 
 
-def test_show_env_full_prints_process_environment(stub_project, capsys,
-                                                  monkeypatch):
+def test_show_env_full_returns_the_process_environment(stub_project,
+                                                       monkeypatch):
     monkeypatch.setenv("DEBOPS_TEST_VARIABLE", "1")
     runner = EnvRunner(stub_project(), command_args=["env"])
 
-    runner.show_env("full")
+    lines = runner.show_env("full")
 
-    assert "DEBOPS_TEST_VARIABLE=1" in capsys.readouterr().out
+    assert "DEBOPS_TEST_VARIABLE=1" in lines
 
 
 def test_execute_returns_the_command_return_code(stub_project, monkeypatch,

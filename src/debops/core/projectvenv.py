@@ -410,8 +410,9 @@ class ProjectVenv(object):
                                    seed_names(), self.interpreter))
                            + '\n',
                            project=self.project_path)
-            print('Installing Python packages from '
-                  + unexpanduser(self.requirements_path) + ':', flush=True)
+            logger.notice('Installing Python packages from '
+                          + unexpanduser(self.requirements_path) + ':',
+                          extra={'allow': ['stderr', 'syslog']})
             python = os.path.join(self.venv_path, 'bin', 'python')
             rc = self._run([python, '-m', 'pip', 'install', '-r',
                             self.requirements_path])
@@ -533,8 +534,9 @@ class ProjectVenv(object):
         content = FREEZE_HEADER + frozen
         if blocks:
             content += '\n' + '\n\n'.join(blocks) + '\n'
-        print('Writing the pinned Python package versions to '
-              + unexpanduser(self.requirements_path), flush=True)
+        logger.notice('Writing the pinned Python package versions to '
+                      + unexpanduser(self.requirements_path),
+                      extra={'allow': ['stderr', 'syslog']})
         write_file(self.requirements_path, content, overwrite=True,
                    project=self.project_path)
 
@@ -556,8 +558,9 @@ class ProjectVenv(object):
                     + unexpanduser(self.collections_requirements))
 
         if not upgrade and os.path.isfile(self.collections_lock):
-            print('Installing Ansible Collections from the lock file, '
-                  + unexpanduser(self.collections_lock) + ':', flush=True)
+            logger.notice('Installing Ansible Collections from the lock '
+                          'file, ' + unexpanduser(self.collections_lock)
+                          + ':', extra={'allow': ['stderr', 'syslog']})
             rc = self._run([galaxy, 'collection', 'install', '-r',
                             self.collections_lock])
             if rc != 0:
@@ -566,9 +569,9 @@ class ProjectVenv(object):
                         + unexpanduser(self.collections_lock))
 
         verb = 'Force-upgrading' if upgrade else 'Installing'
-        print(verb + ' Ansible Collections from '
-              + unexpanduser(self.collections_requirements) + ':',
-              flush=True)
+        logger.notice(verb + ' Ansible Collections from '
+                      + unexpanduser(self.collections_requirements) + ':',
+                      extra={'allow': ['stderr', 'syslog']})
         argv = [galaxy, 'collection', 'install', '-r',
                 self.collections_requirements]
         if upgrade:
@@ -670,8 +673,9 @@ class ProjectVenv(object):
                         + ', not writing the lock file')
             return
 
-        print('Writing the Ansible Collection lock file '
-              + unexpanduser(self.collections_lock), flush=True)
+        logger.notice('Writing the Ansible Collection lock file '
+                      + unexpanduser(self.collections_lock),
+                      extra={'allow': ['stderr', 'syslog']})
         lines = [COLLECTIONS_LOCK_HEADER + 'collections:']
         for comment, entry in locked:
             lines.append('')
