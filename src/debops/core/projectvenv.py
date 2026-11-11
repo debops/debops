@@ -288,12 +288,10 @@ class ProjectVenv(object):
     control; the environment itself is not, and can be recreated on demand.
     """
 
-    def __init__(self, project, *args, **kwargs):
+    def __init__(self, project):
         self.project = project
         self.project_path = project.path
         self.project_type = project.project_type
-        self.args = args
-        self.kwargs = kwargs
 
         if self.project_type != 'modern':
             raise ValueError('Python virtual environments can be managed '

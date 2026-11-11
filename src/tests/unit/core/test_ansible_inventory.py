@@ -60,7 +60,7 @@ def test_encfs_secrets_are_detected(stub_project):
 
     assert inventory.encrypted
     assert inventory.crypt_method == "encfs"
-    assert not inventory.encfs_mounted
+    assert not inventory.decrypted
 
 
 def test_git_crypt_secrets_are_detected(stub_project, monkeypatch):
@@ -73,7 +73,7 @@ def test_git_crypt_secrets_are_detected(stub_project, monkeypatch):
 
     assert inventory.encrypted
     assert inventory.crypt_method == "git-crypt"
-    assert not inventory.encfs_mounted
+    assert not inventory.decrypted
 
 
 def test_unlocked_git_crypt_is_reported_as_mounted(stub_project, monkeypatch):
@@ -84,7 +84,7 @@ def test_unlocked_git_crypt_is_reported_as_mounted(stub_project, monkeypatch):
 
     inventory = make_inventory(project)
 
-    assert inventory.encfs_mounted
+    assert inventory.decrypted
 
 
 def test_git_crypt_locked_detects_an_unlocked_state(stub_project, monkeypatch):
@@ -278,7 +278,7 @@ def test_encrypt_secrets_encfs_completes_the_key_exchange(stub_project,
     # The volume was mounted by EncFS and locked afterwards
     call.assert_called_once_with(
         [inventory._commands["fusermount"], "-u", inventory.secret_path])
-    assert inventory.encfs_mounted is False
+    assert inventory.decrypted is False
     assert [popen.call_args_list[i].args[0][0]
             for i in range(3)] == [inventory._commands["gpg"],
                                    inventory._commands["encfs"],
@@ -376,7 +376,7 @@ def test_unlock_encfs_reports_a_failed_mount(stub_project, monkeypatch):
 
     # The fifo used for the configuration transfer is cleaned up
     assert not os.path.exists(configfile)
-    assert inventory.encfs_mounted is False
+    assert inventory.decrypted is False
 
 
 def test_create_encrypted_git_crypt_is_handled_at_the_repository_level(
@@ -446,7 +446,7 @@ def test_unlock_git_crypt_unlocks_the_secrets(stub_project, monkeypatch):
     inventory = make_inventory(project)
 
     assert inventory.unlock() is True
-    assert inventory.encfs_mounted
+    assert inventory.decrypted
     assert popen.call_args.args[0] == [inventory._commands["git-crypt"],
                                        "unlock"]
 
@@ -479,7 +479,7 @@ def test_unlock_git_crypt_skips_an_already_unlocked_repository(
     inventory = make_inventory(project)
 
     assert inventory.unlock() is False
-    assert inventory.encfs_mounted
+    assert inventory.decrypted
 
 
 def test_lock_git_crypt_locks_the_secrets(stub_project, monkeypatch):
@@ -495,7 +495,7 @@ def test_lock_git_crypt_locks_the_secrets(stub_project, monkeypatch):
     inventory = make_inventory(project)
 
     assert inventory.lock() is True
-    assert not inventory.encfs_mounted
+    assert not inventory.decrypted
     assert popen.call_args.args[0] == [inventory._commands["git-crypt"],
                                        "lock"]
 
@@ -523,7 +523,7 @@ def test_lock_encfs_unmounts_the_volume(stub_project, monkeypatch):
     monkeypatch.setattr(inventory_module.subprocess, "call", call)
 
     assert inventory.lock() is True
-    assert not inventory.encfs_mounted
+    assert not inventory.decrypted
     call.assert_called_once_with(
         [inventory._commands["fusermount"], "-u",
          inventory.secret_path])
@@ -551,7 +551,7 @@ def test_encfs_mount_is_detected_at_init(stub_project, monkeypatch):
 
     inventory = make_inventory(project)
 
-    assert inventory.encfs_mounted
+    assert inventory.decrypted
 
 
 def test_unlock_encfs_commits_before_mounting(stub_project, monkeypatch):

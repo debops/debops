@@ -103,14 +103,14 @@ class ProjectDir(object):
 
         return 'system'
 
-    def __init__(self, path=os.getcwd(), project_type='legacy', create=False,
-                 config=None, view=None, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
+    def __init__(self, path, project_type='legacy', create=False, config=None,
+                 view=None, encrypt=None, keys=None):
         self.config = config
         self.path = os.path.abspath(path)
         self.name = os.path.basename(self.path)
-        self.project_type = self.kwargs.get('type', project_type)
+        self.project_type = project_type
+        self.encrypt = encrypt
+        self.keys = keys
 
         # An $ANSIBLE_CONFIG set in the environment anchors the project at
         # the configuration file's directory. The process working directory
@@ -236,7 +236,8 @@ class ProjectDir(object):
 
         project_views = list(self.config.raw['views'].keys())
         for view in project_views:
-            inventory = AnsibleInventory(self, view, **self.kwargs)
+            inventory = AnsibleInventory(self, view, keys=self.keys,
+                                         encrypt=self.encrypt)
 
             if inventory.encrypted:
                 inventory_data = {
@@ -244,7 +245,7 @@ class ProjectDir(object):
                         view: {
                           'encryption': {
                             'enabled': inventory.encrypted,
-                            'mounted': inventory.encfs_mounted,
+                            'mounted': inventory.decrypted,
                             'type': str(inventory.crypt_method or 'none')
                           }
                         }
@@ -393,7 +394,8 @@ class ProjectDir(object):
                 'max_version': max_version,
                 'allow_io': bool(allow_io)}
 
-    def _load_specs(self, inventory_path):
+    def _load_specs(self, inventory_path, spec_sources=None, allow_io=False,
+                    default_view=None):
         """Parse the inventory file specifications given on the command line.
 
         Each '--template' value is resolved in order: '-' reads the document
@@ -416,7 +418,7 @@ class ProjectDir(object):
         Returns a dict of inventory-relative path to file contents and the list
         of kept path patterns, both empty if no specification was requested.
         """
-        sources = self.kwargs.get('spec_sources', None) or []
+        sources = spec_sources or []
 
         if not sources:
             return {}, []
@@ -432,12 +434,11 @@ class ProjectDir(object):
             raise ValueError('Standard input can only be read once, it cannot '
                              'be used for more than one --template option')
 
-        context = self._spec_render_context()
+        context = self._spec_render_context(default_view)
 
         # The project can pre-authorize I/O in its configuration; the
         # '--allow-io' option grants it for one invocation
-        allow_io = (bool(self.kwargs.get('allow_io', False))
-                    or policy['allow_io'])
+        allow_io = bool(allow_io) or policy['allow_io']
         specs = []
 
         for value in sources:
@@ -513,7 +514,7 @@ class ProjectDir(object):
             raise ValueError(message)
         return source, parse_spec(document, source)
 
-    def _spec_render_context(self):
+    def _spec_render_context(self, default_view=None):
         """Build the variables which a templated specification is rendered
         with.
 
@@ -527,15 +528,17 @@ class ProjectDir(object):
             'hostname': socket.gethostname(),
             'fqdn': socket.getfqdn(),
             'host_as_controller': host_is_controller(),
-            'secret_name': self.kwargs.get('secret_name', 'secret'),
+            'secret_name': 'secret',
             'view': self.view,
-            'default_view': self.kwargs.get('default_view', self.view),
+            'default_view': (default_view if default_view is not None
+                             else self.view),
             'project': {'name': self.name,
                         'path': self.path,
                         'type': self.project_type},
         }
 
-    def _report_spec_result(self, result, base_dir, dry_run):
+    def _report_spec_result(self, result, base_dir, dry_run,
+                            inspect_mode=None):
         """Tell the user which paths a specification changed or left alone.
 
         The per-path lines are logged at the NOTICE level, so that a template
@@ -559,20 +562,20 @@ class ProjectDir(object):
 
         if result.get('skipped'):
             print("Use '--force' to overwrite or remove paths which already "
-                  "exist.", file=self._status_stream())
+                  "exist.", file=self._status_stream(inspect_mode))
 
         if not dry_run and not result.get('skipped'):
             print('Applied the inventory specification.',
-                  file=self._status_stream())
+                  file=self._status_stream(inspect_mode))
 
-    def _status_stream(self):
+    def _status_stream(self, inspect_mode=None):
         """The stream for status messages.
 
         A 'list' or 'host' inspection prints JSON to standard output, so
         status messages go to standard error to keep the JSON usable in a
         pipe. Everything else stays on standard output.
         """
-        if self.kwargs.get('list', False) or self.kwargs.get('host'):
+        if inspect_mode in ('list', 'host'):
             return sys.stderr
         return sys.stdout
 
@@ -718,10 +721,11 @@ class ProjectDir(object):
                           file=sys.stderr)
 
     def show_inventory(self, inventory, files, pre_existing=frozenset(),
-                       keep=()):
+                       keep=(), inspect_mode=None, inspect_host=None,
+                       dry_run=False, force=False):
         """Inspect the Ansible inventory of an inventory directory.
 
-        The inspection mode comes from the command line: a graph with
+        The inspection mode comes from the caller: a graph with
         variables, the full inventory as JSON, or the variables of one host.
 
         When a specification is given together with 'dry_run', a copy of the
@@ -733,16 +737,16 @@ class ProjectDir(object):
         is produced by running 'ansible-inventory' over real files, written by
         the same code path that would write them for real.
         """
-        if self.kwargs.get('graph', False):
+        if inspect_mode == 'graph':
             mode, host = 'graph', None
-        elif self.kwargs.get('list', False):
+        elif inspect_mode == 'list':
             mode, host = 'list', None
         else:
-            mode, host = 'host', self.kwargs.get('host')
+            mode, host = 'host', inspect_host
 
         tempdir = tempfile.mkdtemp(prefix='debops-inventory-inspect-')
         try:
-            if files and self.kwargs.get('dry_run', False):
+            if files and dry_run:
                 target_dir = os.path.join(tempdir, 'inventory')
                 if os.path.isdir(inventory.path):
                     shutil.copytree(inventory.path, target_dir, symlinks=True)
@@ -759,7 +763,7 @@ class ProjectDir(object):
                                  os.path.relpath(path, base))
                              for path in pre_existing}
                 apply_spec(files, target_dir, pre_existing=protected,
-                           overwrite=self.kwargs.get('force', False),
+                           overwrite=force,
                            keep=keep)
             else:
                 target_dir = inventory.path
@@ -768,7 +772,9 @@ class ProjectDir(object):
         finally:
             shutil.rmtree(tempdir, ignore_errors=True)
 
-    def _process_spec(self, inventory, pre_existing):
+    def _process_spec(self, inventory, pre_existing, spec_sources=None,
+                      allow_io=False, default_view=None, dry_run=False,
+                      force=False, inspect_mode=None, inspect_host=None):
         """Apply an inventory file specification to an Ansible inventory.
 
         var:`pre_existing` is the set of paths which were present in the
@@ -776,9 +782,8 @@ class ProjectDir(object):
         replace the files which DebOps itself just generated without touching
         the ones the user has written.
         """
-        files, keep = self._load_specs(inventory.path)
-        dry_run = self.kwargs.get('dry_run', False)
-        overwrite = self.kwargs.get('force', False)
+        files, keep = self._load_specs(inventory.path, spec_sources, allow_io,
+                                       default_view)
 
         if files:
             if dry_run:
@@ -786,28 +791,33 @@ class ProjectDir(object):
                             'disk')
 
             result = inventory.apply_spec(files, pre_existing=pre_existing,
-                                          overwrite=overwrite,
+                                          overwrite=force,
                                           dry_run=dry_run, keep=keep)
             self._report_spec_result(result,
                                      os.path.realpath(inventory.path),
-                                     dry_run)
+                                     dry_run, inspect_mode)
 
-        if (self.kwargs.get('graph', False)
-                or self.kwargs.get('list', False)
-                or self.kwargs.get('host')):
-            self.show_inventory(inventory, files, pre_existing, keep)
+        if inspect_mode:
+            self.show_inventory(inventory, files, pre_existing, keep,
+                                inspect_mode=inspect_mode,
+                                inspect_host=inspect_host, dry_run=dry_run,
+                                force=force)
 
-    def _create_modern_project(self, path):
+    def _create_modern_project(self, path, default_view='system', venv=False,
+                               spec_sources=None, allow_io=False,
+                               dry_run=False, force=False, inspect_mode=None,
+                               inspect_host=None):
         logger.debug('Initializing new "modern" project directory')
         self.project_type = 'modern'
-        default_view = self.kwargs.get('default_view', 'system')
+        default_view = default_view or 'system'
         filename_view = default_view.replace('/', '-')
-        venv = bool(self.kwargs.get('venv', False))
+        venv = bool(venv)
 
         # Create modern project directory structure
         self.createdirs(path)
 
-        inventory = AnsibleInventory(self, default_view, **self.kwargs)
+        inventory = AnsibleInventory(self, default_view, keys=self.keys,
+                                     encrypt=self.encrypt)
 
         pre_existing = inventory.existing_paths()
 
@@ -915,7 +925,7 @@ class ProjectDir(object):
                          default_environment.render(env=os.environ)
                          + '\n')
 
-        encrypted_secrets = self.kwargs.get('encrypt', None)
+        encrypted_secrets = self.encrypt
 
         # Create .gitignore
         self._write_file(os.path.join(path, '.gitignore'),
@@ -971,21 +981,23 @@ class ProjectDir(object):
                 self.config.raw['views'][default_view]['ansible'])
         self.ansible_cfg.write_config()
 
-        self._process_spec(inventory, pre_existing)
+        self._process_spec(inventory, pre_existing, spec_sources=spec_sources,
+                           allow_io=allow_io, default_view=default_view,
+                           dry_run=dry_run, force=force,
+                           inspect_mode=inspect_mode,
+                           inspect_host=inspect_host)
 
         print('Created new DebOps project in', path,
-              file=self._status_stream())
+              file=self._status_stream(inspect_mode))
 
-    def _create_legacy_project(self, path):
-        if self.kwargs.get('venv', False):
-            raise ValueError('Python virtual environments can be enabled '
-                             'only in "modern" DebOps project directories; '
-                             'use the "debops project init -t modern --venv" '
-                             'command')
+    def _create_legacy_project(self, path, spec_sources=None, allow_io=False,
+                               dry_run=False, force=False, inspect_mode=None,
+                               inspect_host=None):
         logger.debug('Initializing new "legacy" project directory')
         self.project_type = 'legacy'
 
-        inventory = AnsibleInventory(self, self.name, **self.kwargs)
+        inventory = AnsibleInventory(self, self.name, keys=self.keys,
+                                     encrypt=self.encrypt)
 
         pre_existing = inventory.existing_paths()
 
@@ -1065,7 +1077,7 @@ class ProjectDir(object):
                 self.config.load(os.path.join(self.path, '.debops.cfg')))
         self.config.merge(project_data)
 
-        encrypted_secrets = self.kwargs.get('encrypt', None)
+        encrypted_secrets = self.encrypt
 
         if encrypted_secrets == 'git-crypt':
             # Create .gitattributes
@@ -1101,10 +1113,13 @@ class ProjectDir(object):
         self.ansible_cfg.merge_config(debops_cfg)
         self.ansible_cfg.write_config()
 
-        self._process_spec(inventory, pre_existing)
+        self._process_spec(inventory, pre_existing, spec_sources=spec_sources,
+                           allow_io=allow_io, dry_run=dry_run, force=force,
+                           inspect_mode=inspect_mode,
+                           inspect_host=inspect_host)
 
         print('Created new DebOps project in', path,
-              file=self._status_stream())
+              file=self._status_stream(inspect_mode))
 
     def createdirs(self, path):
         skel_dirs = (
@@ -1121,7 +1136,10 @@ class ProjectDir(object):
             if not os.path.isdir(skel_dir):
                 os.makedirs(skel_dir)
 
-    def create(self):
+    def create(self, git_repo=True, venv=False, requirements=None,
+               default_view='system', spec_sources=None, allow_io=False,
+               dry_run=False, force=False, inspect_mode=None,
+               inspect_host=None):
         logger.debug('Creating new project directory')
         # First let's make sure that we are not inside another project
         self._modern_config_path = self._find_up_dir(self.path,
@@ -1138,12 +1156,24 @@ class ProjectDir(object):
 
         # Let's make a new project
         if self.project_type == 'modern':
-            self._create_modern_project(self.path)
+            self._create_modern_project(self.path, default_view=default_view,
+                                        venv=venv, spec_sources=spec_sources,
+                                        allow_io=allow_io, dry_run=dry_run,
+                                        force=force, inspect_mode=inspect_mode,
+                                        inspect_host=inspect_host)
         elif self.project_type == 'legacy':
-            self._create_legacy_project(self.path)
+            if venv:
+                raise ValueError(
+                    'Python virtual environments can be enabled '
+                    'only in "modern" DebOps project directories; '
+                    'use the "debops project init -t modern --venv" '
+                    'command')
+            self._create_legacy_project(self.path, spec_sources=spec_sources,
+                                        allow_io=allow_io, dry_run=dry_run,
+                                        force=force, inspect_mode=inspect_mode,
+                                        inspect_host=inspect_host)
 
-        create_git_repo = self.kwargs.get('git', None)
-        if create_git_repo:
+        if git_repo:
             logger.debug('Initializing git repository in project directory')
             repo = git.Repo.init(self.path)
             repo.git.add(all=True)
@@ -1151,11 +1181,11 @@ class ProjectDir(object):
             repo.index.commit(self.config.raw['git']['init_message'])
 
             # Set up encryption using git-crypt
-            encrypt_git_repo = self.kwargs.get('encrypt', None)
+            encrypt_git_repo = self.encrypt
             if encrypt_git_repo == 'git-crypt':
                 logger.debug('Preparing encryption using git-crypt')
                 try:
-                    gpg_keys = list(self.kwargs.get('keys', None).split(','))
+                    gpg_keys = list(self.keys.split(','))
                 except AttributeError:
                     raise ValueError('List of GPG recipients not specified')
 
@@ -1187,8 +1217,8 @@ class ProjectDir(object):
             # In a project with a Python virtual environment the collections
             # are installed by the 'debops project venv' command instead,
             # which uses the ansible-galaxy binary from the environment
-            install_requirements = self.kwargs.get('requirements', None)
-            if install_requirements and not self.kwargs.get('venv', False):
+            install_requirements = requirements
+            if install_requirements and not venv:
                 logger.debug('Installing Ansible Collections specified in '
                              + os.path.join('ansible', 'collections',
                                             'requirements.yml') + ' file')
@@ -1236,7 +1266,8 @@ class ProjectDir(object):
         filename_view = view.replace('/', '-')
         if self.project_type == 'modern':
             if view:
-                inventory = AnsibleInventory(self, view, **self.kwargs)
+                inventory = AnsibleInventory(self, view, keys=self.keys,
+                                             encrypt=self.encrypt)
 
                 pre_existing = inventory.existing_paths()
 
@@ -1294,7 +1325,7 @@ class ProjectDir(object):
                             venv=self._venv_enabled())
                         + '\n')
 
-                encrypted_secrets = self.kwargs.get('encrypt', None)
+                encrypted_secrets = self.encrypt
 
                 # Create view/.gitattributes
                 self._write_file(os.path.join(self.path, 'ansible', 'views',
@@ -1639,7 +1670,8 @@ class ProjectDir(object):
 
         run_hooks(self.path, 'post-commit')
 
-    def refresh(self):
+    def refresh(self, spec_sources=None, allow_io=False, dry_run=False,
+                force=False, inspect_mode=None, inspect_host=None):
         logger.debug("Refresing project directory")
 
         if not run_hooks(self.path, 'pre-refresh'):
@@ -1651,14 +1683,19 @@ class ProjectDir(object):
 
         project_views = list(self.config.raw['views'].keys())
         for view in project_views:
-            inventory = AnsibleInventory(self, view, **self.kwargs)
+            inventory = AnsibleInventory(self, view, keys=self.keys,
+                                         encrypt=self.encrypt)
             pre_existing = inventory.existing_paths()
             inventory.createdirs()
 
             # Only the selected view receives the specification, the other
             # views are refreshed with the internal defaults as before
             if view == self.view:
-                self._process_spec(inventory, pre_existing)
+                self._process_spec(inventory, pre_existing,
+                                   spec_sources=spec_sources,
+                                   allow_io=allow_io, dry_run=dry_run,
+                                   force=force, inspect_mode=inspect_mode,
+                                   inspect_host=inspect_host)
 
             if self.project_type == 'modern':
                 self.ansible_cfg = AnsibleConfig(
@@ -1678,7 +1715,7 @@ class ProjectDir(object):
                 self.ansible_cfg.merge_config(debops_cfg)
                 self.ansible_cfg.write_config()
         print('Refreshed DebOps project in', self.path,
-              file=self._status_stream())
+              file=self._status_stream(inspect_mode))
 
         run_hooks(self.path, 'post-refresh')
 

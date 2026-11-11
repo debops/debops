@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 class AnsibleRunner(ProjectRunner):
     """Run the :command:`ansible` command in the project environment."""
 
-    def __init__(self, project, **kwargs):
-        super().__init__(project, **kwargs)
+    def __init__(self, project, ansible_args, bell=False):
+        super().__init__(project, bell=bell)
 
         self._ansible_env = {'ANSIBLE_CONFIG': project.ansible_cfg.path}
         self._ansible_command = [
@@ -34,7 +34,7 @@ class AnsibleRunner(ProjectRunner):
                          '-vvvv', '-vvvvv', '-vvvvvv', '--verbose',
                          '-b', '--become']
 
-        self._parse_ansible_args(project, ansible_flags)
+        self._parse_ansible_args(ansible_args, project, ansible_flags)
 
     def execute(self):
         unlocked = False

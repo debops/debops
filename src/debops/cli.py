@@ -20,6 +20,21 @@ import os
 logger = logging.getLogger(__name__)
 
 
+def _inspect_mode(args):
+    """The inventory inspection mode selected on the command line.
+
+    The '--graph', '--list' and '--host' options are mutually exclusive;
+    this collapses them into the mode string the library methods take.
+    """
+    if args.graph:
+        return 'graph'
+    if args.list:
+        return 'list'
+    if args.host:
+        return 'host'
+    return None
+
+
 class Interpreter(object):
 
     def __init__(self, args=None):
@@ -63,10 +78,17 @@ class Interpreter(object):
     def do_project_init(self, args):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config,
-                                 create=True, **vars(args))
-            project.create()
+                                 project_type=args.type, create=True,
+                                 encrypt=args.encrypt, keys=args.keys)
+            project.create(git_repo=args.git, venv=args.venv,
+                           requirements=args.requirements,
+                           default_view=args.default_view,
+                           spec_sources=args.spec_sources,
+                           allow_io=args.allow_io, dry_run=args.dry_run,
+                           force=args.force, inspect_mode=_inspect_mode(args),
+                           inspect_host=args.host)
             if args.venv and args.requirements:
-                venv = ProjectVenv(project, **vars(args))
+                venv = ProjectVenv(project)
                 venv.install()
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError, InventorySpecError, FileNotFoundError,
@@ -77,8 +99,11 @@ class Interpreter(object):
     def do_project_refresh(self, args):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config,
-                                 **vars(args))
-            project.refresh()
+                                 view=args.view)
+            project.refresh(spec_sources=args.spec_sources,
+                            allow_io=args.allow_io, dry_run=args.dry_run,
+                            force=args.force, inspect_mode=_inspect_mode(args),
+                            inspect_host=args.host)
         except (IsADirectoryError, NotADirectoryError, ViewNotFoundError,
                 PermissionError, InventorySpecError,
                 ChildProcessError, ValueError) as errmsg:
@@ -115,8 +140,7 @@ class Interpreter(object):
 
     def do_project_mkview(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config,
-                                 **vars(args))
+            project = ProjectDir(path=args.project_dir, config=self.config)
             project.mkview(view=args.new_view)
         except (IsADirectoryError, NotADirectoryError,
                 InventorySpecError, ChildProcessError,
@@ -135,12 +159,11 @@ class Interpreter(object):
 
     def do_project_venv(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config,
-                                 **vars(args))
+            project = ProjectDir(path=args.project_dir, config=self.config)
             if args.action == 'enable':
                 project.enable_venv(scope=args.scope)
                 return
-            venv = ProjectVenv(project, **vars(args))
+            venv = ProjectVenv(project)
             if args.action == 'install':
                 venv.install(scope=args.scope)
             elif args.action == 'upgrade':
@@ -165,7 +188,8 @@ class Interpreter(object):
             sys.exit(1)
 
         try:
-            runner = AnsibleRunner(project, **vars(args))
+            runner = AnsibleRunner(project, ansible_args=args.ansible_args,
+                                   bell=args.bell)
         except (NoDefaultViewException, ValueError,
                 FileNotFoundError) as errmsg:
             print_error(errmsg)
@@ -191,7 +215,9 @@ class Interpreter(object):
             sys.exit(1)
 
         try:
-            runner = AnsiblePlaybookRunner(project, **vars(args))
+            runner = AnsiblePlaybookRunner(
+                project, ansible_args=args.ansible_args, bell=args.bell,
+                debug=args.debug)
         except (NoDefaultViewException, ValueError,
                 FileNotFoundError, ChildProcessError) as errmsg:
             print_error(errmsg)
@@ -217,7 +243,7 @@ class Interpreter(object):
             sys.exit(1)
 
         try:
-            runner = EnvRunner(project, **vars(args))
+            runner = EnvRunner(project, command_args=args.command_args)
         except (NoDefaultViewException, ValueError,
                 FileNotFoundError) as errmsg:
             print_error(errmsg)

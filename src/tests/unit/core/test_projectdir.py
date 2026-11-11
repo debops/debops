@@ -28,10 +28,9 @@ from debops.core.exceptions import ViewNotFoundError
 from debops.core.projectdir import ProjectDir
 
 
-def make_project(raw, kwargs=None):
+def make_project(raw):
     project = ProjectDir.__new__(ProjectDir)
     project.config = SimpleNamespace(raw=raw)
-    project.kwargs = kwargs if kwargs is not None else {}
     return project
 
 
@@ -44,7 +43,6 @@ def make_project_at(tmp_path, raw=None, project_type="modern"):
     project.project_type = project_type
     project.config = SimpleNamespace(
         raw=raw if raw is not None else {"views": {}})
-    project.kwargs = {}
     return project
 
 
@@ -180,12 +178,12 @@ def test_status_stream_is_stderr_when_the_output_is_json():
     """Inventory JSON goes to standard output; the status messages move
     to standard error so that 'debops project refresh --list' stays
     usable in a pipe."""
-    assert make_project({}, {"list": True})._status_stream() is sys.stderr
-    assert make_project({}, {"host": "web01"})._status_stream() is sys.stderr
+    assert make_project({})._status_stream("list") is sys.stderr
+    assert make_project({})._status_stream("host") is sys.stderr
 
 
 def test_status_stream_stays_on_stdout_for_a_graph():
-    assert make_project({}, {"graph": True})._status_stream() is sys.stdout
+    assert make_project({})._status_stream("graph") is sys.stdout
 
 
 def test_inventory_inspect_requires_the_binary(tmp_path):
@@ -681,13 +679,21 @@ def test_create_aborts_on_a_failing_pre_init_hook(tmp_path):
         project.create()
 
 
+def test_create_rejects_a_venv_in_a_legacy_project(tmp_path):
+    project = ProjectDir(str(tmp_path), create=True,
+                         config=make_configuration())
+
+    with pytest.raises(ValueError, match="modern"):
+        project.create(git_repo=False, venv=True)
+
+
 def test_create_aborts_on_a_failed_git_crypt_init(tmp_path, monkeypatch):
     """A git-crypt initialization failure aborts the project creation
     instead of waiting forever for the keys to appear."""
     project = make_project_at(tmp_path, raw=dict(
         DEFAULT_PROJECT_RAW, git={"init_message": "Initialize"}))
-    project.kwargs = {"git": True, "encrypt": "git-crypt",
-                      "keys": "test@example.org"}
+    project.encrypt = "git-crypt"
+    project.keys = "test@example.org"
     project._commands = {"git-crypt": "git-crypt"}
     monkeypatch.setattr(projectdir_module, "run_hooks",
                         mock.Mock(return_value=True))
@@ -702,7 +708,7 @@ def test_create_aborts_on_a_failed_git_crypt_init(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
     with pytest.raises(ChildProcessError, match="git-crypt"):
-        project.create()
+        project.create(git_repo=True)
 
     process.communicate.assert_called_once_with()
 
@@ -988,10 +994,11 @@ def test_load_specs_reports_overlapping_definitions(tmp_path, caplog):
     second.write_text("version: 0\nfiles:\n  hosts: second\n")
     project = make_project_at(tmp_path)
     project.view = "system"
-    project.kwargs = {"spec_sources": [str(first), str(second)]}
 
     with caplog.at_level(logging.NOTICE, logger="debops.core.projectdir"):
-        files, keep = project._load_specs(str(tmp_path / "inventory"))
+        files, keep = project._load_specs(
+            str(tmp_path / "inventory"),
+            spec_sources=[str(first), str(second)])
 
     assert files == {"hosts": "second"}
     assert keep == []
@@ -1010,34 +1017,33 @@ def test_load_spec_source_rejects_a_terminal_stdin(tmp_path, monkeypatch):
 
 def test_process_spec_logs_a_dry_run(tmp_path, caplog):
     project = make_project_at(tmp_path)
-    project.kwargs = {"dry_run": True}
     project._load_specs = mock.Mock(return_value=({"hosts": "x"}, []))
     project._report_spec_result = mock.Mock()
     inventory = SimpleNamespace(path=str(tmp_path),
                                 apply_spec=mock.Mock(return_value={}))
 
     with caplog.at_level(logging.INFO, logger="debops.core.projectdir"):
-        project._process_spec(inventory, frozenset())
+        project._process_spec(inventory, frozenset(), dry_run=True)
 
     assert "will not be written to disk" in caplog.text
     inventory.apply_spec.assert_called_once_with(
             {"hosts": "x"}, pre_existing=frozenset(), overwrite=False,
             dry_run=True, keep=[])
     project._report_spec_result.assert_called_once_with(
-            {}, os.path.realpath(str(tmp_path)), True)
+            {}, os.path.realpath(str(tmp_path)), True, None)
 
 
 def test_process_spec_inspects_without_files(tmp_path):
     project = make_project_at(tmp_path)
-    project.kwargs = {"graph": True}
     project._load_specs = mock.Mock(return_value=({}, []))
     project.show_inventory = mock.Mock()
     inventory = SimpleNamespace(path=str(tmp_path))
 
-    project._process_spec(inventory, frozenset())
+    project._process_spec(inventory, frozenset(), inspect_mode="graph")
 
     project.show_inventory.assert_called_once_with(
-            inventory, {}, frozenset(), [])
+            inventory, {}, frozenset(), [], inspect_mode="graph",
+            inspect_host=None, dry_run=False, force=False)
 
 
 # ProjectDir construction
@@ -1152,7 +1158,7 @@ def test_init_create_flag_accepts_a_missing_project(tmp_path, monkeypatch):
 def test_init_create_flag_honors_the_type_argument(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
-    project = ProjectDir(str(tmp_path), create=True, type="modern",
+    project = ProjectDir(str(tmp_path), create=True, project_type="modern",
                          config=make_configuration())
 
     assert project.project_type == "modern"

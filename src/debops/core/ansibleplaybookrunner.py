@@ -25,8 +25,8 @@ class AnsiblePlaybookRunner(ProjectRunner):
     """Run the :command:`ansible-playbook` command in the project
     environment."""
 
-    def __init__(self, project, **kwargs):
-        super().__init__(project, **kwargs)
+    def __init__(self, project, ansible_args, bell=False, debug=False):
+        super().__init__(project, bell=bell)
 
         self._playbook_dirs = self._expand_playbook_paths(project)
         self._known_collections = self._find_collections(project)
@@ -51,7 +51,8 @@ class AnsiblePlaybookRunner(ProjectRunner):
                                   '-vvvvvv', '--verbose',
                                   '-b', '--become']
 
-        self._parse_ansible_args(project, ansible_playbook_flags)
+        self._parse_ansible_args(ansible_args, project,
+                                 ansible_playbook_flags)
 
         # Implement configurable read-only Fridays on a project level
         if project.config.raw['project'].get('read_only_friday', False):
@@ -63,7 +64,7 @@ class AnsiblePlaybookRunner(ProjectRunner):
                         extra={'allow': ['stderr', 'syslog']})
                     self._ansible_command.extend(['--diff', '--check'])
 
-        if self.kwargs.get('debug'):
+        if debug:
             # -vv pairs the invocation with the result per task,
             # without the connection chatter of -vvv; the user's own
             # verbosity flags ride alongside and Ansible counts the

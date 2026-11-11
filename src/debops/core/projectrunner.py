@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 
 class ProjectRunner(object):
 
-    def __init__(self, project, **kwargs):
-        self.kwargs = kwargs
+    def __init__(self, project, bell=False):
+        self.bell = bell
 
         self.project = project
         self.inventory = AnsibleInventory(project, name=project.view)
@@ -61,7 +61,7 @@ class ProjectRunner(object):
 
     def _ring_bell(self):
         # Notify user at end of execution
-        if self.kwargs.get('bell', False):
+        if self.bell:
             print('\a', end='')
 
     def _add_global_vars(self):
@@ -88,15 +88,15 @@ class ProjectRunner(object):
         self._ansible_command.append(argument)
         self._parsed_args.append(index)
 
-    def _parse_ansible_args(self, project, flags):
+    def _parse_ansible_args(self, ansible_args, project, flags):
         """Parse the arguments meant for Ansible, preserving their order.
 
         Options with separate arguments are kept together; the runners can
         customize what happens to the positional arguments.
         """
         self._parsed_args = []
-        arg_length = len(self.kwargs['ansible_args'])
-        for index, argument in enumerate(self.kwargs['ansible_args']):
+        arg_length = len(ansible_args)
+        for index, argument in enumerate(ansible_args):
 
             if argument == '--':
                 continue
@@ -108,7 +108,7 @@ class ProjectRunner(object):
                 # order
                 if (index + 1 < arg_length and
                         argument not in flags):
-                    next_arg = self.kwargs['ansible_args'][index + 1]
+                    next_arg = ansible_args[index + 1]
                     if not next_arg.startswith('-'):
                         self._ansible_command.extend(
                                 [argument, self._quote_spaces(next_arg)])
