@@ -105,14 +105,18 @@ def test_execute_sets_the_configured_environment(stub_project, monkeypatch):
     monkeypatch.delenv("DEBOPS_PROJECT_VIEW", raising=False)
     executor = mock.Mock(returncode=0)
     executor.communicate.return_value = (b"", b"")
-    monkeypatch.setattr(runner_module.subprocess, "Popen",
-                        mock.Mock(return_value=executor))
+    popen = mock.Mock(return_value=executor)
+    monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
     runner.inventory.unlock.return_value = False
 
     runner.execute()
 
-    assert os.environ["DEBOPS_PROJECT_VIEW"] == "system"
+    # The configured variable reaches the spawned command, not the
+    # process environment
+    env = popen.call_args.kwargs["env"]
+    assert env["DEBOPS_PROJECT_VIEW"] == "system"
+    assert "DEBOPS_PROJECT_VIEW" not in os.environ
 
 
 def test_execute_aborts_when_the_pre_hook_fails(stub_project, monkeypatch):

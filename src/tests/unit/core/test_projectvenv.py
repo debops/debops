@@ -34,12 +34,16 @@ DEFAULT_RAW = {
 
 
 def make_project(tmp_path, raw=None, project_type="modern"):
+    config = SimpleNamespace(
+        raw=raw if raw is not None else dict(DEFAULT_RAW),
+        _env_vars={})
+
     return SimpleNamespace(
         path=str(tmp_path),
         project_type=project_type,
         auto_commit=mock.Mock(),
-        config=SimpleNamespace(
-            raw=raw if raw is not None else dict(DEFAULT_RAW)))
+        config=config,
+        environment=lambda: {**os.environ, **config._env_vars})
 
 
 def make_venv(tmp_path, raw=None, **kwargs):

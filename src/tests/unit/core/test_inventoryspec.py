@@ -625,7 +625,7 @@ class TemplateSourceTestCase(unittest.TestCase):
         self.project.path = self.base_dir
         self.project.project_type = 'legacy'
         # No 'project.inventory_spec' options, so the defaults apply
-        self.project.config = mock.Mock(raw={})
+        self.project.config = mock.Mock(raw={}, _env_vars={})
 
     def load(self, *sources):
         files, _keep = self.load_all(*sources)
@@ -667,6 +667,7 @@ class ShippedTemplateTestCase(unittest.TestCase):
         project.name = 'testproject'
         project.path = self.base_dir
         project.project_type = project_type
+        project.config = mock.Mock(raw={}, _env_vars={})
 
         return project._spec_render_context()
 
@@ -851,7 +852,8 @@ class ProjectSpecConfigTestCase(TemplateSourceTestCase):
 
     def load(self, *sources, policy=None, allow_io=False):
         self.project.config = mock.Mock(
-            raw={'project': {'inventory_spec': policy}} if policy else {})
+            raw={'project': {'inventory_spec': policy}} if policy else {},
+            _env_vars={})
         files, _keep = self.project._load_specs(
             self.base_dir, spec_sources=list(sources), allow_io=allow_io)
         return files
