@@ -289,13 +289,11 @@ class AnsiblePlaybookRunner(ProjectRunner):
         if not self._found_playbooks:
             raise ValueError('No playbooks specified, aborting')
 
-        for key, value in self._ansible_env.items():
-            os.environ[key] = value
-
         run_check_mode = self._get_check_mode()
 
         hook_name = 'pre-' + run_check_mode
-        if not run_hooks(self.project.path, hook_name):
+        if not run_hooks(self.project.path, hook_name,
+                         env=self._subprocess_env(self._ansible_env)):
             raise ChildProcessError('Hook {} aborted, '
                                     'not running playbooks'.format(hook_name))
 
@@ -319,7 +317,9 @@ class AnsiblePlaybookRunner(ProjectRunner):
             logger.debug('Ansible command: {}'.format(
                     ' '.join(self._ansible_command)))
             executor = subprocess.Popen(' '.join(self._ansible_command),
-                                        shell=True, cwd=self.project.path)
+                                        shell=True, cwd=self.project.path,
+                                        env=self._subprocess_env(
+                                            self._ansible_env))
             logger.debug('Starting playbook execution')
             std_out, std_err = executor.communicate()
             logger.debug('Playbook execution finished')
@@ -341,6 +341,7 @@ class AnsiblePlaybookRunner(ProjectRunner):
 
         post_hook_name = 'post-' + run_check_mode
         run_hooks(self.project.path, post_hook_name,
-                  extra_env={'DEBOPS_RETURN_CODE': rc})
+                  extra_env={'DEBOPS_RETURN_CODE': rc},
+                  env=self._subprocess_env())
 
         return rc

@@ -6,7 +6,6 @@ from .projectrunner import ProjectRunner
 from .hooks import run_hooks
 import logging
 import subprocess
-import os
 
 logger = logging.getLogger(__name__)
 
@@ -39,10 +38,8 @@ class AnsibleRunner(ProjectRunner):
     def execute(self):
         unlocked = False
 
-        for key, value in self._ansible_env.items():
-            os.environ[key] = value
-
-        if not run_hooks(self.project.path, 'pre-exec'):
+        if not run_hooks(self.project.path, 'pre-exec',
+                         env=self._subprocess_env(self._ansible_env)):
             raise ChildProcessError('Hook pre-exec aborted, '
                                     'not executing Ansible command')
 
@@ -51,7 +48,9 @@ class AnsibleRunner(ProjectRunner):
             unlocked = self.inventory.unlock()
 
             executor = subprocess.Popen(' '.join(self._ansible_command),
-                                        shell=True, cwd=self.project.path)
+                                        shell=True, cwd=self.project.path,
+                                        env=self._subprocess_env(
+                                            self._ansible_env))
             std_out, std_err = executor.communicate()
             rc = executor.returncode
 
@@ -68,6 +67,7 @@ class AnsibleRunner(ProjectRunner):
                 self.inventory.lock()
 
         run_hooks(self.project.path, 'post-exec',
-                  extra_env={'DEBOPS_RETURN_CODE': rc})
+                  extra_env={'DEBOPS_RETURN_CODE': rc},
+                  env=self._subprocess_env())
 
         return rc

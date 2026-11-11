@@ -6,7 +6,6 @@ from .projectrunner import ProjectRunner
 from .hooks import run_hooks
 import logging
 import subprocess
-import os
 
 logger = logging.getLogger(__name__)
 
@@ -31,16 +30,14 @@ class EnvRunner(ProjectRunner):
                     for key, value in self.project.config._env_vars.items()]
         elif scope == 'full':
             return ['{}={}'.format(key, value)
-                    for key, value in os.environ.items()]
+                    for key, value in self.project.environment().items()]
         return []
 
     def execute(self):
         unlocked = False
 
-        for key, value in self.project.config._env_vars.items():
-            os.environ[key] = value
-
-        if not run_hooks(self.project.path, 'pre-env'):
+        if not run_hooks(self.project.path, 'pre-env',
+                         env=self._subprocess_env()):
             raise ChildProcessError('Hook pre-env aborted, '
                                     'not running command in environment')
 
@@ -49,7 +46,8 @@ class EnvRunner(ProjectRunner):
             unlocked = self.inventory.unlock()
 
             executor = subprocess.Popen(' '.join(self._command),
-                                        shell=True, cwd=self.project.path)
+                                        shell=True, cwd=self.project.path,
+                                        env=self._subprocess_env())
             std_out, std_err = executor.communicate()
             rc = executor.returncode
 
@@ -63,6 +61,7 @@ class EnvRunner(ProjectRunner):
                 self.inventory.lock()
 
         run_hooks(self.project.path, 'post-env',
-                  extra_env={'DEBOPS_RETURN_CODE': rc})
+                  extra_env={'DEBOPS_RETURN_CODE': rc},
+                  env=self._subprocess_env())
 
         return rc

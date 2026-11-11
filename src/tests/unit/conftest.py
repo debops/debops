@@ -53,6 +53,13 @@ class StubProject:
         self.config = config if config is not None else StubConfig()
         self.ansible_cfg = ansible_cfg
 
+    def environment(self):
+        """The environment a project command runs in, composed the way
+        the real ProjectDir composes it."""
+        env = os.environ.copy()
+        env.update(self.config._env_vars)
+        return env
+
 
 DEFAULT_BINARIES = {
     "ansible": "ansible",
