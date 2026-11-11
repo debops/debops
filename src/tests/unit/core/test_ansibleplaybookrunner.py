@@ -196,7 +196,8 @@ def test_execute_without_playbooks_aborts(stub_project, capsys):
     assert "No playbooks specified" in capsys.readouterr().err
 
 
-def test_execute_returns_the_command_return_code(stub_project, monkeypatch):
+def test_execute_returns_the_command_return_code(stub_project, monkeypatch,
+                                                 tmp_path):
     runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"])
     executor = mock.Mock(returncode=0)
     executor.communicate.return_value = (b"", b"")
@@ -207,6 +208,8 @@ def test_execute_returns_the_command_return_code(stub_project, monkeypatch):
 
     assert runner.execute() == 0
     assert popen.call_args.kwargs["shell"] is True
+    # The command runs in the project directory, not the caller's
+    assert popen.call_args.kwargs["cwd"] == str(tmp_path)
 
 
 def test_execute_uses_the_run_hooks(stub_project, monkeypatch):

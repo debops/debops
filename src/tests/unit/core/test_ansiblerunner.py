@@ -129,7 +129,8 @@ def test_eval_prints_the_command(stub_project, capsys):
     assert "ansible -v" in output
 
 
-def test_execute_returns_the_command_return_code(stub_project, monkeypatch):
+def test_execute_returns_the_command_return_code(stub_project, monkeypatch,
+                                                 tmp_path):
     runner = AnsibleRunner(stub_project(), ansible_args=["all"])
     executor = mock.Mock()
     executor.communicate.return_value = (b"", b"")
@@ -141,6 +142,8 @@ def test_execute_returns_the_command_return_code(stub_project, monkeypatch):
 
     assert runner.execute() == 7
     assert popen.call_args.kwargs["shell"] is True
+    # The command runs in the project directory, not the caller's
+    assert popen.call_args.kwargs["cwd"] == str(tmp_path)
 
 
 @pytest.fixture(autouse=True)
