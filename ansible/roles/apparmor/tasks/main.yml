@@ -45,7 +45,7 @@
   when: >
     apparmor__enabled | d(False) | bool and
     apparmor__manage_grub | d(False) | bool
-  notify: [ 'Update GRUB' ]
+  notify: [ 'Update GRUB (AppArmor)' ]
   tags: [ 'role::apparmor:grub' ]
 
 - name: Remove AppArmor kernel parameters from GRUB configuration
@@ -55,7 +55,7 @@
   when: >
     not apparmor__enabled | d(False) | bool or
     not apparmor__manage_grub | d(False) | bool
-  notify: [ 'Update GRUB' ]
+  notify: [ 'Update GRUB (AppArmor)' ]
   tags: [ 'role::apparmor:grub' ]
 
 - name: Remove legacy GRUB configuration options
@@ -65,7 +65,7 @@
     line: 'GRUB_CMDLINE_LINUX="\1 \2"'
     backrefs: yes
     mode: '0644'
-  notify: [ 'Update GRUB' ]
+  notify: [ 'Update GRUB (AppArmor)' ]
   tags: [ 'role::apparmor:grub' ]
 
 - name: Configure tunables

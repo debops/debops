@@ -8,3 +8,11 @@
   ansible.builtin.service:
     name: 'docker'
     state: 'restarted'
+
+- name: Restart systemd-resolved service (Docker)
+  ansible.builtin.systemd:
+    name: 'systemd-resolved.service'
+    state: 'restarted'
+  when:
+    - ansible_service_mgr == 'systemd'
+    - (ansible_local.resolved.state | d('disabled')) == 'enabled'

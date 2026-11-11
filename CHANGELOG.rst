@@ -64,9 +64,12 @@ General
 
 - Handlers specific to a single role have been moved from the
   :ref:`debops.global_handlers` role back to their own roles, where they can
-  use the role's default variables. The shared handlers - Ansible local fact
-  refreshes, :program:`systemd` service manager reloads and handlers notified
-  across multiple roles - remain in the :ref:`debops.global_handlers` role.
+  use the role's default variables. The roles that notified handlers of other
+  roles now either run the role that owns them in their playbooks, or define
+  their own copies of the affected handlers. The handlers that remain in the
+  :ref:`debops.global_handlers` role are the Ansible local fact refreshes, the
+  :program:`systemd` service manager reloads, and the ``xinetd`` handlers
+  which don't have a corresponding DebOps role.
 
 - DebOps roles no longer import the :ref:`debops.global_handlers` role
   themselves. Instead, DebOps playbooks include the role as the first role of
