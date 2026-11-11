@@ -2,11 +2,14 @@
 # Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import debops
 import sys
 import os
 import logging
 from logging.handlers import SysLogHandler
+
+from .cli import Interpreter
+from .core.config import Configuration
+from .subcommands import Subcommands
 
 # Configure logging early so that it's available as soon as possible
 logger = logging.getLogger('debops')
@@ -16,11 +19,11 @@ def main():
 
     # Check command line arguments early to detect log verbosity
     args = sys.argv
-    parsed_args = debops.subcommands.Subcommands(args)
+    parsed_args = Subcommands(args)
     log_verbosity = parsed_args.args.verbose
 
     # Check DebOps configuration to get logging options
-    config = debops.config.Configuration()
+    config = Configuration()
 
     def build_handler_filters(handler: str, quiet_level=None):
         """Route records between the handlers and keep the terminal
@@ -146,12 +149,12 @@ def main():
     # logging are ready but before the interpreter, so the notice appears
     # first. Lazy import keeps the module out of the common execution path.
     try:
-        from .versioncheck import VersionCheck
+        from .core.versioncheck import VersionCheck
         VersionCheck(config).check()
     except Exception:
         logger.debug('Version check initialization failed', exc_info=True)
 
-    interpreter = debops.Interpreter(args)
+    interpreter = Interpreter(args)
 
 
 def run():
