@@ -628,14 +628,23 @@ def test_commit_ignores_a_foreign_git_repository(tmp_path, monkeypatch):
     """A git directory which is not a DebOps project directory is left
     alone: the auto-commit must not touch repositories DebOps does not
     own, like /etc managed by etckeeper."""
-    subprocess.run(["git", "init", "-q"], cwd=str(tmp_path), check=True)
+    # The git configuration of the machine running the tests is kept
+    # out: a global 'commit.gpgsign' would make the commit below ask
+    # for a GPG passphrase.
+    git_env = dict(os.environ,
+                   GIT_CONFIG_GLOBAL=os.devnull,
+                   GIT_CONFIG_SYSTEM=os.devnull,
+                   GIT_AUTHOR_NAME="DebOps Tests",
+                   GIT_AUTHOR_EMAIL="debops-tests@example.org",
+                   GIT_COMMITTER_NAME="DebOps Tests",
+                   GIT_COMMITTER_EMAIL="debops-tests@example.org")
+    subprocess.run(["git", "init", "-q"], cwd=str(tmp_path),
+                   env=git_env, check=True)
     (tmp_path / "tracked").write_text("initial\n")
     subprocess.run(["git", "-C", str(tmp_path), "add", "tracked"],
-                   check=True)
-    subprocess.run(["git", "-C", str(tmp_path),
-                    "-c", "user.name=DebOps Tests",
-                    "-c", "user.email=debops-tests@example.org",
-                    "commit", "-q", "-m", "initial"], check=True)
+                   env=git_env, check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "commit", "-q",
+                    "-m", "initial"], env=git_env, check=True)
     project = make_project_at(tmp_path, raw={
         "project": {"git": {
             "auto_commit_message": "Changes committed automatically"}}})
