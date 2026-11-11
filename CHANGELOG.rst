@@ -46,6 +46,26 @@ General
   refresh` command with an error exit code instead of exiting
   successfully, matching the behavior of the other hook types.
 
+- The DebOps Python modules which implement the functionality moved
+  into the new ``debops.core`` subpackage. The library leaves the
+  process environment and the working directory alone and returns
+  data instead of printing it. Scripts importing the internal
+  ``debops.*`` modules directly need to import from ``debops.core.*``
+  now.
+
+- Status messages of the :command:`debops` command are written to the
+  standard error stream and the system journal, and remain visible on
+  the terminal; the standard output stays reserved for
+  machine-readable output.
+
+- Relative playbook names on the command line resolve against the
+  project directory instead of the working directory the command was
+  invoked from.
+
+- An undefined configuration option requested with :command:`debops
+  config get` is reported on the standard error stream; the exit code
+  and the JSON output are unchanged.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
