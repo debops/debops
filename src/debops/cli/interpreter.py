@@ -38,6 +38,9 @@ def _inspect_mode(args):
 class Interpreter(object):
 
     def __init__(self, args=None):
+        # The shell's working directory, captured before anything runs:
+        # the view resolution is anchored here
+        self.cwd = os.getcwd()
         self.args = args
         self.config = Configuration()
         self.parsed_args = Subcommands(self.args)
@@ -77,7 +80,7 @@ class Interpreter(object):
 
     def do_project_init(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config,
+            project = ProjectDir(path=args.project_dir, config=self.config, cwd=self.cwd,
                                  project_type=args.type, create=True,
                                  encrypt=args.encrypt, keys=args.keys)
             output = project.create(
@@ -101,7 +104,7 @@ class Interpreter(object):
 
     def do_project_refresh(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config,
+            project = ProjectDir(path=args.project_dir, config=self.config, cwd=self.cwd,
                                  view=args.view)
             output = project.refresh(
                 spec_sources=args.spec_sources,
@@ -118,7 +121,7 @@ class Interpreter(object):
 
     def do_project_lock(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config,
+            project = ProjectDir(path=args.project_dir, config=self.config, cwd=self.cwd,
                                  view=args.view)
             try:
                 project.lock()
@@ -132,7 +135,7 @@ class Interpreter(object):
 
     def do_project_unlock(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config,
+            project = ProjectDir(path=args.project_dir, config=self.config, cwd=self.cwd,
                                  view=args.view)
             try:
                 project.unlock()
@@ -146,7 +149,7 @@ class Interpreter(object):
 
     def do_project_mkview(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
+            project = ProjectDir(path=args.project_dir, config=self.config, cwd=self.cwd)
             project.mkview(view=args.new_view)
         except (IsADirectoryError, NotADirectoryError,
                 InventorySpecError, ChildProcessError,
@@ -156,7 +159,7 @@ class Interpreter(object):
 
     def do_project_commit(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
+            project = ProjectDir(path=args.project_dir, config=self.config, cwd=self.cwd)
             project.commit(interactive=True)
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
@@ -165,7 +168,7 @@ class Interpreter(object):
 
     def do_project_venv(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
+            project = ProjectDir(path=args.project_dir, config=self.config, cwd=self.cwd)
             if args.action == 'enable':
                 project.enable_venv(scope=args.scope)
                 return
@@ -186,7 +189,7 @@ class Interpreter(object):
 
     def do_exec(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config,
+            project = ProjectDir(path=args.project_dir, config=self.config, cwd=self.cwd,
                                  view=args.view)
         except (IsADirectoryError, NotADirectoryError,
                 ViewNotFoundError) as errmsg:
@@ -213,7 +216,7 @@ class Interpreter(object):
 
     def do_run(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config,
+            project = ProjectDir(path=args.project_dir, config=self.config, cwd=self.cwd,
                                  view=args.view)
         except (IsADirectoryError, NotADirectoryError, ViewNotFoundError,
                 ChildProcessError) as errmsg:
@@ -241,7 +244,7 @@ class Interpreter(object):
 
     def do_env(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config,
+            project = ProjectDir(path=args.project_dir, config=self.config, cwd=self.cwd,
                                  view=args.view)
         except (IsADirectoryError, NotADirectoryError,
                 ViewNotFoundError) as errmsg:
@@ -268,7 +271,7 @@ class Interpreter(object):
 
     def do_config_list(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
+            project = ProjectDir(path=args.project_dir, config=self.config, cwd=self.cwd)
         except (IsADirectoryError, NotADirectoryError) as errmsg:
             # This is not a project directory, so no project-dependent
             # configuration is included
@@ -279,7 +282,7 @@ class Interpreter(object):
 
     def do_config_get(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
+            project = ProjectDir(path=args.project_dir, config=self.config, cwd=self.cwd)
         except (IsADirectoryError, NotADirectoryError) as errmsg:
             # This is not a project directory, so no project-dependent
             # configuration is included
