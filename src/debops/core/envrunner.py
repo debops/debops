@@ -20,12 +20,19 @@ class EnvRunner(ProjectRunner):
         self._command = command_args
 
     def show_env(self, scope='local'):
+        """Return the lines of the environment listing.
+
+        The 'local' scope lists the variables the project configuration
+        defines, the 'full' scope lists the whole environment a command
+        would run in.
+        """
         if scope == 'local':
-            for key, value in self.project.config._env_vars.items():
-                print('{}={}'.format(key, value))
+            return ['{}={}'.format(key, value)
+                    for key, value in self.project.config._env_vars.items()]
         elif scope == 'full':
-            for key, value in os.environ.items():
-                print('{}={}'.format(key, value))
+            return ['{}={}'.format(key, value)
+                    for key, value in os.environ.items()]
+        return []
 
     def execute(self):
         unlocked = False

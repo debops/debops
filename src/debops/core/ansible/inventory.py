@@ -157,7 +157,8 @@ class AnsibleInventory(object):
             raise ValueError('List of GPG recipients not specified')
 
         if not os.path.exists(self.encfs_path):
-            print('Encrypting Ansible secrets using EncFS...')
+            logger.notice('Encrypting Ansible secrets using EncFS...',
+                          extra={'allow': ['stderr', 'syslog']})
             os.makedirs(self.encfs_path)
             logger.debug('Encrypting EncFS keyfile')
             gpg_cmd = subprocess.Popen([self._commands['gpg'], '--encrypt', '--armor',

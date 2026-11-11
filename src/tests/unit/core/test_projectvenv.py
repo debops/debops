@@ -20,6 +20,7 @@ import pytest
 import json
 
 import debops.core.projectvenv as projectvenv_module
+from debops.core.utils import unexpanduser
 from debops.core.projectvenv import (EXTERNAL_DEPS, ProjectVenv,
                                      comment_external_deps,
                                      find_missing_external_deps,
@@ -347,7 +348,7 @@ def test_recreate_reinstalls_the_collections(tmp_path, monkeypatch):
     install.assert_called_once_with(scope="collections")
 
 
-def test_freeze_writes_the_pinned_versions(tmp_path, monkeypatch, capsys):
+def test_freeze_writes_the_pinned_versions(tmp_path, monkeypatch, caplog):
     venv = make_venv(tmp_path)
     fake_venv_python(venv)
     process = mock.Mock()
@@ -360,7 +361,8 @@ def test_freeze_writes_the_pinned_versions(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(ProjectVenv, "freeze_collections",
                         freeze_collections)
 
-    venv.freeze()
+    with caplog.at_level(logging.NOTICE, logger="debops.core.projectvenv"):
+        venv.freeze()
 
     with open(venv.requirements_path) as fh:
         content = fh.read()
@@ -368,8 +370,7 @@ def test_freeze_writes_the_pinned_versions(tmp_path, monkeypatch, capsys):
     assert "ansible==9.0.1\n" in content
     assert "netaddr==1.3.0\n" in content
     venv.project.auto_commit.assert_called_once_with()
-    assert "Writing the pinned Python package versions to" in \
-        capsys.readouterr().out
+    assert "Writing the pinned Python package versions to" in caplog.text
 
 
 def test_freeze_requires_an_existing_environment(tmp_path):
@@ -768,7 +769,7 @@ def mock_installed_collections(venv, installed):
 
 def test_freeze_collections_pins_the_installed_versions(tmp_path,
                                                         monkeypatch,
-                                                        capsys):
+                                                        caplog):
     venv = make_venv(tmp_path)
     write_collections_requirements(tmp_path, (
             "---\ncollections:\n\n"
@@ -778,7 +779,8 @@ def test_freeze_collections_pins_the_installed_versions(tmp_path,
                                       "debops.debops": "3.3.2",
                                       "ansible._protomatter": "2.19.14"})
 
-    venv.freeze_collections()
+    with caplog.at_level(logging.NOTICE, logger="debops.core.projectvenv"):
+        venv.freeze_collections()
 
     content = Path(venv.collections_lock).read_text()
     assert "debops project venv freeze" in content
@@ -786,8 +788,7 @@ def test_freeze_collections_pins_the_installed_versions(tmp_path,
     assert "  - name: 'debops.debops'\n    version: '3.3.2'\n" in content
     # Bundled collections from the 'ansible' package are not included
     assert "protomatter" not in content
-    assert "Writing the Ansible Collection lock file" in \
-        capsys.readouterr().out
+    assert "Writing the Ansible Collection lock file" in caplog.text
 
 
 def test_freeze_collections_prefers_the_project_copy(tmp_path, monkeypatch):
@@ -964,7 +965,7 @@ def test_installed_collections_prefers_the_project_copy(tmp_path,
 
 
 def test_install_collections_uses_the_lock_file_first(tmp_path, monkeypatch,
-                                                      capsys):
+                                                      caplog):
     venv = make_venv(tmp_path)
     write_collections_requirements(tmp_path, "---\ncollections: []\n")
     Path(venv.collections_lock).write_text("---\ncollections: []\n")
@@ -973,7 +974,8 @@ def test_install_collections_uses_the_lock_file_first(tmp_path, monkeypatch,
     monkeypatch.setattr(projectvenv_module.shutil, "which",
                         mock.Mock(return_value="ansible-galaxy"))
 
-    venv.install_collections()
+    with caplog.at_level(logging.NOTICE, logger="debops.core.projectvenv"):
+        venv.install_collections()
 
     calls = [call.args[0] for call in run.call_args_list]
     assert calls[0][-1] == venv.collections_lock
@@ -981,16 +983,15 @@ def test_install_collections_uses_the_lock_file_first(tmp_path, monkeypatch,
     assert "--force" not in calls[1]
 
     # Each processed file is announced, in order
-    out = capsys.readouterr().out
-    lock_msg = "from the lock file, " + venv.collections_lock
-    req_msg = "from " + venv.collections_requirements
-    assert lock_msg in out
-    assert req_msg in out
-    assert out.index(lock_msg) < out.index(req_msg)
+    lock_msg = "from the lock file, " + unexpanduser(venv.collections_lock)
+    req_msg = "from " + unexpanduser(venv.collections_requirements)
+    assert lock_msg in caplog.text
+    assert req_msg in caplog.text
+    assert caplog.text.index(lock_msg) < caplog.text.index(req_msg)
 
 
 def test_install_collections_skips_a_missing_lock_file(tmp_path, monkeypatch,
-                                                       capsys):
+                                                       caplog):
     venv = make_venv(tmp_path)
     write_collections_requirements(tmp_path, "---\ncollections: []\n")
     run = mock.Mock(return_value=0)
@@ -998,19 +999,20 @@ def test_install_collections_skips_a_missing_lock_file(tmp_path, monkeypatch,
     monkeypatch.setattr(projectvenv_module.shutil, "which",
                         mock.Mock(return_value="ansible-galaxy"))
 
-    venv.install_collections()
+    with caplog.at_level(logging.NOTICE, logger="debops.core.projectvenv"):
+        venv.install_collections()
 
     assert run.call_count == 1
     assert run.call_args.args[0][-1] == venv.collections_requirements
 
-    out = capsys.readouterr().out
-    assert "from the lock file" not in out
-    assert "from " + venv.collections_requirements in out
+    assert "from the lock file" not in caplog.text
+    assert ("from " + unexpanduser(venv.collections_requirements)
+            in caplog.text)
 
 
 def test_install_collections_upgrade_ignores_the_lock_file(tmp_path,
                                                            monkeypatch,
-                                                           capsys):
+                                                           caplog):
     venv = make_venv(tmp_path)
     write_collections_requirements(tmp_path, "---\ncollections: []\n")
     Path(venv.collections_lock).write_text("---\ncollections: []\n")
@@ -1019,13 +1021,14 @@ def test_install_collections_upgrade_ignores_the_lock_file(tmp_path,
     monkeypatch.setattr(projectvenv_module.shutil, "which",
                         mock.Mock(return_value="ansible-galaxy"))
 
-    venv.install_collections(upgrade=True)
+    with caplog.at_level(logging.NOTICE, logger="debops.core.projectvenv"):
+        venv.install_collections(upgrade=True)
 
     assert run.call_count == 1
     argv = run.call_args.args[0]
     assert venv.collections_requirements in argv
     assert "--force" in argv
-    assert "Force-upgrading Ansible Collections" in capsys.readouterr().out
+    assert "Force-upgrading Ansible Collections" in caplog.text
 
 
 def test_freeze_runs_the_venv_python(tmp_path, monkeypatch):

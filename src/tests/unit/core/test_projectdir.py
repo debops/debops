@@ -86,7 +86,7 @@ def test_is_git_repo_rejects_a_plain_directory(tmp_path):
     assert ProjectDir.__new__(ProjectDir)._is_git_repo(str(tmp_path)) is False
 
 
-def test_report_unused_vars_warns_about_unknown_entries(tmp_path, capsys):
+def test_report_unused_vars_warns_about_unknown_entries(tmp_path, caplog):
     project = make_project({})
     (tmp_path / "group_vars").mkdir()
     (tmp_path / "group_vars" / "web.yml").write_text("")
@@ -97,10 +97,9 @@ def test_report_unused_vars_warns_about_unknown_entries(tmp_path, capsys):
     project._report_unused_vars(
         str(tmp_path), "@all:\n  |--@db:\n  |  |--db01\n")
 
-    err = capsys.readouterr().err
-    assert "group_vars/web" in err
-    assert "group_vars/db" not in err
-    assert "host_vars/extra" in err
+    assert "group_vars/web" in caplog.text
+    assert "group_vars/db" not in caplog.text
+    assert "host_vars/extra" in caplog.text
 
 
 def test_parse_graph_names_skips_empty_entries():
@@ -111,7 +110,7 @@ def test_parse_graph_names_skips_empty_entries():
     assert hosts == {"web1"}
 
 
-def test_report_spec_result_covers_every_verb(tmp_path, capsys, caplog):
+def test_report_spec_result_covers_every_verb(tmp_path, caplog):
     project = make_project({})
     result = {
         "removed": [str(tmp_path / "removed")],
@@ -125,25 +124,23 @@ def test_report_spec_result_covers_every_verb(tmp_path, capsys, caplog):
     with caplog.at_level(logging.NOTICE, logger="debops.core.projectdir"):
         project._report_spec_result(result, str(tmp_path), dry_run=False)
 
-    output = capsys.readouterr().out
-    assert "Removed removed" in caplog.text
-    assert "Would remove would-remove" in caplog.text
-    assert "Created written" in caplog.text
-    assert "Would create would-create" in caplog.text
-    assert "Skipped existing skipped" in caplog.text
-    assert "Kept kept" in caplog.text
-    assert "Use '--force' to overwrite or remove paths which already exist." \
-        in output
-    assert "Applied the inventory specification." not in output
+        assert "Removed removed" in caplog.text
+        assert "Would remove would-remove" in caplog.text
+        assert "Created written" in caplog.text
+        assert "Would create would-create" in caplog.text
+        assert "Skipped existing skipped" in caplog.text
+        assert "Kept kept" in caplog.text
+        assert ("Use '--force' to overwrite or remove paths which already "
+                "exist.") in caplog.text
+        assert "Applied the inventory specification." not in caplog.text
 
-    result["skipped"] = []
-    project._report_spec_result(result, str(tmp_path), dry_run=False)
-    assert "Applied the inventory specification." in capsys.readouterr().out
+        result["skipped"] = []
+        project._report_spec_result(result, str(tmp_path), dry_run=False)
+        assert "Applied the inventory specification." in caplog.text
 
-    project._report_spec_result({"planned": [str(tmp_path / "x")]},
-                                str(tmp_path), dry_run=True)
-    assert "Applied the inventory specification." not in \
-        capsys.readouterr().out
+        project._report_spec_result({"planned": [str(tmp_path / "x")]},
+                                    str(tmp_path), dry_run=True)
+        assert caplog.text.count("Applied the inventory specification.") == 1
 
 
 def test_venv_enabled_reads_the_configuration():
@@ -174,18 +171,6 @@ def test_inventory_spec_config_tolerates_a_config_without_get():
                       "allow_io": False}
 
 
-def test_status_stream_is_stderr_when_the_output_is_json():
-    """Inventory JSON goes to standard output; the status messages move
-    to standard error so that 'debops project refresh --list' stays
-    usable in a pipe."""
-    assert make_project({})._status_stream("list") is sys.stderr
-    assert make_project({})._status_stream("host") is sys.stderr
-
-
-def test_status_stream_stays_on_stdout_for_a_graph():
-    assert make_project({})._status_stream("graph") is sys.stdout
-
-
 def test_inventory_inspect_requires_the_binary(tmp_path):
     raw = {"binaries": {"ansible-inventory": "bogus-inventory-binary"}}
 
@@ -194,7 +179,7 @@ def test_inventory_inspect_requires_the_binary(tmp_path):
                                              "graph")
 
 
-def test_inventory_inspect_prints_the_graph(tmp_path, monkeypatch, capsys):
+def test_inventory_inspect_returns_the_graph(tmp_path, monkeypatch):
     raw = {"binaries": {"ansible-inventory": sys.executable}}
     project = make_project(raw)
     process = mock.Mock()
@@ -204,9 +189,9 @@ def test_inventory_inspect_prints_the_graph(tmp_path, monkeypatch, capsys):
     popen = mock.Mock(return_value=process)
     monkeypatch.setattr(projectdir_module.subprocess, "Popen", popen)
 
-    project._inventory_inspect(str(tmp_path), str(tmp_path), "graph")
+    result = project._inventory_inspect(str(tmp_path), str(tmp_path), "graph")
 
-    assert "@all:" in capsys.readouterr().out
+    assert "@all:" in result
     argv = popen.call_args.args[0]
     assert argv[:3] == [sys.executable, "-i", str(tmp_path)]
     assert "--graph" in argv
@@ -420,7 +405,7 @@ def test_enable_venv_rejects_a_legacy_project(tmp_path):
         project.enable_venv()
 
 
-def test_enable_venv_is_a_noop_when_already_enabled(tmp_path, capsys):
+def test_enable_venv_is_a_noop_when_already_enabled(tmp_path, caplog):
     project = make_project_at(tmp_path, raw={
         "views": {},
         "project": {"venv": {"enabled": True}}})
@@ -428,8 +413,9 @@ def test_enable_venv_is_a_noop_when_already_enabled(tmp_path, capsys):
             tmp_path, "---\ncollections:\n\n"
             "  - name: 'debops.debops'\n    version: '3.3.2'\n")
 
-    assert project.enable_venv() is False
-    assert "already enabled" in capsys.readouterr().out
+    with caplog.at_level(logging.NOTICE, logger="debops.core.projectdir"):
+        assert project.enable_venv() is False
+    assert "already enabled" in caplog.text
     assert not (tmp_path / ".debops" / "conf.d").exists()
 
 
@@ -445,11 +431,12 @@ def enable_venv_project(tmp_path, monkeypatch, raw=None):
     return project
 
 
-def test_enable_venv_writes_the_configuration(tmp_path, monkeypatch, capsys):
+def test_enable_venv_writes_the_configuration(tmp_path, monkeypatch, caplog):
     project = enable_venv_project(tmp_path, monkeypatch,
                                   raw={"views": {}, "project": {}})
 
-    assert project.enable_venv() is True
+    with caplog.at_level(logging.NOTICE, logger="debops.core.projectdir"):
+        assert project.enable_venv() is True
 
     assert (tmp_path / ".debops" / "conf.d" / "venv.yml").exists()
     assert (tmp_path / ".debops" / "requirements.txt").exists()
@@ -458,9 +445,8 @@ def test_enable_venv_writes_the_configuration(tmp_path, monkeypatch, capsys):
     assert not (tmp_path / ".debops" / "environment").exists()
     ProjectDir.refresh.assert_not_called()
     ProjectDir.commit.assert_not_called()
-    out = capsys.readouterr().out
-    assert "Enabled Python virtual environment" in out
-    assert "debops project venv install" in out
+    assert "Enabled Python virtual environment" in caplog.text
+    assert "debops project venv install" in caplog.text
 
 
 def test_enable_venv_commits_when_auto_commit_is_enabled(tmp_path,
@@ -584,7 +570,7 @@ def test_commit_is_a_noop_outside_a_git_repository(tmp_path, monkeypatch):
 
 
 def test_commit_unstages_changes_without_a_message(
-        tmp_path, monkeypatch, capsys):
+        tmp_path, monkeypatch, caplog):
     project = make_project({"project": {}})
     project.path = str(tmp_path)
     (tmp_path / ".debops.cfg").write_text("")
@@ -600,7 +586,7 @@ def test_commit_unstages_changes_without_a_message(
     project.commit(interactive=True)
 
     repo.git.reset.assert_called_once_with()
-    assert "auto_commit_message" in capsys.readouterr().err
+    assert "auto_commit_message" in caplog.text
     assert [call.args[1] for call in hooks.call_args_list] == [
         "pre-commit", "post-commit"]
 
@@ -1030,7 +1016,7 @@ def test_process_spec_logs_a_dry_run(tmp_path, caplog):
             {"hosts": "x"}, pre_existing=frozenset(), overwrite=False,
             dry_run=True, keep=[])
     project._report_spec_result.assert_called_once_with(
-            {}, os.path.realpath(str(tmp_path)), True, None)
+            {}, os.path.realpath(str(tmp_path)), True)
 
 
 def test_process_spec_inspects_without_files(tmp_path):

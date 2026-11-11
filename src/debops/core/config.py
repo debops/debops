@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .constants import DEBOPS_PACKAGE_DATA
+from .exceptions import OptionNotFoundError
 from .utils import unexpanduser, strtobool
 import os
-import sys
+import logging
 import dotenv
 import pkgutil
 import jinja2
@@ -18,6 +19,8 @@ try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
+
+logger = logging.getLogger(__name__)
 
 
 class Configuration(object):
@@ -204,8 +207,8 @@ class Configuration(object):
                     data = self._expand_env_vars(data)
                     return data
                 except yaml.YAMLError as e:
-                    print('Error in configuration file:', path + ':\n', e,
-                          file=sys.stderr)
+                    logger.warning('Error in configuration file: %s:\n %s',
+                                   path, e)
 
         elif path.endswith('/.debops.cfg'):
             self._config_files.append(path)
@@ -243,20 +246,29 @@ class Configuration(object):
             return self._converted_data
 
     def config_list(self):
+        """Return the lines describing where the configuration comes from."""
+        lines = []
         relative_root = os.path.relpath(os.path.abspath('/'))
         if self._env_files:
-            print('# Environment files:')
+            lines.append('# Environment files:')
             for filename in self._env_files:
                 relative_file = os.path.relpath(unexpanduser(filename))
-                print(relative_file.replace(relative_root, '', 1))
-            print()
+                lines.append(relative_file.replace(relative_root, '', 1))
+            lines.append('')
         if self._config_files:
-            print('# Configuration files:')
+            lines.append('# Configuration files:')
             for filename in self._config_files:
                 relative_file = os.path.relpath(unexpanduser(filename))
-                print(relative_file.replace(relative_root, '', 1))
+                lines.append(relative_file.replace(relative_root, '', 1))
+        return lines
 
     def config_get(self, key, format='unix', keys=False):
+        """Return the value of a configuration option, rendered in the
+        requested format.
+
+        Raises OptionNotFoundError when the option is not defined; the
+        clients decide how absence is presented.
+        """
         key_path = ['.']
         if key != '.':
             key_path = list(filter(None, key.split('.')))
@@ -281,37 +293,36 @@ class Configuration(object):
                 # error.
                 _config = []
 
-        if key_found:
-            if isinstance(_config, dict):
-                if format in ['unix', 'yaml']:
-                    print(yaml.dump(_config).strip())
-                elif format == 'json':
-                    print(json.dumps(_config, sort_keys=True, indent=2))
-                elif format == 'toml':
-                    print(toml.dumps(_config).strip())
-            elif isinstance(_config, bool):
-                if format == 'unix':
-                    print(json.dumps(_config))
-                elif format == 'yaml':
-                    print(yaml.dump(_config).strip())
-                elif format in ['json', 'toml']:
-                    print(json.dumps(_config))
-            elif isinstance(_config, list):
-                if format == 'unix':
-                    for entry in _config:
-                        print(entry)
-                elif format == 'yaml':
-                    print(yaml.dump(_config).strip())
-                elif format in ['json', 'toml']:
-                    print(json.dumps(_config, sort_keys=True))
-            else:
-                if format == 'unix':
-                    print(_config)
-                elif format == 'yaml':
-                    print(yaml.dump(_config).strip())
-                elif format in ['json', 'toml']:
-                    print(json.dumps(_config))
+        if not key_found:
+            raise OptionNotFoundError('The "' + key + '" option is not '
+                                      'defined in the DebOps configuration')
+
+        if isinstance(_config, dict):
+            if format in ['unix', 'yaml']:
+                return yaml.dump(_config).strip()
+            elif format == 'json':
+                return json.dumps(_config, sort_keys=True, indent=2)
+            elif format == 'toml':
+                return toml.dumps(_config).strip()
+        elif isinstance(_config, bool):
+            if format == 'unix':
+                return json.dumps(_config)
+            elif format == 'yaml':
+                return yaml.dump(_config).strip()
+            elif format in ['json', 'toml']:
+                return json.dumps(_config)
+        elif isinstance(_config, list):
+            if format == 'unix':
+                # An empty list renders as nothing at all
+                return '\n'.join(str(entry) for entry in _config) or None
+            elif format == 'yaml':
+                return yaml.dump(_config).strip()
+            elif format in ['json', 'toml']:
+                return json.dumps(_config, sort_keys=True)
         else:
-            if format == 'json':
-                print('{}')
-            sys.exit(1)
+            if format == 'unix':
+                return str(_config)
+            elif format == 'yaml':
+                return yaml.dump(_config).strip()
+            elif format in ['json', 'toml']:
+                return json.dumps(_config)
