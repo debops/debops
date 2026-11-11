@@ -66,7 +66,10 @@ class ProjectDir(object):
         explicitly: the resolution never consults the process working
         directory and is never cached across commands. The CLI
         re-resolves on every invocation; the daemon resolves only on
-        an explicit view switch.
+        an explicit view switch. A caller which holds no working
+        directory context -- the daemon, which runs from wherever the
+        system started it -- passes cwd=None and selects the view
+        explicitly or through the configuration.
 
         Raises ViewNotFoundError when the explicit selection is not a
         view of the project.
@@ -78,7 +81,7 @@ class ProjectDir(object):
                 'The "' + explicit + '" view is not present in the "'
                 + os.path.basename(root) + '" project')
 
-        if cwd != root:
+        if cwd is not None and cwd != root:
             current_dir = cwd
             view_dir = None
             view_path = []
@@ -106,7 +109,7 @@ class ProjectDir(object):
         return 'system'
 
     def __init__(self, path, project_type='legacy', create=False, config=None,
-                 view=None, encrypt=None, keys=None):
+                 view=None, encrypt=None, keys=None, cwd=None):
         self.config = config
         self.path = os.path.abspath(path)
         self.name = os.path.basename(self.path)
@@ -188,14 +191,17 @@ class ProjectDir(object):
         }
 
         # Resolve the active view: the command line selection wins,
-        # then the working directory, then the configured default view
+        # then the working directory the caller passed, then the
+        # configured default view. A caller without a working directory
+        # context passes cwd=None and selects the view explicitly or
+        # through the configuration
         try:
             config_default_view = self.config.raw['project']['default_view']
         except KeyError:
             config_default_view = None
 
         self.view = self.resolve_view(
-            root=self.path, cwd=os.getcwd(),
+            root=self.path, cwd=cwd,
             views=list(self.config.raw['views'].keys()),
             explicit=view, default=config_default_view)
 
