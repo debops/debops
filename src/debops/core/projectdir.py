@@ -4,7 +4,8 @@
 
 from .constants import DEBOPS_USER_HOME_DIR
 from .exceptions import ViewNotFoundError
-from .utils import unexpanduser, write_file, host_is_controller, strtobool
+from .utils import (unexpanduser, write_file, host_is_controller, strtobool,
+                    verify_gpg_recipients)
 from .projectvenv import (seed_requirements, seed_names, check_scope,
                           find_missing_external_deps, comment_external_deps)
 from .ansibleconfig import AnsibleConfig
@@ -182,7 +183,8 @@ class ProjectDir(object):
 
         self._commands = {
             'ansible-galaxy': self.config.raw['binaries']['ansible-galaxy'],
-            'git-crypt': self.config.raw['binaries']['git-crypt']
+            'git-crypt': self.config.raw['binaries']['git-crypt'],
+            'gpg': self.config.raw['binaries']['gpg']
         }
 
         # Resolve the active view: the command line selection wins,
@@ -1158,6 +1160,12 @@ class ProjectDir(object):
             raise IsADirectoryError('You are inside another '
                                     'DebOps project directory')
 
+        # The recipients must be able to receive the secret before the
+        # project is built around them: an unusable key would otherwise
+        # leave a project which reports success and cannot be unlocked
+        if self.encrypt:
+            verify_gpg_recipients(self._commands['gpg'], self.keys)
+
         if not run_hooks(self.path, 'pre-init', require_project=False,
                          env=self.environment()):
             raise ChildProcessError('Hook pre-init aborted, '
@@ -1212,6 +1220,10 @@ class ProjectDir(object):
                                                     gpg_key], cwd=self.path,
                                                     stdin=subprocess.PIPE)
                     gitcrypt_cmd.communicate()
+                    if gitcrypt_cmd.returncode != 0:
+                        raise ChildProcessError(
+                            'git-crypt could not add the GPG user '
+                            + gpg_key)
 
                 # Lock the repository after setting up git-crypt
                 logger.debug('Locking files using git-crypt after project '
@@ -1221,6 +1233,9 @@ class ProjectDir(object):
                                                 cwd=self.path,
                                                 stdin=subprocess.PIPE)
                 gitcrypt_cmd.communicate()
+                if gitcrypt_cmd.returncode != 0:
+                    raise ChildProcessError(
+                        'git-crypt could not lock the repository')
 
             # Install Ansible Collections after the project is initialized.
             # In a project with a Python virtual environment the collections

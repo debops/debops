@@ -207,3 +207,52 @@ def test_path_key_falls_back_when_the_name_is_empty(tmp_path):
     project.mkdir()
     assert utils.path_key(str(project), "").endswith("-project")
     assert utils.path_key(str(project), None).endswith("-project")
+
+
+def test_verify_gpg_recipients_accepts_a_working_key(gpg_stub):
+    gpg = gpg_stub()
+    utils.verify_gpg_recipients(gpg, "key@example.org")
+
+
+def test_verify_gpg_recipients_rejects_an_unusable_key(gpg_stub):
+    gpg = gpg_stub(exit_code=2, message="gpg: Unusable public key")
+
+    with pytest.raises(ValueError, match="Unusable public key"):
+        utils.verify_gpg_recipients(gpg, "broken@example.org")
+
+
+def test_verify_gpg_recipients_names_the_recipient(gpg_stub):
+    gpg = gpg_stub(exit_code=2, message="gpg: Unusable public key")
+
+    with pytest.raises(ValueError, match='"broken@example.org"'):
+        utils.verify_gpg_recipients(gpg, "broken@example.org")
+
+
+def test_verify_gpg_recipients_indents_a_multiline_error(gpg_stub):
+    gpg = gpg_stub(exit_code=2, message="first line\nsecond line")
+
+    with pytest.raises(ValueError) as caught:
+        utils.verify_gpg_recipients(gpg, "broken@example.org")
+
+    message = str(caught.value)
+    assert message.startswith('The GPG key "broken@example.org" cannot '
+                              'be used for encryption:\n')
+    assert "\n  first line\n  second line" in message
+
+
+def test_verify_gpg_recipients_checks_every_recipient(gpg_stub):
+    # The first key passes the probe, the second one fails
+    gpg = gpg_stub(exit_code=2, message="gpg: Unusable public key",
+                   fail_from=2)
+
+    with pytest.raises(ValueError, match='"second@example.org"'):
+        utils.verify_gpg_recipients(
+            gpg, "first@example.org,second@example.org")
+
+
+def test_verify_gpg_recipients_requires_recipients(gpg_stub):
+    gpg = gpg_stub()
+
+    with pytest.raises(ValueError,
+                       match="List of GPG recipients not specified"):
+        utils.verify_gpg_recipients(gpg, None)

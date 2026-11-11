@@ -114,6 +114,11 @@ General
   visible on the standard error stream when the check runs at the default
   log level.
 
+- :command:`debops project init` checks the GPG recipients of an
+  encrypted project before creating the directory and refuses keys
+  which cannot encrypt; a git-crypt failure during initialization
+  aborts the command instead of finishing silently.
+
 Removed
 ~~~~~~~
 
