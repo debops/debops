@@ -22,8 +22,6 @@ import pytest
 
 import debops
 import debops.__main__ as main_module
-import debops.config
-import debops.subcommands
 
 
 @pytest.fixture
@@ -42,17 +40,17 @@ def stub_main_collaborators(monkeypatch, verbose=None,
                             syslog_facility="user", syslog_port=514):
     """Replace what ``main()`` builds, return the Interpreter class mock."""
     parsed = SimpleNamespace(args=SimpleNamespace(verbose=verbose))
-    monkeypatch.setattr(debops.subcommands, "Subcommands",
+    monkeypatch.setattr(main_module, "Subcommands",
                         mock.Mock(return_value=parsed))
     config = mock.Mock()
     config.raw = {"syslog": {"level": syslog_level,
                              "address": syslog_address,
                              "facility": syslog_facility,
                              "port": syslog_port}}
-    monkeypatch.setattr(debops.config, "Configuration",
+    monkeypatch.setattr(main_module, "Configuration",
                         mock.Mock(return_value=config))
     interpreter_class = mock.Mock()
-    monkeypatch.setattr(debops, "Interpreter", interpreter_class)
+    monkeypatch.setattr(main_module, "Interpreter", interpreter_class)
     return interpreter_class
 
 

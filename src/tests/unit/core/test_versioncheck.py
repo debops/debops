@@ -23,7 +23,7 @@ import unittest.mock
 
 from packaging.version import Version
 
-from debops.versioncheck import VersionCheck
+from debops.core.versioncheck import VersionCheck
 
 GIT_ENV = dict(os.environ,
                GIT_AUTHOR_NAME='DebOps Tests',
@@ -71,7 +71,7 @@ class VersionCheckTestCase(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp(prefix='debops-versioncheck-')
         self.addCleanup(shutil.rmtree, self.tmpdir, ignore_errors=True)
         cache_patcher = unittest.mock.patch(
-            'debops.versioncheck.xdg_cache_home',
+            'debops.core.versioncheck.xdg_cache_home',
             os.path.join(self.tmpdir, 'cache'))
         cache_patcher.start()
         self.addCleanup(cache_patcher.stop)

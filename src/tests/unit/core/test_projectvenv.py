@@ -2,7 +2,7 @@
 # Copyright (C) 2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Tests for the project Python virtual environment in ``debops.projectvenv``.
+"""Tests for the project Python virtual environment in ``debops.core.projectvenv``.
 
 The ``venv``, ``pip`` and ``ansible-galaxy`` commands are replaced with
 stubs; the file operations run against temporary directories.
@@ -19,11 +19,11 @@ import pytest
 
 import json
 
-import debops.projectvenv as projectvenv_module
-from debops.projectvenv import (EXTERNAL_DEPS, ProjectVenv,
-                                comment_external_deps,
-                                find_missing_external_deps,
-                                seed_names, seed_requirements)
+import debops.core.projectvenv as projectvenv_module
+from debops.core.projectvenv import (EXTERNAL_DEPS, ProjectVenv,
+                                     comment_external_deps,
+                                     find_missing_external_deps,
+                                     seed_names, seed_requirements)
 
 
 DEFAULT_RAW = {
@@ -886,7 +886,7 @@ def test_freeze_collections_reports_when_nothing_is_locked(tmp_path, caplog):
             "---\ncollections:\n  - name: 'ansible.posix'\n"))
     mock_installed_collections(venv, {})
 
-    with caplog.at_level(logging.INFO, logger="debops.projectvenv"):
+    with caplog.at_level(logging.INFO, logger="debops.core.projectvenv"):
         venv.freeze_collections()
 
     assert "not writing the lock file" in caplog.text

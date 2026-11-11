@@ -17,7 +17,7 @@ import pytest
 
 import debops.cli as cli_module
 from debops.cli import Interpreter
-from debops.exceptions import InventorySpecError, NoDefaultViewException
+from debops.core.exceptions import InventorySpecError, NoDefaultViewException
 
 
 def make_args(**kwargs):

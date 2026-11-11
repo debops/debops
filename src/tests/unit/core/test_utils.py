@@ -2,11 +2,11 @@
 # Copyright (C) 2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Tests for ``debops.utils``."""
+"""Tests for ``debops.core.utils``."""
 
 import pytest
 
-from debops import utils
+from debops.core import utils
 
 
 @pytest.fixture

@@ -2,7 +2,7 @@
 # Copyright (C) 2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Tests for ``debops.projectdir``.
+"""Tests for ``debops.core.projectdir``.
 
 The helper tests bypass the constructor with ``__new__`` and exercise the
 pure methods against small directory trees. The construction tests at the
@@ -22,9 +22,9 @@ from unittest import mock
 
 import pytest
 
-import debops.projectdir as projectdir_module
-from debops.config import Configuration
-from debops.projectdir import ProjectDir
+import debops.core.projectdir as projectdir_module
+from debops.core.config import Configuration
+from debops.core.projectdir import ProjectDir
 
 
 def make_project(raw, kwargs=None):
@@ -123,7 +123,7 @@ def test_report_spec_result_covers_every_verb(tmp_path, capsys, caplog):
         "kept": [str(tmp_path / "kept")],
     }
 
-    with caplog.at_level(logging.NOTICE, logger="debops.projectdir"):
+    with caplog.at_level(logging.NOTICE, logger="debops.core.projectdir"):
         project._report_spec_result(result, str(tmp_path), dry_run=False)
 
     output = capsys.readouterr().out
@@ -408,7 +408,7 @@ def test_rewrite_view_collections_path_ignores_a_missing_file(tmp_path,
                                                               caplog):
     project = make_project_at(tmp_path)
 
-    with caplog.at_level(logging.INFO, logger="debops.projectdir"):
+    with caplog.at_level(logging.INFO, logger="debops.core.projectdir"):
         assert project._rewrite_view_collections_path("system") is False
 
     assert "View configuration file not found" in caplog.text
@@ -989,7 +989,7 @@ def test_load_specs_reports_overlapping_definitions(tmp_path, caplog):
     project.view = "system"
     project.kwargs = {"spec_sources": [str(first), str(second)]}
 
-    with caplog.at_level(logging.NOTICE, logger="debops.projectdir"):
+    with caplog.at_level(logging.NOTICE, logger="debops.core.projectdir"):
         files, keep = project._load_specs(str(tmp_path / "inventory"))
 
     assert files == {"hosts": "second"}
@@ -1015,7 +1015,7 @@ def test_process_spec_logs_a_dry_run(tmp_path, caplog):
     inventory = SimpleNamespace(path=str(tmp_path),
                                 apply_spec=mock.Mock(return_value={}))
 
-    with caplog.at_level(logging.INFO, logger="debops.projectdir"):
+    with caplog.at_level(logging.INFO, logger="debops.core.projectdir"):
         project._process_spec(inventory, frozenset())
 
     assert "will not be written to disk" in caplog.text
