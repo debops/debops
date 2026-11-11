@@ -2,7 +2,7 @@
 # Copyright (C) 2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Tests for the command line parser in ``debops.subcommands``.
+"""Tests for the command line parser in ``debops.cli.subcommands``.
 
 ``Subcommands`` parses the whole command line in its constructor and stores
 the resulting namespace in ``self.args``, so each test builds one and inspects
@@ -13,7 +13,7 @@ import os
 
 import pytest
 
-from debops.subcommands import Subcommands
+from debops.cli.subcommands import Subcommands
 
 
 def parse_cli(*argv):

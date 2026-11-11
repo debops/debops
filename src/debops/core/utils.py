@@ -11,7 +11,6 @@ import os
 import platform
 import re
 import subprocess
-import sys
 
 logger = logging.getLogger(__name__)
 
@@ -50,22 +49,6 @@ def verify_gpg_recipients(gpg, keys):
             raise ValueError(
                 'The GPG key "{}" cannot be used for encryption: '
                 '{}'.format(key, error))
-
-
-def print_error(errmsg):
-    """Print a failure message to standard error.
-
-    Machine-readable output written to stdout, for example the inventory or
-    the configuration in JSON, must stay parseable, so the failure reports
-    never appear there. The failure is also recorded in the journal; the
-    record is skipped when the logging subsystem is not wired up (the test
-    runs), since the logging fallback would print the message a second
-    time.
-    """
-    debops_log = logging.getLogger('debops')
-    if debops_log.handlers:
-        debops_log.error(str(errmsg), extra={'allow': 'syslog'})
-    print('Error:', errmsg, file=sys.stderr)
 
 
 def unexpanduser(path):

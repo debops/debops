@@ -7,9 +7,9 @@ import os
 import logging
 from logging.handlers import SysLogHandler
 
-from .cli import Interpreter
+from .cli.interpreter import Interpreter
 from .core.config import Configuration
-from .subcommands import Subcommands
+from .cli.subcommands import Subcommands
 
 # Configure logging early so that it's available as soon as possible
 logger = logging.getLogger('debops')

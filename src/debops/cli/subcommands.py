@@ -11,11 +11,11 @@ import textwrap
 # available, we are in a development environment in which case we use a stub
 # version number to avoid errors.
 try:
-    from .__version__ import __version__
+    from ..__version__ import __version__
 except ModuleNotFoundError:
     __version__ = "0.0.0"
 
-from .core.utils import print_error
+from . import print_error
 import shutil
 
 

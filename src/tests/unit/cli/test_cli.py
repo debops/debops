@@ -15,8 +15,8 @@ from unittest import mock
 
 import pytest
 
-import debops.cli as cli_module
-from debops.cli import Interpreter
+import debops.cli.interpreter as cli_module
+from debops.cli.interpreter import Interpreter
 from debops.core.exceptions import InventorySpecError, NoDefaultViewException
 
 
