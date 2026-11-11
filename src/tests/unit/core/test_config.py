@@ -10,6 +10,7 @@ from unittest import mock
 import pytest
 
 from debops.core import config as config_module
+from debops.core.exceptions import OptionNotFoundError
 from debops.core.utils import unexpanduser
 
 
@@ -167,12 +168,12 @@ def test_load_ignores_hidden_files(configuration, tmp_path):
 
 
 def test_load_reports_invalid_yaml_and_keeps_going(configuration, tmp_path,
-                                                   capsys):
+                                                   caplog):
     (tmp_path / "broken.yaml").write_text("a: [unterminated\n")
     (tmp_path / "ok.toml").write_text('b = 2\n')
 
     assert configuration.load(str(tmp_path)) == {"b": 2}
-    assert "broken.yaml" in capsys.readouterr().err
+    assert "broken.yaml" in caplog.text
 
 
 def test_load_converts_the_legacy_debops_cfg(configuration, tmp_path):
@@ -334,104 +335,79 @@ def test_get_env_returns_the_value(configuration, monkeypatch):
     assert configuration.get_env("DEBOPS_TEST_ENV") == "value"
 
 
-def test_config_get_prints_a_scalar(configuration, capsys):
+def test_config_get_returns_a_scalar(configuration):
     configuration._config = {"a": "b"}
 
-    configuration.config_get("a")
-
-    assert capsys.readouterr().out.strip() == "b"
+    assert configuration.config_get("a") == "b"
 
 
-def test_config_get_prints_a_nested_key(configuration, capsys):
+def test_config_get_returns_a_nested_key(configuration):
     configuration._config = {"a": {"b": "c"}}
 
-    configuration.config_get("a.b")
-
-    assert capsys.readouterr().out.strip() == "c"
+    assert configuration.config_get("a.b") == "c"
 
 
-def test_config_get_prints_the_whole_configuration_for_dot(configuration,
-                                                           capsys):
+def test_config_get_returns_the_whole_configuration_for_dot(configuration):
     configuration._config = {"a": "b"}
 
-    configuration.config_get(".")
-
-    assert capsys.readouterr().out.strip() == "a: b"
+    assert configuration.config_get(".") == "a: b"
 
 
-def test_config_get_formats_a_boolean_as_json(configuration, capsys):
+def test_config_get_formats_a_boolean_as_json(configuration):
     configuration._config = {"a": True}
 
-    configuration.config_get("a")
-
-    assert capsys.readouterr().out.strip() == "true"
+    assert configuration.config_get("a", format="json") == "true"
 
 
-def test_config_get_prints_list_entries(configuration, capsys):
+def test_config_get_returns_list_entries(configuration):
     configuration._config = {"a": ["x", "y"]}
 
-    configuration.config_get("a")
-
-    assert capsys.readouterr().out.splitlines() == ["x", "y"]
+    assert configuration.config_get("a").splitlines() == ["x", "y"]
 
 
-def test_config_get_json_sorts_keys(configuration, capsys):
+def test_config_get_json_sorts_keys(configuration):
     configuration._config = {"b": 1, "a": 2}
 
-    configuration.config_get(".", format="json")
-
-    out = capsys.readouterr().out
+    out = configuration.config_get(".", format="json")
     assert out.index('"a"') < out.index('"b"')
 
 
-def test_config_get_exits_for_a_missing_key(configuration, capsys):
+def test_config_get_raises_for_a_missing_key(configuration):
     configuration._config = {"a": "b"}
 
-    with pytest.raises(SystemExit) as exc:
+    with pytest.raises(OptionNotFoundError):
         configuration.config_get("nope", format="json")
 
-    assert exc.value.code == 1
-    assert capsys.readouterr().out.strip() == "{}"
 
-
-def test_config_get_prints_nothing_for_a_missing_key(configuration, capsys):
+def test_config_get_raises_for_a_missing_key_in_every_format(configuration):
     configuration._config = {"a": "b"}
 
-    with pytest.raises(SystemExit):
-        configuration.config_get("nope")
-
-    assert capsys.readouterr().out == ""
+    for fmt in ("unix", "yaml", "json", "toml"):
+        with pytest.raises(OptionNotFoundError):
+            configuration.config_get("nope", format=fmt)
 
 
 @pytest.mark.parametrize("fmt", ["json", "toml"])
-def test_config_get_formats_a_boolean_in_every_style(
-        configuration, fmt, capsys):
-    """Boolean values print as JSON literals in the 'json' and 'toml'
+def test_config_get_formats_a_boolean_in_every_style(configuration, fmt):
+    """Boolean values render as JSON literals in the 'json' and 'toml'
     formats, keeping the output comparable across the callers.
     """
     configuration._config = {"a": True}
 
-    configuration.config_get("a", format=fmt)
-
-    assert capsys.readouterr().out.strip() == "true"
+    assert configuration.config_get("a", format=fmt) == "true"
 
 
-def test_config_get_formats_a_list_as_yaml(configuration, capsys):
+def test_config_get_formats_a_list_as_yaml(configuration):
     configuration._config = {"a": ["x", "y"]}
 
-    configuration.config_get("a", format="yaml")
-
-    assert capsys.readouterr().out.strip() == "- x\n- y"
+    assert configuration.config_get("a", format="yaml") == "- x\n- y"
 
 
 @pytest.mark.parametrize("fmt", ["json", "toml"])
-def test_config_get_formats_a_scalar_in_every_style(configuration, fmt,
-                                                    capsys):
+def test_config_get_formats_a_scalar_in_every_style(configuration, fmt):
     configuration._config = {"a": "b"}
 
-    configuration.config_get("a", format=fmt)
-
-    assert capsys.readouterr().out.strip() == '"b"'
+    assert configuration.config_get("a", format=fmt) == '"b"'
 
 
 def test_init_loads_the_default_configuration(tmp_path, monkeypatch):
@@ -487,78 +463,62 @@ def test_merge_loads_from_a_directory(configuration, tmp_path):
     assert configuration.raw["extra"] == "yes"
 
 
-def test_config_list_prints_env_and_config_files(configuration, capsys,
-                                                 tmp_path):
+def test_config_list_returns_env_and_config_files(configuration, tmp_path):
     env_file = tmp_path / "project" / ".env"
     config_file = tmp_path / "project" / ".debops.cfg"
     configuration._env_files = [str(env_file)]
     configuration._config_files = [str(config_file)]
 
-    configuration.config_list()
+    lines = configuration.config_list()
 
-    out = capsys.readouterr().out
-    assert "# Environment files:" in out
-    assert "# Configuration files:" in out
-    assert ".env" in out
-    assert ".debops.cfg" in out
+    assert "# Environment files:" in lines
+    assert "# Configuration files:" in lines
+    assert any(".env" in line for line in lines)
+    assert any(".debops.cfg" in line for line in lines)
 
 
-def test_config_list_without_env_files(configuration, capsys, tmp_path):
+def test_config_list_without_env_files(configuration, tmp_path):
     configuration._config_files = [str(tmp_path / "project" / ".debops.cfg")]
 
-    configuration.config_list()
+    lines = configuration.config_list()
 
-    out = capsys.readouterr().out
-    assert "# Environment files:" not in out
-    assert "# Configuration files:" in out
+    assert "# Environment files:" not in lines
+    assert "# Configuration files:" in lines
 
 
-def test_config_get_formats_a_dict_as_toml(configuration, capsys):
+def test_config_get_formats_a_dict_as_toml(configuration):
     configuration._config = {"a": {"b": 1}}
 
-    configuration.config_get("a", format="toml")
-
-    assert "b = 1" in capsys.readouterr().out
+    assert "b = 1" in configuration.config_get("a", format="toml")
 
 
-def test_config_get_formats_a_list_as_json(configuration, capsys):
+def test_config_get_formats_a_list_as_json(configuration):
     configuration._config = {"a": ["x", "y"]}
 
-    configuration.config_get("a", format="json")
-
-    assert '["x", "y"]' in capsys.readouterr().out
+    assert '["x", "y"]' in configuration.config_get("a", format="json")
 
 
-def test_config_get_formats_a_scalar_as_yaml(configuration, capsys):
+def test_config_get_formats_a_scalar_as_yaml(configuration):
     configuration._config = {"a": "b"}
 
-    configuration.config_get("a", format="yaml")
-
-    assert "b" in capsys.readouterr().out
+    assert "b" in configuration.config_get("a", format="yaml")
 
 
-def test_config_get_formats_a_boolean_as_yaml(configuration, capsys):
+def test_config_get_formats_a_boolean_as_yaml(configuration):
     configuration._config = {"a": True}
 
-    configuration.config_get("a", format="yaml")
-
-    assert "true" in capsys.readouterr().out
+    assert "true" in configuration.config_get("a", format="yaml")
 
 
-def test_config_get_lists_the_keys_of_a_dict(configuration, capsys):
+def test_config_get_lists_the_keys_of_a_dict(configuration):
     configuration._config = {"a": {"b": 1, "c": 2}}
 
-    configuration.config_get("a", keys=True)
-
-    out = capsys.readouterr().out
+    out = configuration.config_get("a", keys=True)
     assert "b" in out
     assert "c" in out
 
 
-def test_config_get_keys_on_a_scalar_returns_an_empty_list(configuration,
-                                                           capsys):
+def test_config_get_keys_on_a_scalar_renders_nothing(configuration):
     configuration._config = {"a": 1}
 
-    configuration.config_get("a", keys=True)
-
-    assert capsys.readouterr().out == ""
+    assert configuration.config_get("a", keys=True) is None

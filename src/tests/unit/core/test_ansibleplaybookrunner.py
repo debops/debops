@@ -175,25 +175,22 @@ def test_get_check_mode_detects_the_check_flag(stub_project):
     assert runner._get_check_mode() == "check"
 
 
-def test_eval_prints_the_command(stub_project, capsys):
+def test_eval_returns_the_command(stub_project):
     runner = AnsiblePlaybookRunner(stub_project(),
                                    ansible_args=["--check", "site.yml"])
-    runner.eval()
 
-    output = capsys.readouterr().out
+    output = runner.eval()
+
     assert "export ANSIBLE_CONFIG=" in output
     assert "ansible-playbook" in output
     assert "site.yml" in output
 
 
-def test_execute_without_playbooks_aborts(stub_project, capsys):
+def test_execute_without_playbooks_aborts(stub_project):
     runner = AnsiblePlaybookRunner(stub_project(), ansible_args=[])
 
-    with pytest.raises(SystemExit) as exception:
+    with pytest.raises(ValueError, match="No playbooks specified"):
         runner.execute()
-
-    assert exception.value.code == 1
-    assert "No playbooks specified" in capsys.readouterr().err
 
 
 def test_execute_returns_the_command_return_code(stub_project, monkeypatch,
@@ -328,14 +325,11 @@ def test_missing_defaults_section_in_an_existing_file(stub_project, caplog):
     assert project.ansible_cfg.path in caplog.text
 
 
-def test_missing_inventory_option_aborts(stub_project, capsys):
+def test_missing_inventory_option_aborts(stub_project):
     project = stub_project(cfg_options={})
 
-    with pytest.raises(SystemExit) as exception:
+    with pytest.raises(ValueError, match="No inventory specified"):
         AnsiblePlaybookRunner(project, ansible_args=[])
-
-    assert exception.value.code == 1
-    assert "No inventory specified" in capsys.readouterr().err
 
 
 def test_global_vars_are_added_as_extra_vars(stub_project, tmp_path):
@@ -484,7 +478,9 @@ def test_execute_rings_the_bell(stub_project, monkeypatch, capsys):
 
     runner.execute()
 
-    assert capsys.readouterr().out.count("\a") == 1
+    # The bell is a bare BEL on standard error: a log record would
+    # append a newline and advance the line the bell leaves alone
+    assert capsys.readouterr().err == "\a"
 
 
 def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch):

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .projectrunner import ProjectRunner
-from .utils import print_error, unexpanduser
+from .utils import unexpanduser
 from .hooks import run_hooks
 import subprocess
 import configparser
@@ -287,8 +287,7 @@ class AnsiblePlaybookRunner(ProjectRunner):
     def execute(self):
         unlocked = False
         if not self._found_playbooks:
-            print_error('No playbooks specified, aborting')
-            sys.exit(1)
+            raise ValueError('No playbooks specified, aborting')
 
         for key, value in self._ansible_env.items():
             os.environ[key] = value
@@ -312,9 +311,11 @@ class AnsiblePlaybookRunner(ProjectRunner):
                 logger.info('Running Ansible playbooks: {}'.format(
                         ','.join(self._found_playbooks)),
                         extra={'allow': 'syslog'})
-            print('Executing Ansible playbooks:')
+            logger.notice('Executing Ansible playbooks:',
+                          extra={'allow': ['stderr', 'syslog']})
             for playbook in self._found_playbooks:
-                print(unexpanduser(playbook))
+                logger.notice(unexpanduser(playbook),
+                              extra={'allow': ['stderr', 'syslog']})
             logger.debug('Ansible command: {}'.format(
                     ' '.join(self._ansible_command)))
             executor = subprocess.Popen(' '.join(self._ansible_command),

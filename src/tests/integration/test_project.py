@@ -184,7 +184,7 @@ def test_refresh_updates_the_project(run_debops, tmp_path, debops_env):
                         env=debops_env)
 
     assert result.returncode == 0
-    assert "Refreshed DebOps project" in result.stdout
+    assert "Refreshed DebOps project" in error_message(result)
 
 
 def test_init_with_template_reports_created_paths(run_debops, tmp_path,
@@ -199,7 +199,7 @@ def test_init_with_template_reports_created_paths(run_debops, tmp_path,
     output = error_message(result)
     assert "Created hosts" in output
     assert "Created group_vars/webservers" in output
-    assert "Applied the inventory specification." in result.stdout
+    assert "Applied the inventory specification." in output
     hosts = (project_dir / "ansible" / "views" / "system" / "inventory"
              / "hosts")
     assert "[webservers]" in hosts.read_text()
@@ -221,7 +221,7 @@ def test_refresh_with_template_reports_skipped_paths(run_debops, tmp_path,
     assert result.returncode == 0
     assert "Skipped existing hosts" in error_message(result)
     assert ("Use '--force' to overwrite or remove paths which already exist."
-            in result.stdout)
+            in error_message(result))
     assert hosts.read_text() == before
 
 
@@ -246,7 +246,7 @@ def test_refresh_dry_run_reports_planned_paths(run_debops, tmp_path,
     assert "Would create group_vars/dryrun" in output
     assert "Would create hosts_dryrun" in output
     assert "Inventory specification will not be written to disk" in output
-    assert "Applied the inventory specification." not in result.stdout
+    assert "Applied the inventory specification." not in output
     inventory = (project_dir / "ansible" / "views" / "system" / "inventory")
     assert not (inventory / "group_vars" / "dryrun").exists()
     assert not (inventory / "hosts_dryrun").exists()
@@ -267,7 +267,7 @@ def test_refresh_force_reports_removals_and_kept_paths(run_debops, tmp_path,
     assert "Removed group_vars/all/sshd.yml" in output
     assert "Created host_vars" in output
     assert "Kept group_vars/all/keyring.yml" in output
-    assert "Applied the inventory specification." in result.stdout
+    assert "Applied the inventory specification." in output
 
 
 def test_refresh_dry_run_reports_planned_removals(run_debops, tmp_path,
@@ -480,7 +480,7 @@ def test_venv_enable_activates_an_existing_project(run_debops, tmp_path,
                         env=debops_env)
 
     assert result.returncode == 0
-    assert "debops project venv install" in result.stdout
+    assert "debops project venv install" in error_message(result)
     assert (project_dir / ".debops" / "conf.d" / "venv.yml").exists()
     assert (project_dir / ".debops" / "requirements.txt").exists()
     assert not (project_dir / ".debops" / "venv").exists()
@@ -524,7 +524,7 @@ def test_venv_enable_activates_an_existing_project(run_debops, tmp_path,
     result = run_debops("project", "venv", "enable", str(project_dir),
                         env=debops_env)
     assert result.returncode == 0
-    assert "already enabled" in result.stdout
+    assert "already enabled" in error_message(result)
 
 
 @network

@@ -25,6 +25,11 @@ class ViewNotFoundError(DebOpsError):
     pass
 
 
+class OptionNotFoundError(DebOpsError):
+    """Raised when a requested configuration option is not defined"""
+    pass
+
+
 class InventorySpecError(DebOpsError):
     """Raised when an inventory file specification is invalid"""
     pass
