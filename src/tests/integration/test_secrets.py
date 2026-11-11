@@ -18,6 +18,7 @@ device node keeps such environments skipped-out instead of false-passing.
 
 import os
 import shutil
+import subprocess
 
 import pytest
 
@@ -52,6 +53,43 @@ def test_project_unlock_and_lock_a_plain_inventory(run_debops, tmp_path,
     assert unlock.returncode == 0
     assert lock.returncode == 0
     assert not (project_dir / "ansible" / ".encfs.secret").exists()
+
+
+def _gpg_fingerprint(env, uid):
+    """Return the fingerprint of the first key matching the user id."""
+    listing = subprocess.run(
+        ["gpg", "--list-keys", "--with-colons", uid],
+        env={**os.environ, **env}, check=True, capture_output=True,
+        text=True).stdout
+    for line in listing.splitlines():
+        if line.startswith("fpr:"):
+            return line.split(":")[9]
+    raise AssertionError("no key found for " + uid)
+
+
+@git_crypt
+def test_init_rejects_a_key_without_encryption_capability(
+        run_debops, tmp_path, gpg_env):
+    """A GPG key which cannot encrypt -- for example a sign-only Ed25519
+    key -- aborts the initialization before the project directory is
+    created, instead of leaving a project which reports success and
+    cannot be unlocked."""
+    subprocess.run(
+        ["gpg", "--batch", "--pinentry-mode", "loopback", "--passphrase", "",
+         "--quick-gen-key", "DebOps Tests <signonly@example.org>",
+         "ed25519", "sign", "never"],
+        env={**os.environ, **gpg_env}, check=True,
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    fingerprint = _gpg_fingerprint(gpg_env, "signonly@example.org")
+    project_dir = tmp_path / "example-unusable"
+
+    result = run_debops("project", "init", "--encrypt", "git-crypt",
+                        "--keys", fingerprint, "--no-requirements",
+                        str(project_dir), env=gpg_env)
+
+    assert result.returncode == 1
+    assert "cannot be used for encryption" in result.stderr
+    assert not project_dir.exists()
 
 
 @git_crypt
