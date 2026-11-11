@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .core.exceptions import (NoDefaultViewException, InventorySpecError,
-                              ViewNotFoundError)
+                              OptionNotFoundError, ViewNotFoundError)
 from .core.config import Configuration
 from .subcommands import Subcommands
 from .core.projectdir import ProjectDir
@@ -80,13 +80,14 @@ class Interpreter(object):
             project = ProjectDir(path=args.project_dir, config=self.config,
                                  project_type=args.type, create=True,
                                  encrypt=args.encrypt, keys=args.keys)
-            project.create(git_repo=args.git, venv=args.venv,
-                           requirements=args.requirements,
-                           default_view=args.default_view,
-                           spec_sources=args.spec_sources,
-                           allow_io=args.allow_io, dry_run=args.dry_run,
-                           force=args.force, inspect_mode=_inspect_mode(args),
-                           inspect_host=args.host)
+            output = project.create(
+                git_repo=args.git, venv=args.venv,
+                requirements=args.requirements,
+                default_view=args.default_view,
+                spec_sources=args.spec_sources,
+                allow_io=args.allow_io, dry_run=args.dry_run,
+                force=args.force, inspect_mode=_inspect_mode(args),
+                inspect_host=args.host)
             if args.venv and args.requirements:
                 venv = ProjectVenv(project)
                 venv.install()
@@ -95,20 +96,25 @@ class Interpreter(object):
                 ChildProcessError, ValueError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
+        if output:
+            print(output)
 
     def do_project_refresh(self, args):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config,
                                  view=args.view)
-            project.refresh(spec_sources=args.spec_sources,
-                            allow_io=args.allow_io, dry_run=args.dry_run,
-                            force=args.force, inspect_mode=_inspect_mode(args),
-                            inspect_host=args.host)
+            output = project.refresh(
+                spec_sources=args.spec_sources,
+                allow_io=args.allow_io, dry_run=args.dry_run,
+                force=args.force, inspect_mode=_inspect_mode(args),
+                inspect_host=args.host)
         except (IsADirectoryError, NotADirectoryError, ViewNotFoundError,
                 PermissionError, InventorySpecError,
                 ChildProcessError, ValueError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
+        if output:
+            print(output)
 
     def do_project_lock(self, args):
         try:
@@ -196,7 +202,7 @@ class Interpreter(object):
             sys.exit(1)
 
         if args.eval:
-            runner.eval()
+            print(runner.eval())
             sys.exit(0)
         else:
             try:
@@ -224,12 +230,12 @@ class Interpreter(object):
             sys.exit(1)
 
         if args.eval:
-            runner.eval()
+            print(runner.eval())
             sys.exit(0)
         else:
             try:
                 sys.exit(runner.execute())
-            except ChildProcessError as errmsg:
+            except (ChildProcessError, ValueError) as errmsg:
                 print_error(errmsg)
                 sys.exit(1)
 
@@ -256,7 +262,9 @@ class Interpreter(object):
                 print_error(errmsg)
                 sys.exit(1)
         else:
-            sys.exit(runner.show_env(scope=args.scope))
+            for line in runner.show_env(scope=args.scope):
+                print(line)
+            sys.exit(0)
 
     def do_config_list(self, args):
         try:
@@ -266,7 +274,8 @@ class Interpreter(object):
             # configuration is included
             pass
 
-        self.config.config_list()
+        for line in self.config.config_list():
+            print(line)
 
     def do_config_get(self, args):
         try:
@@ -278,7 +287,20 @@ class Interpreter(object):
 
         if args.key:
             for option_name in args.key:
-                self.config.config_get(option_name, format=args.format,
-                                       keys=args.keys)
+                try:
+                    output = self.config.config_get(option_name,
+                                                    format=args.format,
+                                                    keys=args.keys)
+                except OptionNotFoundError:
+                    # An undefined option is reported as an empty JSON
+                    # object and a non-zero exit code
+                    if args.format == 'json':
+                        print('{}')
+                    sys.exit(1)
+                if output is not None:
+                    print(output)
         else:
-            self.config.config_get('.', format=args.format, keys=args.keys)
+            output = self.config.config_get('.', format=args.format,
+                                            keys=args.keys)
+            if output is not None:
+                print(output)

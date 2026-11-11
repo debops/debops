@@ -537,13 +537,13 @@ class ProjectDir(object):
                         'type': self.project_type},
         }
 
-    def _report_spec_result(self, result, base_dir, dry_run,
-                            inspect_mode=None):
+    def _report_spec_result(self, result, base_dir, dry_run):
         """Tell the user which paths a specification changed or left alone.
 
         The per-path lines are logged at the NOTICE level, so that a template
         which touches many paths does not flood the terminal unless '-v' is
-        used. The summary and the hint about '--force' stay on stdout.
+        used. The summary and the hint about '--force' are notices which
+        reach the terminal as well.
 
         Removals are reported before writes to follow the order in which
         :func:`debops.core.inventoryspec.apply_spec` performs them, so that a
@@ -561,23 +561,13 @@ class ProjectDir(object):
                     verb, os.path.relpath(target, base_dir)))
 
         if result.get('skipped'):
-            print("Use '--force' to overwrite or remove paths which already "
-                  "exist.", file=self._status_stream(inspect_mode))
+            logger.notice("Use '--force' to overwrite or remove paths which "
+                          "already exist.",
+                          extra={'allow': ['stderr', 'syslog']})
 
         if not dry_run and not result.get('skipped'):
-            print('Applied the inventory specification.',
-                  file=self._status_stream(inspect_mode))
-
-    def _status_stream(self, inspect_mode=None):
-        """The stream for status messages.
-
-        A 'list' or 'host' inspection prints JSON to standard output, so
-        status messages go to standard error to keep the JSON usable in a
-        pipe. Everything else stays on standard output.
-        """
-        if inspect_mode in ('list', 'host'):
-            return sys.stderr
-        return sys.stdout
+            logger.notice('Applied the inventory specification.',
+                          extra={'allow': ['stderr', 'syslog']})
 
     def _inventory_inspect(self, target_dir, config_dir, mode, host=None):
         """Run 'ansible-inventory' over an inventory directory.
@@ -623,9 +613,6 @@ class ProjectDir(object):
 
         result = out.decode('utf-8').strip()
 
-        if result:
-            print(result)
-
         if inspect_cmd.returncode != 0:
             raise ChildProcessError(
                 'The "{}" command failed with exit code '
@@ -636,6 +623,8 @@ class ProjectDir(object):
         # omits both
         if mode == 'graph':
             self._report_unused_vars(target_dir, result)
+
+        return result
 
     @staticmethod
     def _parse_graph_names(graph):
@@ -715,10 +704,10 @@ class ProjectDir(object):
 
             for entry in self._vars_entries(base_dir):
                 if entry not in defined:
-                    print("Warning: {}/{} is not used, the inventory defines "
-                          "no {} named '{}'".format(kind, entry, described,
-                                                    entry),
-                          file=sys.stderr)
+                    logger.warning(
+                        "{}/{} is not used, the inventory defines "
+                        "no {} named '{}'".format(kind, entry, described,
+                                                  entry))
 
     def show_inventory(self, inventory, files, pre_existing=frozenset(),
                        keep=(), inspect_mode=None, inspect_host=None,
@@ -768,7 +757,7 @@ class ProjectDir(object):
             else:
                 target_dir = inventory.path
 
-            self._inventory_inspect(target_dir, tempdir, mode, host)
+            return self._inventory_inspect(target_dir, tempdir, mode, host)
         finally:
             shutil.rmtree(tempdir, ignore_errors=True)
 
@@ -795,13 +784,13 @@ class ProjectDir(object):
                                           dry_run=dry_run, keep=keep)
             self._report_spec_result(result,
                                      os.path.realpath(inventory.path),
-                                     dry_run, inspect_mode)
+                                     dry_run)
 
         if inspect_mode:
-            self.show_inventory(inventory, files, pre_existing, keep,
-                                inspect_mode=inspect_mode,
-                                inspect_host=inspect_host, dry_run=dry_run,
-                                force=force)
+            return self.show_inventory(inventory, files, pre_existing, keep,
+                                       inspect_mode=inspect_mode,
+                                       inspect_host=inspect_host,
+                                       dry_run=dry_run, force=force)
 
     def _create_modern_project(self, path, default_view='system', venv=False,
                                spec_sources=None, allow_io=False,
@@ -981,14 +970,16 @@ class ProjectDir(object):
                 self.config.raw['views'][default_view]['ansible'])
         self.ansible_cfg.write_config()
 
-        self._process_spec(inventory, pre_existing, spec_sources=spec_sources,
-                           allow_io=allow_io, default_view=default_view,
-                           dry_run=dry_run, force=force,
-                           inspect_mode=inspect_mode,
-                           inspect_host=inspect_host)
+        inspect_output = self._process_spec(
+            inventory, pre_existing, spec_sources=spec_sources,
+            allow_io=allow_io, default_view=default_view, dry_run=dry_run,
+            force=force, inspect_mode=inspect_mode,
+            inspect_host=inspect_host)
 
-        print('Created new DebOps project in', path,
-              file=self._status_stream(inspect_mode))
+        logger.notice('Created new DebOps project in ' + path,
+                      extra={'allow': ['stderr', 'syslog']})
+
+        return inspect_output
 
     def _create_legacy_project(self, path, spec_sources=None, allow_io=False,
                                dry_run=False, force=False, inspect_mode=None,
@@ -1113,13 +1104,15 @@ class ProjectDir(object):
         self.ansible_cfg.merge_config(debops_cfg)
         self.ansible_cfg.write_config()
 
-        self._process_spec(inventory, pre_existing, spec_sources=spec_sources,
-                           allow_io=allow_io, dry_run=dry_run, force=force,
-                           inspect_mode=inspect_mode,
-                           inspect_host=inspect_host)
+        inspect_output = self._process_spec(
+            inventory, pre_existing, spec_sources=spec_sources,
+            allow_io=allow_io, dry_run=dry_run, force=force,
+            inspect_mode=inspect_mode, inspect_host=inspect_host)
 
-        print('Created new DebOps project in', path,
-              file=self._status_stream(inspect_mode))
+        logger.notice('Created new DebOps project in ' + path,
+                      extra={'allow': ['stderr', 'syslog']})
+
+        return inspect_output
 
     def createdirs(self, path):
         skel_dirs = (
@@ -1156,11 +1149,11 @@ class ProjectDir(object):
 
         # Let's make a new project
         if self.project_type == 'modern':
-            self._create_modern_project(self.path, default_view=default_view,
-                                        venv=venv, spec_sources=spec_sources,
-                                        allow_io=allow_io, dry_run=dry_run,
-                                        force=force, inspect_mode=inspect_mode,
-                                        inspect_host=inspect_host)
+            inspect_output = self._create_modern_project(
+                self.path, default_view=default_view, venv=venv,
+                spec_sources=spec_sources, allow_io=allow_io, dry_run=dry_run,
+                force=force, inspect_mode=inspect_mode,
+                inspect_host=inspect_host)
         elif self.project_type == 'legacy':
             if venv:
                 raise ValueError(
@@ -1168,10 +1161,10 @@ class ProjectDir(object):
                     'only in "modern" DebOps project directories; '
                     'use the "debops project init -t modern --venv" '
                     'command')
-            self._create_legacy_project(self.path, spec_sources=spec_sources,
-                                        allow_io=allow_io, dry_run=dry_run,
-                                        force=force, inspect_mode=inspect_mode,
-                                        inspect_host=inspect_host)
+            inspect_output = self._create_legacy_project(
+                self.path, spec_sources=spec_sources, allow_io=allow_io,
+                dry_run=dry_run, force=force, inspect_mode=inspect_mode,
+                inspect_host=inspect_host)
 
         if git_repo:
             logger.debug('Initializing git repository in project directory')
@@ -1239,6 +1232,8 @@ class ProjectDir(object):
                              'directory')
 
         run_hooks(self.path, 'post-init')
+
+        return inspect_output
 
     def mkview(self, view):
 
@@ -1363,10 +1358,11 @@ class ProjectDir(object):
                         self.config.raw['views'][view]['ansible'])
                 self.ansible_cfg.write_config()
 
-                self._process_spec(inventory, pre_existing)
+                inspect_output = self._process_spec(inventory, pre_existing)
 
-                print('Created', view, 'view in DebOps project', self.name,
-                      file=self._status_stream())
+                logger.notice('Created {} view in DebOps project {}'
+                              .format(view, self.name),
+                              extra={'allow': ['stderr', 'syslog']})
 
             else:
                 raise ValueError('You must specify name of the view '
@@ -1375,6 +1371,8 @@ class ProjectDir(object):
         else:
             raise NotADirectoryError('This functionality only works in '
                                      '"modern" DebOps project directory')
+
+        return inspect_output
 
     def _write_venv_config(self, path):
         """Write the configuration files of the project Python venv.
@@ -1578,28 +1576,32 @@ class ProjectDir(object):
 
         if not changed:
             if scope == 'collections':
-                print('The project-local Ansible Collections are already '
-                      'enabled in this project, nothing to do',
-                      file=self._status_stream())
+                logger.notice('The project-local Ansible Collections are '
+                              'already enabled in this project, nothing '
+                              'to do', extra={'allow': ['stderr', 'syslog']})
             else:
-                print('The Python virtual environment is already enabled in '
-                      'this project, nothing to do',
-                      file=self._status_stream())
+                logger.notice('The Python virtual environment is already '
+                              'enabled in this project, nothing to do',
+                              extra={'allow': ['stderr', 'syslog']})
             return False
 
         self.auto_commit()
 
         if scope in ('python', 'all'):
-            print('Enabled Python virtual environment in', self.path,
-                  file=self._status_stream())
-            print('Run "debops project venv install" to install the '
-                  'environment', file=self._status_stream())
+            logger.notice('Enabled Python virtual environment in {}'
+                          .format(unexpanduser(self.path)),
+                          extra={'allow': ['stderr', 'syslog']})
+            logger.notice('Run "debops project venv install" to install the '
+                          'environment',
+                          extra={'allow': ['stderr', 'syslog']})
         else:
-            print('Enabled project-local Ansible Collections in', self.path,
-                  file=self._status_stream())
-            print('Install them with "debops env ansible-galaxy collection '
-                  'install -r ansible/collections/requirements.yml"',
-                  file=self._status_stream())
+            logger.notice('Enabled project-local Ansible Collections in {}'
+                          .format(unexpanduser(self.path)),
+                          extra={'allow': ['stderr', 'syslog']})
+            logger.notice('Install them with "debops env ansible-galaxy '
+                          'collection install -r '
+                          'ansible/collections/requirements.yml"',
+                          extra={'allow': ['stderr', 'syslog']})
         return True
 
     def auto_commit(self):
@@ -1662,9 +1664,9 @@ class ProjectDir(object):
                                'changes in git index')
                 repo.git.reset()
                 if interactive:
-                    print('The "project.git.auto_commit_message" option is '
-                          'not defined. Not committing any changes.',
-                          file=sys.stderr)
+                    logger.warning('The "project.git.auto_commit_message" '
+                                   'option is not defined. Not committing '
+                                   'any changes.')
         else:
             logger.debug('No new changes detected, nothing to commit')
 
@@ -1682,6 +1684,7 @@ class ProjectDir(object):
             self.createdirs(self.path)
 
         project_views = list(self.config.raw['views'].keys())
+        inspect_output = None
         for view in project_views:
             inventory = AnsibleInventory(self, view, keys=self.keys,
                                          encrypt=self.encrypt)
@@ -1691,11 +1694,10 @@ class ProjectDir(object):
             # Only the selected view receives the specification, the other
             # views are refreshed with the internal defaults as before
             if view == self.view:
-                self._process_spec(inventory, pre_existing,
-                                   spec_sources=spec_sources,
-                                   allow_io=allow_io, dry_run=dry_run,
-                                   force=force, inspect_mode=inspect_mode,
-                                   inspect_host=inspect_host)
+                inspect_output = self._process_spec(
+                    inventory, pre_existing, spec_sources=spec_sources,
+                    allow_io=allow_io, dry_run=dry_run, force=force,
+                    inspect_mode=inspect_mode, inspect_host=inspect_host)
 
             if self.project_type == 'modern':
                 self.ansible_cfg = AnsibleConfig(
@@ -1714,10 +1716,13 @@ class ProjectDir(object):
                         project_type=self.project_type)
                 self.ansible_cfg.merge_config(debops_cfg)
                 self.ansible_cfg.write_config()
-        print('Refreshed DebOps project in', self.path,
-              file=self._status_stream(inspect_mode))
+        logger.notice('Refreshed DebOps project in {}'
+                      .format(unexpanduser(self.path)),
+                      extra={'allow': ['stderr', 'syslog']})
 
         run_hooks(self.path, 'post-refresh')
+
+        return inspect_output
 
     def unlock(self):
         run_hooks(self.path, 'pre-unlock')

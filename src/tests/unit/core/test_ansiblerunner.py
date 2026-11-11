@@ -111,20 +111,17 @@ def test_missing_defaults_section_in_an_existing_file(stub_project, caplog):
     assert project.ansible_cfg.path in caplog.text
 
 
-def test_missing_inventory_option_aborts(stub_project, capsys):
+def test_missing_inventory_option_aborts(stub_project):
     project = stub_project(cfg_options={})
-    with pytest.raises(SystemExit) as exception:
+    with pytest.raises(ValueError, match="No inventory specified"):
         AnsibleRunner(project, ansible_args=[])
 
-    assert exception.value.code == 1
-    assert "No inventory specified" in capsys.readouterr().err
 
-
-def test_eval_prints_the_command(stub_project, capsys):
+def test_eval_returns_the_command(stub_project):
     runner = AnsibleRunner(stub_project(), ansible_args=["-v"])
-    runner.eval()
 
-    output = capsys.readouterr().out
+    output = runner.eval()
+
     assert "export ANSIBLE_CONFIG=" in output
     assert "ansible -v" in output
 
@@ -194,7 +191,9 @@ def test_execute_rings_the_bell(stub_project, monkeypatch, capsys):
 
     runner.execute()
 
-    assert capsys.readouterr().out.count("\a") == 1
+    # The bell is a bare BEL on standard error: a log record would
+    # append a newline and advance the line the bell leaves alone
+    assert capsys.readouterr().err == "\a"
 
 
 def test_execute_aborts_when_the_pre_hook_fails(stub_project, monkeypatch):

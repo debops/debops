@@ -10,13 +10,12 @@ user commands inside a project directory.
 """
 
 from .ansible.inventory import AnsibleInventory
-from .utils import print_error
 import configparser
 import logging
 import subprocess
+import sys
 import textwrap
 import os
-import sys
 
 logger = logging.getLogger(__name__)
 
@@ -48,10 +47,9 @@ class ProjectRunner(object):
                       'included in the generated file. If this is a legacy '
                       'project, check if the "inventory" option is present '
                       'in the ".debops.cfg" file. The default is:')
-            print_error(textwrap.fill(errmsg, 78) + '\n\n'
-                        '    [ansible defaults]\n'
-                        '    inventory = ansible/inventory')
-            sys.exit(1)
+            raise ValueError(textwrap.fill(errmsg, 78) + '\n\n'
+                             '    [ansible defaults]\n'
+                             '    inventory = ansible/inventory')
 
     def _quote_spaces(self, string):
         if ' ' in string:
@@ -62,7 +60,10 @@ class ProjectRunner(object):
     def _ring_bell(self):
         # Notify user at end of execution
         if self.bell:
-            print('\a', end='')
+            # A bare BEL, not a log record: a record's newline would
+            # advance the line the bell is meant to leave alone
+            sys.stderr.write('\a')
+            sys.stderr.flush()
 
     def _add_global_vars(self):
         """Add the --extra-vars with 'global-vars.yml' files first so that
@@ -123,6 +124,13 @@ class ProjectRunner(object):
                 self._expand_positional_argument(project, argument, index)
 
     def eval(self):
-        for key, value in self._ansible_env.items():
-            print('export', key + '=' + value)
-        print(' '.join(self._ansible_command))
+        """Return the shell commands which set up the project environment.
+
+        The returned lines are meant to be passed to a shell 'eval', they
+        export the Ansible environment variables and end with the Ansible
+        command itself.
+        """
+        lines = ['export {}={}'.format(key, value)
+                 for key, value in self._ansible_env.items()]
+        lines.append(' '.join(self._ansible_command))
+        return '\n'.join(lines)
