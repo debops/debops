@@ -18,6 +18,7 @@ from .inventoryspec import (parse_spec, merge_specs, apply_spec,
 from .hooks import run_hooks
 import os
 import pkgutil
+import contextlib
 import getpass
 import jinja2
 import socket
@@ -1643,9 +1644,32 @@ class ProjectDir(object):
             self._find_up_dir(self.path, ['.debops', 'conf.d'])
             or self._find_up_dir(self.path, ['.debops.cfg']))
 
-    def commit(self, interactive=False):
+    @contextlib.contextmanager
+    def _closing_repo(self):
+        """A GitPython Repo whose helper processes are closed on exit.
+
+        GitPython spawns persistent 'git cat-file' helpers on object
+        database access and relies on the garbage collector to reap
+        them; in a long-lived process such as the MCP server they would
+        accumulate.
+        """
+        repo = git.Repo(self.path)
+        try:
+            yield repo
+        finally:
+            close = getattr(repo, 'close', None)
+            if close is not None:
+                close()
+
+    def commit(self, interactive=False, message=None, paths=None):
         """Commit the current contents of the project directory to the
         git repository automatically.
+
+        With 'paths' the commit is partial: only the current state of
+        those paths is recorded, and unrelated changes in the working
+        tree or the index stay pending. Without it the whole tree is
+        committed, as the CLI has always done. The 'message' overrides
+        the configured 'project.git.auto_commit_message'.
 
         Only DebOps project directories are committed: the guard keeps
         the automation away from unrelated git repositories which the
@@ -1660,30 +1684,89 @@ class ProjectDir(object):
         run_hooks(self.path, 'pre-commit', env=self.environment())
 
         logger.debug('Detected git repository in project directory')
-        repo = git.Repo(self.path)
-        repo.git.add(all=True)
+        with self._closing_repo() as repo:
+            if paths is not None:
+                # The partial commit: stage exactly these paths, then
+                # commit exactly them, so an operator's pending or
+                # pre-staged changes never ride along
+                relpaths = [os.path.relpath(path, self.path)
+                            if os.path.isabs(path) else path
+                            for path in paths]
+                # A path which neither exists nor is tracked has no
+                # place in a pathspec; a deleted file is tracked and
+                # belongs
+                relpaths = [path for path in relpaths
+                            if os.path.lexists(os.path.join(
+                                    self.path, path))
+                            or repo.git.ls_files('--', path)]
+                if not relpaths or not repo.git.status(
+                        '--porcelain', '--', *relpaths):
+                    logger.debug('No changes in the named paths, '
+                                 'nothing to commit')
+                else:
+                    repo.git.add('--', *relpaths)
+                    if message is None:
+                        try:
+                            message = (self.config.raw['project']
+                                       ['git']['auto_commit_message'])
+                        except KeyError:
+                            logger.warning('Issue in DebOps '
+                                           'configuration, unstaging '
+                                           'changes in git index')
+                            repo.git.reset('--', *relpaths)
+                            if interactive:
+                                logger.warning(
+                                    'The "project.git.auto_commit_message" '
+                                    'option is not defined. Not committing '
+                                    'any changes.')
+                    if message is not None:
+                        logger.debug('New changes detected in the named '
+                                     'paths, committing')
+                        if repo.head.is_valid():
+                            repo.git.commit('-m', message, '--',
+                                            *relpaths)
+                        else:
+                            # A pathspec commit does not work on an
+                            # unborn branch; the index holds only our
+                            # paths by construction
+                            repo.git.commit('-m', message)
+                        logger.debug('New changes committed in git '
+                                     'repository')
+                run_hooks(self.path, 'post-commit', env=self.environment())
+                return
 
-        # Check if there are any differences between the current HEAD and
-        # the index. If there are, we need to commit them.
-        diff_list = repo.head.commit.diff()
-        if diff_list:
-            try:
-                logger.debug('New changes detected, committing')
-                repo.index.commit(
-                    self.config.raw['project']['git']['auto_commit_message'])
-                logger.debug('New changes committed in git repository')
-            except KeyError:
-                # There was an issue in the configuration, unstage any
-                # changes in git index
-                logger.warning('Issue in DebOps configuration, unstaging '
-                               'changes in git index')
-                repo.git.reset()
-                if interactive:
-                    logger.warning('The "project.git.auto_commit_message" '
-                                   'option is not defined. Not committing '
-                                   'any changes.')
-        else:
-            logger.debug('No new changes detected, nothing to commit')
+            repo.git.add(all=True)
+
+            # Check if there are any differences between the current HEAD
+            # and the index. If there are, we need to commit them. An
+            # unborn branch (no commits yet) treats the whole staged
+            # tree as new
+            if repo.head.is_valid():
+                diff_list = repo.head.commit.diff()
+            else:
+                diff_list = list(repo.index.entries)
+            if diff_list:
+                if message is None:
+                    try:
+                        message = (self.config.raw['project']
+                                   ['git']['auto_commit_message'])
+                    except KeyError:
+                        # There was an issue in the configuration, unstage
+                        # any changes in git index
+                        logger.warning('Issue in DebOps configuration, '
+                                       'unstaging changes in git index')
+                        repo.git.reset()
+                        if interactive:
+                            logger.warning(
+                                'The "project.git.auto_commit_message" '
+                                'option is not defined. Not committing '
+                                'any changes.')
+                if message is not None:
+                    logger.debug('New changes detected, committing')
+                    repo.index.commit(message)
+                    logger.debug('New changes committed in git repository')
+            else:
+                logger.debug('No new changes detected, nothing to commit')
 
         run_hooks(self.path, 'post-commit', env=self.environment())
 
