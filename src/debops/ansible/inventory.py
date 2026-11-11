@@ -15,7 +15,6 @@ import stat
 import string
 import itertools
 import random
-import time
 import logging
 
 try:
@@ -154,7 +153,7 @@ class AnsibleInventory(object):
                                                   for r in gpg_keys))
         except AttributeError:
             logger.error('List of GPG recipients not specified',
-                         extra={'block': 'stderr'})
+                         extra={'allow': 'syslog'})
             raise ValueError('List of GPG recipients not specified')
 
         if not os.path.exists(self.encfs_path):
@@ -165,8 +164,10 @@ class AnsibleInventory(object):
                                         '--output', encfs_keyfile] + gpg_recipients,
                                        stdin=subprocess.PIPE)
             gpg_cmd.communicate(encfs_password.encode('utf-8'))
-            while not os.path.exists(encfs_keyfile):
-                time.sleep(1)
+            if (gpg_cmd.returncode != 0 or
+                    not os.path.exists(encfs_keyfile)):
+                raise ChildProcessError('GPG could not encrypt the '
+                                        'EncFS keyfile')
 
             logger.debug('Creating EncFS filesystem')
             encfs_cmd = subprocess.Popen([
@@ -176,9 +177,10 @@ class AnsibleInventory(object):
                 + shquote(encfs_keyfile)],
                 stdin=subprocess.PIPE)
             encfs_cmd.communicate(('p\n' + encfs_password).encode('utf-8'))
-
-            while not os.path.exists(encfs_configfile):
-                time.sleep(1)
+            if (encfs_cmd.returncode != 0 or
+                    not os.path.exists(encfs_configfile)):
+                raise ChildProcessError('EncFS did not create the '
+                                        'volume configuration')
 
             # Set the inventory state to correctly lock the secrets
             self.encrypted = True
@@ -191,8 +193,11 @@ class AnsibleInventory(object):
             gpg_cmd = subprocess.Popen([self._commands['gpg'], '--encrypt', '--armor',
                                         '--output', encfs_configfile + '.asc']
                                        + gpg_recipients + [encfs_configfile])
-            while not os.path.exists(encfs_configfile + '.asc'):
-                time.sleep(1)
+            gpg_cmd.communicate()
+            if (gpg_cmd.returncode != 0 or
+                    not os.path.exists(encfs_configfile + '.asc')):
+                raise ChildProcessError('GPG could not encrypt the '
+                                        'volume configuration')
             os.remove(encfs_configfile)
             logger.debug('EncFS configuration complete')
 
@@ -227,7 +232,7 @@ class AnsibleInventory(object):
         except FileExistsError:
             logger.error('Cannot create view in {}, directory already '
                          'exists'.format(self.root_path),
-                         extra={'block': 'stderr'})
+                         extra={'allow': 'syslog'})
             raise IsADirectoryError("Cannot create view in "
                                     + self.root_path + ", directory "
                                     "already exists")
@@ -313,7 +318,11 @@ class AnsibleInventory(object):
                                 stdout=fh, env=subprocess_env)
                     gpg.communicate()
                     encfs.communicate()
+                    encfs_failed = encfs.returncode != 0
                     os.remove(configfile)
+                    if encfs_failed:
+                        raise ChildProcessError('EncFS could not unlock '
+                                                'the project secrets')
                     self.encfs_mounted = True
                     logger.debug('EncFS filesystem mounted')
                     return True
@@ -340,7 +349,7 @@ class AnsibleInventory(object):
                     else:
                         logger.error('Cannot unlock project secrets, '
                                      'git working directory not clean',
-                                     extra={'block': 'stderr'})
+                                     extra={'allow': 'syslog'})
                         raise ChildProcessError('Cannot unlock project secrets, '
                                                 'git working directory not clean')
                 else:
@@ -393,7 +402,7 @@ class AnsibleInventory(object):
                     else:
                         logger.error('Cannot lock project secrets, '
                                      'git working directory not clean',
-                                     extra={'block': 'stderr'})
+                                     extra={'allow': 'syslog'})
                         raise ChildProcessError('Cannot lock project secrets, '
                                                 'git working directory not clean')
 

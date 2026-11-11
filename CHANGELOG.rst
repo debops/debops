@@ -26,6 +26,26 @@ You can read information about required changes between releases in the
 Changed
 ~~~~~~~
 
+General
+'''''''
+
+- The :command:`debops` command line no longer prints informational
+  messages on the terminal by default: the terminal stays quiet
+  unless something needs attention or the verbosity is increased.
+  Important events — hook executions, interrupted commands, version
+  update notices and command failures — are recorded in the system
+  journal, which can be made more verbose than the terminal through
+  the ``[syslog] level`` configuration option.
+
+- Files that DebOps generates in a project directory can no longer
+  be written outside of it: a write whose target resolves outside
+  of the project directory is refused with an error, so a mistyped
+  path cannot scatter generated files across the file system.
+
+- A failing pre-refresh hook aborts the :command:`debops project
+  refresh` command with an error exit code instead of exiting
+  successfully, matching the behavior of the other hook types.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
@@ -48,6 +68,16 @@ General
 - The version update notice printed by the :command:`debops` command is now
   visible on the standard error stream when the check runs at the default
   log level.
+
+
+Removed
+~~~~~~~
+
+General
+'''''''
+
+- The unused ``debops.config.Configuration.section()`` method was removed
+  from the Python API. It had no callers in the project.
 
 
 `debops v3.4.0`_ - 2026-11-05

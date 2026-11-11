@@ -14,6 +14,12 @@ import sys
 
 logger = logging.getLogger(__name__)
 
+# Operator-visible notices publish through a logger with its own level,
+# the same pattern as the version check: the notice reaches the
+# terminal even when the journal level keeps the 'debops' logger quiet.
+notice_logger = logging.getLogger('debops.notice')
+notice_logger.setLevel(logging.NOTICE)
+
 
 class AnsiblePlaybookRunner(ProjectRunner):
     """Run the :command:`ansible-playbook` command in the project
@@ -52,12 +58,9 @@ class AnsiblePlaybookRunner(ProjectRunner):
             if datetime.date.today().isoweekday() == 5:
                 if ('--check' not in self._ansible_command and
                         '-C' not in self._ansible_command):
-                    logger.notice("It's Read-Only Friday, switching to check mode",
-                                  extra={'block': 'stderr'})
-                    # The message goes to stderr so that embedders which
-                    # reserve stdout for their own protocol stay intact
-                    print("It's Read-Only Friday, switching to check mode",
-                          file=sys.stderr)
+                    notice_logger.notice(
+                        "It's Read-Only Friday, switching to check mode",
+                        extra={'allow': ['stderr', 'syslog']})
                     self._ansible_command.extend(['--diff', '--check'])
 
         if self.kwargs.get('debug'):
@@ -92,15 +95,15 @@ class AnsiblePlaybookRunner(ProjectRunner):
                                               [project.view]
                                               ['playbook_sets']
                                               [argument])
-            logger.notice('Found playbook set "{}" in view "{}"'
-                          .format(argument, project.view))
+            logger.info('Found playbook set "{}" in view "{}"'
+                        .format(argument, project.view))
             if isinstance(playbook_set, list):
                 logger.debug('Playbook set "{}" expanded to: {}'
                              .format(argument, ' '.join(playbook_set)))
                 return playbook_set
             else:
                 logger.error('Incorrect definition of playbook set',
-                             extra={'block': 'stderr'})
+                             extra={'allow': 'syslog'})
                 raise ValueError('Incorrect definition of playbook set')
         except KeyError:
             logger.debug('No playbook set found')
@@ -211,12 +214,18 @@ class AnsiblePlaybookRunner(ProjectRunner):
 
         for collection, path in self._known_collections.items():
             if playbook_name.startswith(collection + '/'):
-                playbook_name = '/'.join(playbook_name.split('/')[1:])
-                playbook_name = os.path.expanduser(
-                        os.path.join(path, playbook_name))
-                if os.path.isfile(playbook_name):
-                    playbook_path = playbook_name
-                    break
+                stripped = '/'.join(playbook_name.split('/')[1:])
+            elif playbook_name.startswith(collection + '.'):
+                # The dot-separated name is how ansible-playbook itself
+                # addresses collection playbooks
+                stripped = playbook_name[len(collection) + 1:]
+            else:
+                continue
+            candidate = os.path.expanduser(
+                    os.path.join(path, stripped))
+            if os.path.isfile(candidate):
+                playbook_path = candidate
+                break
         return playbook_path
 
     def _expand_playbook(self, project, playbook):
@@ -291,11 +300,11 @@ class AnsiblePlaybookRunner(ProjectRunner):
             if run_check_mode == 'check':
                 logger.info('Checking Ansible playbooks: {}'.format(
                         ','.join(self._found_playbooks)),
-                        extra={'block': 'stderr'})
+                        extra={'allow': 'syslog'})
             else:
                 logger.info('Running Ansible playbooks: {}'.format(
                         ','.join(self._found_playbooks)),
-                        extra={'block': 'stderr'})
+                        extra={'allow': 'syslog'})
             print('Executing Ansible playbooks:')
             for playbook in self._found_playbooks:
                 print(unexpanduser(playbook))
@@ -311,13 +320,9 @@ class AnsiblePlaybookRunner(ProjectRunner):
                              'return code {}'.format(executor.returncode))
             rc = executor.returncode
 
-        except ChildProcessError:
-            raise ChildProcessError('Cannot unlock project secrets, '
-                                    'git working directory not clean')
-
         except KeyboardInterrupt:
             logger.notice('Playbook execution interrupted by user',
-                          extra={'block': 'stderr'})
+                          extra={'allow': 'syslog'})
             raise SystemExit('... aborted by user')
         else:
             self._ring_bell()

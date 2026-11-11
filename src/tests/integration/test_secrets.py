@@ -36,6 +36,24 @@ encfs = pytest.mark.skipif(
     reason="encfs with fusermount and the /dev/fuse device are required")
 
 
+def test_project_unlock_and_lock_a_plain_inventory(run_debops, tmp_path,
+                                                   debops_env):
+    """A project without encrypted secrets has nothing to unlock or
+    lock; both commands report success without changing anything."""
+    project_dir = tmp_path / "example-plain"
+    run_debops("project", "init", "--no-requirements", str(project_dir),
+               env=debops_env, check=True)
+
+    unlock = run_debops("project", "unlock", cwd=str(project_dir),
+                        env=debops_env)
+    lock = run_debops("project", "lock", cwd=str(project_dir),
+                      env=debops_env)
+
+    assert unlock.returncode == 0
+    assert lock.returncode == 0
+    assert not (project_dir / "ansible" / ".encfs.secret").exists()
+
+
 @git_crypt
 def test_init_can_encrypt_secrets_with_git_crypt(run_debops, tmp_path,
                                                  gpg_env):

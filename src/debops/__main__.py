@@ -22,15 +22,31 @@ def main():
     # Check DebOps configuration to get logging options
     config = debops.config.Configuration()
 
-    def build_handler_filters(handler: str):
-        """Add a way to block output of a specific log handler
-        Usage: logger.level('Message', extra={'block': 'handler'})"""
+    def build_handler_filters(handler: str, quiet_level=None):
+        """Route records between the handlers and keep the terminal
+        quiet.
+
+        Usage: logger.notice('Message', extra={'allow': 'syslog'})
+        sends the record to the syslog handler only; a list of handler
+        names sends it to each of them. Records without the marker go
+        to every handler whose gate admits them. The terminal also
+        holds back the records below its quiet level, unless a record
+        is explicitly allowed on it -- that is how an opt-in notice
+        like the version check stays visible while the routine
+        notices wait in the journal."""
 
         def handler_filter(record: logging.LogRecord):
-            if hasattr(record, 'block'):
-                if record.block == handler:
-                    return False
+            allow = getattr(record, 'allow', None)
+            allowed = (allow == handler
+                       or (isinstance(allow, (list, tuple))
+                           and handler in allow))
+            if allow is not None and not allowed:
+                return False
+            if (handler == 'stderr' and quiet_level is not None
+                    and record.levelno < quiet_level and not allowed):
+                return False
             return True
+
         return handler_filter
 
     syslog_levels = {
@@ -65,19 +81,27 @@ def main():
         'local7': SysLogHandler.LOG_LOCAL7
     }
 
+    levels = [logging.DEBUG, logging.INFO, logging.NOTICE,
+              logging.WARNING, logging.ERROR, logging.CRITICAL]
+
+    # The journal follows the configured '[syslog] level'; the terminal
+    # stays quiet and is raised a step at a time with '-v'. The journal
+    # is kept one step more verbose than the terminal, so the durable
+    # record carries the operator-relevant notices even when the
+    # terminal shows nothing.
+    syslog_level = syslog_levels.get(config.raw['syslog']['level'],
+                                     logging.NOTICE)
+    stderr_level = logging.WARNING
     if log_verbosity:
-        if log_verbosity >= 3:
-            logger.setLevel(logging.DEBUG)
-        elif log_verbosity == 2:
-            logger.setLevel(logging.INFO)
-        elif log_verbosity == 1:
-            logger.setLevel(logging.NOTICE)
-    else:
-        logger.setLevel(syslog_levels.get(config.raw['syslog']['level'],
-                                          logging.WARNING))
+        stderr_index = max(3 - min(log_verbosity, 3), 0)
+        stderr_level = levels[stderr_index]
+        syslog_level = levels[max(min(levels.index(syslog_level),
+                                      stderr_index - 1), 0)]
+
+    logger.setLevel(syslog_level)
 
     stderr_handler = logging.StreamHandler()
-    stderr_handler.addFilter(build_handler_filters('stderr'))
+    stderr_handler.addFilter(build_handler_filters('stderr', stderr_level))
     stderr_format = logging.Formatter('%(message)s')
     stderr_handler.setFormatter(stderr_format)
     logger.addHandler(stderr_handler)
@@ -108,12 +132,6 @@ def main():
                                        config.raw['syslog']['facility'],
                                        SysLogHandler.LOG_USER))
     syslog_handler.addFilter(build_handler_filters('syslog'))
-    if log_verbosity:
-        if log_verbosity >= 2:
-            syslog_handler.setLevel(logging.DEBUG)
-    else:
-        syslog_handler.setLevel(syslog_levels.get(config.raw['syslog']['level'],
-                                                  logging.WARNING))
     syslog_fmt = logging.Formatter('[%(levelname)s] %(message)s')
     syslog_handler.setFormatter(syslog_fmt)
     logger.addHandler(syslog_handler)
@@ -141,7 +159,7 @@ def run():
         main()
     except KeyboardInterrupt:
         logger.notice('User interrupted execution',
-                      extra={'block': 'stderr'})
+                      extra={'allow': 'syslog'})
         raise SystemExit('... aborted by user')
 
 

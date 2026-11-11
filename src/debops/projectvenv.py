@@ -371,8 +371,8 @@ class ProjectVenv(object):
                          + unexpanduser(self.venv_path))
             return False
 
-        logger.notice('Creating Python virtual environment in '
-                      + unexpanduser(self.venv_path))
+        logger.info('Creating Python virtual environment in '
+                    + unexpanduser(self.venv_path))
         rc = self._run([self.interpreter, '-m', 'venv', self.venv_path])
         if rc != 0:
             raise ChildProcessError(
@@ -402,14 +402,15 @@ class ProjectVenv(object):
             if not self.exists():
                 self.create()
             if not os.path.isfile(self.requirements_path):
-                logger.notice('Writing seed Python requirements to '
-                              + unexpanduser(self.requirements_path))
+                logger.info('Writing seed Python requirements to '
+                            + unexpanduser(self.requirements_path))
                 write_file(self.requirements_path,
                            comment_external_deps(
                                seed_requirements(),
                                find_missing_external_deps(
                                    seed_names(), self.interpreter))
-                           + '\n')
+                           + '\n',
+                           project=self.project_path)
             print('Installing Python packages from '
                   + unexpanduser(self.requirements_path) + ':', flush=True)
             python = os.path.join(self.venv_path, 'bin', 'python')
@@ -477,15 +478,15 @@ class ProjectVenv(object):
         check_scope(scope)
         if scope in ('python', 'all'):
             if os.path.isdir(self.venv_path):
-                logger.notice('Removing Python virtual environment from '
-                              + unexpanduser(self.venv_path))
+                logger.info('Removing Python virtual environment from '
+                            + unexpanduser(self.venv_path))
                 shutil.rmtree(self.venv_path)
         if scope in ('collections', 'all'):
             collections = os.path.join(self.collections_dir,
                                        'ansible_collections')
             if os.path.isdir(collections):
-                logger.notice('Removing Ansible Collections from '
-                              + unexpanduser(collections))
+                logger.info('Removing Ansible Collections from '
+                            + unexpanduser(collections))
                 shutil.rmtree(collections)
         self.install(scope=scope)
 
@@ -535,7 +536,8 @@ class ProjectVenv(object):
             content += '\n' + '\n\n'.join(blocks) + '\n'
         print('Writing the pinned Python package versions to '
               + unexpanduser(self.requirements_path), flush=True)
-        write_file(self.requirements_path, content, overwrite=True)
+        write_file(self.requirements_path, content, overwrite=True,
+                   project=self.project_path)
 
     def install_collections(self, upgrade=False):
         """Install the Ansible Collections required by the project.
@@ -633,8 +635,8 @@ class ProjectVenv(object):
         """
         entries = self._collection_requirements()
         if not entries:
-            logger.notice('No Ansible Collection requirements found in '
-                          + unexpanduser(self.collections_requirements))
+            logger.info('No Ansible Collection requirements found in '
+                        + unexpanduser(self.collections_requirements))
             return
         installed = self._installed_collections()
 
@@ -652,8 +654,8 @@ class ProjectVenv(object):
 
             if entry_type == 'galaxy':
                 if name not in installed:
-                    logger.notice('The ' + name + ' collection is not '
-                                  'installed, not included in the lock file')
+                    logger.info('The ' + name + ' collection is not '
+                                'installed, not included in the lock file')
                     continue
                 entry = dict(entry, version=installed[name])
                 locked.append((None, entry))
@@ -664,9 +666,9 @@ class ProjectVenv(object):
                 locked.append((comment, entry))
 
         if not locked:
-            logger.notice('No installed Ansible Collections found in '
-                          + unexpanduser(self.collections_dir)
-                          + ', not writing the lock file')
+            logger.info('No installed Ansible Collections found in '
+                        + unexpanduser(self.collections_dir)
+                        + ', not writing the lock file')
             return
 
         print('Writing the Ansible Collection lock file '
@@ -690,4 +692,4 @@ class ProjectVenv(object):
                                                        _yaml_quote(value)))
 
         write_file(self.collections_lock, '\n'.join(lines) + '\n',
-                   overwrite=True)
+                   overwrite=True, project=self.project_path)

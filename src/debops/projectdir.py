@@ -28,7 +28,6 @@ import shutil
 import subprocess
 import tempfile
 import sys
-import time
 import logging
 import re
 
@@ -260,12 +259,14 @@ class ProjectDir(object):
         """
         If file:`filename` does not exist, create it and write
         var:`content` into it. An existing file is only replaced when
-        var:`overwrite` is True.
+        var:`overwrite` is True. The write is contained in the project
+        directory.
 
         Returns True if the file was written, False if it already existed and
         overwriting was not requested.
         """
-        return write_file(filename, ''.join(content), overwrite=overwrite)
+        return write_file(filename, ''.join(content), overwrite=overwrite,
+                          project=self.path)
 
     def _venv_enabled(self):
         """Check if the project uses an encapsulated Python virtual
@@ -1146,9 +1147,9 @@ class ProjectDir(object):
                                                  'init'],
                                                 stdin=subprocess.PIPE)
                 gitcrypt_cmd.communicate()
-                while not os.path.exists(
-                        os.path.join('.git', 'git-crypt', 'keys')):
-                    time.sleep(1)
+                if gitcrypt_cmd.returncode != 0:
+                    raise ChildProcessError(
+                        'git-crypt could not initialize the repository')
                 for gpg_key in gpg_keys:
                     gitcrypt_cmd = subprocess.Popen([self._commands['git-crypt'],
                                                      'add-gpg-user',
@@ -1183,8 +1184,8 @@ class ProjectDir(object):
                             stdin=subprocess.PIPE)
                     galaxy_cmd.communicate()
                 except FileNotFoundError:
-                    logger.notice('ansible-galaxy not available in $PATH, '
-                                  'not installing Ansible Collections')
+                    logger.info('ansible-galaxy not available in $PATH, '
+                                'not installing Ansible Collections')
                 logger.debug('Ansible Collections installed in project '
                              'directory')
 
@@ -1431,8 +1432,8 @@ class ProjectDir(object):
         path = os.path.join(self.path, '.debops', 'conf.d',
                             'view-' + filename_view + '.yml')
         if not os.path.isfile(path):
-            logger.notice('View configuration file not found in '
-                          + unexpanduser(path) + ', not updated')
+            logger.info('View configuration file not found in '
+                        + unexpanduser(path) + ', not updated')
             return False
         with open(path, encoding='utf-8') as fh:
             content = fh.read()
@@ -1445,8 +1446,8 @@ class ProjectDir(object):
                 fh.write(new_content)
             return True
         if not count:
-            logger.notice('The "collections_path" option not found in '
-                          + unexpanduser(path) + ', not updated')
+            logger.info('The "collections_path" option not found in '
+                        + unexpanduser(path) + ', not updated')
         return False
 
     def _ensure_collections_lock_unignored(self):
@@ -1565,9 +1566,27 @@ class ProjectDir(object):
             # The configuration option might not exist at this time
             pass
 
+    def _in_debops_project(self):
+        """The project path is the root of a DebOps project directory,
+        detected the same way the constructor detects one. This guards
+        the git automation against acting on an unrelated git
+        repository which the path could point at, for example /etc
+        managed by etckeeper."""
+        return bool(
+            self._find_up_dir(self.path, ['.debops', 'conf.d'])
+            or self._find_up_dir(self.path, ['.debops.cfg']))
+
     def commit(self, interactive=False):
-        """Commit the current contents of the project directory to the git
-        repository automatically."""
+        """Commit the current contents of the project directory to the
+        git repository automatically.
+
+        Only DebOps project directories are committed: the guard keeps
+        the automation away from unrelated git repositories which the
+        project path could point at, for example /etc managed by
+        etckeeper."""
+        if not self._in_debops_project():
+            return
+
         if not self._is_git_repo(self.path):
             return
 
@@ -1605,9 +1624,8 @@ class ProjectDir(object):
         logger.debug("Refresing project directory")
 
         if not run_hooks(self.path, 'pre-refresh'):
-            print('Hook pre-refresh aborted, not refreshing project',
-                  file=sys.stderr)
-            return
+            raise ChildProcessError(
+                'Hook pre-refresh aborted, not refreshing project')
 
         if self.project_type == 'modern':
             self.createdirs(self.path)

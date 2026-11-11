@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import configparser
+import logging
 import os
 from unittest import mock
 
@@ -19,6 +20,20 @@ def stub_ansible_inventory(monkeypatch):
                         mock.Mock())
 
 
+@pytest.fixture(autouse=True)
+def _isolated_environment():
+    """The runners write the process environment directly as they run, and
+    the process environment is shared with every test which runs after
+    them in the pytest process: leak instances of 'ANSIBLE_CONFIG' have
+    broken integration tests in mysterious ways. The patch snapshots the
+    environment before each test and restores it afterwards.
+    """
+    patcher = mock.patch.dict(os.environ)
+    patcher.start()
+    yield
+    patcher.stop()
+
+
 def test_command_is_the_user_supplied_arguments(stub_project):
     runner = EnvRunner(stub_project(), command_args=["env"])
     assert runner._command == ["env"]
@@ -30,13 +45,15 @@ def test_missing_ansible_cfg_is_reported(stub_project):
         EnvRunner(project, command_args=["env"])
 
 
-def test_missing_defaults_section_in_an_existing_file(stub_project):
+def test_missing_defaults_section_in_an_existing_file(stub_project, caplog):
     project = stub_project(cfg_error=configparser.NoSectionError("defaults"))
     with open(project.ansible_cfg.path, "w") as handle:
         handle.write("[other]\n")
 
     with pytest.raises(ValueError):
         EnvRunner(project, command_args=["env"])
+
+    assert project.ansible_cfg.path in caplog.text
 
 
 def test_missing_inventory_option_aborts(stub_project, capsys):
@@ -48,13 +65,17 @@ def test_missing_inventory_option_aborts(stub_project, capsys):
     assert "No inventory specified" in capsys.readouterr().err
 
 
-def test_show_env_local_prints_configured_variables(stub_project, capsys):
+def test_show_env_local_prints_configured_variables(stub_project, capsys,
+                                                    monkeypatch):
+    monkeypatch.setenv("DEBOPS_UNCONFIGURED", "1")
     project = stub_project(env_vars={"DEBOPS_PROJECT_VIEW": "system"})
     runner = EnvRunner(project, command_args=["env"])
 
     runner.show_env("local")
 
-    assert capsys.readouterr().out.strip() == "DEBOPS_PROJECT_VIEW=system"
+    output = capsys.readouterr().out
+    assert output.strip() == "DEBOPS_PROJECT_VIEW=system"
+    assert "DEBOPS_UNCONFIGURED" not in output
 
 
 def test_show_env_full_prints_process_environment(stub_project, capsys,
@@ -71,12 +92,13 @@ def test_execute_returns_the_command_return_code(stub_project, monkeypatch):
     runner = EnvRunner(stub_project(), command_args=["true"])
     executor = mock.Mock(returncode=3)
     executor.communicate.return_value = (b"", b"")
-    monkeypatch.setattr(runner_module.subprocess, "Popen",
-                        mock.Mock(return_value=executor))
+    popen = mock.Mock(return_value=executor)
+    monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
     runner.inventory.unlock.return_value = False
 
     assert runner.execute() == 3
+    assert popen.call_args.kwargs["shell"] is True
 
 
 def test_execute_sets_the_configured_environment(stub_project, monkeypatch):
@@ -100,6 +122,15 @@ def test_execute_aborts_when_the_pre_hook_fails(stub_project, monkeypatch):
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=False))
 
     with pytest.raises(ChildProcessError):
+        runner.execute()
+
+
+def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch):
+    runner = EnvRunner(stub_project(), command_args=["true"])
+    runner.inventory.unlock.side_effect = ChildProcessError("dirty tree")
+    monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
+
+    with pytest.raises(ChildProcessError, match="dirty tree"):
         runner.execute()
 
 
@@ -135,7 +166,8 @@ def test_execute_locks_the_inventory_when_it_was_unlocked(stub_project,
     runner.inventory.lock.assert_called_once_with()
 
 
-def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch):
+def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch,
+                                            caplog):
     runner = EnvRunner(stub_project(), command_args=["true"])
     executor = mock.Mock()
     executor.communicate.side_effect = KeyboardInterrupt
@@ -144,10 +176,12 @@ def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch):
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
     runner.inventory.unlock.return_value = True
 
-    with pytest.raises(SystemExit):
-        runner.execute()
+    with caplog.at_level(logging.NOTICE, logger="debops.envrunner"):
+        with pytest.raises(SystemExit):
+            runner.execute()
 
-    assert runner.inventory.lock.called
+    runner.inventory.lock.assert_called_once_with()
+    assert "interrupted by user" in caplog.text
 
 
 def test_execute_handles_interrupt_without_unlocking(stub_project,

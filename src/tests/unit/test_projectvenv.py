@@ -80,7 +80,7 @@ def test_requires_the_venv_to_be_enabled(tmp_path):
         make_venv(tmp_path, raw=raw)
 
 
-def test_venv_init_tolerates_a_config_without_get(tmp_path):
+def test_venv_init_rejects_a_config_without_get(tmp_path):
     project = SimpleNamespace(path=str(tmp_path), project_type="modern",
                               auto_commit=mock.Mock(),
                               config=SimpleNamespace(raw=None))
@@ -886,7 +886,7 @@ def test_freeze_collections_reports_when_nothing_is_locked(tmp_path, caplog):
             "---\ncollections:\n  - name: 'ansible.posix'\n"))
     mock_installed_collections(venv, {})
 
-    with caplog.at_level(logging.NOTICE, logger="debops.projectvenv"):
+    with caplog.at_level(logging.INFO, logger="debops.projectvenv"):
         venv.freeze_collections()
 
     assert "not writing the lock file" in caplog.text

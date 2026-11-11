@@ -101,20 +101,34 @@ def test_main_adds_the_stderr_and_syslog_handlers(clean_logging, monkeypatch):
     assert isinstance(syslog_handler(), SysLogHandler)
 
 
-@pytest.mark.parametrize(("verbosity", "level"), [
-    (3, logging.DEBUG),
-    (2, logging.INFO),
-    (1, logging.INFO + 5),
+@pytest.mark.parametrize(("verbosity", "passed_level", "blocked_level",
+                          "logger_level"), [
+    (3, logging.DEBUG, None, logging.DEBUG),
+    (2, logging.INFO, logging.DEBUG, logging.DEBUG),
+    (1, logging.NOTICE, logging.INFO, logging.INFO),
 ])
 def test_main_verbosity_overrides_the_configured_level(clean_logging,
                                                        monkeypatch,
-                                                       verbosity, level):
+                                                       verbosity,
+                                                       passed_level,
+                                                       blocked_level,
+                                                       logger_level):
     stub_main_collaborators(monkeypatch, verbose=verbosity,
-                            syslog_level="ERROR")
+                            syslog_level="WARNING")
 
     main_module.main()
 
-    assert logging.getLogger("debops").level == level
+    assert logging.getLogger("debops").level == logger_level
+
+    # The terminal gate admits the verbosity level and holds back the
+    # step below it
+    record = logging.LogRecord("debops", passed_level, __file__, 1,
+                               "message", (), None)
+    assert stream_handler().filters[0](record) is True
+    if blocked_level is not None:
+        record = logging.LogRecord("debops", blocked_level, __file__, 1,
+                                   "message", (), None)
+        assert stream_handler().filters[0](record) is False
 
 
 def test_main_uses_the_configured_level_without_verbosity(clean_logging,
@@ -124,6 +138,27 @@ def test_main_uses_the_configured_level_without_verbosity(clean_logging,
     main_module.main()
 
     assert logging.getLogger("debops").level == logging.DEBUG
+
+
+def test_main_keeps_the_journal_a_step_ahead_of_the_terminal(
+        clean_logging, monkeypatch):
+    """The default configuration keeps the terminal quiet at WARNING
+    while the journal carries the operator-relevant notices at
+    NOTICE."""
+    stub_main_collaborators(monkeypatch, syslog_level="NOTICE")
+
+    main_module.main()
+
+    assert logging.getLogger("debops").level == logging.NOTICE
+    assert syslog_handler().level == logging.NOTSET
+
+    # A routine NOTICE waits in the journal; an opt-in notice allowed
+    # on the terminal pierces the quiet gate
+    record = logging.LogRecord("debops", logging.NOTICE, __file__, 1,
+                               "message", (), None)
+    assert stream_handler().filters[0](record) is False
+    record.allow = "stderr"
+    assert stream_handler().filters[0](record) is True
 
 
 def test_main_defaults_the_syslog_address_to_the_local_socket(clean_logging,
@@ -163,21 +198,26 @@ def test_main_maps_the_syslog_facility(clean_logging, monkeypatch):
     assert syslog_handler().facility == SysLogHandler.LOG_LOCAL0
 
 
-def test_main_filters_can_block_a_handler(clean_logging, monkeypatch):
+def test_main_filters_can_allow_a_handler(clean_logging, monkeypatch):
     stub_main_collaborators(monkeypatch)
 
     main_module.main()
 
-    record = logging.LogRecord("debops", logging.INFO, __file__, 1,
+    record = logging.LogRecord("debops", logging.WARNING, __file__, 1,
                                "message", (), None)
-    record.block = "stderr"
-    assert stream_handler().filters[0](record) is False
-    assert syslog_handler().filters[0](record) is True
-    record.block = "syslog"
+    record.allow = "stderr"
     assert stream_handler().filters[0](record) is True
     assert syslog_handler().filters[0](record) is False
-    del record.block
+    record.allow = "syslog"
+    assert stream_handler().filters[0](record) is False
+    assert syslog_handler().filters[0](record) is True
+    # A list of handlers delivers the record to each of them
+    record.allow = ["stderr", "syslog"]
     assert stream_handler().filters[0](record) is True
+    assert syslog_handler().filters[0](record) is True
+    del record.allow
+    assert stream_handler().filters[0](record) is True
+    assert syslog_handler().filters[0](record) is True
 
 
 def test_run_reports_a_keyboard_interrupt(clean_logging, monkeypatch):

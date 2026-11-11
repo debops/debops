@@ -15,6 +15,7 @@ whole project lifecycle through the command line.
 import logging
 import os
 import re
+import subprocess
 import sys
 from types import SimpleNamespace
 from unittest import mock
@@ -174,7 +175,10 @@ def test_inventory_spec_config_tolerates_a_config_without_get():
                       "allow_io": False}
 
 
-def test_status_stream_uses_stderr_for_json_outputs():
+def test_status_stream_is_stderr_when_the_output_is_json():
+    """Inventory JSON goes to standard output; the status messages move
+    to standard error so that 'debops project refresh --list' stays
+    usable in a pipe."""
     assert make_project({}, {"list": True})._status_stream() is sys.stderr
     assert make_project({}, {"host": "web01"})._status_stream() is sys.stderr
 
@@ -404,7 +408,7 @@ def test_rewrite_view_collections_path_ignores_a_missing_file(tmp_path,
                                                               caplog):
     project = make_project_at(tmp_path)
 
-    with caplog.at_level(logging.NOTICE, logger="debops.projectdir"):
+    with caplog.at_level(logging.INFO, logger="debops.projectdir"):
         assert project._rewrite_view_collections_path("system") is False
 
     assert "View configuration file not found" in caplog.text
@@ -568,16 +572,23 @@ def test_auto_commit_tolerates_a_missing_option():
     project.commit.assert_not_called()
 
 
-def test_commit_is_a_noop_outside_a_git_repository(tmp_path):
+def test_commit_is_a_noop_outside_a_git_repository(tmp_path, monkeypatch):
+    """Outside a git repository commit() returns before doing any
+    work; the commit hooks never fire outside a project."""
     project = make_project_at(tmp_path)
+    hooks = mock.Mock()
+    monkeypatch.setattr(projectdir_module, "run_hooks", hooks)
 
     project.commit()
+
+    hooks.assert_not_called()
 
 
 def test_commit_unstages_changes_without_a_message(
         tmp_path, monkeypatch, capsys):
     project = make_project({"project": {}})
     project.path = str(tmp_path)
+    (tmp_path / ".debops.cfg").write_text("")
     project._is_git_repo = lambda path: True
     hooks = mock.Mock()
     monkeypatch.setattr(projectdir_module, "run_hooks", hooks)
@@ -599,6 +610,7 @@ def test_commit_commits_when_there_are_changes(tmp_path, monkeypatch):
     project = make_project({"project": {"git": {
         "auto_commit_message": "Changes committed automatically"}}})
     project.path = str(tmp_path)
+    (tmp_path / ".debops.cfg").write_text("")
     project._is_git_repo = lambda path: True
     monkeypatch.setattr(projectdir_module, "run_hooks", mock.Mock())
     repo = mock.Mock()
@@ -612,6 +624,50 @@ def test_commit_commits_when_there_are_changes(tmp_path, monkeypatch):
             "Changes committed automatically")
 
 
+def test_commit_ignores_a_foreign_git_repository(tmp_path, monkeypatch):
+    """A git directory which is not a DebOps project directory is left
+    alone: the auto-commit must not touch repositories DebOps does not
+    own, like /etc managed by etckeeper."""
+    # The git configuration of the machine running the tests is kept
+    # out: a global 'commit.gpgsign' would make the commit below ask
+    # for a GPG passphrase.
+    git_env = dict(os.environ,
+                   GIT_CONFIG_GLOBAL=os.devnull,
+                   GIT_CONFIG_SYSTEM=os.devnull,
+                   GIT_AUTHOR_NAME="DebOps Tests",
+                   GIT_AUTHOR_EMAIL="debops-tests@example.org",
+                   GIT_COMMITTER_NAME="DebOps Tests",
+                   GIT_COMMITTER_EMAIL="debops-tests@example.org")
+    subprocess.run(["git", "init", "-q"], cwd=str(tmp_path),
+                   env=git_env, check=True)
+    (tmp_path / "tracked").write_text("initial\n")
+    subprocess.run(["git", "-C", str(tmp_path), "add", "tracked"],
+                   env=git_env, check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "commit", "-q",
+                    "-m", "initial"], env=git_env, check=True)
+    project = make_project_at(tmp_path, raw={
+        "project": {"git": {
+            "auto_commit_message": "Changes committed automatically"}}})
+    hooks = mock.Mock()
+    monkeypatch.setattr(projectdir_module, "run_hooks", hooks)
+
+    project.commit()
+
+    hooks.assert_not_called()
+    head_count = subprocess.run(
+        ["git", "-C", str(tmp_path), "rev-list", "--count", "HEAD"],
+        capture_output=True, text=True, check=True)
+    assert head_count.stdout.strip() == "1"
+
+
+def test_write_file_guard_refuses_an_outside_target(tmp_path):
+    project = make_project_at(tmp_path)
+
+    with pytest.raises(ValueError):
+        project._write_file(os.path.join(str(tmp_path), "..", "escape"),
+                            "content\n")
+
+
 def test_create_aborts_on_a_failing_pre_init_hook(tmp_path):
     project = make_project_at(tmp_path)
     hook_dir = tmp_path / ".debops" / "hooks" / "pre-init"
@@ -622,6 +678,32 @@ def test_create_aborts_on_a_failing_pre_init_hook(tmp_path):
 
     with pytest.raises(ChildProcessError, match="pre-init"):
         project.create()
+
+
+def test_create_aborts_on_a_failed_git_crypt_init(tmp_path, monkeypatch):
+    """A git-crypt initialization failure aborts the project creation
+    instead of waiting forever for the keys to appear."""
+    project = make_project_at(tmp_path, raw=dict(
+        DEFAULT_PROJECT_RAW, git={"init_message": "Initialize"}))
+    project.kwargs = {"git": True, "encrypt": "git-crypt",
+                      "keys": "test@example.org"}
+    project._commands = {"git-crypt": "git-crypt"}
+    monkeypatch.setattr(projectdir_module, "run_hooks",
+                        mock.Mock(return_value=True))
+    monkeypatch.setattr(ProjectDir, "_create_modern_project", mock.Mock())
+    repo = mock.Mock()
+    monkeypatch.setattr(projectdir_module.git, "Repo",
+                        mock.Mock(init=mock.Mock(return_value=repo)))
+    process = mock.Mock(returncode=1)
+    process.communicate.return_value = (b"", b"")
+    monkeypatch.setattr(projectdir_module.subprocess, "Popen",
+                        mock.Mock(return_value=process))
+    monkeypatch.chdir(tmp_path)
+
+    with pytest.raises(ChildProcessError, match="git-crypt"):
+        project.create()
+
+    process.communicate.assert_called_once_with()
 
 
 def test_enable_venv_collections_requirements_without_the_comment(tmp_path):

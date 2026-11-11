@@ -103,7 +103,7 @@ def test_init_reports_a_missing_galaxy_binary(run_debops, tmp_path,
     env = dict(debops_env, PATH=str(bin_dir))
     project_dir = tmp_path / "example"
 
-    result = run_debops("project", "init", "-v", str(project_dir), env=env)
+    result = run_debops("project", "init", "-vv", str(project_dir), env=env)
 
     assert result.returncode == 0
     assert "ansible-galaxy not available in $PATH" in error_message(result)
@@ -385,7 +385,7 @@ def test_refresh_aborts_on_a_failing_pre_refresh_hook(run_debops, tmp_path,
     result = run_debops("project", "refresh", str(project_dir),
                         env=debops_env)
 
-    assert result.returncode == 0
+    assert result.returncode == 1
     assert "Hook pre-refresh aborted" in error_message(result)
     assert hosts.read_text() == before
 
@@ -819,3 +819,29 @@ def test_project_commit_creates_a_commit(run_debops, tmp_path, debops_env):
                              "--porcelain"], capture_output=True, text=True,
                             check=True)
     assert status.stdout == ""
+
+
+def test_commit_refuses_a_foreign_git_repository(run_debops, tmp_path,
+                                                 debops_env):
+    """A git repository which is not a DebOps project directory is left
+    alone: the auto-commit must not touch repositories DebOps does not
+    own, like /etc managed by etckeeper."""
+    subprocess.run(["git", "init", "-q"], cwd=str(tmp_path), check=True)
+    tracked = tmp_path / "tracked"
+    tracked.write_text("initial\n")
+    subprocess.run(["git", "-C", str(tmp_path), "add", "tracked"],
+                   env=debops_env, check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "commit", "-q",
+                    "-m", "initial"], env=debops_env, check=True)
+    tracked.write_text("changed\n")
+
+    result = run_debops("project", "commit", cwd=str(tmp_path),
+                        env=debops_env)
+
+    assert result.returncode == 1
+    assert "project directory not found" in error_message(result)
+    head = subprocess.run(["git", "-C", str(tmp_path), "rev-list",
+                           "--count", "HEAD"], capture_output=True,
+                          text=True, check=True)
+    assert head.stdout.strip() == "1"
+    assert tracked.read_text() == "changed\n"

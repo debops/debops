@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import configparser
+import logging
 import os
 from unittest import mock
 
@@ -99,13 +100,15 @@ def test_missing_ansible_cfg_is_reported(stub_project):
         AnsibleRunner(project, ansible_args=[])
 
 
-def test_missing_defaults_section_in_an_existing_file(stub_project):
+def test_missing_defaults_section_in_an_existing_file(stub_project, caplog):
     project = stub_project(cfg_error=configparser.NoSectionError("defaults"))
     with open(project.ansible_cfg.path, "w") as handle:
         handle.write("[other]\n")
 
     with pytest.raises(ValueError):
         AnsibleRunner(project, ansible_args=[])
+
+    assert project.ansible_cfg.path in caplog.text
 
 
 def test_missing_inventory_option_aborts(stub_project, capsys):
@@ -199,6 +202,15 @@ def test_execute_aborts_when_the_pre_hook_fails(stub_project, monkeypatch):
         runner.execute()
 
 
+def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch):
+    runner = AnsibleRunner(stub_project(), ansible_args=["all"])
+    runner.inventory.unlock.side_effect = ChildProcessError("dirty tree")
+    monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
+
+    with pytest.raises(ChildProcessError, match="dirty tree"):
+        runner.execute()
+
+
 def test_execute_runs_post_hook_with_return_code(stub_project, monkeypatch):
     runner = AnsibleRunner(stub_project(), ansible_args=["all"])
     executor = mock.Mock(returncode=2)
@@ -231,7 +243,8 @@ def test_execute_locks_the_inventory_when_it_was_unlocked(stub_project,
     runner.inventory.lock.assert_called_once_with()
 
 
-def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch):
+def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch,
+                                            caplog):
     runner = AnsibleRunner(stub_project(), ansible_args=["all"])
     executor = mock.Mock()
     executor.communicate.side_effect = KeyboardInterrupt
@@ -240,7 +253,9 @@ def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch):
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
     runner.inventory.unlock.return_value = True
 
-    with pytest.raises(SystemExit):
-        runner.execute()
+    with caplog.at_level(logging.NOTICE, logger="debops.ansiblerunner"):
+        with pytest.raises(SystemExit):
+            runner.execute()
 
     runner.inventory.lock.assert_called_once_with()
+    assert "interrupted by user" in caplog.text

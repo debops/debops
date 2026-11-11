@@ -4,8 +4,11 @@
 
 from .projectrunner import ProjectRunner
 from .hooks import run_hooks
+import logging
 import subprocess
 import os
+
+logger = logging.getLogger(__name__)
 
 
 class EnvRunner(ProjectRunner):
@@ -44,8 +47,8 @@ class EnvRunner(ProjectRunner):
             rc = executor.returncode
 
         except KeyboardInterrupt:
-            if unlocked:
-                self.inventory.lock()
+            logger.notice('Command execution interrupted by user',
+                          extra={'allow': 'syslog'})
             raise SystemExit('... aborted by user')
 
         finally:

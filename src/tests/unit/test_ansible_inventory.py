@@ -40,6 +40,9 @@ def test_modern_project_uses_the_view_directory(stub_project):
 
     assert inventory.path == os.path.join(project.path, "ansible", "views",
                                           "webservers", "inventory")
+    assert inventory.secret_path == os.path.join(project.path, "ansible",
+                                                 "views", "webservers",
+                                                 "secret")
 
 
 def test_modern_project_requires_a_view(stub_project):
@@ -88,20 +91,26 @@ def test_git_crypt_locked_detects_an_unlocked_state(stub_project, monkeypatch):
     inventory = make_inventory(stub_project())
     process = mock.Mock()
     process.communicate.return_value = (b"smudge", b"")
-    monkeypatch.setattr(inventory_module.subprocess, "Popen",
-                        mock.Mock(return_value=process))
+    popen = mock.Mock(return_value=process)
+    monkeypatch.setattr(inventory_module.subprocess, "Popen", popen)
 
     assert inventory._git_crypt_locked() is False
+    assert popen.call_args.args[0] == [
+        inventory._commands["git"], "config", "--local", "--get",
+        "filter.git-crypt.smudge"]
 
 
 def test_git_crypt_locked_detects_a_locked_state(stub_project, monkeypatch):
     inventory = make_inventory(stub_project())
     process = mock.Mock()
     process.communicate.return_value = (b"", b"")
-    monkeypatch.setattr(inventory_module.subprocess, "Popen",
-                        mock.Mock(return_value=process))
+    popen = mock.Mock(return_value=process)
+    monkeypatch.setattr(inventory_module.subprocess, "Popen", popen)
 
     assert inventory._git_crypt_locked() is True
+    assert popen.call_args.args[0] == [
+        inventory._commands["git"], "config", "--local", "--get",
+        "filter.git-crypt.smudge"]
 
 
 def test_random_string_uses_sixty_four_characters(stub_project):
@@ -221,6 +230,153 @@ def test_create_encrypts_secrets_with_encfs(stub_project, monkeypatch):
     inventory.create()
 
     inventory._encrypt_secrets_encfs.assert_called_once_with()
+
+
+def test_encrypt_secrets_encfs_completes_the_key_exchange(stub_project,
+                                                          monkeypatch):
+    """The EncFS encryption state machine: GPG encrypts the keyfile,
+    EncFS mounts the volume and writes its configuration, GPG encrypts
+    the configuration and the plaintext copy is removed."""
+    project = stub_project()
+    inventory = make_inventory(project, encrypt="encfs",
+                               keys="test@example.org")
+    keyfile = os.path.join(inventory.encfs_path, '.encfs6.keyfile')
+    configfile = os.path.join(inventory.encfs_path, '.encfs6.xml')
+
+    def make_process(side_effect):
+        process = mock.Mock(returncode=0)
+        process.communicate.side_effect = side_effect
+        return process
+
+    def create_keyfile(*args, **kwargs):
+        open(keyfile, 'w').close()
+        return b"", b""
+
+    def create_configfile(*args, **kwargs):
+        open(configfile, 'w').close()
+        return b"", b""
+
+    ascfile = configfile + '.asc'
+
+    def create_ascfile():
+        open(ascfile, 'w').close()
+        return b"", b""
+
+    processes = [make_process(create_keyfile), make_process(create_configfile),
+                 make_process(create_ascfile)]
+    popen = mock.Mock(side_effect=processes)
+    monkeypatch.setattr(inventory_module.subprocess, "Popen", popen)
+    monkeypatch.setattr(os.path, "ismount", lambda path: True)
+    call = mock.Mock(return_value=0)
+    monkeypatch.setattr(inventory_module.subprocess, "call", call)
+
+    inventory._encrypt_secrets_encfs()
+
+    assert os.path.isfile(keyfile)
+    assert os.path.isfile(ascfile)
+    assert not os.path.exists(configfile)
+    # The volume was mounted by EncFS and locked afterwards
+    call.assert_called_once_with(
+        [inventory._commands["fusermount"], "-u", inventory.secret_path])
+    assert inventory.encfs_mounted is False
+    assert [popen.call_args_list[i].args[0][0]
+            for i in range(3)] == [inventory._commands["gpg"],
+                                   inventory._commands["encfs"],
+                                   inventory._commands["gpg"]]
+
+
+@pytest.mark.parametrize("step", ["keyfile", "volume"])
+def test_encrypt_secrets_encfs_reports_a_failed_step(stub_project,
+                                                     monkeypatch, step):
+    project = stub_project()
+    inventory = make_inventory(project, encrypt="encfs",
+                               keys="test@example.org")
+    keyfile = os.path.join(inventory.encfs_path, '.encfs6.keyfile')
+    configfile = os.path.join(inventory.encfs_path, '.encfs6.xml')
+
+    def make_process(returncode, side_effect):
+        process = mock.Mock(returncode=returncode)
+        process.communicate.side_effect = side_effect
+        return process
+
+    if step == "keyfile":
+        processes = [make_process(1, lambda *a, **kw: (b"", b""))]
+        match = "keyfile"
+    else:
+        def create_keyfile(*args, **kwargs):
+            open(keyfile, 'w').close()
+            return b"", b""
+        processes = [make_process(0, create_keyfile),
+                     make_process(1, lambda *a, **kw: (b"", b""))]
+        match = "volume configuration"
+    monkeypatch.setattr(inventory_module.subprocess, "Popen",
+                        mock.Mock(side_effect=processes))
+
+    with pytest.raises(ChildProcessError, match=match):
+        inventory._encrypt_secrets_encfs()
+
+
+def test_encrypt_secrets_encfs_reports_a_failed_config_encryption(
+        stub_project, monkeypatch):
+    project = stub_project()
+    inventory = make_inventory(project, encrypt="encfs",
+                               keys="test@example.org")
+    keyfile = os.path.join(inventory.encfs_path, '.encfs6.keyfile')
+    configfile = os.path.join(inventory.encfs_path, '.encfs6.xml')
+    ascfile = configfile + '.asc'
+
+    def make_process(returncode, side_effect):
+        process = mock.Mock(returncode=returncode)
+        process.communicate.side_effect = side_effect
+        return process
+
+    def create_keyfile(*args, **kwargs):
+        open(keyfile, 'w').close()
+        return b"", b""
+
+    def create_configfile(*args, **kwargs):
+        open(configfile, 'w').close()
+        return b"", b""
+
+    processes = [make_process(0, create_keyfile),
+                 make_process(0, create_configfile),
+                 make_process(1, lambda: (b"", b""))]
+    monkeypatch.setattr(inventory_module.subprocess, "Popen",
+                        mock.Mock(side_effect=processes))
+    monkeypatch.setattr(os.path, "ismount", lambda path: True)
+    monkeypatch.setattr(inventory_module.subprocess, "call",
+                        mock.Mock(return_value=0))
+
+    with pytest.raises(ChildProcessError,
+                       match="encrypt the volume configuration"):
+        inventory._encrypt_secrets_encfs()
+
+    # The plaintext configuration stays on disk: it was never replaced
+    assert os.path.isfile(configfile)
+    assert not os.path.exists(ascfile)
+
+
+def test_unlock_encfs_reports_a_failed_mount(stub_project, monkeypatch):
+    project = stub_project()
+    os.makedirs(os.path.join(project.path, "ansible", ".encfs.secret"))
+    inventory = make_inventory(project)
+    process = mock.Mock(returncode=1)
+    process.communicate.return_value = (b"", b"")
+    monkeypatch.setattr(inventory_module.subprocess, "Popen",
+                        mock.Mock(return_value=process))
+    # The configuration fifo is mocked into a regular file: the test
+    # subprocesses never open the read end, so a real fifo would block
+    # the write end forever
+    monkeypatch.setattr(inventory_module.os, "mkfifo",
+                        lambda path: open(path, 'w').close())
+    configfile = os.path.join(inventory.encfs_path, inventory.encfs_configfile)
+
+    with pytest.raises(ChildProcessError, match="could not unlock"):
+        inventory.unlock()
+
+    # The fifo used for the configuration transfer is cleaned up
+    assert not os.path.exists(configfile)
+    assert inventory.encfs_mounted is False
 
 
 def test_create_encrypted_git_crypt_is_handled_at_the_repository_level(

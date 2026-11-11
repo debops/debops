@@ -17,7 +17,7 @@ import pytest
 
 import debops.cli as cli_module
 from debops.cli import Interpreter
-from debops.exceptions import NoDefaultViewException
+from debops.exceptions import InventorySpecError, NoDefaultViewException
 
 
 def make_args(**kwargs):
@@ -263,7 +263,8 @@ def test_project_venv_reports_a_failure(monkeypatch, capsys):
 
 
 @pytest.mark.parametrize("exception", [
-    IsADirectoryError, NotADirectoryError, PermissionError, ValueError])
+    IsADirectoryError, NotADirectoryError, PermissionError,
+    InventorySpecError, FileNotFoundError, ChildProcessError, ValueError])
 def test_project_init_reports_a_failure(monkeypatch, capsys, exception):
     monkeypatch.setattr(cli_module, "ProjectDir",
                         mock.Mock(side_effect=exception("boom")))
@@ -299,7 +300,7 @@ def test_project_lock_locks_the_project(monkeypatch):
     project.lock.assert_called_once_with()
 
 
-def test_project_lock_ignores_a_missing_default_view(monkeypatch, capsys):
+def test_project_lock_reports_a_missing_default_view(monkeypatch, capsys):
     project = mock.Mock()
     project.lock.side_effect = NoDefaultViewException("no view")
     monkeypatch.setattr(cli_module, "ProjectDir",
@@ -367,7 +368,7 @@ def test_exec_runs_the_runner(monkeypatch):
     runner.execute.assert_called_once_with()
 
 
-def test_exec_prints_the_command_in_eval_mode(monkeypatch, capsys):
+def test_exec_eval_mode_delegates_to_the_runner(monkeypatch, capsys):
     project = mock.Mock()
     runner = mock.Mock()
     monkeypatch.setattr(cli_module, "ProjectDir",
@@ -382,9 +383,11 @@ def test_exec_prints_the_command_in_eval_mode(monkeypatch, capsys):
 
     assert caught.value.code == 0
     runner.eval.assert_called_once_with()
+    runner.execute.assert_not_called()
 
 
-@pytest.mark.parametrize("exception", [ValueError, FileNotFoundError])
+@pytest.mark.parametrize("exception", [
+    NoDefaultViewException, ValueError, FileNotFoundError])
 def test_exec_reports_a_runner_failure(monkeypatch, capsys, exception):
     project = mock.Mock()
     monkeypatch.setattr(cli_module, "ProjectDir",
@@ -477,16 +480,18 @@ def test_env_executes_the_command(monkeypatch):
 def test_env_shows_the_environment_without_a_command(monkeypatch):
     project = mock.Mock()
     runner = mock.Mock()
+    runner.show_env.return_value = 7
     monkeypatch.setattr(cli_module, "ProjectDir",
                         mock.Mock(return_value=project))
     monkeypatch.setattr(cli_module, "EnvRunner",
                         mock.Mock(return_value=runner))
     interpreter = make_interpreter()
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as caught:
         interpreter.do_env(make_args(project_dir=".", view="system",
                                      command_args=[], scope="full"))
 
+    assert caught.value.code == 7
     runner.show_env.assert_called_once_with(scope="full")
 
 
@@ -570,9 +575,13 @@ def test_project_refresh_reports_a_failure(monkeypatch, capsys):
     assert "Error: boom" in capsys.readouterr().err
 
 
-def test_project_lock_reports_a_project_failure(monkeypatch, capsys):
+@pytest.mark.parametrize("exception", [
+    IsADirectoryError, NotADirectoryError, PermissionError,
+    ChildProcessError])
+def test_project_lock_reports_a_project_failure(monkeypatch, capsys,
+                                                exception):
     monkeypatch.setattr(cli_module, "ProjectDir",
-                        mock.Mock(side_effect=PermissionError("boom")))
+                        mock.Mock(side_effect=exception("boom")))
     interpreter = make_interpreter()
 
     with pytest.raises(SystemExit) as caught:
@@ -582,7 +591,7 @@ def test_project_lock_reports_a_project_failure(monkeypatch, capsys):
     assert "Error: boom" in capsys.readouterr().err
 
 
-def test_project_unlock_ignores_a_missing_default_view(monkeypatch, capsys):
+def test_project_unlock_reports_a_missing_default_view(monkeypatch, capsys):
     project = mock.Mock()
     project.unlock.side_effect = NoDefaultViewException("no view")
     monkeypatch.setattr(cli_module, "ProjectDir",
@@ -597,9 +606,13 @@ def test_project_unlock_ignores_a_missing_default_view(monkeypatch, capsys):
     assert "Error: no view" in capsys.readouterr().err
 
 
-def test_project_unlock_reports_a_project_failure(monkeypatch, capsys):
+@pytest.mark.parametrize("exception", [
+    IsADirectoryError, NotADirectoryError, PermissionError,
+    ChildProcessError])
+def test_project_unlock_reports_a_project_failure(monkeypatch, capsys,
+                                                  exception):
     monkeypatch.setattr(cli_module, "ProjectDir",
-                        mock.Mock(side_effect=NotADirectoryError("boom")))
+                        mock.Mock(side_effect=exception("boom")))
     interpreter = make_interpreter()
 
     with pytest.raises(SystemExit) as caught:
@@ -635,9 +648,10 @@ def test_project_commit_reports_a_failure(monkeypatch, capsys):
     assert "Error: boom" in capsys.readouterr().err
 
 
-def test_exec_reports_a_project_failure(monkeypatch, capsys):
+@pytest.mark.parametrize("exception", [IsADirectoryError, NotADirectoryError])
+def test_exec_reports_a_project_failure(monkeypatch, capsys, exception):
     monkeypatch.setattr(cli_module, "ProjectDir",
-                        mock.Mock(side_effect=IsADirectoryError("boom")))
+                        mock.Mock(side_effect=exception("boom")))
     interpreter = make_interpreter()
 
     with pytest.raises(SystemExit) as caught:
@@ -648,9 +662,11 @@ def test_exec_reports_a_project_failure(monkeypatch, capsys):
     assert "Error: boom" in capsys.readouterr().err
 
 
-def test_run_reports_a_project_failure(monkeypatch, capsys):
+@pytest.mark.parametrize("exception", [
+    IsADirectoryError, NotADirectoryError, ChildProcessError])
+def test_run_reports_a_project_failure(monkeypatch, capsys, exception):
     monkeypatch.setattr(cli_module, "ProjectDir",
-                        mock.Mock(side_effect=ChildProcessError("boom")))
+                        mock.Mock(side_effect=exception("boom")))
     interpreter = make_interpreter()
 
     with pytest.raises(SystemExit) as caught:
@@ -661,12 +677,15 @@ def test_run_reports_a_project_failure(monkeypatch, capsys):
     assert "Error: boom" in capsys.readouterr().err
 
 
-def test_run_reports_a_runner_failure(monkeypatch, capsys):
+@pytest.mark.parametrize("exception", [
+    NoDefaultViewException, ValueError, FileNotFoundError,
+    ChildProcessError])
+def test_run_reports_a_runner_failure(monkeypatch, capsys, exception):
     project = mock.Mock()
     monkeypatch.setattr(cli_module, "ProjectDir",
                         mock.Mock(return_value=project))
     monkeypatch.setattr(cli_module, "AnsiblePlaybookRunner",
-                        mock.Mock(side_effect=FileNotFoundError("boom")))
+                        mock.Mock(side_effect=exception("boom")))
     interpreter = make_interpreter()
 
     with pytest.raises(SystemExit) as caught:
@@ -677,7 +696,7 @@ def test_run_reports_a_runner_failure(monkeypatch, capsys):
     assert "Error: boom" in capsys.readouterr().err
 
 
-def test_run_prints_the_command_in_eval_mode(monkeypatch):
+def test_run_eval_mode_delegates_to_the_runner(monkeypatch):
     project = mock.Mock()
     runner = mock.Mock()
     monkeypatch.setattr(cli_module, "ProjectDir",
@@ -695,9 +714,10 @@ def test_run_prints_the_command_in_eval_mode(monkeypatch):
     runner.execute.assert_not_called()
 
 
-def test_env_reports_a_project_failure(monkeypatch, capsys):
+@pytest.mark.parametrize("exception", [IsADirectoryError, NotADirectoryError])
+def test_env_reports_a_project_failure(monkeypatch, capsys, exception):
     monkeypatch.setattr(cli_module, "ProjectDir",
-                        mock.Mock(side_effect=NotADirectoryError("boom")))
+                        mock.Mock(side_effect=exception("boom")))
     interpreter = make_interpreter()
 
     with pytest.raises(SystemExit) as caught:
@@ -708,12 +728,14 @@ def test_env_reports_a_project_failure(monkeypatch, capsys):
     assert "Error: boom" in capsys.readouterr().err
 
 
-def test_env_reports_a_runner_failure(monkeypatch, capsys):
+@pytest.mark.parametrize("exception", [
+    NoDefaultViewException, ValueError, FileNotFoundError])
+def test_env_reports_a_runner_failure(monkeypatch, capsys, exception):
     project = mock.Mock()
     monkeypatch.setattr(cli_module, "ProjectDir",
                         mock.Mock(return_value=project))
     monkeypatch.setattr(cli_module, "EnvRunner",
-                        mock.Mock(side_effect=ValueError("boom")))
+                        mock.Mock(side_effect=exception("boom")))
     interpreter = make_interpreter()
 
     with pytest.raises(SystemExit) as caught:

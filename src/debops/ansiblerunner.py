@@ -4,8 +4,11 @@
 
 from .projectrunner import ProjectRunner
 from .hooks import run_hooks
+import logging
 import subprocess
 import os
+
+logger = logging.getLogger(__name__)
 
 
 class AnsibleRunner(ProjectRunner):
@@ -53,6 +56,8 @@ class AnsibleRunner(ProjectRunner):
             rc = executor.returncode
 
         except KeyboardInterrupt:
+            logger.notice('Ansible execution interrupted by user',
+                          extra={'allow': 'syslog'})
             raise SystemExit('... aborted by user')
 
         else:

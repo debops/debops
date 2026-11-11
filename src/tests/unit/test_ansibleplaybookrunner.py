@@ -4,6 +4,7 @@
 
 import configparser
 import datetime
+import logging
 import os
 from unittest import mock
 
@@ -18,6 +19,20 @@ from debops.ansibleplaybookrunner import AnsiblePlaybookRunner
 def stub_ansible_inventory(monkeypatch):
     monkeypatch.setattr(projectrunner_module, "AnsibleInventory",
                         mock.Mock())
+
+
+@pytest.fixture(autouse=True)
+def _isolated_environment():
+    """The runners write the process environment directly as they run, and
+    the process environment is shared with every test which runs after
+    them in the pytest process: leak instances of 'ANSIBLE_CONFIG' have
+    broken integration tests in mysterious ways. The patch snapshots the
+    environment before each test and restores it afterwards.
+    """
+    patcher = mock.patch.dict(os.environ)
+    patcher.start()
+    yield
+    patcher.stop()
 
 
 class Friday(datetime.date):
@@ -91,6 +106,21 @@ def test_playbook_in_a_collection_is_found(stub_project, tmp_path):
     assert runner._found_playbooks == [str(playbooks / "site.yml")]
 
 
+def test_playbook_in_a_collection_with_dots_is_found(stub_project, tmp_path):
+    """The dot-separated name is the format ansible-playbook itself
+    uses for collection playbooks."""
+    playbooks = (tmp_path / "ansible" / "collections"
+                 / "ansible_collections" / "debops" / "debops" / "playbooks")
+    playbooks.mkdir(parents=True)
+    (playbooks / "site.yml").write_text("---\n")
+
+    project = stub_project(collections=str(tmp_path / "ansible" / "collections"))
+    runner = AnsiblePlaybookRunner(project,
+                                   ansible_args=["debops.debops.site"])
+
+    assert runner._found_playbooks == [str(playbooks / "site.yml")]
+
+
 def test_find_collections_discovers_collection_playbooks(stub_project,
                                                          tmp_path):
     playbooks = (tmp_path / "ansible" / "collections"
@@ -105,21 +135,22 @@ def test_find_collections_discovers_collection_playbooks(stub_project,
 
 
 def test_read_only_friday_switches_to_check_mode(stub_project, monkeypatch,
-                                                 capsys):
+                                                 capsys, caplog):
     project = stub_project()
     project.config.raw["project"] = {"read_only_friday": True}
     monkeypatch.setattr(runner_module.datetime, "date", Friday)
 
-    runner = AnsiblePlaybookRunner(project, ansible_args=["site.yml"])
+    with caplog.at_level(logging.NOTICE, logger="debops.notice"):
+        runner = AnsiblePlaybookRunner(project, ansible_args=["site.yml"])
 
     assert runner._ansible_command == ["ansible-playbook", "site.yml",
                                        "--diff", "--check"]
 
-    # The notice goes to stderr; the stdout stays reserved for the
+    # The notice reaches the journal and the terminal by default
+    # (routed to both handlers); the stdout stays reserved for the
     # generated Ansible command ('--eval' consumers)
-    captured = capsys.readouterr()
-    assert "Read-Only Friday" in captured.err
-    assert captured.out == ""
+    assert "Read-Only Friday" in caplog.text
+    assert capsys.readouterr().out == ""
 
 
 def test_read_only_friday_respects_existing_check_mode(stub_project,
@@ -152,6 +183,7 @@ def test_eval_prints_the_command(stub_project, capsys):
     output = capsys.readouterr().out
     assert "export ANSIBLE_CONFIG=" in output
     assert "ansible-playbook" in output
+    assert "site.yml" in output
 
 
 def test_execute_without_playbooks_aborts(stub_project, capsys):
@@ -168,12 +200,13 @@ def test_execute_returns_the_command_return_code(stub_project, monkeypatch):
     runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"])
     executor = mock.Mock(returncode=0)
     executor.communicate.return_value = (b"", b"")
-    monkeypatch.setattr(runner_module.subprocess, "Popen",
-                        mock.Mock(return_value=executor))
+    popen = mock.Mock(return_value=executor)
+    monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
     runner.inventory.unlock.return_value = False
 
     assert runner.execute() == 0
+    assert popen.call_args.kwargs["shell"] is True
 
 
 def test_execute_uses_the_run_hooks(stub_project, monkeypatch):
@@ -190,6 +223,7 @@ def test_execute_uses_the_run_hooks(stub_project, monkeypatch):
 
     assert [call.args[1] for call in hooks.call_args_list] == ["pre-run",
                                                                "post-run"]
+    assert hooks.call_args.kwargs["extra_env"] == {"DEBOPS_RETURN_CODE": 0}
 
 
 def test_execute_uses_the_check_hooks_in_check_mode(stub_project, monkeypatch):
@@ -207,20 +241,6 @@ def test_execute_uses_the_check_hooks_in_check_mode(stub_project, monkeypatch):
 
     assert [call.args[1] for call in hooks.call_args_list] == ["pre-check",
                                                                "post-check"]
-
-
-@pytest.fixture(autouse=True)
-def _isolated_environment():
-    """The runners write the process environment directly as they run, and
-    the process environment is shared with every test which runs after
-    them in the pytest process: leak instances of 'ANSIBLE_CONFIG' have
-    broken integration tests in mysterious ways. The patch snapshots the
-    environment before each test and restores it afterwards.
-    """
-    patcher = mock.patch.dict(os.environ)
-    patcher.start()
-    yield
-    patcher.stop()
 
 
 def test_execute_sets_the_environment(stub_project, monkeypatch):
@@ -269,7 +289,8 @@ def test_execute_locks_the_inventory_when_it_was_unlocked(stub_project,
     runner.inventory.lock.assert_called_once_with()
 
 
-def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch):
+def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch,
+                                            caplog):
     runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"])
     executor = mock.Mock()
     executor.communicate.side_effect = KeyboardInterrupt
@@ -278,10 +299,12 @@ def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch):
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
     runner.inventory.unlock.return_value = True
 
-    with pytest.raises(SystemExit):
-        runner.execute()
+    with caplog.at_level(logging.NOTICE, logger="debops.ansibleplaybookrunner"):
+        with pytest.raises(SystemExit):
+            runner.execute()
 
     runner.inventory.lock.assert_called_once_with()
+    assert "interrupted by user" in caplog.text
 
 
 def test_missing_ansible_cfg_is_reported(stub_project):
@@ -330,6 +353,16 @@ def test_option_with_an_argument_is_kept_in_order(stub_project):
 
     assert runner._ansible_command[:3] == ["ansible-playbook", "--limit",
                                            "web"]
+    assert runner._found_playbooks == ["site.yml"]
+
+
+def test_option_followed_by_an_option_is_kept(stub_project):
+    runner = AnsiblePlaybookRunner(stub_project(),
+                                   ansible_args=["--limit", "--verbose",
+                                                 "site.yml"])
+
+    assert runner._ansible_command[:3] == ["ansible-playbook", "--limit",
+                                           "--verbose"]
     assert runner._found_playbooks == ["site.yml"]
 
 
@@ -457,7 +490,7 @@ def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch):
     monkeypatch.setattr(runner_module, "run_hooks",
                         mock.Mock(return_value=True))
 
-    with pytest.raises(ChildProcessError):
+    with pytest.raises(ChildProcessError, match="dirty tree"):
         runner.execute()
 
 
