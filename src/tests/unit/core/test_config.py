@@ -2,15 +2,15 @@
 # Copyright (C) 2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Tests for ``debops.config``."""
+"""Tests for ``debops.core.config``."""
 
 import os
 from unittest import mock
 
 import pytest
 
-from debops import config as config_module
-from debops.utils import unexpanduser
+from debops.core import config as config_module
+from debops.core.utils import unexpanduser
 
 
 def test_expand_env_vars_expands_a_string(configuration, monkeypatch):

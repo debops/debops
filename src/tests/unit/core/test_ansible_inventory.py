@@ -2,7 +2,7 @@
 # Copyright (C) 2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Tests for ``debops.ansible.inventory``.
+"""Tests for ``debops.core.ansible.inventory``.
 
 ``AnsibleInventory`` is constructed from a project object; the stubs from the
 shared fixtures provide its ``project_type``, ``path`` and the binary paths.
@@ -15,9 +15,9 @@ from unittest import mock
 
 import pytest
 
-import debops.ansible.inventory as inventory_module
-from debops.ansible.inventory import AnsibleInventory
-from debops.exceptions import NoDefaultViewException
+import debops.core.ansible.inventory as inventory_module
+from debops.core.ansible.inventory import AnsibleInventory
+from debops.core.exceptions import NoDefaultViewException
 
 
 def make_inventory(project, name="system", **kwargs):
