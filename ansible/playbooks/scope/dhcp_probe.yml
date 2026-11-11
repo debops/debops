@@ -14,6 +14,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::dhcp_probe', 'skip::dhcp_probe' ]
+
     - name: Import dhcp_probe role
       ansible.builtin.import_role:
         name: 'debops.debops.dhcp_probe'

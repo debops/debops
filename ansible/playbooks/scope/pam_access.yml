@@ -14,6 +14,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::pam_access', 'skip::pam_access' ]
+
     - name: Import pam_access role
       ansible.builtin.import_role:
         name: 'debops.debops.pam_access'

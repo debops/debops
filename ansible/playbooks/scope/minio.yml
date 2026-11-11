@@ -22,6 +22,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::minio', 'skip::minio' ]
+
     - name: Import minio role
       ansible.builtin.import_role:
         name: 'debops.debops.minio'

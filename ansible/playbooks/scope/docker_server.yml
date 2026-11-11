@@ -15,6 +15,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::docker_server', 'skip::docker_server' ]
+
     - name: Import docker_server role
       ansible.builtin.import_role:
         name: 'debops.debops.docker_server'
