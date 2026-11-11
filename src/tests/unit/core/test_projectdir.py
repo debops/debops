@@ -31,6 +31,8 @@ from debops.core.projectdir import ProjectDir
 def make_project(raw):
     project = ProjectDir.__new__(ProjectDir)
     project.config = SimpleNamespace(raw=raw, _env_vars={})
+    project.encrypt = None
+    project.keys = None
     return project
 
 
@@ -43,6 +45,8 @@ def make_project_at(tmp_path, raw=None, project_type="modern"):
     project.project_type = project_type
     project.config = SimpleNamespace(
         raw=raw if raw is not None else {"views": {}}, _env_vars={})
+    project.encrypt = None
+    project.keys = None
     return project
 
 
@@ -755,30 +759,104 @@ def test_create_rejects_a_venv_in_a_legacy_project(tmp_path):
         project.create(git_repo=False, venv=True)
 
 
-def test_create_aborts_on_a_failed_git_crypt_init(tmp_path, monkeypatch):
+def test_create_validates_the_recipients_before_creating(
+        tmp_path, gpg_stub):
+    """An unusable GPG key aborts the initialization before anything is
+    created: no project directory may be left behind."""
+    gpg = gpg_stub(exit_code=2, message="gpg: Unusable public key")
+    raw = dict(DEFAULT_PROJECT_RAW, binaries=dict(
+        DEFAULT_PROJECT_RAW["binaries"], gpg=gpg))
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="modern", encrypt="git-crypt",
+                         keys="broken@example.org",
+                         config=make_configuration(raw))
+
+    with pytest.raises(ValueError, match="cannot be used for encryption"):
+        project.create()
+
+    assert not (tmp_path / "example").exists()
+
+
+def test_create_requires_recipients_for_encryption(tmp_path, gpg_stub):
+    gpg = gpg_stub()
+    raw = dict(DEFAULT_PROJECT_RAW, binaries=dict(
+        DEFAULT_PROJECT_RAW["binaries"], gpg=gpg))
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="modern", encrypt="git-crypt",
+                         config=make_configuration(raw))
+
+    with pytest.raises(ValueError,
+                       match="List of GPG recipients not specified"):
+        project.create()
+
+    assert not (tmp_path / "example").exists()
+
+
+def test_create_aborts_on_a_failed_git_crypt_init(tmp_path, monkeypatch,
+                                                  gpg_stub):
     """A git-crypt initialization failure aborts the project creation
     instead of waiting forever for the keys to appear."""
     project = make_project_at(tmp_path, raw=dict(
         DEFAULT_PROJECT_RAW, git={"init_message": "Initialize"}))
     project.encrypt = "git-crypt"
     project.keys = "test@example.org"
-    project._commands = {"git-crypt": "git-crypt"}
+    project._commands = {"git-crypt": "git-crypt", "gpg": gpg_stub()}
     monkeypatch.setattr(projectdir_module, "run_hooks",
                         mock.Mock(return_value=True))
     monkeypatch.setattr(ProjectDir, "_create_modern_project", mock.Mock())
     repo = mock.Mock()
     monkeypatch.setattr(projectdir_module.git, "Repo",
                         mock.Mock(init=mock.Mock(return_value=repo)))
+    # The first Popen is the gpg probe of the recipients, which must
+    # succeed for the flow to reach the git-crypt steps
+    probe = mock.MagicMock()
+    probe.__enter__.return_value.communicate.return_value = (b"", b"")
+    probe.__enter__.return_value.poll.return_value = 0
+    probe.__enter__.return_value.returncode = 0
     process = mock.Mock(returncode=1)
     process.communicate.return_value = (b"", b"")
     monkeypatch.setattr(projectdir_module.subprocess, "Popen",
-                        mock.Mock(return_value=process))
+                        mock.Mock(side_effect=[probe, process]))
     monkeypatch.chdir(tmp_path)
 
     with pytest.raises(ChildProcessError, match="git-crypt"):
         project.create(git_repo=True)
 
     process.communicate.assert_called_once_with()
+
+
+def test_create_aborts_when_git_crypt_cannot_add_a_user(
+        tmp_path, monkeypatch, gpg_stub):
+    """A git-crypt failure while adding a user aborts the project
+    creation with an error exit code instead of reporting success."""
+    project = make_project_at(tmp_path, raw=dict(
+        DEFAULT_PROJECT_RAW, git={"init_message": "Initialize"}))
+    project.encrypt = "git-crypt"
+    project.keys = "test@example.org"
+    project._commands = {"git-crypt": "git-crypt", "gpg": gpg_stub()}
+    monkeypatch.setattr(projectdir_module, "run_hooks",
+                        mock.Mock(return_value=True))
+    monkeypatch.setattr(ProjectDir, "_create_modern_project", mock.Mock())
+    repo = mock.Mock()
+    monkeypatch.setattr(projectdir_module.git, "Repo",
+                        mock.Mock(init=mock.Mock(return_value=repo)))
+    probe = mock.MagicMock()
+    probe.__enter__.return_value.communicate.return_value = (b"", b"")
+    probe.__enter__.return_value.poll.return_value = 0
+    probe.__enter__.return_value.returncode = 0
+    init_process = mock.Mock(returncode=0)
+    init_process.communicate.return_value = (b"", b"")
+    user_process = mock.Mock(returncode=1)
+    user_process.communicate.return_value = (b"", b"")
+    monkeypatch.setattr(projectdir_module.subprocess, "Popen",
+                        mock.Mock(side_effect=[probe, init_process,
+                                               user_process]))
+    monkeypatch.chdir(tmp_path)
+
+    with pytest.raises(ChildProcessError, match="add the GPG user"):
+        project.create(git_repo=True)
+
+    user_process.communicate.assert_called_once_with()
 
 
 def test_enable_venv_collections_requirements_without_the_comment(tmp_path):

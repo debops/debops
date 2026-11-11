@@ -105,6 +105,38 @@ def stub_project(tmp_path):
 
 
 @pytest.fixture
+def gpg_stub(tmp_path):
+    """A stub gpg binary whose encryption probes fail or succeed on
+    demand.
+
+    Returns a factory: ``gpg_stub(exit_code=0, message='',
+    fail_from=1) -> path``. Each probe invocation is counted, so a stub
+    can accept the first recipients and refuse from the Nth one on.
+    """
+    bin_dir = tmp_path / "bin"
+    counter = tmp_path / "probe-count"
+    bin_dir.mkdir(exist_ok=True)
+
+    def _make(exit_code=0, message="", fail_from=1):
+        stub = bin_dir / "gpg"
+        stub.write_text(
+            "#!/bin/sh\n"
+            "count=$(cat {} 2>/dev/null || echo 0)\n"
+            "count=$((count + 1))\n"
+            "echo $count > {}\n"
+            "printf '%s' '{}' >&2\n"
+            "if [ $count -ge {} ]; then\n"
+            "  exit {}\n"
+            "fi\n"
+            "exit 0\n".format(counter, counter, message, fail_from,
+                              exit_code))
+        stub.chmod(0o755)
+        return str(stub)
+
+    return _make
+
+
+@pytest.fixture
 def configuration():
     """A Configuration with none of its filesystem or environment access.
 

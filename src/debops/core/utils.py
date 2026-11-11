@@ -10,9 +10,46 @@ import logging
 import os
 import platform
 import re
+import subprocess
 import sys
 
 logger = logging.getLogger(__name__)
+
+
+def verify_gpg_recipients(gpg, keys):
+    """Check that the GPG recipients can actually receive an encrypted
+    secret.
+
+    Each recipient is probed with a real encryption to the null device,
+    the same operation :command:`git-crypt` performs when adding a
+    user: a key which is missing, expired, revoked or carries no
+    encryption-capable subkey fails here, before a project is created
+    around it. An empty list is an error as well -- encryption without
+    a recipient would seal the secrets away from everyone, including
+    the operator.
+
+    Raises ValueError naming the recipient and carrying the gpg error
+    when a recipient cannot be used.
+    """
+    if not keys:
+        raise ValueError('List of GPG recipients not specified')
+
+    for key in keys.split(','):
+        result = subprocess.run(
+            [gpg, '--batch', '--yes', '--encrypt', '-r', key,
+             '--output', os.devnull],
+            input=b'', capture_output=True)
+        if result.returncode != 0:
+            error = result.stderr.decode('utf-8', 'replace').strip()
+            if '\n' in error:
+                # A gpg report is several lines; indent them under the
+                # message instead of riding on the first line
+                raise ValueError(
+                    'The GPG key "{}" cannot be used for encryption:\n'
+                    '  {}'.format(key, error.replace('\n', '\n  ')))
+            raise ValueError(
+                'The GPG key "{}" cannot be used for encryption: '
+                '{}'.format(key, error))
 
 
 def print_error(errmsg):
