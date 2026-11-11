@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .constants import DEBOPS_USER_HOME_DIR
+from .exceptions import ViewNotFoundError
 from .utils import unexpanduser, write_file, host_is_controller, strtobool
 from .projectvenv import (seed_requirements, seed_names, check_scope,
                           find_missing_external_deps, comment_external_deps)
@@ -48,6 +49,59 @@ host_pattern_mismatch = warning
 
 
 class ProjectDir(object):
+
+    @staticmethod
+    def resolve_view(root, cwd, views, explicit=None, default=None):
+        """Resolve the active view of a project.
+
+        An explicitly selected view wins, but must be one the project
+        defines. Otherwise the working directory selects the view when
+        it lies inside the project's 'ansible/views/<name>' tree, and
+        the configured default view applies last, with 'system' as the
+        final fallback.
+
+        The cwd is the directory the command runs from, passed
+        explicitly: the resolution never consults the process working
+        directory and is never cached across commands. The CLI
+        re-resolves on every invocation; the daemon resolves only on
+        an explicit view switch.
+
+        Raises ViewNotFoundError when the explicit selection is not a
+        view of the project.
+        """
+        if explicit:
+            if explicit in views:
+                return explicit
+            raise ViewNotFoundError(
+                'The "' + explicit + '" view is not present in the "'
+                + os.path.basename(root) + '" project')
+
+        if cwd != root:
+            current_dir = cwd
+            view_dir = None
+            view_path = []
+
+            while current_dir != '/' and not view_dir:
+                view_path.insert(0, os.path.basename(current_dir))
+                if os.path.dirname(current_dir).endswith('/ansible/views'):
+                    view_dir = current_dir
+                else:
+                    current_dir = os.path.dirname(current_dir)
+
+            # A single view matching the current directory wins; none
+            # or several fall through to the default view
+            if view_dir:
+                view_name = os.path.join(*view_path)
+                matching_views = ([path for path in list(views)
+                                   if os.path.commonprefix(
+                                       [path, view_name]) == path])
+                if len(matching_views) == 1:
+                    return matching_views[0]
+
+        if default is not None:
+            return default
+
+        return 'system'
 
     def __init__(self, path=os.getcwd(), project_type='legacy', create=False,
                  config=None, view=None, *args, **kwargs):
@@ -134,50 +188,17 @@ class ProjectDir(object):
             'git-crypt': self.config.raw['binaries']['git-crypt']
         }
 
-        # Set the default view
+        # Resolve the active view: the command line selection wins,
+        # then the working directory, then the configured default view
         try:
-            self.view = self.config.raw['project']['default_view']
+            config_default_view = self.config.raw['project']['default_view']
         except KeyError:
-            self.view = 'system'
+            config_default_view = None
 
-        # We might be in a project subdirectory, perhaps in a specific view
-        if self.path != os.getcwd():
-            current_dir = os.getcwd()
-            view_dir = None
-            view_path = []
-
-            while current_dir != '/' and not view_dir:
-                view_path.insert(0, os.path.basename(current_dir))
-                if os.path.dirname(current_dir).endswith('/ansible/views'):
-                    view_dir = current_dir
-                else:
-                    current_dir = os.path.dirname(current_dir)
-
-            # We are in a specific view directory, let's switch to that
-            if view_dir:
-
-                # Just to make sure, let's check if current view path can be
-                # matched to a known view in the configuration tree
-                view_name = os.path.join(*view_path)
-                matching_views = ([path for path
-                                   in list(self.config.raw['views'].keys())
-                                   if os.path.commonprefix(
-                                       [path, view_name]) == path])
-
-                # There should be just one matching view. If there are none or
-                # more than one, stay with the default view
-                if len(matching_views) == 1:
-                    self.view = matching_views[0]
-
-        # User selected the view using command line arguments
-        if view:
-            if self.view != view:
-                if view in list(self.config.raw['views'].keys()):
-                    self.view = view
-                else:
-                    raise NotADirectoryError('The "' + view + '" view is not '
-                                             'present in the "' + self.name
-                                             + '" project')
+        self.view = self.resolve_view(
+            root=self.path, cwd=os.getcwd(),
+            views=list(self.config.raw['views'].keys()),
+            explicit=view, default=config_default_view)
 
         # Expose current view in configuration tree
         view_data = {
