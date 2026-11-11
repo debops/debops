@@ -36,9 +36,22 @@ import os
 
 try:
     import debops
+    # Import the version module explicitly: the package root no
+    # longer imports its submodules transitively, so the attribute
+    # exists only once the submodule itself is imported
+    import debops.__version__
     debops_version = debops.__version__.__version__
     conf_section = 'override_paths'
     conf_key = 'tasks_path'
+    # The configuration moved under debops.core in debops 3.5;
+    # fall back to the flat layout when an older Python package
+    # provides the collection
+    try:
+        from debops.core.config import Configuration
+        from debops.core.projectdir import ProjectDir
+    except ImportError:
+        from debops.config import Configuration
+        from debops.projectdir import ProjectDir
 except AttributeError:
     try:
         from debops import *
@@ -76,9 +89,9 @@ class LookupModule(LookupBase):
             terms = [terms]
 
         try:
-            project_config = debops.config.Configuration()
-            project_dir = debops.projectdir.ProjectDir(
-                    config=project_config)
+            project_config = Configuration()
+            project_dir = ProjectDir(path=os.getcwd(), cwd=os.getcwd(),
+                                     config=project_config)
             project_root = project_dir.path
             if project_dir.config.get(['project', 'type']) == 'modern':
                 config = project_dir.config.get([])

@@ -66,6 +66,11 @@ General
   config get` is reported on the standard error stream; the exit code
   and the JSON output are unchanged.
 
+- The Ansible Collection's lookup plugins read the DebOps
+  configuration from ``debops.core`` and fall back to the previous
+  module layout when an older ``debops`` Python package provides
+  them.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
