@@ -46,12 +46,12 @@ General
   refresh` command with an error exit code instead of exiting
   successfully, matching the behavior of the other hook types.
 
-- The DebOps Python modules which implement the functionality moved
-  into the new ``debops.core`` subpackage. The library leaves the
-  process environment and the working directory alone and returns
-  data instead of printing it. Scripts importing the internal
+- The DebOps Python modules moved into subpackages: the library into
+  ``debops.core``, the command line into ``debops.cli``. The library
+  leaves the process environment and the working directory alone and
+  returns data instead of printing it. Scripts importing the internal
   ``debops.*`` modules directly need to import from ``debops.core.*``
-  now.
+  or ``debops.cli.*`` now.
 
 - Status messages of the :command:`debops` command are written to the
   standard error stream and the system journal, and remain visible on

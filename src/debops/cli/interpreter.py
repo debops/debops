@@ -2,16 +2,16 @@
 # Copyright (C) 2020-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from .core.exceptions import (NoDefaultViewException, InventorySpecError,
-                              OptionNotFoundError, ViewNotFoundError)
-from .core.config import Configuration
+from . import print_error
+from ..core.exceptions import (NoDefaultViewException, InventorySpecError,
+                               OptionNotFoundError, ViewNotFoundError)
+from ..core.config import Configuration
 from .subcommands import Subcommands
-from .core.projectdir import ProjectDir
-from .core.projectvenv import ProjectVenv
-from .core.ansiblerunner import AnsibleRunner
-from .core.ansibleplaybookrunner import AnsiblePlaybookRunner
-from .core.envrunner import EnvRunner
-from .core.utils import print_error
+from ..core.projectdir import ProjectDir
+from ..core.projectvenv import ProjectVenv
+from ..core.ansiblerunner import AnsibleRunner
+from ..core.ansibleplaybookrunner import AnsiblePlaybookRunner
+from ..core.envrunner import EnvRunner
 import logging
 import getpass
 import sys
