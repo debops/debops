@@ -60,7 +60,7 @@ class AnsiblePlaybookRunner(ProjectRunner):
                         '-C' not in self._ansible_command):
                     notice_logger.notice(
                         "It's Read-Only Friday, switching to check mode",
-                        extra={'allow': 'stderr'})
+                        extra={'allow': ['stderr', 'syslog']})
                     self._ansible_command.extend(['--diff', '--check'])
 
         if self.kwargs.get('debug'):

@@ -146,9 +146,9 @@ def test_read_only_friday_switches_to_check_mode(stub_project, monkeypatch,
     assert runner._ansible_command == ["ansible-playbook", "site.yml",
                                        "--diff", "--check"]
 
-    # The notice reaches the journal and the terminal by default; the
-    # stdout stays reserved for the generated Ansible command
-    # ('--eval' consumers)
+    # The notice reaches the journal and the terminal by default
+    # (routed to both handlers); the stdout stays reserved for the
+    # generated Ansible command ('--eval' consumers)
     assert "Read-Only Friday" in caplog.text
     assert capsys.readouterr().out == ""
 
