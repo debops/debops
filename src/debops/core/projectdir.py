@@ -254,6 +254,20 @@ class ProjectDir(object):
                 self.config.merge(inventory_data)
         logger.debug('Project {} loaded'.format(self.name))
 
+    def environment(self):
+        """Return the environment the project's commands run in.
+
+        The ambient environment of the process with the project's
+        configured variables on top -- the variables from the
+        '.debops/environment' file, the generated 'DEBOPS_*' variables
+        and the project virtual environment's PATH when it is enabled.
+        The clients hand this mapping to the commands they spawn; the
+        DebOps process itself does not modify its own environment.
+        """
+        env = os.environ.copy()
+        env.update(self.config._env_vars)
+        return env
+
     def _find_up_dir(self, path, filenames):
         path = os.path.abspath(path)
         last_path = None
@@ -351,7 +365,7 @@ class ProjectDir(object):
             # An environment file defines PATH explicitly, leave it alone
             return
         venv_bin = os.path.join(self._venv_path(), 'bin')
-        path = os.environ.get('PATH', '')
+        path = self.config._env_vars.get('PATH', os.environ.get('PATH', ''))
         if venv_bin in path.split(os.pathsep):
             return
         self.config.set_env('PATH', venv_bin + os.pathsep + path)
@@ -523,7 +537,7 @@ class ProjectDir(object):
         both.
         """
         return {
-            'env': os.environ,
+            'env': self.environment(),
             'user': getpass.getuser(),
             'hostname': socket.gethostname(),
             'fqdn': socket.getfqdn(),
@@ -595,7 +609,7 @@ class ProjectDir(object):
         # Do not inherit the project's own Ansible configuration, which for a
         # new project does not exist yet and would otherwise leak unrelated
         # settings into the verification run.
-        env = os.environ.copy()
+        env = self.environment()
         env['ANSIBLE_CONFIG'] = config_path
 
         # '-i' must name the inventory directory itself, otherwise the
@@ -893,7 +907,7 @@ class ProjectDir(object):
         # Create .debops/conf.d/project.yml
         self._write_file(os.path.join(path, '.debops', 'conf.d',
                                       'project.yml'),
-                         default_project_yml.render(env=os.environ,
+                         default_project_yml.render(env=self.environment(),
                                                     default_view=default_view)
                          + '\n')
 
@@ -901,7 +915,7 @@ class ProjectDir(object):
         self._write_file(os.path.join(path, '.debops', 'conf.d',
                                       'view-' + filename_view + '.yml'),
                          default_view_yml.render(
-                             env=os.environ,
+                             env=self.environment(),
                              view_name=default_view,
                              venv=venv)
                          + '\n')
@@ -911,7 +925,7 @@ class ProjectDir(object):
 
         # Create .debops/environment
         self._write_file(os.path.join(path, '.debops', 'environment'),
-                         default_environment.render(env=os.environ)
+                         default_environment.render(env=self.environment())
                          + '\n')
 
         encrypted_secrets = self.encrypt
@@ -1050,7 +1064,7 @@ class ProjectDir(object):
 
         # Create .debops.cfg
         self._write_file(os.path.join(path, '.debops.cfg'),
-                         default_debops_cfg.render(env=os.environ)
+                         default_debops_cfg.render(env=self.environment())
                          + '\n')
 
         project_data = {
@@ -1143,7 +1157,8 @@ class ProjectDir(object):
             raise IsADirectoryError('You are inside another '
                                     'DebOps project directory')
 
-        if not run_hooks(self.path, 'pre-init', require_project=False):
+        if not run_hooks(self.path, 'pre-init', require_project=False,
+                         env=self.environment()):
             raise ChildProcessError('Hook pre-init aborted, '
                                     'not creating project')
 
@@ -1231,7 +1246,7 @@ class ProjectDir(object):
                 logger.debug('Ansible Collections installed in project '
                              'directory')
 
-        run_hooks(self.path, 'post-init')
+        run_hooks(self.path, 'post-init', env=self.environment())
 
         return inspect_output
 
@@ -1315,7 +1330,7 @@ class ProjectDir(object):
                         os.path.join(self.path, '.debops', 'conf.d',
                                      'view-' + filename_view + '.yml'),
                         default_view_yml.render(
-                            env=os.environ,
+                            env=self.environment(),
                             view_name=view,
                             venv=self._venv_enabled())
                         + '\n')
@@ -1642,7 +1657,7 @@ class ProjectDir(object):
         if not self._is_git_repo(self.path):
             return
 
-        run_hooks(self.path, 'pre-commit')
+        run_hooks(self.path, 'pre-commit', env=self.environment())
 
         logger.debug('Detected git repository in project directory')
         repo = git.Repo(self.path)
@@ -1670,13 +1685,13 @@ class ProjectDir(object):
         else:
             logger.debug('No new changes detected, nothing to commit')
 
-        run_hooks(self.path, 'post-commit')
+        run_hooks(self.path, 'post-commit', env=self.environment())
 
     def refresh(self, spec_sources=None, allow_io=False, dry_run=False,
                 force=False, inspect_mode=None, inspect_host=None):
         logger.debug("Refresing project directory")
 
-        if not run_hooks(self.path, 'pre-refresh'):
+        if not run_hooks(self.path, 'pre-refresh', env=self.environment()):
             raise ChildProcessError(
                 'Hook pre-refresh aborted, not refreshing project')
 
@@ -1720,18 +1735,18 @@ class ProjectDir(object):
                       .format(unexpanduser(self.path)),
                       extra={'allow': ['stderr', 'syslog']})
 
-        run_hooks(self.path, 'post-refresh')
+        run_hooks(self.path, 'post-refresh', env=self.environment())
 
         return inspect_output
 
     def unlock(self):
-        run_hooks(self.path, 'pre-unlock')
+        run_hooks(self.path, 'pre-unlock', env=self.environment())
         inventory = AnsibleInventory(self, self.view)
         inventory.unlock()
-        run_hooks(self.path, 'post-unlock')
+        run_hooks(self.path, 'post-unlock', env=self.environment())
 
     def lock(self):
-        run_hooks(self.path, 'pre-lock')
+        run_hooks(self.path, 'pre-lock', env=self.environment())
         inventory = AnsibleInventory(self, self.view)
         inventory.lock()
-        run_hooks(self.path, 'post-lock')
+        run_hooks(self.path, 'post-lock', env=self.environment())

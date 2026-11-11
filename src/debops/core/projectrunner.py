@@ -51,6 +51,19 @@ class ProjectRunner(object):
                              '    [ansible defaults]\n'
                              '    inventory = ansible/inventory')
 
+    def _subprocess_env(self, extra_env=None):
+        """Return the environment a project command runs in.
+
+        The ambient environment with the project's configured variables
+        on top, plus the runner's own additions last. The mapping is
+        handed to the spawned command; the DebOps process environment
+        itself is not modified.
+        """
+        env = self.project.environment()
+        if extra_env:
+            env.update(extra_env)
+        return env
+
     def _quote_spaces(self, string):
         if ' ' in string:
             return '"{}"'.format(string)

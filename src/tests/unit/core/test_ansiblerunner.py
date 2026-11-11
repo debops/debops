@@ -169,15 +169,16 @@ def test_execute_sets_the_environment(stub_project, monkeypatch):
     runner = AnsibleRunner(project, ansible_args=["all"])
     executor = mock.Mock(returncode=0)
     executor.communicate.return_value = (b"", b"")
-    monkeypatch.setattr(runner_module.subprocess, "Popen",
-                        mock.Mock(return_value=executor))
+    popen = mock.Mock(return_value=executor)
+    monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
     runner.inventory.unlock.return_value = False
 
     with mock.patch.dict(os.environ, clear=True):
         runner.execute()
 
-        assert os.environ["ANSIBLE_CONFIG"] == project.ansible_cfg.path
+        env = popen.call_args.kwargs["env"]
+        assert env["ANSIBLE_CONFIG"] == project.ansible_cfg.path
 
 
 def test_execute_rings_the_bell(stub_project, monkeypatch, capsys):

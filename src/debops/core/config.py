@@ -10,6 +10,7 @@ import logging
 import dotenv
 import pkgutil
 import jinja2
+import string
 import collections.abc
 import toml
 import json
@@ -63,8 +64,19 @@ class Configuration(object):
             self.merge(config_dir)
 
     def _expand_env_vars(self, data):
+        """Expand '$VAR' and '${VAR}' references in configuration values.
+
+        The references resolve against the process environment with the
+        variables the project itself recorded on top, so that a value
+        like 'DEBOPS_PROJECT_PATH' expands in the configuration files
+        which are read after it was recorded. Unknown references are
+        left as they are written.
+        """
         if isinstance(data, str):
-            return os.path.expandvars(data)
+            if '$' not in data:
+                return data
+            env = {**os.environ, **self._env_vars}
+            return string.Template(data).safe_substitute(env)
         elif isinstance(data, dict):
             return {k: self._expand_env_vars(v) for k, v in data.items()}
         elif isinstance(data, list):
@@ -97,13 +109,25 @@ class Configuration(object):
         return self._config
 
     def get_env(self, key):
+        """Return the value of an environment variable.
+
+        A variable set in the actual environment wins over one the
+        project configuration generated, so that an operator's explicit
+        choice -- for example a custom 'DEBOPS_ANSIBLE_INVENTORY' --
+        cannot be overridden by the generated value.
+        """
         try:
             return os.environ[key]
         except KeyError:
-            return None
+            return self._env_vars.get(key)
 
     def set_env(self, key, value):
-        os.environ[key] = str(value)
+        """Record a generated environment variable.
+
+        The variable is stored in the project's environment mapping,
+        which the clients hand to the commands they run; the process
+        environment of the DebOps command itself is not modified.
+        """
         self._env_vars[key] = str(value)
 
     def get(self, items=None):
@@ -142,9 +166,8 @@ class Configuration(object):
                                       or key.endswith('PATH')):
                 value = ':'.join(os.path.expanduser(entry)
                                  for entry in value.split(':'))
-            values[key] = value
             if value is not None:
-                os.environ[key] = value
+                values[key] = value
         self._env_vars.update(values)
 
     def merge_env(self, path):

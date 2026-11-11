@@ -30,7 +30,7 @@ from debops.core.projectdir import ProjectDir
 
 def make_project(raw):
     project = ProjectDir.__new__(ProjectDir)
-    project.config = SimpleNamespace(raw=raw)
+    project.config = SimpleNamespace(raw=raw, _env_vars={})
     return project
 
 
@@ -42,7 +42,7 @@ def make_project_at(tmp_path, raw=None, project_type="modern"):
     project.name = os.path.basename(project.path)
     project.project_type = project_type
     project.config = SimpleNamespace(
-        raw=raw if raw is not None else {"views": {}})
+        raw=raw if raw is not None else {"views": {}}, _env_vars={})
     return project
 
 
@@ -471,13 +471,11 @@ def test_prepend_venv_path_prepends_the_venv_bin(tmp_path, monkeypatch):
     project = make_project_at(tmp_path)
     project.config = make_venv_config(tmp_path)
     project.config.set_env = lambda key, value: (
-        os.environ.__setitem__(key, value),
         project.config._env_vars.__setitem__(key, value))
 
     project._prepend_venv_path()
 
     venv_bin = str(tmp_path / ".debops" / "venv" / "bin")
-    assert os.environ["PATH"] == venv_bin + ":/usr/bin"
     assert project.config._env_vars["PATH"] == venv_bin + ":/usr/bin"
 
 
@@ -488,7 +486,7 @@ def test_prepend_venv_path_skipped_when_not_enabled(tmp_path, monkeypatch):
 
     project._prepend_venv_path()
 
-    assert os.environ["PATH"] == "/usr/bin"
+    assert "PATH" not in project.config._env_vars
 
 
 def test_prepend_venv_path_respects_a_path_override(tmp_path, monkeypatch):
@@ -500,7 +498,7 @@ def test_prepend_venv_path_respects_a_path_override(tmp_path, monkeypatch):
 
     project._prepend_venv_path()
 
-    assert os.environ["PATH"] == "/usr/bin"
+    assert project.config._env_vars["PATH"] == "/custom/bin:/usr/bin"
 
 
 def test_prepend_venv_path_does_not_prepend_twice(tmp_path, monkeypatch):
@@ -508,13 +506,12 @@ def test_prepend_venv_path_does_not_prepend_twice(tmp_path, monkeypatch):
     project = make_project_at(tmp_path)
     project.config = make_venv_config(tmp_path)
     project.config.set_env = lambda key, value: (
-        os.environ.__setitem__(key, value),
         project.config._env_vars.__setitem__(key, value))
 
     project._prepend_venv_path()
     project._prepend_venv_path()
 
-    assert os.environ["PATH"].count("/.debops/venv/bin") == 1
+    assert project.config._env_vars["PATH"].count("/.debops/venv/bin") == 1
 
 
 def test_prepend_venv_path_skips_a_process_path_entry(tmp_path, monkeypatch):
@@ -527,7 +524,7 @@ def test_prepend_venv_path_skips_a_process_path_entry(tmp_path, monkeypatch):
     project._prepend_venv_path()
 
     project.config.set_env.assert_not_called()
-    assert os.environ["PATH"] == venv_bin + ":/usr/bin"
+    assert "PATH" not in project.config._env_vars
 
 
 def test_auto_commit_commits_when_enabled():
@@ -856,14 +853,13 @@ def test_apply_venv_runtime_computes_binaries_and_path(tmp_path, monkeypatch):
     project.config.merge = mock.Mock(side_effect=lambda data: (
         project.config.raw["binaries"].update(data["binaries"])))
     project.config.set_env = lambda key, value: (
-        os.environ.__setitem__(key, value),
         project.config._env_vars.__setitem__(key, value))
 
     project._apply_venv_runtime()
 
     venv_bin = str(tmp_path / ".debops" / "venv" / "bin")
     assert project.config.raw["binaries"]["ansible"] == venv_bin + "/ansible"
-    assert os.environ["PATH"] == venv_bin + ":/usr/bin"
+    assert project.config._env_vars["PATH"] == venv_bin + ":/usr/bin"
 
 
 def test_apply_venv_runtime_is_a_noop_when_not_enabled(tmp_path, monkeypatch):
@@ -876,7 +872,7 @@ def test_apply_venv_runtime_is_a_noop_when_not_enabled(tmp_path, monkeypatch):
     project._apply_venv_runtime()
 
     assert project.config.raw["binaries"] == {}
-    assert os.environ["PATH"] == "/usr/bin"
+    assert "PATH" not in project.config._env_vars
 
 
 def test_enable_venv_python_scope_skips_the_collections_side(tmp_path,
@@ -1099,9 +1095,9 @@ def test_init_detects_a_legacy_project(tmp_path, monkeypatch):
     assert project.name == os.path.basename(tmp_path)
     assert project.config.raw["views"]["system"]["debops"] == {
             "namespace": "debops"}
-    assert os.environ["DEBOPS_PROJECT_PATH"] == str(tmp_path)
-    assert os.environ["ANSIBLE_CONFIG"] == str(tmp_path / "ansible.cfg")
-    assert (os.environ["DEBOPS_ANSIBLE_INVENTORY"]
+    assert project.config._env_vars["DEBOPS_PROJECT_PATH"] == str(tmp_path)
+    assert project.config._env_vars["ANSIBLE_CONFIG"] == str(tmp_path / "ansible.cfg")
+    assert (project.config._env_vars["DEBOPS_ANSIBLE_INVENTORY"]
             == str(tmp_path / "ansible" / "inventory"))
 
 
@@ -1118,8 +1114,8 @@ def test_init_detects_a_modern_project_from_a_subdirectory(
     assert project.path == str(tmp_path)
     assert project.name == os.path.basename(tmp_path)
     assert project.view == "system"
-    assert os.environ["DEBOPS_PROJECT_VIEW"] == "system"
-    assert (os.environ["DEBOPS_ANSIBLE_INVENTORY"]
+    assert project.config._env_vars["DEBOPS_PROJECT_VIEW"] == "system"
+    assert (project.config._env_vars["DEBOPS_ANSIBLE_INVENTORY"]
             == str(tmp_path / "ansible" / "views" / "system" / "inventory"))
 
 
@@ -1138,7 +1134,7 @@ def test_init_create_flag_accepts_a_missing_project(tmp_path, monkeypatch):
 
     assert project.project_type == "legacy"
     assert project.name == os.path.basename(tmp_path)
-    assert os.environ["DEBOPS_PROJECT_PATH"] == str(tmp_path)
+    assert project.config._env_vars["DEBOPS_PROJECT_PATH"] == str(tmp_path)
 
 
 def test_init_create_flag_honors_the_type_argument(tmp_path, monkeypatch):
@@ -1198,7 +1194,7 @@ def test_init_picks_the_view_from_the_current_directory(tmp_path, monkeypatch):
 
     assert project.path == str(project_dir / "fresh")
     assert project.view == "web"
-    assert os.environ["DEBOPS_PROJECT_VIEW"] == "web"
+    assert project.config._env_vars["DEBOPS_PROJECT_VIEW"] == "web"
 
 
 def test_init_rejects_an_unknown_view(tmp_path, monkeypatch):
@@ -1221,7 +1217,7 @@ def test_init_honors_the_default_view_option(tmp_path, monkeypatch):
     project = ProjectDir(str(tmp_path), config=make_configuration())
 
     assert project.view == "web"
-    assert (os.environ["DEBOPS_ANSIBLE_INVENTORY"]
+    assert (project.config._env_vars["DEBOPS_ANSIBLE_INVENTORY"]
             == str(tmp_path / "ansible" / "views" / "web" / "inventory"))
 
 
@@ -1300,9 +1296,9 @@ def test_init_merges_the_project_environment_file(tmp_path, monkeypatch):
     (tmp_path / ".debops" / "environment").write_text(
             "DEBOPS_TEST_MARKER=from-file\n")
 
-    ProjectDir(str(tmp_path), config=make_configuration())
+    project = ProjectDir(str(tmp_path), config=make_configuration())
 
-    assert os.environ["DEBOPS_TEST_MARKER"] == "from-file"
+    assert project.config._env_vars["DEBOPS_TEST_MARKER"] == "from-file"
 
 
 def test_init_keeps_an_existing_inventory_environment(tmp_path, monkeypatch):
@@ -1310,9 +1306,11 @@ def test_init_keeps_an_existing_inventory_environment(tmp_path, monkeypatch):
     write_legacy_project(tmp_path)
     monkeypatch.setenv("DEBOPS_ANSIBLE_INVENTORY", "/custom/inventory")
 
-    ProjectDir(str(tmp_path), config=make_configuration())
+    project = ProjectDir(str(tmp_path), config=make_configuration())
 
-    assert os.environ["DEBOPS_ANSIBLE_INVENTORY"] == "/custom/inventory"
+    # The ambient value wins over the generated one, so the inventory
+    # path is not recorded
+    assert "DEBOPS_ANSIBLE_INVENTORY" not in project.config._env_vars
 
 
 def test_init_applies_the_venv_runtime(tmp_path, monkeypatch):
@@ -1325,7 +1323,7 @@ def test_init_applies_the_venv_runtime(tmp_path, monkeypatch):
     venv_bin = str(tmp_path / ".debops" / "venv" / "bin")
     assert project._commands["ansible-galaxy"] == os.path.join(
             venv_bin, "ansible-galaxy")
-    assert os.environ["PATH"].startswith(venv_bin + os.pathsep)
+    assert project.config._env_vars["PATH"].startswith(venv_bin + os.pathsep)
 
 
 def test_init_detects_an_encrypted_inventory(tmp_path, monkeypatch):
