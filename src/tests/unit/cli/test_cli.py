@@ -30,6 +30,7 @@ def make_interpreter(config=None):
     interpreter.config = (config if config is not None
                           else mock.Mock())
     interpreter.parsed_args = None
+    interpreter.cwd = "/shell/cwd"
     return interpreter
 
 
@@ -151,7 +152,7 @@ def test_project_init_creates_the_project(monkeypatch):
     interpreter.do_project_init(args)
 
     cli_module.ProjectDir.assert_called_once_with(
-        path="/tmp/example", config=interpreter.config,
+        path="/tmp/example", config=interpreter.config, cwd="/shell/cwd",
         project_type="legacy", create=True, encrypt=None, keys=None)
     project.create.assert_called_once_with(
         git_repo=True, venv=False, requirements=True,

@@ -1348,16 +1348,46 @@ def test_init_leaves_the_working_directory_alone(tmp_path, monkeypatch):
 
 def test_init_picks_the_view_from_the_current_directory(tmp_path, monkeypatch):
     project_dir = tmp_path / "example"
-    (project_dir / "ansible" / "views" / "web" / "site").mkdir(parents=True)
+    view_dir = project_dir / "ansible" / "views" / "web" / "site"
+    view_dir.mkdir(parents=True)
     raw = dict(DEFAULT_PROJECT_RAW, views={"web": {}, "db": {}})
-    monkeypatch.chdir(project_dir / "ansible" / "views" / "web" / "site")
+    monkeypatch.chdir(view_dir)
 
     project = ProjectDir(str(project_dir / "fresh"), project_type="modern",
-                         create=True, config=make_configuration(raw))
+                         create=True, config=make_configuration(raw),
+                         cwd=str(view_dir))
 
     assert project.path == str(project_dir / "fresh")
     assert project.view == "web"
     assert project.config._env_vars["DEBOPS_PROJECT_VIEW"] == "web"
+
+
+def test_init_without_a_working_directory_honors_the_explicit_view(
+        tmp_path, monkeypatch):
+    # The daemon's shape: no working directory context, the view comes
+    # from the caller
+    monkeypatch.chdir(tmp_path)
+    write_modern_project(tmp_path, conf_d=(
+        "views:\n  web: {}\n"))
+
+    project = ProjectDir(str(tmp_path), view="web",
+                         config=make_configuration())
+
+    assert project.view == "web"
+
+
+def test_init_without_a_working_directory_uses_the_default_view(
+        tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    write_modern_project(tmp_path, conf_d=(
+        "project:\n"
+        "  default_view: web\n"
+        "views:\n"
+        "  web: {}\n"))
+
+    project = ProjectDir(str(tmp_path), config=make_configuration())
+
+    assert project.view == "web"
 
 
 def test_init_rejects_an_unknown_view(tmp_path, monkeypatch):
