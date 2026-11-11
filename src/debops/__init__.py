@@ -20,5 +20,3 @@ def notice(self, message, *args, **kws):
 
 
 logging.Logger.notice = notice
-
-from .cli import Interpreter  # noqa: E402

@@ -2,15 +2,15 @@
 # Copyright (C) 2020-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from .exceptions import NoDefaultViewException, InventorySpecError
-from .config import Configuration
+from .core.exceptions import NoDefaultViewException, InventorySpecError
+from .core.config import Configuration
 from .subcommands import Subcommands
-from .projectdir import ProjectDir
-from .projectvenv import ProjectVenv
-from .ansiblerunner import AnsibleRunner
-from .ansibleplaybookrunner import AnsiblePlaybookRunner
-from .envrunner import EnvRunner
-from .utils import print_error
+from .core.projectdir import ProjectDir
+from .core.projectvenv import ProjectVenv
+from .core.ansiblerunner import AnsibleRunner
+from .core.ansibleplaybookrunner import AnsiblePlaybookRunner
+from .core.envrunner import EnvRunner
+from .core.utils import print_error
 import logging
 import getpass
 import sys
