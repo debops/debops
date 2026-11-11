@@ -14,6 +14,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::slapd', 'skip::slapd' ]
+
     - name: Import slapd role
       ansible.builtin.import_role:
         name: 'debops.debops.slapd'

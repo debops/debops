@@ -15,6 +15,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::apt_install', 'skip::apt_install' ]
+
     - name: Import apt_install role
       ansible.builtin.import_role:
         name: 'debops.debops.apt_install'

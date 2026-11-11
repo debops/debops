@@ -15,6 +15,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::icinga_db', 'skip::icinga_db' ]
+
     - name: Import icinga_db role
       ansible.builtin.import_role:
         name: 'debops.debops.icinga_db'
