@@ -8,3 +8,11 @@
     name: 'avahi-daemon'
     state: 'restarted'
   when: (ansible_local.avahi.installed | d()) | bool
+
+- name: Restart systemd-resolved service (Avahi)
+  ansible.builtin.systemd:
+    name: 'systemd-resolved.service'
+    state: 'restarted'
+  when:
+    - ansible_service_mgr == 'systemd'
+    - (ansible_local.resolved.state | d('disabled')) == 'enabled'
