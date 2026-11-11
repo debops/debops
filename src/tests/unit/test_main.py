@@ -211,6 +211,10 @@ def test_main_filters_can_allow_a_handler(clean_logging, monkeypatch):
     record.allow = "syslog"
     assert stream_handler().filters[0](record) is False
     assert syslog_handler().filters[0](record) is True
+    # A list of handlers delivers the record to each of them
+    record.allow = ["stderr", "syslog"]
+    assert stream_handler().filters[0](record) is True
+    assert syslog_handler().filters[0](record) is True
     del record.allow
     assert stream_handler().filters[0](record) is True
     assert syslog_handler().filters[0](record) is True
