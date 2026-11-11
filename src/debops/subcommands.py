@@ -15,7 +15,7 @@ try:
 except ModuleNotFoundError:
     __version__ = "0.0.0"
 
-from .utils import print_error
+from .core.utils import print_error
 import shutil
 
 

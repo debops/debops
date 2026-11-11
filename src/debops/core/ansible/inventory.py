@@ -2,9 +2,9 @@
 # Copyright (C) 2020-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from debops.exceptions import NoDefaultViewException
-from debops.inventoryspec import apply_spec
-from debops.utils import host_is_controller
+from ..exceptions import NoDefaultViewException
+from ..inventoryspec import apply_spec
+from ..utils import host_is_controller
 import pkgutil
 import jinja2
 import socket
@@ -133,7 +133,7 @@ class AnsibleInventory(object):
         clear, together with the directories above them.
 
         Returns the same result mapping as
-        :func:`debops.inventoryspec.apply_spec`.
+        :func:`debops.core.inventoryspec.apply_spec`.
         """
         logger.info('Applying inventory specification in {} directory'.format(
             self.path))
