@@ -4,6 +4,8 @@
 
 """Tests for ``debops.core.utils``."""
 
+import re
+
 import pytest
 
 from debops.core import utils
@@ -151,3 +153,57 @@ def test_host_is_controller_rejects_other_systems(monkeypatch):
     monkeypatch.setattr(utils.distro, "id", fail)
 
     assert utils.host_is_controller() is False
+
+
+def test_path_key_separates_same_named_projects(tmp_path):
+    # The path hash distinguishes two projects whose directories share a name
+    first = tmp_path / "alpha" / "web"
+    second = tmp_path / "beta" / "web"
+    first.mkdir(parents=True)
+    second.mkdir(parents=True)
+    assert utils.path_key(str(first), "web") != utils.path_key(str(second), "web")
+
+
+def test_path_key_separates_the_views_of_one_project(tmp_path):
+    project = tmp_path / "project"
+    project.mkdir()
+    assert (utils.path_key(str(project), "project", "prod")
+            != utils.path_key(str(project), "project", "stage"))
+
+
+def test_path_key_resolves_symlinks_to_the_real_project(tmp_path):
+    # A project reached through a symlink is the same project
+    real = tmp_path / "real"
+    link = tmp_path / "link"
+    real.mkdir()
+    link.symlink_to(real)
+    assert utils.path_key(str(real), "proj") == utils.path_key(str(link), "proj")
+
+
+def test_path_key_sanitizes_the_name_and_the_view(tmp_path):
+    project = tmp_path / "project"
+    project.mkdir()
+    key = utils.path_key(str(project), "web server/!", "prod env")
+    tail = key.split("-", 1)[1]
+    assert re.fullmatch(r"[A-Za-z0-9._-]+(-[A-Za-z0-9._-]+)?", tail)
+
+
+def test_path_key_without_a_view_names_the_project_alone(tmp_path):
+    project = tmp_path / "project"
+    project.mkdir()
+    key = utils.path_key(str(project), "project")
+    assert key == utils.path_key(str(project), "project", "")
+    assert key.count("-") == 1  # the hash-name separator only
+
+
+def test_path_key_extends_the_name_with_the_view(tmp_path):
+    project = tmp_path / "project"
+    project.mkdir()
+    assert utils.path_key(str(project), "project", "prod").endswith("-prod")
+
+
+def test_path_key_falls_back_when_the_name_is_empty(tmp_path):
+    project = tmp_path / "project"
+    project.mkdir()
+    assert utils.path_key(str(project), "").endswith("-project")
+    assert utils.path_key(str(project), None).endswith("-project")
