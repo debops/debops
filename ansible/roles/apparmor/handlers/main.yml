@@ -1,0 +1,18 @@
+---
+# Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2015      Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2015-2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Reload all AppArmor profiles
+  ansible.builtin.service:
+    name: 'apparmor'
+    state: 'reloaded'
+  when: ansible_local.apparmor.installed | d(False) | bool
+
+- name: Update GRUB (AppArmor)
+  ansible.builtin.command: update-grub
+  register: apparmor__register_update_grub
+  changed_when: apparmor__register_update_grub.changed | bool
+  failed_when: ('error' in apparmor__register_update_grub.stderr)

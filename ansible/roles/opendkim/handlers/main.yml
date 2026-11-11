@@ -1,0 +1,29 @@
+---
+# Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2017 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Check opendkim and restart
+  ansible.builtin.command: opendkim -n
+  register: opendkim__register_check_restart
+  changed_when: opendkim__register_check_restart.changed | bool
+  notify: [ 'Restart opendkim' ]
+
+- name: Check opendkim and reload
+  ansible.builtin.command: opendkim -n
+  register: opendkim__register_check_reload
+  changed_when: opendkim__register_check_reload.changed | bool
+  notify: [ 'Reload opendkim' ]
+  when: ansible_local | d() and ansible_local.opendkim | d() and
+        ansible_local.opendkim.installed is defined and
+        ansible_local.opendkim.installed | bool
+
+- name: Restart opendkim
+  ansible.builtin.service:
+    name: 'opendkim'
+    state: 'restarted'
+
+- name: Reload opendkim
+  ansible.builtin.service:
+    name: 'opendkim'
+    state: 'reloaded'

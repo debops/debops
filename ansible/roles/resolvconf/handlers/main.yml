@@ -1,0 +1,14 @@
+---
+# Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2019 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Apply static resolvconf configuration
+  ansible.builtin.command: '/usr/local/lib/resolvconf-static'
+  register: resolvconf__register_static_config
+  changed_when: resolvconf__register_static_config.changed | bool
+
+- name: Refresh /etc/resolv.conf
+  ansible.builtin.command: 'resolvconf -u'
+  register: resolvconf__register_refresh
+  changed_when: resolvconf__register_refresh.changed | bool

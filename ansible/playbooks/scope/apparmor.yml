@@ -15,6 +15,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::apparmor', 'skip::apparmor' ]
+
     - name: Import apparmor role
       ansible.builtin.import_role:
         name: 'debops.debops.apparmor'

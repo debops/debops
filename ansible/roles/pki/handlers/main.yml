@@ -1,0 +1,32 @@
+---
+# Copyright (C) 2013-2018 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2014-2018 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Update ca-certificates.crt
+  ansible.builtin.command: update-ca-certificates
+  register: pki__register_update_cacerts
+  changed_when: pki__register_update_cacerts.changed | bool
+  notify: [ 'Install ca-certificates.crt into Postfix chroot' ]
+
+- name: Regenerate ca-certificates.crt
+  ansible.builtin.command: update-ca-certificates --fresh
+  register: pki__register_regenerate_cacerts
+  changed_when: pki__register_regenerate_cacerts.changed | bool
+  notify: [ 'Install ca-certificates.crt into Postfix chroot' ]
+
+- name: Reconfigure ca-certificates
+  environment:
+    DEBIAN_FRONTEND: 'noninteractive'
+    DEBCONF_NONINTERACTIVE_SEEN: 'true'
+  ansible.builtin.command: dpkg-reconfigure --frontend=noninteractive ca-certificates
+  register: pki__register_reconfigure_cacerts
+  changed_when: pki__register_reconfigure_cacerts.changed | bool
+  notify: [ 'Install ca-certificates.crt into Postfix chroot' ]
+
+- name: Install ca-certificates.crt into Postfix chroot
+  ansible.builtin.shell: test -d /var/spool/postfix &&
+         cp -f /etc/ssl/certs/ca-certificates.crt /var/spool/postfix/etc/ssl/certs/ca-certificates.crt || true
+  register: pki__register_postfix_chroot
+  changed_when: pki__register_postfix_chroot.changed | bool

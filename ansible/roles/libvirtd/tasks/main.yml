@@ -4,10 +4,6 @@
 # Copyright (C) 2015-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- name: Import DebOps global handlers
-  ansible.builtin.import_role:
-    name: 'global_handlers'
-
   # When nested KVM is enabled on a host, Ansible does not recognize the
   # hardware virtualization support in the guest correctly. This is an
   # additional runtime check to account for that.
@@ -109,7 +105,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  notify: [ 'Restart sysfsutils' ]
+  notify: [ 'Restart sysfsutils (libvirtd)' ]
 
 - name: Check /sys filesystem mount options
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&

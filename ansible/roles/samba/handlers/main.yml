@@ -1,0 +1,20 @@
+---
+# Copyright (C) 2014-2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2019 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Check samba config
+  ansible.builtin.command: testparm -s
+  register: samba__register_test_config
+  changed_when: samba__register_test_config.changed | bool
+  notify: [ 'Reload nmbd', 'Reload smbd' ]
+
+- name: Reload nmbd
+  ansible.builtin.service:
+    name: 'nmbd'
+    state: 'restarted'
+
+- name: Reload smbd
+  ansible.builtin.service:
+    name: 'smbd'
+    state: 'reloaded'

@@ -1,0 +1,26 @@
+---
+# Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Test filebeat configuration and restart
+  ansible.builtin.command: 'filebeat test config'
+  register: filebeat__register_test_config
+  changed_when: filebeat__register_test_config.changed | bool
+  notify:
+    - 'Restart filebeat'
+    - 'Commit changes in etckeeper'
+  when: (ansible_local.filebeat.installed | d()) | bool
+
+- name: Test filebeat output and restart
+  ansible.builtin.command: 'filebeat test output'
+  register: filebeat__register_test_output
+  changed_when: filebeat__register_test_output.changed | bool
+  notify: [ 'Restart filebeat' ]
+  when: (ansible_local.filebeat.installed | d()) | bool
+
+- name: Restart filebeat
+  ansible.builtin.service:
+    name: 'filebeat'
+    state: 'restarted'
+  when: (ansible_local.filebeat.installed | d()) | bool

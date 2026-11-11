@@ -59,6 +59,31 @@ General
   configuration can be enabled selectively through Ansible inventory when
   needed.
 
+:ref:`debops.global_handlers` role
+''''''''''''''''''''''''''''''''''
+
+- Handlers specific to a single role have been moved from the
+  :ref:`debops.global_handlers` role back to their own roles, where they can
+  use the role's default variables. The roles that notified handlers of other
+  roles now either run the role that owns them in their playbooks, or define
+  their own copies of the affected handlers. The handlers that remain in the
+  :ref:`debops.global_handlers` role are the Ansible local fact refreshes, the
+  :program:`systemd` service manager reloads, and the ``xinetd`` handlers
+  which don't have a corresponding DebOps role.
+
+- DebOps roles no longer import the :ref:`debops.global_handlers` role
+  themselves. Instead, DebOps playbooks include the role as the first role of
+  each play (or import it as the first task in task-driven plays), so that the
+  shared handlers are defined before the handlers of any other role in the
+  play. This removes tens of thousands of static Ansible imports from playbook
+  parsing and significantly reduces playbook startup time and memory usage.
+
+- Custom Ansible playbooks that use DebOps roles directly need to include the
+  :ref:`debops.global_handlers` role in the play that runs the roles, see the
+  :ref:`debops.global_handlers` role documentation. Plays that notify the
+  shared handlers without the role will fail at runtime with a missing handler
+  error.
+
 Fixed
 ~~~~~
 

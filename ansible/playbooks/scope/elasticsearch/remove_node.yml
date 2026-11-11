@@ -30,6 +30,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::elasticsearch', 'skip::elasticsearch' ]
+
     - name: Remove node from Elasticsearch cluster
       ansible.builtin.import_role:
         name: 'debops.debops.elasticsearch'

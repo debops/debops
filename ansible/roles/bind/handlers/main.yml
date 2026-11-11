@@ -1,0 +1,18 @@
+---
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+  # Note: running as the bind user makes sure it has permissions
+  #       to read all relevant configuration files, including
+  #       included snippets, keys, etc.
+- name: Test named configuration and restart
+  ansible.builtin.command: runuser -u bind -- /usr/bin/named-checkconf
+  register: bind__register_checkconf
+  changed_when: bind__register_checkconf.changed | bool
+  notify: [ 'Restart named' ]
+
+- name: Restart named
+  ansible.builtin.service:
+    name: 'named'
+    state: 'restarted'

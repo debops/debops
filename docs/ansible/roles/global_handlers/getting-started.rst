@@ -1,5 +1,5 @@
 .. Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2020 DebOps <https://debops.org/>
+.. Copyright (C) 2026 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
@@ -11,29 +11,54 @@ Getting started
       :local:
 
 
-Example usage in other Ansible roles
-------------------------------------
+Example usage in Ansible playbooks
+----------------------------------
 
-The ``debops.global_handlers`` role does not have its own Ansible playbook. It
-is meant to be used by importing it in other Ansible roles:
+The ``debops.global_handlers`` role does not have its own Ansible playbook and
+does not contain any tasks. It only defines handlers, therefore it is included
+in DebOps playbooks as the first role of a play that uses DebOps roles:
 
 .. code-block:: yaml
 
-   - name: Import DebOps global handlers
-     import_role:
-       name: 'global_handlers'
+    - name: Manage nginx webserver
+      hosts: [ 'debops_service_nginx' ]
+      become: True
 
-Afterwards, the role can notify the known handlers in its tasks. The handlers
-will be executed in the order defined in the ``debops.global_handlers`` role,
-notification order in the calling roles does not matter.
+      roles:
+
+        - role: 'global_handlers'
+
+        - role: 'nginx'
+
+This way the shared handlers are defined before the handlers of any other role
+in the play, and all roles in the play can notify them. In playbooks that
+import roles through tasks, the role is imported as the first task:
+
+.. code-block:: yaml
+
+      tasks:
+
+        - name: Import DebOps global handlers
+          ansible.builtin.import_role:
+            name: 'debops.debops.global_handlers'
+          tags: [ 'role::nginx', 'skip::nginx' ]
+
+        - name: Import nginx role
+          ansible.builtin.import_role:
+            name: 'debops.debops.nginx'
+          tags: [ 'role::nginx', 'skip::nginx' ]
+
+Custom Ansible playbooks that use DebOps roles directly need to include the
+``debops.global_handlers`` role in the same way, otherwise notifications of
+the shared handlers will fail with an error at the end of the play.
 
 Common use case for this "pattern" is adding :file:`conf.d/` configuration
 snippets to services maintained by other roles - this sometimes requires
 a given service to be restarted to enable new configuration. With the handlers
-always available, the "application" role can modify its own configuration and
-restart the external service without the need to involve its corresponding
-role in its entirety. For example, let's add a custom :command:`rsyslog`
-configuration and restart the service on any changes:
+defined by the playbook, the "application" role can modify its own
+configuration and restart the external service without the need to involve its
+corresponding role in its entirety. For example, let's add a custom
+:command:`rsyslog` configuration and restart the service on any changes:
 
 .. code-block:: yaml
 
@@ -57,29 +82,32 @@ automatically.
 How to add new handlers
 -----------------------
 
-If a given Ansible role provides handlers for its service(s), they should be
-put in a separate :file:`handlers/<role_name>.yml` file in the
-``debops.global_handlers`` role. This file can then be imported in the
-:file:`handlers/main.yml` file in a specific place to ensure the desired order
-of service notifications.
+Handlers specific to a single role belong in that role's
+:file:`handlers/main.yml` file. They can use the role's default and effective
+variables as well as registered variables from the role's tasks. If a handler
+depends on the information from the remote hosts passed via register
+variables, the command that registered them needs to be a part of the "handler
+chain" which notifies subsequent handlers on changes.
 
-The handlers should not use the role default variables from its role directly
-because they might not be available at all times. Some handlers may use
-variables in the ``handlers__*`` role namespace to lookup information from the
-:file:`secret/` directory maintained by the :ref:`debops.secret` role, but it
-should be avoided if possible. If handers depend on the information from the
-remote hosts passed via register variables, the command that registered them
-needs to be a part of the "handler chain" which notifies subsequent handlers on
-changes.
+Handlers needed by more than one role go in the ``debops.global_handlers``
+role, in a separate :file:`handlers/<role_name>.yml` file imported from the
+:file:`handlers/main.yml` file. The order of the imports in that file defines
+the execution order of the shared handlers relative to each other. Handlers in
+the ``debops.global_handlers`` role must be self-contained: they should not
+use variables from the roles that notify them, because the importing role
+might not be present in the play at all. A few handlers use variables in the
+``handlers__*`` role namespace to lookup information from the :file:`secret/`
+directory maintained by the :ref:`debops.secret` role, but even that should be
+avoided if possible.
 
-If a service is optional or may not be available on a host, the service role
-should provide an ``ansible_local.<role>.installed`` or similar boolean Ansible
-local fact. This fact can then be checked by a given handler to determine if
-the service is available and can be acted upon.
+If a shared service is optional or may not be available on a host, the service
+role should provide an ``ansible_local.<role>.installed`` or similar boolean
+Ansible local fact. This fact can then be checked by a given handler to
+determine if the service is available and can be acted upon.
 
-If a role has an internal :file:`handlers/main.yml` file with additional
-handlers defined within, they will be executed **before** the handlers defined
-in the :ref:`debops.global_handlers` role. In some cases this might result in
-a wrong execution order, therefore roles can create copies of needed handlers
-as necessary. Copied handlers need to have unique names to not clash with their
-originals.
+Handlers are executed in the order in which they are defined in a play. The
+``debops.global_handlers`` role is included first in DebOps playbooks, so its
+handlers execute **before** the handlers defined by the roles in the play. If
+a role needs its handler to run in a different position, it can define its own
+copy of the handler - such copies need to have unique names to not clash with
+the originals.

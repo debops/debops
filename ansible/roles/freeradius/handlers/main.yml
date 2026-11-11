@@ -1,0 +1,15 @@
+---
+# Copyright (C) 2018 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2018 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Check freeradius configuration and restart
+  ansible.builtin.command: freeradius -C
+  register: freeradius__register_check_config
+  changed_when: freeradius__register_check_config.changed | bool
+  notify: [ 'Restart freeradius' ]
+
+- name: Restart freeradius
+  ansible.builtin.service:
+    name: 'freeradius'
+    state: 'restarted'

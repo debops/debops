@@ -1,0 +1,16 @@
+---
+# Copyright (C) 2014      Nick Janetakis <nick.janetakis@gmail.com>
+# Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2014-2017 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Test monit and reload
+  ansible.builtin.command: monit -t
+  register: monit__register_check_config
+  changed_when: monit__register_check_config.changed | bool
+  notify: [ 'Reload monit' ]
+
+- name: Reload monit
+  ansible.builtin.service:
+    name: 'monit'
+    state: 'reloaded'

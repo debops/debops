@@ -16,6 +16,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::ferm', 'skip::ferm' ]
+
     - name: Import ferm role
       ansible.builtin.import_role:
         name: 'debops.debops.ferm'

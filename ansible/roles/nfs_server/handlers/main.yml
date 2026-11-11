@@ -1,0 +1,14 @@
+---
+# Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2017-2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Restart nfs-kernel-server service
+  ansible.builtin.service:
+    name: 'nfs-kernel-server'
+    state: 'restarted'
+
+- name: Reload NFS exports
+  ansible.builtin.command: exportfs -ra
+  register: nfs_server__register_exportfs
+  changed_when: nfs_server__register_exportfs.changed | bool

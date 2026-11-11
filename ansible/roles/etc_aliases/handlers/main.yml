@@ -1,0 +1,12 @@
+---
+# Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2017 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Update /etc/aliases.db database
+  ansible.builtin.command: newaliases
+  register: etc_aliases__register_newaliases
+  changed_when: etc_aliases__register_newaliases.changed | bool
+  when: ansible_local | d() and ansible_local.etc_aliases | d() and
+        ansible_local.etc_aliases.newaliases is defined and
+        ansible_local.etc_aliases.newaliases | bool

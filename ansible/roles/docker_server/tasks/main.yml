@@ -4,10 +4,6 @@
 # Copyright (C) 2015-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- name: Import DebOps global handlers
-  ansible.builtin.import_role:
-    name: 'global_handlers'
-
 - name: Install required packages
   ansible.builtin.apt:
     name: '{{ (docker_server__base_packages
@@ -69,7 +65,7 @@
   ansible.builtin.file:
     path: '/etc/systemd/resolved.conf.d/docker.conf'
     state: 'absent'
-  notify: [ 'Restart systemd-resolved service' ]
+  notify: [ 'Restart systemd-resolved service (Docker)' ]
   when: not docker_server__resolved_integration | bool
 
 - name: Configure systemd-resolved integration
@@ -77,5 +73,5 @@
     src: 'etc/systemd/resolved.conf.d/docker.conf.j2'
     dest: '/etc/systemd/resolved.conf.d/docker.conf'
     mode: '0644'
-  notify: [ 'Restart systemd-resolved service' ]
+  notify: [ 'Restart systemd-resolved service (Docker)' ]
   when: docker_server__resolved_integration | bool

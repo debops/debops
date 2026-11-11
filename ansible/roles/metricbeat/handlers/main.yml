@@ -1,0 +1,26 @@
+---
+# Copyright (C) 2022 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Test metricbeat configuration and restart
+  ansible.builtin.command: 'metricbeat test config'
+  register: metricbeat__register_test_config
+  changed_when: metricbeat__register_test_config.changed | bool
+  notify:
+    - 'Restart metricbeat'
+    - 'Commit changes in etckeeper'
+  when: (ansible_local.metricbeat.installed | d()) | bool
+
+- name: Test metricbeat output and restart
+  ansible.builtin.command: 'metricbeat test output'
+  register: metricbeat__register_test_output
+  changed_when: metricbeat__register_test_output.changed | bool
+  notify: [ 'Restart metricbeat' ]
+  when: (ansible_local.metricbeat.installed | d()) | bool
+
+- name: Restart metricbeat
+  ansible.builtin.service:
+    name: 'metricbeat'
+    state: 'restarted'
+  when: (ansible_local.metricbeat.installed | d()) | bool

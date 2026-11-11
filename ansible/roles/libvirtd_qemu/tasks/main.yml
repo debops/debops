@@ -3,10 +3,6 @@
 # Copyright (C) 2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- name: Import DebOps global handlers
-  ansible.builtin.import_role:
-    name: 'global_handlers'
-
   # When nested KVM is enabled on a host, Ansible does not recognize the
   # hardware virtualization support in the guest correctly. This is an
   # additional runtime check to account for that.
@@ -56,4 +52,4 @@
     mode: '0600'
   with_items:
     - 'etc/libvirt/qemu.conf'
-  notify: [ 'Restart libvirtd', 'Restart libvirt-bin' ]
+  notify: [ 'Restart libvirtd (QEMU)', 'Restart libvirt-bin (QEMU)' ]

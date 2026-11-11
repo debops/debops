@@ -14,6 +14,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::postgresql_server', 'skip::postgresql_server' ]
+
     - name: Import postgresql_server role
       ansible.builtin.import_role:
         name: 'debops.debops.postgresql_server'

@@ -1,0 +1,12 @@
+---
+# Copyright (C) 2015 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2015-2018 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2015-2018 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Update GRUB
+  ansible.builtin.command: update-grub
+  register: grub__register_update
+  changed_when: grub__register_update.changed | bool
+  failed_when: ('error' in grub__register_update.stderr)

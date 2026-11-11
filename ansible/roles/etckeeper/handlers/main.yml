@@ -1,0 +1,11 @@
+---
+# Copyright (C) 2016-2018 Robin Schneider <ypid@riseup.net>
+# Copyright (C)      2018 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2016-2018 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Commit changes in etckeeper
+  ansible.builtin.shell: etckeeper unclean && etckeeper commit 'Committed by Ansible "etckeeper" handler' || true
+  register: etckeeper__register_commit_handler
+  changed_when: etckeeper__register_commit_handler.changed | bool
+  when: (ansible_local.etckeeper.enabled | d()) | bool

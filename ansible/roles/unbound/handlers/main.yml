@@ -1,0 +1,15 @@
+---
+# Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2017 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Check unbound configuration and reload
+  ansible.builtin.command: unbound-checkconf /etc/unbound/unbound.conf
+  register: unbound__register_config_test
+  changed_when: unbound__register_config_test.changed | bool
+  notify: [ 'Reload unbound' ]
+
+- name: Reload unbound
+  ansible.builtin.service:
+    name: 'unbound'
+    state: 'reloaded'

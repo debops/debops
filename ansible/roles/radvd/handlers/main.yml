@@ -1,0 +1,15 @@
+---
+# Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2014-2017 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Test radvd and restart
+  ansible.builtin.command: radvd --configtest
+  register: radvd__register_test_config
+  changed_when: radvd__register_test_config.changed | bool
+  notify: [ 'Restart radvd' ]
+
+- name: Restart radvd
+  ansible.builtin.service:
+    name: 'radvd'
+    state: 'restarted'

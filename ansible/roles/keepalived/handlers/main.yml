@@ -1,0 +1,26 @@
+---
+# Copyright (C) 2022 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Check keepalived configuration and restart
+  ansible.builtin.command: keepalived --config-test
+  register: keepalived__register_config_restart
+  changed_when: keepalived__register_config_restart.changed | bool
+  notify: [ 'Restart keepalived' ]
+
+- name: Check keepalived configuration and reload
+  ansible.builtin.command: keepalived --config-test
+  register: keepalived__register_config_reload
+  changed_when: keepalived__register_config_reload.changed | bool
+  notify: [ 'Reload keepalived' ]
+
+- name: Restart keepalived
+  ansible.builtin.service:
+    name: 'keepalived'
+    state: 'restarted'
+
+- name: Reload keepalived
+  ansible.builtin.service:
+    name: 'keepalived'
+    state: 'reloaded'
