@@ -112,19 +112,15 @@ class ProjectDir(object):
         self.name = os.path.basename(self.path)
         self.project_type = self.kwargs.get('type', project_type)
 
-        # We should work in the project directory as cwd, however Ansible can
-        # be executed from anywhere. If $ANSIBLE_CONFIG is defined, use it as the
-        # base directory just to be safe. Otherwise, switch to the directory
-        # defined at the command line.
-        try:
-            os.chdir(os.path.dirname(os.environ['ANSIBLE_CONFIG']))
-            self.path = os.getcwd()
-        except (KeyError, FileNotFoundError):
-            try:
-                os.chdir(self.path)
-            except FileNotFoundError:
-                # This will be a new project, so let's run with it
-                pass
+        # An $ANSIBLE_CONFIG set in the environment anchors the project at
+        # the configuration file's directory. The process working directory
+        # is left alone: the library passes explicit directories to the
+        # view resolver and to the commands it runs.
+        ansible_config = os.environ.get('ANSIBLE_CONFIG')
+        if ansible_config and os.path.dirname(ansible_config):
+            config_dir = os.path.dirname(ansible_config)
+            if os.path.isdir(config_dir):
+                self.path = os.path.realpath(config_dir)
 
         # Make sure that we are not operating on the home directory
         if self.path == DEBOPS_USER_HOME_DIR:
@@ -1163,9 +1159,9 @@ class ProjectDir(object):
                 except AttributeError:
                     raise ValueError('List of GPG recipients not specified')
 
-                os.chdir(self.path)
                 gitcrypt_cmd = subprocess.Popen([self._commands['git-crypt'],
                                                  'init'],
+                                                cwd=self.path,
                                                 stdin=subprocess.PIPE)
                 gitcrypt_cmd.communicate()
                 if gitcrypt_cmd.returncode != 0:
@@ -1174,7 +1170,8 @@ class ProjectDir(object):
                 for gpg_key in gpg_keys:
                     gitcrypt_cmd = subprocess.Popen([self._commands['git-crypt'],
                                                      'add-gpg-user',
-                                                    gpg_key], stdin=subprocess.PIPE)
+                                                    gpg_key], cwd=self.path,
+                                                    stdin=subprocess.PIPE)
                     gitcrypt_cmd.communicate()
 
                 # Lock the repository after setting up git-crypt
@@ -1182,6 +1179,7 @@ class ProjectDir(object):
                              'creation')
                 gitcrypt_cmd = subprocess.Popen([self._commands['git-crypt'],
                                                  'lock'],
+                                                cwd=self.path,
                                                 stdin=subprocess.PIPE)
                 gitcrypt_cmd.communicate()
 
@@ -1194,7 +1192,6 @@ class ProjectDir(object):
                 logger.debug('Installing Ansible Collections specified in '
                              + os.path.join('ansible', 'collections',
                                             'requirements.yml') + ' file')
-                os.chdir(self.path)
                 try:
                     galaxy_cmd = subprocess.Popen(
                             [self._commands['ansible-galaxy'],
@@ -1202,6 +1199,7 @@ class ProjectDir(object):
                              os.path.join('ansible',
                                           'collections',
                                           'requirements.yml')],
+                            cwd=self.path,
                             stdin=subprocess.PIPE)
                     galaxy_cmd.communicate()
                 except FileNotFoundError:
