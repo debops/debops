@@ -14,10 +14,10 @@ logger = logging.getLogger(__name__)
 class EnvRunner(ProjectRunner):
     """Run a command in the DebOps project environment."""
 
-    def __init__(self, project, **kwargs):
-        super().__init__(project, **kwargs)
+    def __init__(self, project, command_args, bell=False):
+        super().__init__(project, bell=bell)
 
-        self._command = self.kwargs['command_args']
+        self._command = command_args
 
     def show_env(self, scope='local'):
         if scope == 'local':

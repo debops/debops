@@ -620,7 +620,6 @@ class TemplateSourceTestCase(unittest.TestCase):
         # instance with the attributes the method and the render context
         # need is enough.
         self.project = ProjectDir.__new__(ProjectDir)
-        self.project.kwargs = {}
         self.project.view = 'system'
         self.project.name = 'testproject'
         self.project.path = self.base_dir
@@ -633,8 +632,8 @@ class TemplateSourceTestCase(unittest.TestCase):
         return files
 
     def load_all(self, *sources):
-        self.project.kwargs['spec_sources'] = list(sources)
-        return self.project._load_specs(self.base_dir)
+        return self.project._load_specs(self.base_dir,
+                                        spec_sources=list(sources))
 
     def write_spec(self, name, document):
         path = os.path.join(self.base_dir, name)
@@ -664,7 +663,6 @@ class ShippedTemplateTestCase(unittest.TestCase):
         the test suite updated along with it.
         """
         project = ProjectDir.__new__(ProjectDir)
-        project.kwargs = {}
         project.view = 'system'
         project.name = 'testproject'
         project.path = self.base_dir
@@ -851,11 +849,11 @@ class ProjectSpecConfigTestCase(TemplateSourceTestCase):
     # which declares a version above the cap only needs to parse
     FIXTURE_DOCUMENT = b'---\nversion: 3\nfiles:\n  extra: x\n'
 
-    def load(self, *sources, policy=None):
-        self.project.kwargs['spec_sources'] = list(sources)
+    def load(self, *sources, policy=None, allow_io=False):
         self.project.config = mock.Mock(
             raw={'project': {'inventory_spec': policy}} if policy else {})
-        files, _keep = self.project._load_specs(self.base_dir)
+        files, _keep = self.project._load_specs(
+            self.base_dir, spec_sources=list(sources), allow_io=allow_io)
         return files
 
     def test_no_options_means_defaults(self):
@@ -962,13 +960,13 @@ class ProjectSpecConfigTestCase(TemplateSourceTestCase):
         # OR semantics: the CLI flag grants I/O for one invocation even when
         # the project configuration denies it
         document = ('---\nversion: 3\nfiles:\n  x: "{{ pipe(\'true\') }}"\n')
-        self.project.kwargs['allow_io'] = True
 
         with mock.patch('debops.core.inventoryspec._execute_command') as execute:
             execute.return_value = mock.Mock(returncode=0, stdout='', stderr='')
 
             with mock.patch.object(sys, 'stdin', io.StringIO(document)):
-                files = self.load('-', policy={'allow_io': False})
+                files = self.load('-', policy={'allow_io': False},
+                                  allow_io=True)
 
         self.assertIn('x', files)
 
