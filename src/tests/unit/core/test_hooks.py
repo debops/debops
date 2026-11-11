@@ -2,7 +2,7 @@
 # Copyright (C) 2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Tests for the hook script runner in ``debops.hooks``.
+"""Tests for the hook script runner in ``debops.core.hooks``.
 
 Hooks are executable shell scripts, so the tests create real scripts in
 temporary directories and let ``run_hooks`` execute them; that exercises the
@@ -14,8 +14,8 @@ import os
 
 import pytest
 
-import debops.hooks as hooks_module
-from debops.hooks import run_hooks
+import debops.core.hooks as hooks_module
+from debops.core.hooks import run_hooks
 
 
 def make_hook(directory, name, body="exit 0"):

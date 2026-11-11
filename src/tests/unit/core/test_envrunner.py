@@ -9,9 +9,9 @@ from unittest import mock
 
 import pytest
 
-import debops.projectrunner as projectrunner_module
-import debops.envrunner as runner_module
-from debops.envrunner import EnvRunner
+import debops.core.projectrunner as projectrunner_module
+import debops.core.envrunner as runner_module
+from debops.core.envrunner import EnvRunner
 
 
 @pytest.fixture(autouse=True)
@@ -176,7 +176,7 @@ def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch,
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
     runner.inventory.unlock.return_value = True
 
-    with caplog.at_level(logging.NOTICE, logger="debops.envrunner"):
+    with caplog.at_level(logging.NOTICE, logger="debops.core.envrunner"):
         with pytest.raises(SystemExit):
             runner.execute()
 
