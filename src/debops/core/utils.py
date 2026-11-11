@@ -5,9 +5,11 @@
 
 from .constants import DEBOPS_USER_HOME_DIR
 import distro
+import hashlib
 import logging
 import os
 import platform
+import re
 import sys
 
 logger = logging.getLogger(__name__)
@@ -41,6 +43,26 @@ def unexpanduser(path):
         return path.replace(DEBOPS_USER_HOME_DIR, '~', 1)
     else:
         return path
+
+
+def path_key(path, name, view=''):
+    """Return the namespacing key of a project path and view.
+
+    Resources that several projects share -- sockets, run log
+    directories, caches -- are namespaced by this key so that
+    same-named projects cannot collide and the views of one project
+    stay apart. The hash of the real path provides the distinction,
+    the sanitized directory name keeps the key recognizable to a
+    human, and a view extends the name. Without a view the key names
+    the project as a whole.
+    """
+    digest = hashlib.sha256(
+        '{}\0{}'.format(os.path.realpath(path),
+                        view).encode('utf-8', 'replace'))
+    key = re.sub(r'[^A-Za-z0-9._-]', '-', str(name or 'project'))
+    if view:
+        key += '-' + re.sub(r'[^A-Za-z0-9._-]', '-', str(view))
+    return '{}-{}'.format(digest.hexdigest()[:8], key)
 
 
 def strtobool(value):
