@@ -32,12 +32,12 @@ logger = logging.getLogger(__name__)
 
 class AnsibleInventory(object):
 
-    def __init__(self, project, name='system', *args, **kwargs):
+    def __init__(self, project, name='system', keys=None, encrypt=None):
         self.name = name
         self.project = project
         self.project_type = project.project_type
-        self.args = args
-        self.kwargs = kwargs
+        self.keys = keys
+        self.encrypt = encrypt
 
         if self.project_type == 'modern' and not self.name:
             raise NoDefaultViewException('No default view defined in DebOps '
@@ -49,7 +49,7 @@ class AnsibleInventory(object):
 
         self.encfs_keyfile = '.encfs6.keyfile'
         self.encfs_configfile = '.encfs6.xml'
-        self.encfs_mounted = False
+        self.decrypted = False
         self.git_crypt_path = os.path.join(project.path, '.git', 'git-crypt',
                                            'keys')
 
@@ -77,12 +77,12 @@ class AnsibleInventory(object):
             self.encrypted = True
             self.crypt_method = 'encfs'
             if os.path.ismount(self.secret_path):
-                self.encfs_mounted = True
+                self.decrypted = True
         elif os.path.exists(self.git_crypt_path):
             self.encrypted = True
             self.crypt_method = 'git-crypt'
             if not self._git_crypt_locked():
-                self.encfs_mounted = True
+                self.decrypted = True
         logger.debug('Ansible inventory initialized')
 
     def _git_crypt_locked(self):
@@ -147,7 +147,7 @@ class AnsibleInventory(object):
         encfs_password = self._get_random_string()
 
         try:
-            gpg_keys = list(self.kwargs.get('keys', None).split(','))
+            gpg_keys = list(self.keys.split(','))
             gpg_recipients = list(
                     itertools.chain.from_iterable(['-r', r]
                                                   for r in gpg_keys))
@@ -186,7 +186,7 @@ class AnsibleInventory(object):
             self.encrypted = True
             self.crypt_method = 'encfs'
             if os.path.ismount(self.secret_path):
-                self.encfs_mounted = True
+                self.decrypted = True
             self.lock()
 
             logger.debug('Encrypting EncFS configuration file')
@@ -262,7 +262,7 @@ class AnsibleInventory(object):
                         fqdn=socket.getfqdn()))
             logger.debug('Default hosts file created in Ansible inventory')
 
-        encrypted_secrets = self.kwargs.get('encrypt', None)
+        encrypted_secrets = self.encrypt
         if encrypted_secrets is not None:
             if encrypted_secrets == 'encfs':
                 self._encrypt_secrets_encfs()
@@ -283,7 +283,7 @@ class AnsibleInventory(object):
                                                   self.encfs_configfile + '.asc')
 
                 if os.path.ismount(self.secret_path):
-                    self.encfs_mounted = True
+                    self.decrypted = True
                     logger.debug('EncFS filesystem is already mounted, '
                                  'state not changed')
                     return False
@@ -323,7 +323,7 @@ class AnsibleInventory(object):
                     if encfs_failed:
                         raise ChildProcessError('EncFS could not unlock '
                                                 'the project secrets')
-                    self.encfs_mounted = True
+                    self.decrypted = True
                     logger.debug('EncFS filesystem mounted')
                     return True
             elif self.crypt_method == 'git-crypt':
@@ -342,7 +342,7 @@ class AnsibleInventory(object):
                     out, err = gitcrypt_cmd.communicate()
                     rc = gitcrypt_cmd.returncode
                     if rc == 0:
-                        self.encfs_mounted = True
+                        self.decrypted = True
                         logger.debug('Files encrypted with git-crypt are '
                                      'decrypted')
                         return True
@@ -353,7 +353,7 @@ class AnsibleInventory(object):
                         raise ChildProcessError('Cannot unlock project secrets, '
                                                 'git working directory not clean')
                 else:
-                    self.encfs_mounted = True
+                    self.decrypted = True
                     logger.debug('git-crypt is already unlocked')
                     return False
 
@@ -383,7 +383,7 @@ class AnsibleInventory(object):
                     else:
                         subprocess.call([self._commands['fusermount'],
                                          '-u', self.secret_path])
-                    self.encfs_mounted = False
+                    self.decrypted = False
                     logger.debug('EncFS filesystem has been unmounted')
                     return True
             elif self.crypt_method == 'git-crypt':
@@ -396,7 +396,7 @@ class AnsibleInventory(object):
                     out, err = gitcrypt_cmd.communicate()
                     rc = gitcrypt_cmd.returncode
                     if rc == 0:
-                        self.encfs_mounted = False
+                        self.decrypted = False
                         logger.debug('Encrypted files are locked')
                         return True
                     else:

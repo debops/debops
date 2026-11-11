@@ -143,15 +143,20 @@ def test_project_init_creates_the_project(monkeypatch):
     monkeypatch.setattr(cli_module, "ProjectVenv", mock.Mock())
     interpreter = make_interpreter()
     args = make_args(project_dir="/tmp/example", type="legacy",
-                     default_view="system", venv=False, requirements=True)
+                     default_view="system", venv=False, requirements=True,
+                     git=True, encrypt=None, keys=None, spec_sources=None,
+                     allow_io=False, dry_run=False, force=False,
+                     graph=False, list=False, host=None)
 
     interpreter.do_project_init(args)
 
     cli_module.ProjectDir.assert_called_once_with(
-        path="/tmp/example", config=interpreter.config, create=True,
-        project_dir="/tmp/example", type="legacy", default_view="system",
-        venv=False, requirements=True)
-    project.create.assert_called_once_with()
+        path="/tmp/example", config=interpreter.config,
+        project_type="legacy", create=True, encrypt=None, keys=None)
+    project.create.assert_called_once_with(
+        git_repo=True, venv=False, requirements=True,
+        default_view="system", spec_sources=None, allow_io=False,
+        dry_run=False, force=False, inspect_mode=None, inspect_host=None)
     cli_module.ProjectVenv.assert_not_called()
 
 
@@ -164,11 +169,14 @@ def test_project_init_installs_the_virtual_environment(monkeypatch):
     monkeypatch.setattr(cli_module, "ProjectVenv", projectvenv_type)
     interpreter = make_interpreter()
     args = make_args(project_dir="/tmp/example", type="modern",
-                     default_view="system", venv=True, requirements=True)
+                     default_view="system", venv=True, requirements=True,
+                     git=True, encrypt=None, keys=None, spec_sources=None,
+                     allow_io=False, dry_run=False, force=False,
+                     graph=False, list=False, host=None)
 
     interpreter.do_project_init(args)
 
-    projectvenv_type.assert_called_once_with(project, **vars(args))
+    projectvenv_type.assert_called_once_with(project)
     venv.install.assert_called_once_with()
 
 
@@ -180,11 +188,17 @@ def test_project_init_skips_the_venv_install_without_requirements(monkeypatch):
     monkeypatch.setattr(cli_module, "ProjectVenv", projectvenv_type)
     interpreter = make_interpreter()
     args = make_args(project_dir="/tmp/example", type="modern",
-                     default_view="system", venv=True, requirements=False)
+                     default_view="system", venv=True, requirements=False,
+                     git=True, encrypt=None, keys=None, spec_sources=None,
+                     allow_io=False, dry_run=False, force=False,
+                     graph=False, list=False, host=None)
 
     interpreter.do_project_init(args)
 
-    project.create.assert_called_once_with()
+    project.create.assert_called_once_with(
+        git_repo=True, venv=True, requirements=False,
+        default_view="system", spec_sources=None, allow_io=False,
+        dry_run=False, force=False, inspect_mode=None, inspect_host=None)
     projectvenv_type.assert_not_called()
 
 
@@ -272,7 +286,8 @@ def test_project_init_reports_a_failure(monkeypatch, capsys, exception):
 
     with pytest.raises(SystemExit) as caught:
         interpreter.do_project_init(make_args(
-            project_dir="/tmp/example", type="legacy", default_view="system"))
+            project_dir="/tmp/example", type="legacy", default_view="system",
+            encrypt=None, keys=None))
 
     assert caught.value.code == 1
     assert "Error: boom" in capsys.readouterr().err
@@ -284,9 +299,13 @@ def test_project_refresh_refreshes_the_project(monkeypatch):
                         mock.Mock(return_value=project))
     interpreter = make_interpreter()
 
-    interpreter.do_project_refresh(make_args(project_dir=".", view="system"))
+    interpreter.do_project_refresh(make_args(
+        project_dir=".", view="system", spec_sources=None, allow_io=False,
+        dry_run=False, force=False, graph=False, list=False, host=None))
 
-    project.refresh.assert_called_once_with()
+    project.refresh.assert_called_once_with(
+        spec_sources=None, allow_io=False, dry_run=False, force=False,
+        inspect_mode=None, inspect_host=None)
 
 
 def test_project_lock_locks_the_project(monkeypatch):
@@ -357,14 +376,15 @@ def test_exec_runs_the_runner(monkeypatch):
     runner_type = mock.Mock(return_value=runner)
     monkeypatch.setattr(cli_module, "AnsibleRunner", runner_type)
     interpreter = make_interpreter()
-    args = make_args(project_dir=".", view="system", eval=False, bell=True)
+    args = make_args(project_dir=".", view="system", eval=False, bell=True,
+                     ansible_args=["all"])
 
     with pytest.raises(SystemExit) as caught:
         interpreter.do_exec(args)
 
     assert caught.value.code == 3
-    runner_type.assert_called_once_with(project, project_dir=".", view="system",
-                                        eval=False, bell=True)
+    runner_type.assert_called_once_with(project, ansible_args=["all"],
+                                        bell=True)
     runner.execute.assert_called_once_with()
 
 
@@ -379,7 +399,8 @@ def test_exec_eval_mode_delegates_to_the_runner(monkeypatch, capsys):
 
     with pytest.raises(SystemExit) as caught:
         interpreter.do_exec(make_args(project_dir=".", view="system",
-                                      eval=True, bell=False))
+                                      eval=True, bell=False,
+                                      ansible_args=["all"]))
 
     assert caught.value.code == 0
     runner.eval.assert_called_once_with()
@@ -398,7 +419,8 @@ def test_exec_reports_a_runner_failure(monkeypatch, capsys, exception):
 
     with pytest.raises(SystemExit) as caught:
         interpreter.do_exec(make_args(project_dir=".", view="system",
-                                      eval=False, bell=False))
+                                      eval=False, bell=False,
+                                      ansible_args=["all"]))
 
     assert caught.value.code == 1
     assert "Error: boom" in capsys.readouterr().err
@@ -416,7 +438,8 @@ def test_exec_reports_an_aborted_hook(monkeypatch, capsys):
 
     with pytest.raises(SystemExit) as caught:
         interpreter.do_exec(make_args(project_dir=".", view="system",
-                                      eval=False, bell=False))
+                                      eval=False, bell=False,
+                                      ansible_args=["all"]))
 
     assert caught.value.code == 1
     assert "Hook pre-exec aborted" in capsys.readouterr().err
@@ -434,7 +457,8 @@ def test_run_executes_the_playbooks(monkeypatch):
 
     with pytest.raises(SystemExit) as caught:
         interpreter.do_run(make_args(project_dir=".", view="system",
-                                     eval=False, bell=False))
+                                     eval=False, bell=False,
+                                     ansible_args=["site.yml"], debug=False))
 
     assert caught.value.code == 0
     runner.execute.assert_called_once_with()
@@ -452,7 +476,8 @@ def test_run_reports_a_child_process_failure(monkeypatch, capsys):
 
     with pytest.raises(SystemExit) as caught:
         interpreter.do_run(make_args(project_dir=".", view="system",
-                                     eval=False, bell=False))
+                                     eval=False, bell=False,
+                                     ansible_args=["site.yml"], debug=False))
 
     assert caught.value.code == 1
     assert "Error: dirty working tree" in capsys.readouterr().err
@@ -569,7 +594,8 @@ def test_project_refresh_reports_a_failure(monkeypatch, capsys):
     interpreter = make_interpreter()
 
     with pytest.raises(SystemExit) as caught:
-        interpreter.do_project_refresh(make_args(project_dir="."))
+        interpreter.do_project_refresh(make_args(project_dir=".",
+                                                 view="system"))
 
     assert caught.value.code == 1
     assert "Error: boom" in capsys.readouterr().err
@@ -690,7 +716,8 @@ def test_run_reports_a_runner_failure(monkeypatch, capsys, exception):
 
     with pytest.raises(SystemExit) as caught:
         interpreter.do_run(make_args(project_dir=".", view="system",
-                                     eval=False, bell=False))
+                                     eval=False, bell=False,
+                                     ansible_args=["site.yml"], debug=False))
 
     assert caught.value.code == 1
     assert "Error: boom" in capsys.readouterr().err
@@ -707,7 +734,8 @@ def test_run_eval_mode_delegates_to_the_runner(monkeypatch):
 
     with pytest.raises(SystemExit) as caught:
         interpreter.do_run(make_args(project_dir=".", view="system",
-                                     eval=True, bell=False))
+                                     eval=True, bell=False,
+                                     ansible_args=["site.yml"], debug=False))
 
     assert caught.value.code == 0
     runner.eval.assert_called_once_with()
