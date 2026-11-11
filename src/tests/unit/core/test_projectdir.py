@@ -606,6 +606,91 @@ def test_commit_commits_when_there_are_changes(tmp_path, monkeypatch):
             "Changes committed automatically")
 
 
+def _git(project_dir, *args):
+    subprocess.run(["git", "-C", str(project_dir), *args],
+                   check=True, capture_output=True)
+
+
+def _git_identity(project_dir):
+    _git(project_dir, "config", "user.email", "debops-tests@example.org")
+    _git(project_dir, "config", "user.name", "DebOps Tests")
+
+
+def test_commit_records_only_the_named_paths(tmp_path):
+    write_legacy_project(tmp_path)
+    project = ProjectDir(str(tmp_path), config=make_configuration())
+    _git(str(tmp_path), "init")
+    _git_identity(str(tmp_path))
+    (tmp_path / "one.txt").write_text("one\n")
+    (tmp_path / "two.txt").write_text("two\n")
+    _git(str(tmp_path), "add", "-A")
+    _git(str(tmp_path), "commit", "-m", "init")
+
+    (tmp_path / "one.txt").write_text("changed\n")
+    (tmp_path / "two.txt").write_text("changed\n")
+
+    project.commit(message="record one", paths=["one.txt"])
+
+    head = subprocess.run(
+        ["git", "-C", str(tmp_path), "show", "--name-only", "--format="],
+        capture_output=True, text=True, check=True).stdout.splitlines()
+    assert head == ["one.txt"]
+    # The change outside the named paths stays pending
+    status = subprocess.run(
+        ["git", "-C", str(tmp_path), "status", "--porcelain"],
+        capture_output=True, text=True, check=True).stdout.splitlines()
+    assert len(status) == 1
+
+
+def test_commit_ignores_named_paths_without_changes(tmp_path):
+    write_legacy_project(tmp_path)
+    project = ProjectDir(str(tmp_path), config=make_configuration())
+    _git(str(tmp_path), "init")
+    _git_identity(str(tmp_path))
+    (tmp_path / "one.txt").write_text("one\n")
+    _git(str(tmp_path), "add", "-A")
+    _git(str(tmp_path), "commit", "-m", "init")
+
+    project.commit(message="nothing to do", paths=["missing.txt"])
+
+    log = subprocess.run(
+        ["git", "-C", str(tmp_path), "log", "--oneline"],
+        capture_output=True, text=True, check=True).stdout.splitlines()
+    assert len(log) == 1  # only the initial commit
+
+
+def test_commit_uses_the_given_message(tmp_path):
+    write_legacy_project(tmp_path)
+    project = ProjectDir(str(tmp_path), config=make_configuration())
+    _git(str(tmp_path), "init")
+    _git_identity(str(tmp_path))
+    (tmp_path / "new.txt").write_text("x\n")
+
+    project.commit(message="A specific message")
+
+    subject = subprocess.run(
+        ["git", "-C", str(tmp_path), "log", "-1", "--format=%s"],
+        capture_output=True, text=True, check=True).stdout.strip()
+    assert subject == "A specific message"
+
+
+def test_commit_commits_the_whole_tree_on_an_unborn_branch(tmp_path):
+    write_legacy_project(tmp_path)
+    project = ProjectDir(str(tmp_path), config=make_configuration(raw=dict(
+        DEFAULT_PROJECT_RAW,
+        project={"git": {"auto_commit_message": "First commit"}})))
+    _git(str(tmp_path), "init")
+    _git_identity(str(tmp_path))
+    (tmp_path / "one.txt").write_text("one\n")
+
+    project.commit()
+
+    log = subprocess.run(
+        ["git", "-C", str(tmp_path), "log", "--oneline"],
+        capture_output=True, text=True, check=True).stdout.splitlines()
+    assert len(log) == 1
+
+
 def test_commit_ignores_a_foreign_git_repository(tmp_path, monkeypatch):
     """A git directory which is not a DebOps project directory is left
     alone: the auto-commit must not touch repositories DebOps does not
