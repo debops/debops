@@ -88,7 +88,8 @@ def test_show_env_full_prints_process_environment(stub_project, capsys,
     assert "DEBOPS_TEST_VARIABLE=1" in capsys.readouterr().out
 
 
-def test_execute_returns_the_command_return_code(stub_project, monkeypatch):
+def test_execute_returns_the_command_return_code(stub_project, monkeypatch,
+                                                 tmp_path):
     runner = EnvRunner(stub_project(), command_args=["true"])
     executor = mock.Mock(returncode=3)
     executor.communicate.return_value = (b"", b"")
@@ -98,6 +99,8 @@ def test_execute_returns_the_command_return_code(stub_project, monkeypatch):
     runner.inventory.unlock.return_value = False
 
     assert runner.execute() == 3
+    # The command runs in the project directory, not the caller's
+    assert popen.call_args.kwargs["cwd"] == str(tmp_path)
     assert popen.call_args.kwargs["shell"] is True
 
 

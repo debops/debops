@@ -1105,7 +1105,6 @@ def test_init_detects_a_legacy_project(tmp_path, monkeypatch):
 
     assert project.project_type == "legacy"
     assert project.name == os.path.basename(tmp_path)
-    assert os.getcwd() == str(tmp_path)
     assert project.config.raw["views"]["system"]["debops"] == {
             "namespace": "debops"}
     assert os.environ["DEBOPS_PROJECT_PATH"] == str(tmp_path)
@@ -1169,18 +1168,31 @@ def test_init_rejects_the_home_directory(tmp_path, monkeypatch):
         ProjectDir(str(tmp_path), config=make_configuration())
 
 
-def test_init_switches_to_the_ansible_config_directory(tmp_path, monkeypatch):
+def test_init_anchors_the_project_at_the_ansible_config_directory(
+        tmp_path, monkeypatch):
     project_dir = write_modern_project(tmp_path / "example")
     (project_dir / "ansible.cfg").write_text("")
     monkeypatch.setenv("ANSIBLE_CONFIG", str(project_dir / "ansible.cfg"))
-    (tmp_path / "elsewhere").mkdir()
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
 
-    project = ProjectDir(str(tmp_path / "elsewhere"),
-                         config=make_configuration())
+    project = ProjectDir(str(elsewhere), config=make_configuration())
 
     assert project.path == str(project_dir)
     assert project.project_type == "modern"
-    assert os.getcwd() == str(project_dir)
+    assert os.getcwd() == str(elsewhere)
+
+
+def test_init_leaves_the_working_directory_alone(tmp_path, monkeypatch):
+    # The library must not move the process working directory; the
+    # clients pass explicit directories instead
+    project_dir = write_modern_project(tmp_path / "project")
+    monkeypatch.chdir(tmp_path)
+
+    ProjectDir(str(project_dir), config=make_configuration())
+
+    assert os.getcwd() == str(tmp_path)
 
 
 def test_init_picks_the_view_from_the_current_directory(tmp_path, monkeypatch):

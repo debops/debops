@@ -236,8 +236,13 @@ class AnsiblePlaybookRunner(ProjectRunner):
         if not playbook_name.endswith('.yml'):
             playbook_name = playbook_name + '.yml'
 
-        # Check if playbook can be found directly
-        if os.path.isfile(playbook_name):
+        # Check if playbook can be found directly. A relative name is
+        # resolved against the project directory, which is also where the
+        # command itself will run.
+        if os.path.isabs(playbook_name):
+            if os.path.isfile(playbook_name):
+                playbook_path = playbook_name
+        elif os.path.isfile(os.path.join(self.project.path, playbook_name)):
             playbook_path = playbook_name
 
         if not playbook_path:
@@ -245,7 +250,8 @@ class AnsiblePlaybookRunner(ProjectRunner):
             for playbook_dir in self._playbook_dirs:
                 if os.path.isfile(os.path.join(playbook_dir, playbook_name)):
                     playbook_path = os.path.relpath(
-                            os.path.join(playbook_dir, playbook_name))
+                            os.path.join(playbook_dir, playbook_name),
+                            self.project.path)
                     break
 
         if not playbook_path:
@@ -311,7 +317,7 @@ class AnsiblePlaybookRunner(ProjectRunner):
             logger.debug('Ansible command: {}'.format(
                     ' '.join(self._ansible_command)))
             executor = subprocess.Popen(' '.join(self._ansible_command),
-                                        shell=True)
+                                        shell=True, cwd=self.project.path)
             logger.debug('Starting playbook execution')
             std_out, std_err = executor.communicate()
             logger.debug('Playbook execution finished')
