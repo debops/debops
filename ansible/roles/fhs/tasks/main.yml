@@ -7,10 +7,6 @@
   ansible.builtin.import_role:
     name: 'ansible_plugins'
 
-- name: Import DebOps global handlers
-  ansible.builtin.import_role:
-    name: 'global_handlers'
-
 - name: Create base directory hierarchy
   ansible.builtin.file:
     path: '{{ hostvars[inventory_hostname]["ansible_local"]["fhs"][item.name] | d(item.path) }}'

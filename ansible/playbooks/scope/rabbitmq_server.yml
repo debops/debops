@@ -33,6 +33,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::rabbitmq_server', 'skip::rabbitmq_server' ]
+
     - name: Import rabbitmq_server role
       ansible.builtin.import_role:
         name: 'debops.debops.rabbitmq_server'

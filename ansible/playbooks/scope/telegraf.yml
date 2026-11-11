@@ -14,6 +14,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::telegraf', 'skip::telegraf' ]
+
     - name: Import telegraf role
       ansible.builtin.import_role:
         name: 'debops.debops.telegraf'

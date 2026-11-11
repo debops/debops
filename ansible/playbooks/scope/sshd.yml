@@ -23,6 +23,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::sshd', 'skip::sshd' ]
+
     - name: Import sshd role
       ansible.builtin.import_role:
         name: 'debops.debops.sshd'

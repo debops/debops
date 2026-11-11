@@ -14,6 +14,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::apt_mirror', 'skip::apt_mirror' ]
+
     - name: Import apt_mirror role
       ansible.builtin.import_role:
         name: 'debops.debops.apt_mirror'
