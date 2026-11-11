@@ -339,7 +339,7 @@ class ProjectVenv(object):
         checkout, does not leak into the virtual environment and its package
         metadata.
         """
-        env = os.environ.copy()
+        env = self.project.environment()
         env.pop('PYTHONPATH', None)
         return env
 

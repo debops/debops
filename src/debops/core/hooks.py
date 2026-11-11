@@ -42,7 +42,7 @@ def _is_project_dir(path):
 
 
 def run_hooks(project_path, hook_name, timeout=DEFAULT_HOOK_TIMEOUT,
-              extra_env=None, require_project=True):
+              extra_env=None, require_project=True, env=None):
     """Run all executable scripts for a given hook name.
 
     Searches for scripts in two locations, in priority order:
@@ -75,6 +75,11 @@ def run_hooks(project_path, hook_name, timeout=DEFAULT_HOOK_TIMEOUT,
             with — so the refusal fails closed. The one designed
             exception is 'pre-init', which runs on the directory being
             initialized as a project.
+        env: Optional full environment mapping the hook scripts run
+            with; the callers pass the project environment so that the
+            DebOps-configured variables reach the scripts without the
+            process environment being modified. Defaults to the current
+            process environment.
 
     Returns:
         True if all hooks executed successfully (exit code 0).
@@ -104,7 +109,7 @@ def run_hooks(project_path, hook_name, timeout=DEFAULT_HOOK_TIMEOUT,
     logger.debug('Found {} hook script(s) for "{}"'.format(
         len(all_scripts), hook_name))
 
-    hook_env = os.environ.copy()
+    hook_env = dict(env) if env is not None else os.environ.copy()
     hook_env['DEBOPS_HOOK_NAME'] = hook_name
     hook_env['DEBOPS_PROJECT_PATH'] = os.path.abspath(project_path)
     if extra_env:

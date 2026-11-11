@@ -207,7 +207,6 @@ def test_merge_env_reads_a_dotenv_directory(configuration, tmp_path,
 
         assert configuration._env_files == [str(env_file)]
         assert configuration._env_vars == {"DEBOPS_TEST_FROM_ENV": "value"}
-        assert os.environ["DEBOPS_TEST_FROM_ENV"] == "value"
 
 
 def test_merge_env_reads_a_direct_file(configuration, tmp_path, monkeypatch):
@@ -221,7 +220,6 @@ def test_merge_env_reads_a_direct_file(configuration, tmp_path, monkeypatch):
 
         assert configuration._env_files == [str(env_file)]
         assert configuration._env_vars == {"DEBOPS_TEST_FROM_ENV": "value"}
-        assert os.environ["DEBOPS_TEST_FROM_ENV"] == "value"
 
 
 def test_merge_env_accepts_a_key_without_a_value(configuration, tmp_path):
@@ -230,8 +228,8 @@ def test_merge_env_accepts_a_key_without_a_value(configuration, tmp_path):
     with mock.patch.dict(os.environ):
         configuration.merge_env(str(tmp_path))
 
-    assert configuration._env_vars["BARE_KEY"] is None
-    assert "BARE_KEY" not in os.environ
+    # A key without a value cannot be exported, so nothing is recorded
+    assert "BARE_KEY" not in configuration._env_vars
 
 
 def test_merge_env_ignores_a_directory_without_dotenv(configuration, tmp_path):
@@ -256,7 +254,6 @@ def test_merge_env_applies_a_self_reference_once(configuration, tmp_path,
     with mock.patch.dict(os.environ):
         configuration.merge_env(str(env_file))
 
-        assert os.environ["PATH"] == "/venv/bin:/usr/bin"
         assert configuration._env_vars["PATH"] == "/venv/bin:/usr/bin"
 
 
@@ -275,7 +272,6 @@ def test_merge_env_expands_a_tilde_in_path(configuration, tmp_path,
         configuration.merge_env(str(env_file))
 
         expected = home + "/venv/bin:/usr/bin"
-        assert os.environ["PATH"] == expected
         assert configuration._env_vars["PATH"] == expected
 
 
@@ -312,15 +308,10 @@ def test_merge_env_ignores_a_missing_path(configuration, tmp_path):
     assert configuration._env_vars == {}
 
 
-def test_set_env_writes_the_environment(configuration, monkeypatch):
-    monkeypatch.delenv("DEBOPS_TEST_ENV", raising=False)
+def test_set_env_records_the_environment(configuration):
+    configuration.set_env("DEBOPS_TEST_ENV", 1)
 
-    # See 'test_merge_env_reads_a_dotenv_directory' for the reason.
-    with mock.patch.dict(os.environ):
-        configuration.set_env("DEBOPS_TEST_ENV", 1)
-
-        assert os.environ["DEBOPS_TEST_ENV"] == "1"
-        assert configuration._env_vars["DEBOPS_TEST_ENV"] == "1"
+    assert configuration._env_vars["DEBOPS_TEST_ENV"] == "1"
 
 
 def test_get_env_returns_none_when_unset(configuration, monkeypatch):
@@ -421,7 +412,8 @@ def test_init_loads_the_default_configuration(tmp_path, monkeypatch):
     assert config.raw["binaries"]["ansible"] == "ansible"
     assert config.raw["git"]["init_message"] == \
         "Initialize new DebOps project directory"
-    assert os.environ["DEBOPS_ANSIBLE_COLLECTIONS_PATH"] != "sentinel"
+    assert (config._env_vars["DEBOPS_ANSIBLE_COLLECTIONS_PATH"]
+            != "sentinel")
 
 
 def test_init_reads_the_user_configuration_and_paths(tmp_path, monkeypatch):
@@ -440,9 +432,9 @@ def test_init_reads_the_user_configuration_and_paths(tmp_path, monkeypatch):
     # The user configuration directory and environment file are read from
     # the lowercase 'debops' directory under the XDG configuration home
     assert config.raw["git"]["init_message"] == "custom"
-    assert os.environ["DEBOPS_TEST_MARKER"] == "from-user-env"
+    assert config._env_vars["DEBOPS_TEST_MARKER"] == "from-user-env"
     # The variable is stored with the home directory collapsed to '~'
-    assert os.environ["DEBOPS_ANSIBLE_COLLECTIONS_PATH"] == unexpanduser(
+    assert config._env_vars["DEBOPS_ANSIBLE_COLLECTIONS_PATH"] == unexpanduser(
         os.path.join(config_module.DEBOPS_PACKAGE_DATA, "ansible",
                      "collections"))
 
