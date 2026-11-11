@@ -14,6 +14,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::libvirtd_qemu', 'skip::libvirtd_qemu' ]
+
     - name: Import libvirtd_qemu role
       ansible.builtin.import_role:
         name: 'debops.debops.libvirtd_qemu'

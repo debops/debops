@@ -14,6 +14,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::authorized_keys', 'skip::authorized_keys' ]
+
     - name: Import authorized_keys role
       ansible.builtin.import_role:
         name: 'debops.debops.authorized_keys'

@@ -22,6 +22,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::redis_server', 'skip::redis_server' ]
+
     - name: Import redis_server role
       ansible.builtin.import_role:
         name: 'debops.debops.redis_server'

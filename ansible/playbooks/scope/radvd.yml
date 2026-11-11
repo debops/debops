@@ -14,6 +14,11 @@
 
   tasks:
 
+    - name: Import DebOps global handlers
+      ansible.builtin.import_role:
+        name: 'debops.debops.global_handlers'
+      tags: [ 'role::radvd', 'skip::radvd' ]
+
     - name: Import radvd role
       ansible.builtin.import_role:
         name: 'debops.debops.radvd'
