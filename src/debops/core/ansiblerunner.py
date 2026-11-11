@@ -51,7 +51,7 @@ class AnsibleRunner(ProjectRunner):
             unlocked = self.inventory.unlock()
 
             executor = subprocess.Popen(' '.join(self._ansible_command),
-                                        shell=True)
+                                        shell=True, cwd=self.project.path)
             std_out, std_err = executor.communicate()
             rc = executor.returncode
 

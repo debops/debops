@@ -348,7 +348,8 @@ class ProjectVenv(object):
     def _run(self, argv, **kwargs):
         """Run a command in the foreground and return its exit code."""
         logger.debug('Running command: ' + ' '.join(argv))
-        process = subprocess.Popen(argv, env=self._subprocess_env(), **kwargs)
+        process = subprocess.Popen(argv, env=self._subprocess_env(),
+                                   cwd=self.project.path, **kwargs)
         process.communicate()
         return process.returncode
 

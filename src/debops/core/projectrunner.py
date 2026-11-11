@@ -78,7 +78,8 @@ class ProjectRunner(object):
                 if os.path.isfile(extra_vars_file):
                     self._ansible_command.extend(
                             ['--extra-vars',
-                             '@' + os.path.relpath(extra_vars_file)])
+                             '@' + os.path.relpath(extra_vars_file,
+                                                   self.project.path)])
 
     def _expand_positional_argument(self, project, argument, index):
         """Handle a positional argument which is not an Ansible option.
