@@ -27,16 +27,20 @@ def main():
         quiet.
 
         Usage: logger.notice('Message', extra={'allow': 'syslog'})
-        sends the record to the syslog handler only. Records without
-        the marker go to every handler whose gate admits them. The
-        terminal also holds back the records below its quiet level,
-        unless a record is explicitly allowed on it -- that is how an
-        opt-in notice like the version check stays visible while the
-        routine notices wait in the journal."""
+        sends the record to the syslog handler only; a list of handler
+        names sends it to each of them. Records without the marker go
+        to every handler whose gate admits them. The terminal also
+        holds back the records below its quiet level, unless a record
+        is explicitly allowed on it -- that is how an opt-in notice
+        like the version check stays visible while the routine
+        notices wait in the journal."""
 
         def handler_filter(record: logging.LogRecord):
-            allowed = getattr(record, 'allow', None) == handler
-            if hasattr(record, 'allow') and not allowed:
+            allow = getattr(record, 'allow', None)
+            allowed = (allow == handler
+                       or (isinstance(allow, (list, tuple))
+                           and handler in allow))
+            if allow is not None and not allowed:
                 return False
             if (handler == 'stderr' and quiet_level is not None
                     and record.levelno < quiet_level and not allowed):
