@@ -9,11 +9,11 @@ import os
 
 import pytest
 
-from debops.config import Configuration
+from debops.core.config import Configuration
 
 
 class StubConfig:
-    """The parts of ``debops.config.Configuration`` the runners read."""
+    """The parts of ``debops.core.config.Configuration`` the runners read."""
 
     def __init__(self, raw=None, env_vars=None):
         self.raw = raw if raw is not None else {}
@@ -21,7 +21,7 @@ class StubConfig:
 
 
 class StubAnsibleConfig:
-    """A stand-in for ``debops.ansibleconfig.AnsibleConfig``.
+    """A stand-in for ``debops.core.ansibleconfig.AnsibleConfig``.
 
     ``get_option`` returns the configured value, or raises ``NoOptionError``
     for an unknown option. Passing *error* makes every call raise that
