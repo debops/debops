@@ -526,7 +526,7 @@ class ProjectDir(object):
         used. The summary and the hint about '--force' stay on stdout.
 
         Removals are reported before writes to follow the order in which
-        :func:`debops.inventoryspec.apply_spec` performs them, so that a
+        :func:`debops.core.inventoryspec.apply_spec` performs them, so that a
         document which removes a directory and then re-creates files inside it
         does not read as if it deleted what it had just written.
         """
