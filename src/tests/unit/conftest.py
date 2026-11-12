@@ -21,7 +21,7 @@ class StubConfig:
 
 
 class StubAnsibleConfig:
-    """A stand-in for ``debops.core.ansibleconfig.AnsibleConfig``.
+    """A stand-in for ``debops.core.ansible.ansibleconfig.AnsibleConfig``.
 
     ``get_option`` returns the configured value, or raises ``NoOptionError``
     for an unknown option. Passing *error* makes every call raise that

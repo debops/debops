@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .projectrunner import ProjectRunner
-from .hooks import run_hooks
+from ..hooks import run_hooks
 import logging
 import subprocess
 

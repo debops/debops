@@ -2,8 +2,8 @@
 # Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from .constants import DEBOPS_PACKAGE_DATA
-from .utils import unexpanduser
+from ..constants import DEBOPS_PACKAGE_DATA
+from ..utils import unexpanduser
 import os
 import pkgutil
 import jinja2

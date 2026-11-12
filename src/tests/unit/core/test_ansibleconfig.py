@@ -2,14 +2,14 @@
 # Copyright (C) 2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Tests for ``debops.core.ansibleconfig``."""
+"""Tests for ``debops.core.ansible.ansibleconfig``."""
 
 import configparser
 import os
 
 import pytest
 
-from debops.core.ansibleconfig import AnsibleConfig
+from debops.core.ansible.ansibleconfig import AnsibleConfig
 
 PLUGIN_OPTIONS = ("library", "action_plugins", "callback_plugins",
                   "connection_plugins", "filter_plugins", "lookup_plugins",
