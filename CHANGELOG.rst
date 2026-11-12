@@ -67,6 +67,16 @@ General
   parsed, which makes it usable in CI pipelines; the '--strict'
   option additionally reports unknown options as errors.
 
+- The :command:`debops config get` command now supports the
+  '--show-origin' and '--show-scope' options, which render the
+  selected options as plain text, one tab-separated line per option,
+  naming the configuration layer and the source which last set each
+  option: a configuration file, the packaged defaults, the runtime
+  state of the project or an environment variable. This answers the
+  question of where a configuration value comes from, and why a
+  setting does not take effect when an environment override is
+  responsible.
+
 - Configuration options can now be overridden from the environment
   using ``DEBOPS_CONFIG__SECTION__KEY`` variables, with '__'
   separating the path segments of the option, for example

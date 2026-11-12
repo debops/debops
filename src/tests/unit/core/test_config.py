@@ -1088,3 +1088,140 @@ def test_violations_record_a_skipped_override(configuration, monkeypatch):
     assert violation["option"] == "DEBOPS_CONFIG__SYSLOG__PORT"
     assert violation["dropped"] is True
     assert "invalid literal" in violation["message"]
+
+
+def test_merge_records_the_configuration_layers(configuration):
+    data = {"syslog": {"address": "/dev/log"}}
+
+    configuration.merge(data, scope="project", origin="/project/a.yml")
+
+    assert configuration._layers == [
+        ("project", "/project/a.yml", {"syslog": {"address": "/dev/log"}}),
+    ]
+
+
+def test_recorded_layers_are_isolated_from_the_tree(configuration):
+    data = {"syslog": {"address": "/dev/log"}}
+
+    configuration.merge(data, scope="project", origin="/project/a.yml")
+    configuration.merge({"syslog": {"port": 514}}, scope="project",
+                        origin="/project/b.yml")
+
+    assert configuration._layers[0][2] == {"syslog": {"address":
+                                                      "/dev/log"}}
+
+
+def test_load_records_each_file_as_a_layer(configuration, tmp_path):
+    (tmp_path / "10-first.toml").write_text('[git]\ninit_message = "one"\n')
+    (tmp_path / "20-second.toml").write_text('[syslog]\naddress = "log"\n')
+
+    configuration.load(str(tmp_path), scope="project")
+
+    assert [layer[1] for layer in configuration._layers] == [
+        str(tmp_path / "10-first.toml"),
+        str(tmp_path / "20-second.toml"),
+    ]
+    assert [layer[0] for layer in configuration._layers] == ["project",
+                                                             "project"]
+
+
+def test_config_origins_attributes_the_last_layer(configuration):
+    configuration._config = {"syslog": {"port": 999}}
+    configuration._layers = [
+        ("defaults", "defaults.toml", {"syslog": {"port": 514}}),
+        ("project", "/project/a.yml", {"syslog": {"port": 999}}),
+    ]
+
+    origins = configuration.config_origins("syslog.port")
+
+    assert origins == [("syslog.port", "project", "/project/a.yml", 999)]
+
+
+def test_config_origins_split_within_a_section(configuration, tmp_path):
+    (tmp_path / "10-a.toml").write_text('[syslog]\nport = 514\n')
+    (tmp_path / "20-b.toml").write_text('[syslog]\naddress = "log"\n')
+
+    configuration.merge(str(tmp_path), scope="project")
+
+    origins = dict(
+        (path, (scope, origin))
+        for path, scope, origin, value in
+        configuration.config_origins("syslog"))
+
+    assert origins["syslog.port"] == ("project",
+                                      str(tmp_path / "10-a.toml"))
+    assert origins["syslog.address"] == ("project",
+                                         str(tmp_path / "20-b.toml"))
+
+
+def test_config_origins_fall_back_to_the_defaults(configuration):
+    configuration._config = {"syslog": {"port": 514}}
+    configuration._layers = [
+        ("defaults", "defaults.toml", {"syslog": {"port": 514}}),
+    ]
+
+    origins = configuration.config_origins("syslog.port")
+
+    assert origins == [("syslog.port", "defaults", "defaults.toml", 514)]
+
+
+def test_config_origins_name_the_override(configuration):
+    configuration._config = {"syslog": {"level": "DEBUG"}}
+    configuration._layers = [
+        ("defaults", "defaults.toml", {"syslog": {"level": "NOTICE"}}),
+        ("override", "DEBOPS_CONFIG__SYSLOG__LEVEL",
+         {"syslog": {"level": "DEBUG"}}),
+    ]
+
+    origins = configuration.config_origins("syslog.level")
+
+    assert origins == [("syslog.level", "override",
+                        "DEBOPS_CONFIG__SYSLOG__LEVEL", "DEBUG")]
+
+
+def test_config_origins_list_the_leaves_of_a_subtree(configuration):
+    configuration._config = {"views": {"system": {"debops":
+                                                  {"namespace": "debops"}}}}
+    configuration._layers = [
+        ("project", "/project/a.yml",
+         {"views": {"system": {"debops": {"namespace": "debops"}}}}),
+    ]
+
+    origins = configuration.config_origins("views.system")
+
+    assert origins == [("views.system.debops.namespace", "project",
+                        "/project/a.yml", "debops")]
+
+
+def test_config_origins_for_an_empty_section(configuration):
+    configuration._config = {"custom": {}}
+    configuration._layers = [("defaults", "defaults.toml", {"custom": {}})]
+
+    origins = configuration.config_origins("custom")
+
+    assert origins == [("custom", "defaults", "defaults.toml", {})]
+
+
+def test_config_origins_raise_for_a_missing_option(configuration):
+    with pytest.raises(OptionNotFoundError):
+        configuration.config_origins("nope")
+
+
+def test_config_get_show_origin_renders_the_columns(configuration):
+    configuration._config = {"syslog": {"level": "DEBUG"}}
+    configuration._layers = [
+        ("override", "DEBOPS_CONFIG__SYSLOG__LEVEL",
+         {"syslog": {"level": "DEBUG"}}),
+    ]
+
+    out = configuration.config_get("syslog.level", show_origin=True,
+                                   show_scope=True)
+
+    assert out == ("override\tDEBOPS_CONFIG__SYSLOG__LEVEL\t"
+                   "syslog.level\tDEBUG")
+
+
+def test_config_get_show_origin_refuses_other_formats(configuration):
+    with pytest.raises(ValueError):
+        configuration.config_get("syslog", format="json",
+                                 show_origin=True)

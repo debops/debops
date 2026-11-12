@@ -573,15 +573,18 @@ def test_config_get_prints_the_requested_keys(monkeypatch):
                         mock.Mock(return_value=project))
     interpreter = make_interpreter()
     args = make_args(project_dir=".", key=["project.name", "project.type"],
-                     format="json", keys=True, root=False)
+                     format="json", keys=True, root=False,
+                     show_origin=False, show_scope=False)
 
     interpreter.do_config_get(args)
 
     assert interpreter.config.config_get.call_count == 2
     interpreter.config.config_get.assert_any_call(
-        "project.name", format="json", keys=True, root=False)
+        "project.name", format="json", keys=True, root=False,
+        show_origin=False, show_scope=False)
     interpreter.config.config_get.assert_any_call(
-        "project.type", format="json", keys=True, root=False)
+        "project.type", format="json", keys=True, root=False,
+        show_origin=False, show_scope=False)
 
 
 def test_config_get_prints_the_whole_configuration(monkeypatch):
@@ -591,10 +594,28 @@ def test_config_get_prints_the_whole_configuration(monkeypatch):
 
     interpreter.do_config_get(make_args(project_dir=".", key=None,
                                         format="unix", keys=False,
-                                        root=False))
+                                        root=False, show_origin=False,
+                                        show_scope=False))
 
     interpreter.config.config_get.assert_called_once_with(
-        ".", format="unix", keys=False, root=False)
+        ".", format="unix", keys=False, root=False, show_origin=False,
+        show_scope=False)
+
+
+def test_config_get_show_origin_flags(monkeypatch):
+    project = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    interpreter = make_interpreter()
+    args = make_args(project_dir=".", key=["syslog.level"],
+                     format="unix", keys=False, root=False,
+                     show_origin=True, show_scope=True)
+
+    interpreter.do_config_get(args)
+
+    interpreter.config.config_get.assert_called_once_with(
+        "syslog.level", format="unix", keys=False, root=False,
+        show_origin=True, show_scope=True)
 
 
 def test_config_set_writes_to_the_project_configuration(
