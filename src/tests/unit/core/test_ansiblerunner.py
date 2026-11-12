@@ -10,13 +10,14 @@ from unittest import mock
 import pytest
 
 import debops.core.ansible.projectrunner as projectrunner_module
+import debops.core.runner as runner_base_module
 import debops.core.ansible.ansiblerunner as runner_module
 from debops.core.ansible.ansiblerunner import AnsibleRunner
 
 
 @pytest.fixture(autouse=True)
-def stub_ansible_inventory(monkeypatch):
-    monkeypatch.setattr(projectrunner_module, "AnsibleSecretStore",
+def stub_project_secrets(monkeypatch):
+    monkeypatch.setattr(runner_base_module, "SecretManager",
                         mock.Mock())
 
 
@@ -261,4 +262,5 @@ def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch,
             runner.execute()
 
     runner.secrets.lock.assert_called_once_with()
+    runner.secrets = mock.Mock()
     assert "interrupted by user" in caplog.text
