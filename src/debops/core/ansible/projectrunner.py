@@ -9,7 +9,7 @@ the Ansible environment shared by the runners which execute Ansible and
 user commands inside a project directory.
 """
 
-from .inventory import AnsibleInventory
+from .secrets import AnsibleSecretStore
 import configparser
 import logging
 import subprocess
@@ -26,7 +26,7 @@ class ProjectRunner(object):
         self.bell = bell
 
         self.project = project
-        self.inventory = AnsibleInventory(project, name=project.view)
+        self.secrets = AnsibleSecretStore(project, view=project.view)
 
         try:
             self._inventory_paths = (
