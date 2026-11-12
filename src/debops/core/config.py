@@ -327,7 +327,9 @@ class Configuration(object):
             for key in items:
                 try:
                     data = data[key]
-                except KeyError:
+                except (KeyError, TypeError):
+                    # A missing key, or a path which descends into a
+                    # scalar option: both mean the option is not there
                     data = {}
             return data
         else:
@@ -980,7 +982,11 @@ class Configuration(object):
                 if show_scope:
                     columns.append(scope or 'unknown')
                 if show_origin:
-                    columns.append(origin or 'unknown')
+                    # The origin is rendered for a person: paths under
+                    # the home directory collapse to '~', the same way
+                    # 'config list' shows them. The ledger keeps the
+                    # absolute paths.
+                    columns.append(unexpanduser(origin or 'unknown'))
                 columns.append('='.join([option, rendered]))
                 lines.append('\t'.join(columns))
             return '\n'.join(lines) if lines else None
@@ -994,7 +1000,11 @@ class Configuration(object):
             for element in key_path:
                 try:
                     _config = _config[element]
-                except KeyError:
+                except (KeyError, TypeError):
+                    # A missing key, or a path which descends into a
+                    # scalar option -- for example 'project.view' is a
+                    # string, so 'project.view.ansible' cannot name an
+                    # option: both mean the option is not defined
                     key_found = False
 
         if key_found and keys:
