@@ -23,6 +23,68 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v3.4.0...master
 
+Added
+~~~~~
+
+General
+'''''''
+
+- Journal records emitted by the :command:`debops` command now carry
+  a ``[project:view]`` prefix which names the project directory and
+  the infrastructure view of the operation, so entries from
+  different projects can be told apart in the system journal.
+
+- Configuration files are now validated when they are loaded.
+  Options not defined by DebOps are reported as warnings and kept.
+  Options with a value of a wrong type are reported and ignored, so
+  a mistake cannot silently change the effective configuration.
+
+- The new 'custom' section of the configuration tree is reserved for
+  options defined outside of DebOps: scripts and integrations can
+  store their parameters there, read them with :command:`debops
+  config get` and override them from the environment. DebOps does
+  not use it and will not define options in it.
+
+- The new :command:`debops config set` command sets or removes
+  configuration options in the configuration files, in a project
+  directory or in the user configuration with ``--user``. The
+  values are converted to the type of the option. The command
+  manages files named ``*_config_set.json`` and uses a file with a
+  different numeric prefix when one exists, so the prefix decides
+  where the managed options rank among the files of the directory.
+
+- The new :command:`debops config check` command checks the
+  configuration for errors and exits with a non-zero status when an
+  option was dropped or a file could not be parsed, which makes it
+  usable in CI pipelines. The ``--strict`` option also fails the
+  check on unknown options.
+
+- The ``debops.core.config.Configuration`` class can now build a
+  standalone configuration from caller-provided sources: defaults,
+  configuration files and directories, a JSON Schema, an
+  environment override prefix and environment files. The new
+  ``config_set()`` method sets an option in the tree with the type
+  conversion the command line uses. Without arguments, the class
+  builds the DebOps configuration as before.
+
+- The :command:`debops config get` command gained new ways to read
+  the configuration: options can be printed from the root of the
+  configuration tree, with the layer and the source which last set
+  each of them. Run :command:`debops config --help` for the new
+  options.
+
+- Configuration options can now be overridden from the environment
+  with ``DEBOPS_CONFIG__SECTION__KEY`` variables, for example
+  ``DEBOPS_CONFIG__SYSLOG__LEVEL=DEBUG``. The values are converted
+  to the type of the option, the overrides rank above all
+  configuration files, and :command:`debops config list` shows
+  which overrides are in effect.
+
+- The :command:`debops` command now loads a '.env' file from the
+  root of the infrastructure view, 'ansible/views/<view>/.env', on
+  top of the project directory environment. The file is ignored by
+  git and holds variables specific to one view.
+
 Changed
 ~~~~~~~
 
@@ -45,6 +107,31 @@ General
 - A failing pre-refresh hook aborts the :command:`debops project
   refresh` command with an error exit code instead of exiting
   successfully, matching the behavior of the other hook types.
+
+- The DebOps Python modules moved into subpackages: the library into
+  ``debops.core``, the command line into ``debops.cli``. The library
+  leaves the process environment and the working directory alone and
+  returns data instead of printing it. Scripts importing the internal
+  ``debops.*`` modules directly need to import from ``debops.core.*``
+  or ``debops.cli.*`` now.
+
+- Status messages of the :command:`debops` command are written to the
+  standard error stream and the system journal, and remain visible on
+  the terminal; the standard output stays reserved for
+  machine-readable output.
+
+- Relative playbook names on the command line resolve against the
+  project directory instead of the working directory the command was
+  invoked from.
+
+- An undefined configuration option requested with :command:`debops
+  config get` is reported on the standard error stream; the exit code
+  and the JSON output are unchanged.
+
+- The Ansible Collection's lookup plugins read the DebOps
+  configuration from ``debops.core`` and fall back to the previous
+  module layout when an older ``debops`` Python package provides
+  them.
 
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
@@ -93,6 +180,24 @@ General
 - The version update notice printed by the :command:`debops` command is now
   visible on the standard error stream when the check runs at the default
   log level.
+
+- :command:`debops project init` checks the GPG recipients of an
+  encrypted project before creating the directory and refuses keys
+  which cannot encrypt; a git-crypt failure during initialization
+  aborts the command instead of finishing silently.
+
+- A configuration file whose content does not match its extension,
+  for example a TOML document saved as '.json', crashed the
+  :command:`debops` command with a traceback. The file is now
+  reported as unparsable and skipped.
+
+- A configuration path which descends into an option which is not a
+  section, for example 'project.view.ansible', crashed the
+  :command:`debops config get` command with a traceback. Such paths
+  are now reported as undefined options.
+
+- Every configuration file was loaded and validated twice per
+  :command:`debops` invocation, reporting each problem twice.
 
 
 Removed

@@ -9,11 +9,22 @@ import os
 
 import pytest
 
-from debops.config import Configuration
+from debops import set_project_context
+from debops.core.config import Configuration
+
+
+@pytest.fixture(autouse=True)
+def _clear_project_context():
+    """Keep the project context from leaking between tests: project
+    constructions set it, and only the tests which assert on it should
+    see it."""
+    set_project_context(None, None)
+    yield
+    set_project_context(None, None)
 
 
 class StubConfig:
-    """The parts of ``debops.config.Configuration`` the runners read."""
+    """The parts of ``debops.core.config.Configuration`` the runners read."""
 
     def __init__(self, raw=None, env_vars=None):
         self.raw = raw if raw is not None else {}
@@ -21,7 +32,7 @@ class StubConfig:
 
 
 class StubAnsibleConfig:
-    """A stand-in for ``debops.ansibleconfig.AnsibleConfig``.
+    """A stand-in for ``debops.core.ansible.ansibleconfig.AnsibleConfig``.
 
     ``get_option`` returns the configured value, or raises ``NoOptionError``
     for an unknown option. Passing *error* makes every call raise that
@@ -52,6 +63,13 @@ class StubProject:
         self.project_type = project_type
         self.config = config if config is not None else StubConfig()
         self.ansible_cfg = ansible_cfg
+
+    def environment(self):
+        """The environment a project command runs in, composed the way
+        the real ProjectDir composes it."""
+        env = os.environ.copy()
+        env.update(self.config._env_vars)
+        return env
 
 
 DEFAULT_BINARIES = {
@@ -98,6 +116,38 @@ def stub_project(tmp_path):
 
 
 @pytest.fixture
+def gpg_stub(tmp_path):
+    """A stub gpg binary whose encryption probes fail or succeed on
+    demand.
+
+    Returns a factory: ``gpg_stub(exit_code=0, message='',
+    fail_from=1) -> path``. Each probe invocation is counted, so a stub
+    can accept the first recipients and refuse from the Nth one on.
+    """
+    bin_dir = tmp_path / "bin"
+    counter = tmp_path / "probe-count"
+    bin_dir.mkdir(exist_ok=True)
+
+    def _make(exit_code=0, message="", fail_from=1):
+        stub = bin_dir / "gpg"
+        stub.write_text(
+            "#!/bin/sh\n"
+            "count=$(cat {} 2>/dev/null || echo 0)\n"
+            "count=$((count + 1))\n"
+            "echo $count > {}\n"
+            "printf '%s' '{}' >&2\n"
+            "if [ $count -ge {} ]; then\n"
+            "  exit {}\n"
+            "fi\n"
+            "exit 0\n".format(counter, counter, message, fail_from,
+                              exit_code))
+        stub.chmod(0o755)
+        return str(stub)
+
+    return _make
+
+
+@pytest.fixture
 def configuration():
     """A Configuration with none of its filesystem or environment access.
 
@@ -110,5 +160,11 @@ def configuration():
     config._config = {}
     config._config_files = []
     config._env_files = []
+    config._env_overrides = []
+    config._violations = []
+    config._layers = []
+    config._schema_source = "debops"
+    config._schema_instance = None
+    config._env_prefix = "DEBOPS_CONFIG__"
     config._env_vars = {}
     return config

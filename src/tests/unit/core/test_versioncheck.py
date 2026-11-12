@@ -1,0 +1,498 @@
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+"""Tests for the opt-in version update check (src/debops/versioncheck.py).
+
+Written with 'unittest' so that the suite runs under pytest without extra
+dependencies. The tests run offline: git subprocess calls are performed
+against fixture repositories in temporary directories and the network
+access is mocked.
+"""
+
+import io
+import json
+import logging
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
+import unittest.mock
+
+from packaging.version import Version
+
+from debops.core.versioncheck import VersionCheck
+
+GIT_ENV = dict(os.environ,
+               GIT_AUTHOR_NAME='DebOps Tests',
+               GIT_AUTHOR_EMAIL='debops-tests@example.org',
+               GIT_COMMITTER_NAME='DebOps Tests',
+               GIT_COMMITTER_EMAIL='debops-tests@example.org',
+               GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL='/dev/null')
+
+
+class FakeConfig(object):
+    """Minimal configuration stand-in with '[version_check]' options."""
+
+    def __init__(self, settings):
+        self.raw = {'version_check': settings}
+
+
+def make_check(settings=None):
+    """A VersionCheck instance with its cache in a temporary directory."""
+    return VersionCheck(FakeConfig(settings or {}))
+
+
+def next_minor_version(version):
+    """The next minor release after the given version string."""
+    release = Version(version).release
+    return '{}.{}.0'.format(release[0], release[1] + 1)
+
+
+def git_fixture(path, branch, commits=1, tags=()):
+    """Create a repository with a branch, commits and annotated tags."""
+    subprocess.run(['git', 'init', '-q', '-b', branch, path],
+                   check=True, capture_output=True, env=GIT_ENV)
+    for index in range(commits):
+        subprocess.run(['git', '-C', path, 'commit', '-q', '--allow-empty',
+                        '-m', 'commit {}'.format(index)],
+                       check=True, capture_output=True, env=GIT_ENV)
+    for tag in tags:
+        subprocess.run(['git', '-C', path, 'tag', '-a', '-m', tag,
+                        tag.lstrip('v')], check=True, capture_output=True,
+                       env=GIT_ENV)
+
+
+class VersionCheckTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp(prefix='debops-versioncheck-')
+        self.addCleanup(shutil.rmtree, self.tmpdir, ignore_errors=True)
+        cache_patcher = unittest.mock.patch(
+            'debops.core.versioncheck.xdg_cache_home',
+            os.path.join(self.tmpdir, 'cache'))
+        cache_patcher.start()
+        self.addCleanup(cache_patcher.stop)
+
+    def cache_file(self):
+        return os.path.join(self.tmpdir, 'cache', 'debops',
+                            'version_check.json')
+
+
+class DetectionTestCase(VersionCheckTestCase):
+    """Installation method detection."""
+
+    def detect(self, _pkg_dir):
+        check = make_check({'enabled': True})
+        check._pkg_dir = _pkg_dir
+        return check._detect_install_method()
+
+    def repo_with_pkg(self, name, branch):
+        repo_dir = os.path.join(self.tmpdir, name)
+        git_fixture(repo_dir, branch)
+        pkg_dir = os.path.join(repo_dir, 'src', 'debops')
+        os.makedirs(pkg_dir)
+        return pkg_dir
+
+    def test_disabled_by_default_makes_no_network_calls(self):
+        check = make_check()  # no 'enabled' setting present
+        check._pkg_dir = os.path.join(self.tmpdir, 'nowhere')
+        with unittest.mock.patch.object(check, '_do_check') as do_check:
+            check.check()
+        do_check.assert_not_called()
+
+    def test_unknown_without_git_repo(self):
+        plain_dir = os.path.join(self.tmpdir, 'plain')
+        os.makedirs(plain_dir)
+        self.assertEqual(self.detect(plain_dir), 'unknown')
+
+    def test_git_master_branch(self):
+        self.assertEqual(
+            self.detect(self.repo_with_pkg('repo-master', 'master')),
+            'git_master')
+
+    def test_git_stable_branch(self):
+        self.assertEqual(
+            self.detect(self.repo_with_pkg('repo-stable', 'stable-3.3')),
+            'git_stable')
+
+    def test_feature_branch_is_unknown(self):
+        self.assertEqual(
+            self.detect(self.repo_with_pkg('repo-feature',
+                                           'feature/something')),
+            'unknown')
+
+    def test_pipx_location_detected(self):
+        pipx_home = os.path.join(self.tmpdir, 'pipx')
+        pkg_dir = os.path.join(pipx_home, 'venvs', 'ansible-core', 'lib',
+                               'python3.11', 'site-packages', 'debops')
+        os.makedirs(pkg_dir)
+        argv0 = os.path.join(pipx_home, 'bin', 'debops')
+        with unittest.mock.patch('sys.argv', [argv0]), \
+                unittest.mock.patch.dict(os.environ, {'PIPX_HOME': pipx_home}):
+            self.assertEqual(self.detect(pkg_dir), 'pipx')
+
+
+class VersionComparisonTestCase(VersionCheckTestCase):
+    """Version parsing and comparison behaviour."""
+
+    def test_parse_version(self):
+        check = make_check()
+        self.assertEqual(str(check._parse_version('3.3.0')), '3.3.0')
+        self.assertEqual(str(check._parse_version('3.3.0.dev10+gfeedface')),
+                         '3.3.0.dev10+gfeedface')
+        self.assertIsNone(check._parse_version('nonsense~'))
+
+    def test_remote_ref_is_not_an_update_when_equal(self):
+        repo_dir = os.path.join(self.tmpdir, 'repo-equal')
+        git_fixture(repo_dir, 'master')
+        check = make_check()
+        check._pkg_dir = repo_dir
+        self.assertEqual(check._compare_ref('HEAD'),
+                         {'update_available': False, 'source': None})
+
+    def test_remote_ref_ahead_of_head_is_an_update(self):
+        # Git rev 'HEAD..ref' counts commits reachable from the ref that
+        # are not reachable from HEAD, so the compared ref is the state of
+        # the remote which is positioned after the local history
+        repo_dir = os.path.join(self.tmpdir, 'repo-behind')
+        git_fixture(repo_dir, 'master')
+        subprocess.run(['git', '-C', repo_dir, 'commit', '-q',
+                        '--allow-empty', '-m', 'remote-only change'],
+                       check=True, capture_output=True, env=GIT_ENV)
+        subprocess.run(['git', '-C', repo_dir, 'branch', 'remotehead',
+                        'HEAD'], check=True, capture_output=True, env=GIT_ENV)
+        subprocess.run(['git', '-C', repo_dir, 'reset', '-q', '--hard',
+                        'HEAD~1'], check=True, capture_output=True,
+                       env=GIT_ENV)
+        check = make_check()
+        check._pkg_dir = repo_dir
+        result = check._compare_ref('remotehead')
+        self.assertTrue(result['update_available'])
+        self.assertIn('1 commits ahead', result['latest_version'])
+
+
+class StableBranchTestCase(VersionCheckTestCase):
+    """Tag based comparison for 'stable-X.Y' checkouts."""
+
+    def setUp(self):
+        super().setUp()
+        self.repo_dir = os.path.join(self.tmpdir, 'repo-stable-tags')
+        self.check = make_check()
+        self.check._pkg_dir = os.path.join(self.repo_dir, 'src', 'debops')
+        self.check._pkg_dir and os.makedirs(self.check._pkg_dir)
+
+    def test_latest_tag_newer_than_current(self):
+        git_fixture(self.repo_dir, 'stable-3.3', commits=2,
+                    tags=['v3.3.0', 'v3.3.1'])
+        self.check._version = '3.3.0'
+        with unittest.mock.patch.object(self.check, '_git_fetch',
+                                        return_value=True):
+            result = self.check._check_git_stable()
+        self.assertTrue(result['update_available'])
+        self.assertEqual(result['latest_version'], '3.3.1')
+
+    def test_no_newer_tag_is_not_an_update(self):
+        git_fixture(self.repo_dir, 'stable-3.3', commits=1, tags=['v3.3.1'])
+        self.check._version = '3.3.1'
+        with unittest.mock.patch.object(self.check, '_git_fetch',
+                                        return_value=True):
+            result = self.check._check_git_stable()
+        self.assertFalse(result['update_available'])
+
+
+class PyPICheckTestCase(VersionCheckTestCase):
+    """The PyPI JSON API check with a mocked response."""
+
+    def setUp(self):
+        super().setUp()
+        self.check = make_check({'enabled': True})
+        self.check._version = '3.3.0'
+        self.check._pkg_dir = os.path.join(self.tmpdir, 'plain')
+
+    def pypi_response(self, version):
+        """Patch the PyPI JSON response and run the check."""
+        payload = json.dumps({'info': {'version': version}})
+        response = unittest.mock.mock_open(read_data=payload.encode('utf-8'))
+        with unittest.mock.patch('urllib.request.urlopen', response):
+            return self.check._check_pypi()
+
+    def test_newer_version_available(self):
+        result = self.pypi_response('3.4.0')
+        self.assertTrue(result['update_available'])
+        self.assertEqual(result['latest_version'], '3.4.0')
+
+    def test_same_version_is_no_update(self):
+        self.assertFalse(self.pypi_response('3.3.0')['update_available'])
+
+
+class NotifyHintTestCase(VersionCheckTestCase):
+    """Upgrade hint selected per installation source."""
+
+    def hints(self, source, version='1.0.0'):
+        check = make_check()
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = self.tmpdir
+        check._notify(version, source)
+        return check._logger.notice.call_args[0][0]
+
+    def test_pipx_hint(self):
+        self.assertIn('(pipx upgrade debops)', self.hints('pipx'))
+
+    def test_pypi_hint(self):
+        # The hint depends on whether Python runs in a virtual environment,
+        # which must not be inherited from the ambient pytest environment
+        # (a venv running the tests would select the wrong branch).
+        with unittest.mock.patch.object(sys, 'prefix', '/home/user/.venv'), \
+                unittest.mock.patch.object(sys, 'base_prefix', '/usr'):
+            venv_hint = self.hints('pypi')
+        with unittest.mock.patch.object(sys, 'prefix', '/usr'), \
+                unittest.mock.patch.object(sys, 'base_prefix', '/usr'):
+            system_hint = self.hints('pypi')
+        self.assertIn('(python -m pip install --upgrade debops)', venv_hint)
+        self.assertIn('(pip install --upgrade debops)', system_hint)
+
+    def test_git_master_hint(self):
+        self.assertIn('(git pull)', self.hints('git_master'))
+
+    def test_git_stable_hint(self):
+        self.assertIn('(git pull --tags)', self.hints('git_stable'))
+
+
+class BranchUpstreamTestCase(VersionCheckTestCase):
+    """Branches with a remote-tracking ref are compared against it."""
+
+    def fix_branch(self, remote_commits=0, local_commits=0):
+        """Branch 'fix-thing' at 'local_commits' commits and its
+        remote-tracking ref at 'remote_commits' commits, both on top of
+        the same base commit."""
+        repo_dir = os.path.join(self.tmpdir, 'repo-branch')
+        git_fixture(repo_dir, 'fix-thing', commits=1)
+        subprocess.run(['git', '-C', repo_dir, 'checkout', '-q', '-b',
+                        'remote-side'], check=True, capture_output=True,
+                       env=GIT_ENV)
+        for index in range(remote_commits):
+            subprocess.run(['git', '-C', repo_dir, 'commit', '-q',
+                            '--allow-empty', '-m', 'remote {}'.format(index)],
+                           check=True, capture_output=True, env=GIT_ENV)
+        subprocess.run(['git', '-C', repo_dir, 'update-ref',
+                        'refs/remotes/origin/fix-thing', 'HEAD'],
+                       check=True, capture_output=True, env=GIT_ENV)
+        subprocess.run(['git', '-C', repo_dir, 'checkout', '-q', 'fix-thing'],
+                       check=True, capture_output=True, env=GIT_ENV)
+        for index in range(local_commits):
+            subprocess.run(['git', '-C', repo_dir, 'commit', '-q',
+                            '--allow-empty', '-m', 'local {}'.format(index)],
+                           check=True, capture_output=True, env=GIT_ENV)
+        check = make_check({'enabled': True})
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = os.path.join(repo_dir, 'src', 'debops')
+        os.makedirs(check._pkg_dir)
+        return check
+
+    def test_branch_with_upstream_is_detected(self):
+        check = self.fix_branch(remote_commits=1, local_commits=1)
+        self.assertEqual(check._detect_install_method(), 'git_branch')
+
+    def test_branch_without_upstream_is_unknown_and_logged(self):
+        repo_dir = os.path.join(self.tmpdir, 'repo-no-upstream')
+        git_fixture(repo_dir, 'fix-thing', commits=1)
+        check = make_check({'enabled': True})
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = os.path.join(repo_dir, 'src', 'debops')
+        os.makedirs(check._pkg_dir)
+        self.assertEqual(check._detect_install_method(), 'unknown')
+        self.assertIn('fix-thing', check._logger.debug.call_args[0][1])
+
+    def test_detached_checkout_is_unknown_and_logged(self):
+        repo_dir = os.path.join(self.tmpdir, 'repo-detached')
+        git_fixture(repo_dir, 'master', commits=1)
+        subprocess.run(['git', '-C', repo_dir, 'checkout', '-q',
+                        '--detach', 'HEAD'], check=True,
+                       capture_output=True, env=GIT_ENV)
+        check = make_check({'enabled': True})
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = os.path.join(repo_dir, 'src', 'debops')
+        os.makedirs(check._pkg_dir)
+        self.assertEqual(check._detect_install_method(), 'unknown')
+        self.assertIn('detached', check._logger.debug.call_args[0][0])
+
+    def test_remote_branch_ahead_is_an_update(self):
+        check = self.fix_branch(remote_commits=2, local_commits=0)
+        with unittest.mock.patch.object(check, '_git_fetch',
+                                        return_value=True):
+            result = check._check_git_branch()
+        self.assertTrue(result['update_available'])
+        self.assertIn('2 commits ahead', result['latest_version'])
+
+    def test_local_commits_ahead_are_not_an_update(self):
+        check = self.fix_branch(remote_commits=0, local_commits=2)
+        with unittest.mock.patch.object(check, '_git_fetch',
+                                        return_value=True):
+            result = check._check_git_branch()
+        self.assertFalse(result['update_available'])
+
+    def test_fetch_failure_is_logged(self):
+        check = self.fix_branch(remote_commits=1, local_commits=1)
+        # Point the cache aside so nothing stale interferes; the fetch
+        # fails because the fixture repository has no 'origin' remote
+        check._settings['git_remote'] = 'nonexistent-remote'
+        self.assertFalse(check._git_fetch())
+        self.assertIn('failed', check._logger.debug.call_args[0][0])
+
+
+class CacheTestCase(VersionCheckTestCase):
+    """The cached result is replayed without contacting the source."""
+
+    def cache_result(self, source, update_available):
+        return {'update_available': update_available,
+                'latest_version': '1.2.3', 'source': source}
+
+    def save_fresh_cache(self, result):
+        check = make_check({'enabled': True})
+        check._save_cache(result)
+        return check
+
+    def master_repo_with_pkg(self):
+        # A checkable 'git_master' fixture with a stub network response
+        repo_dir = os.path.join(self.tmpdir, 'repo-cache')
+        git_fixture(repo_dir, 'master')
+        pkg_dir = os.path.join(repo_dir, 'src', 'debops')
+        os.makedirs(pkg_dir)
+        return pkg_dir
+
+    def test_replayed_cached_notice_avoids_network(self):
+        check = self.save_fresh_cache(
+            self.cache_result('git_master', update_available=True))
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = self.master_repo_with_pkg()
+        with unittest.mock.patch.object(check, '_git_fetch',
+                                        return_value=True) as fetch:
+            check.check()
+        # The cached result is replayed without contacting the source
+        fetch.assert_not_called()
+        self.assertIn('1.2.3', check._logger.notice.call_args[0][0])
+
+    def test_mismatched_source_is_rechecked_from_the_live_source(self):
+        # Cache remembers 'git_stable', but the live tree is on 'master':
+        # the live 'master' check runs and finds no remote reference
+        check = self.save_fresh_cache(
+            self.cache_result('git_stable', update_available=False))
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = self.master_repo_with_pkg()
+        with unittest.mock.patch.object(check, '_git_fetch',
+                                        return_value=True):
+            check.check()
+        check._logger.notice.assert_not_called()
+
+    def test_stale_cache_is_rechecked(self):
+        result = self.cache_result('git_master', update_available=False)
+        check = self.save_fresh_cache(result)
+        os.utime(self.cache_file(), times=(0, 0))  # mtime in 1970: stale
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = self.master_repo_with_pkg()
+        with unittest.mock.patch.object(check, '_check_git_master',
+                                        return_value=None) as master_check:
+            check.check()
+        master_check.assert_called_once()
+        check._logger.notice.assert_not_called()
+
+    def test_cache_file_ends_with_a_newline(self):
+        self.save_fresh_cache(self.cache_result('git_master', False))
+        with open(self.cache_file()) as fp:
+            self.assertTrue(fp.read().endswith('\n'))
+
+
+class DoCheckTestCase(VersionCheckTestCase):
+    """The live check path: source routing and notification."""
+
+    def routed(self, method, result):
+        check = make_check({'enabled': True})
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = self.tmpdir
+        with unittest.mock.patch.object(check, '_cache_is_fresh',
+                                        return_value=False), \
+                unittest.mock.patch.object(check, '_detect_install_method',
+                                           return_value=method), \
+                unittest.mock.patch.object(
+                    check, '_check_pypi',
+                    return_value=result) as pypi_check:
+            check._do_check()
+        return check, pypi_check
+
+    def test_pypi_method_runs_the_pypi_check(self):
+        result = {'update_available': True, 'latest_version': '9.9.9',
+                  'source': 'pypi'}
+        check, pypi_check = self.routed('pypi', result)
+
+        pypi_check.assert_called_once()
+        notice = check._logger.notice.call_args[0][0]
+        self.assertIn('9.9.9', notice)
+        self.assertIn('pip install', notice)
+
+    def test_pipx_method_runs_the_pypi_check(self):
+        result = {'update_available': True, 'latest_version': '9.9.9',
+                  'source': 'pipx'}
+        check, pypi_check = self.routed('pipx', result)
+
+        pypi_check.assert_called_once()
+        self.assertIn('9.9.9', check._logger.notice.call_args[0][0])
+
+    def test_fresh_cache_with_matching_source_is_replayed(self):
+        result = {'update_available': True, 'latest_version': '1.2.3',
+                  'source': 'pypi'}
+        check = make_check({'enabled': True})
+        check._save_cache(result)
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = self.tmpdir
+        with unittest.mock.patch.object(check, '_detect_install_method',
+                                        return_value='pypi'), \
+                unittest.mock.patch.object(check, '_check_pypi',
+                                           return_value=None) as pypi_check:
+            check.check()
+
+        # The cached result is replayed without contacting the source
+        pypi_check.assert_not_called()
+        self.assertIn('1.2.3', check._logger.notice.call_args[0][0])
+
+
+class NoticeVisibilityTestCase(VersionCheckTestCase):
+    """The notice survives the real logging path, not just the call.
+
+    The 'debops' logger runs at the default WARNING level, which sinks
+    every NOTICE-level record before a handler is reached. The update
+    check publishes through its own logger, so an opt-in check prints
+    its notice on stderr without raising the level of other 'debops'
+    messages.
+    """
+
+    def install_stderr(self, level):
+        """Attach a capturing stderr handler to the 'debops' logger."""
+        parent = logging.getLogger('debops')
+        stream = io.StringIO()
+        handlers = unittest.mock.patch.object(
+            parent, 'handlers', [logging.StreamHandler(stream)])
+        record_level = unittest.mock.patch.object(parent, 'level', level)
+        for patcher in (handlers, record_level):
+            patcher.start()
+            self.addCleanup(patcher.stop)
+        return stream
+
+    def test_notice_prints_on_stderr_at_the_default_level(self):
+        stream = self.install_stderr(logging.WARNING)
+        check = make_check({'enabled': True})
+        latest = next_minor_version(check._version)
+        check._notify(latest, 'pypi')
+        self.assertIn('DebOps {} is available, you have {}'.format(
+            latest, check._version), stream.getvalue())
+
+    def test_other_notices_remain_hidden_at_the_default_level(self):
+        stream = self.install_stderr(logging.WARNING)
+        logging.getLogger('debops').notice('Regular notice')
+        self.assertEqual(stream.getvalue(), '')
+
+
+if __name__ == '__main__':
+    unittest.main()

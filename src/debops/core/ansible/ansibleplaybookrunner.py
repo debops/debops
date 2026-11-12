@@ -1,0 +1,347 @@
+# Copyright (C) 2020-2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020-2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+from .projectrunner import AnsibleProjectRunner
+from ..utils import unexpanduser
+from ..hooks import run_hooks
+import subprocess
+import configparser
+import datetime
+import logging
+import os
+import sys
+
+logger = logging.getLogger(__name__)
+
+# Operator-visible notices publish through a logger with its own level,
+# the same pattern as the version check: the notice reaches the
+# terminal even when the journal level keeps the 'debops' logger quiet.
+notice_logger = logging.getLogger('debops.notice')
+notice_logger.setLevel(logging.NOTICE)
+
+
+class AnsiblePlaybookRunner(AnsibleProjectRunner):
+    """Run the :command:`ansible-playbook` command in the project
+    environment."""
+
+    def __init__(self, project, ansible_args, bell=False, debug=False):
+        super().__init__(project, bell=bell)
+
+        self._playbook_dirs = self._expand_playbook_paths(project)
+        self._known_collections = self._find_collections(project)
+
+        self._ansible_env = {'ANSIBLE_CONFIG': project.ansible_cfg.path}
+        self._ansible_command = [
+                project.config.raw['binaries']['ansible-playbook']
+        ]
+        self._found_playbooks = []
+
+        self._add_global_vars()
+
+        # List of ansible-playbook options which don't expect arguments
+        ansible_playbook_flags = ['--ask-vault-password', '--ask-vault-pass',
+                                  '--flush-cache', '--force-handlers',
+                                  '--list-hosts', '--list-tags',
+                                  '--list-tasks', '--step', '--syntax-check',
+                                  '--version', '-C', '--check',
+                                  '-D', '--diff', '-K', '--ask-become-pass',
+                                  '-h', '--help', '-k', '--ask-pass',
+                                  '-v', '-vv', '-vvv', '-vvvv', '-vvvvv',
+                                  '-vvvvvv', '--verbose',
+                                  '-b', '--become']
+
+        self._parse_ansible_args(ansible_args, project,
+                                 ansible_playbook_flags)
+
+        # Implement configurable read-only Fridays on a project level
+        if project.config.raw['project'].get('read_only_friday', False):
+            if datetime.date.today().isoweekday() == 5:
+                if ('--check' not in self._ansible_command and
+                        '-C' not in self._ansible_command):
+                    notice_logger.notice(
+                        "It's Read-Only Friday, switching to check mode",
+                        extra={'allow': ['stderr', 'syslog']})
+                    self._ansible_command.extend(['--diff', '--check'])
+
+        if debug:
+            # -vv pairs the invocation with the result per task,
+            # without the connection chatter of -vvv; the user's own
+            # verbosity flags ride alongside and Ansible counts the
+            # v's. The module scripts stay on the host for manual
+            # re-runs ('expel' them with the next normal run)
+            self._ansible_command.append('-vv')
+            self._ansible_env['ANSIBLE_DEBUG'] = 'true'
+            self._ansible_env['ANSIBLE_KEEP_REMOTE_FILES'] = '1'
+
+    def _expand_positional_argument(self, project, argument, index):
+        # Most likely a name of a playbook which we can expand
+
+        # Check the arguments for possible playbook sets and expand them
+        # if they're found
+        parsed_set = self._expand_playbook_set(project, argument)
+
+        for element in parsed_set:
+            self._ansible_command.append(self._quote_spaces(
+                self._expand_playbook(project, element)))
+            self._found_playbooks.append(self._quote_spaces(
+                self._expand_playbook(project, element)))
+            self._parsed_args.append(index)
+
+    def _expand_playbook_set(self, project, argument):
+        logger.debug('Checking if playbook "{}" is a playbook set'
+                     .format(argument))
+        try:
+            playbook_set = (project.config.raw['views']
+                                              [project.view]
+                                              ['playbook_sets']
+                                              [argument])
+            logger.info('Found playbook set "{}" in view "{}"'
+                        .format(argument, project.view))
+            if isinstance(playbook_set, list):
+                logger.debug('Playbook set "{}" expanded to: {}'
+                             .format(argument, ' '.join(playbook_set)))
+                return playbook_set
+            else:
+                logger.error('Incorrect definition of playbook set',
+                             extra={'allow': 'syslog'})
+                raise ValueError('Incorrect definition of playbook set')
+        except KeyError:
+            logger.debug('No playbook set found')
+            return [argument]
+
+    def _get_check_mode(self):
+        if ('--check' in self._ansible_command or
+                '-C' in self._ansible_command):
+            return 'check'
+        return 'run'
+
+    def _expand_playbook_paths(self, project):
+        playbook_dirs = []
+
+        playbooks_paths = [
+            os.path.join(project.path, 'ansible', 'views',
+                         project.view, 'playbooks'),
+            os.path.join(project.path, 'ansible', 'playbooks'),
+            os.path.join(project.path, 'playbooks')
+        ]
+
+        for path in playbooks_paths:
+            if os.path.exists(path) and os.path.isdir(path):
+                playbook_dirs.append(path)
+
+        return playbook_dirs
+
+    def _walklevel(self, some_dir, level=1):
+        '''A custom os.walk function which can limit recursion to a specific level
+           under a given subdirectory'''
+        some_dir = some_dir.rstrip(os.path.sep)
+        num_sep = some_dir.count(os.path.sep)
+        for root, dirs, files in os.walk(some_dir, followlinks=True):
+            yield root, dirs, files
+            num_sep_this = root.count(os.path.sep)
+            if num_sep + level <= num_sep_this:
+                del dirs[:]
+
+    def _find_collections(self, project):
+        known_collections = {}
+        playbook_paths = []
+
+        try:
+            collection_paths = project.ansible_cfg.get_option(
+                    'collections_paths')
+        except configparser.NoOptionError:
+            collection_paths = project.ansible_cfg.get_option(
+                    'collections_path')
+
+        for directory in collection_paths.split(':'):
+            directory = os.path.expanduser(directory)
+
+            # If we are running outside of the project directory, relative
+            # paths need to be fixed to absolute paths, otherwise the correct
+            # directories won't be found
+            if not os.path.isdir(directory):
+
+                # Path might be relative to the 'ansible.cfg' file in an
+                # infrastructure view
+                if os.path.isdir(os.path.join(project.path, 'ansible',
+                                              'views', project.view,
+                                              directory)):
+                    directory = os.path.join(project.path, 'ansible',
+                                             'views', project.view,
+                                             directory)
+
+                # Path might be relative to the 'ansible.cfg' file in the root
+                # of the project directory
+                elif os.path.isdir(os.path.join(project.path, directory)):
+                    directory = os.path.join(project.path, directory)
+
+                # Normalize path after resolution
+                directory = os.path.realpath(directory)
+
+            # We are looking for the 'playbooks/' subdirectory in Ansible
+            # Collections, which have specific directory structure. We want to
+            # avoid catching subdirectories further down the path, for example
+            # in '<namespace>/<collection>/tests/integration/playbooks/' since
+            # they are not a part of the actual collection Ansible cares about.
+            #
+            # The 'playbooks/' directory we want to find will be 4 levels deep:
+            # ansible_collections/<namespace>/<collection>/playbooks/
+            for root, dirs, files in list(
+                    self._walklevel(os.path.expanduser(directory), 4)):
+                if 'playbooks' in dirs:
+                    playbook_paths.append(os.path.join(root, 'playbooks'))
+
+        for path in playbook_paths:
+            if (os.path.join('ansible', 'collections', 'ansible_collections/')
+                    in path):
+                collection_name = path.split(
+                        os.path.join('ansible',
+                                     'collections',
+                                     'ansible_collections/'),
+                        )[1]
+                if collection_name.endswith('/playbooks'):
+                    collection_name = collection_name[:-10]
+                if not known_collections.get(
+                        collection_name.replace('/', '.')):
+                    known_collections.update({
+                        collection_name.replace('/', '.'): path})
+
+        return known_collections
+
+    def _find_playbook_in_collection(self, playbook):
+        playbook_path = None
+        playbook_name = playbook
+
+        for collection, path in self._known_collections.items():
+            if playbook_name.startswith(collection + '/'):
+                stripped = '/'.join(playbook_name.split('/')[1:])
+            elif playbook_name.startswith(collection + '.'):
+                # The dot-separated name is how ansible-playbook itself
+                # addresses collection playbooks
+                stripped = playbook_name[len(collection) + 1:]
+            else:
+                continue
+            candidate = os.path.expanduser(
+                    os.path.join(path, stripped))
+            if os.path.isfile(candidate):
+                playbook_path = candidate
+                break
+        return playbook_path
+
+    def _expand_playbook(self, project, playbook):
+        playbook_path = None
+        playbook_name = playbook
+
+        # Normalize playbook name, which most likely ends with '.yml' extension
+        if not playbook_name.endswith('.yml'):
+            playbook_name = playbook_name + '.yml'
+
+        # Check if playbook can be found directly. A relative name is
+        # resolved against the project directory, which is also where the
+        # command itself will run.
+        if os.path.isabs(playbook_name):
+            if os.path.isfile(playbook_name):
+                playbook_path = playbook_name
+        elif os.path.isfile(os.path.join(self.project.path, playbook_name)):
+            playbook_path = playbook_name
+
+        if not playbook_path:
+            # Check if playbook is present in the project directories
+            for playbook_dir in self._playbook_dirs:
+                if os.path.isfile(os.path.join(playbook_dir, playbook_name)):
+                    playbook_path = os.path.relpath(
+                            os.path.join(playbook_dir, playbook_name),
+                            self.project.path)
+                    break
+
+        if not playbook_path:
+            # Find playbook which might be included in an Ansible Collection
+            playbook_path = self._find_playbook_in_collection(playbook_name)
+
+        if not playbook_path:
+            try:
+
+                # Find playbook in Ansible Collections specific to the current
+                # infrastructure view
+                collection_names = (
+                        (project.config.raw['views'][project.view]
+                                           ['playbook_collections']))
+                for collection in collection_names:
+                    playbook_path = self._find_playbook_in_collection(
+                            collection + '/' + playbook_name)
+                    if playbook_path:
+                        break
+
+            except KeyError:
+
+                # Find playbook in the default Ansible Collection
+                playbook_path = self._find_playbook_in_collection(
+                        'debops.debops/' + playbook_name)
+
+        if playbook_path:
+            return playbook_path
+        else:
+            return playbook
+
+    def execute(self):
+        unlocked = False
+        if not self._found_playbooks:
+            raise ValueError('No playbooks specified, aborting')
+
+        run_check_mode = self._get_check_mode()
+
+        hook_name = 'pre-' + run_check_mode
+        if not run_hooks(self.project.path, hook_name,
+                         env=self._subprocess_env(self._ansible_env)):
+            raise ChildProcessError('Hook {} aborted, '
+                                    'not running playbooks'.format(hook_name))
+
+        rc = 0
+        try:
+            unlocked = self.secrets.unlock()
+
+            if run_check_mode == 'check':
+                logger.info('Checking Ansible playbooks: {}'.format(
+                        ','.join(self._found_playbooks)),
+                        extra={'allow': 'syslog'})
+            else:
+                logger.info('Running Ansible playbooks: {}'.format(
+                        ','.join(self._found_playbooks)),
+                        extra={'allow': 'syslog'})
+            logger.notice('Executing Ansible playbooks:',
+                          extra={'allow': ['stderr', 'syslog']})
+            for playbook in self._found_playbooks:
+                logger.notice(unexpanduser(playbook),
+                              extra={'allow': ['stderr', 'syslog']})
+            logger.debug('Ansible command: {}'.format(
+                    ' '.join(self._ansible_command)))
+            executor = subprocess.Popen(' '.join(self._ansible_command),
+                                        shell=True, cwd=self.project.path,
+                                        env=self._subprocess_env(
+                                            self._ansible_env))
+            logger.debug('Starting playbook execution')
+            std_out, std_err = executor.communicate()
+            logger.debug('Playbook execution finished')
+            if executor.returncode != 0:
+                logger.error('Ansible finished with '
+                             'return code {}'.format(executor.returncode))
+            rc = executor.returncode
+
+        except KeyboardInterrupt:
+            logger.notice('Playbook execution interrupted by user',
+                          extra={'allow': 'syslog'})
+            raise SystemExit('... aborted by user')
+        else:
+            self._ring_bell()
+
+        finally:
+            if unlocked:
+                self.secrets.lock()
+
+        post_hook_name = 'post-' + run_check_mode
+        run_hooks(self.project.path, post_hook_name,
+                  extra_env={'DEBOPS_RETURN_CODE': rc},
+                  env=self._subprocess_env())
+
+        return rc

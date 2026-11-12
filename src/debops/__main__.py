@@ -2,11 +2,16 @@
 # Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import debops
 import sys
 import os
 import logging
 from logging.handlers import SysLogHandler
+
+from . import ProjectContextFilter, ProjectFormatter
+
+from .cli.interpreter import Interpreter
+from .core.config import Configuration
+from .cli.subcommands import Subcommands
 
 # Configure logging early so that it's available as soon as possible
 logger = logging.getLogger('debops')
@@ -16,11 +21,11 @@ def main():
 
     # Check command line arguments early to detect log verbosity
     args = sys.argv
-    parsed_args = debops.subcommands.Subcommands(args)
+    parsed_args = Subcommands(args)
     log_verbosity = parsed_args.args.verbose
 
     # Check DebOps configuration to get logging options
-    config = debops.config.Configuration()
+    config = Configuration()
 
     def build_handler_filters(handler: str, quiet_level=None):
         """Route records between the handlers and keep the terminal
@@ -132,8 +137,8 @@ def main():
                                        config.raw['syslog']['facility'],
                                        SysLogHandler.LOG_USER))
     syslog_handler.addFilter(build_handler_filters('syslog'))
-    syslog_fmt = logging.Formatter('[%(levelname)s] %(message)s')
-    syslog_handler.setFormatter(syslog_fmt)
+    syslog_handler.addFilter(ProjectContextFilter())
+    syslog_handler.setFormatter(ProjectFormatter('[%(levelname)s] %(message)s'))
     logger.addHandler(syslog_handler)
     if isinstance(syslog_address, str):
         logger.debug('Logging to {} enabled'.format(syslog_address))
@@ -146,12 +151,12 @@ def main():
     # logging are ready but before the interpreter, so the notice appears
     # first. Lazy import keeps the module out of the common execution path.
     try:
-        from .versioncheck import VersionCheck
+        from .core.versioncheck import VersionCheck
         VersionCheck(config).check()
     except Exception:
         logger.debug('Version check initialization failed', exc_info=True)
 
-    interpreter = debops.Interpreter(args)
+    interpreter = Interpreter(args, config=config)
 
 
 def run():

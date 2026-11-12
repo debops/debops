@@ -1,0 +1,270 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DebOps configuration",
+  "description": "Schema of the DebOps configuration tree. Configuration files are validated against this schema when they are loaded; options unknown to the schema and values of a wrong type are reported as warnings, and options with a value of a wrong type are dropped, so that a mistake in a configuration file cannot corrupt the merged configuration.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "binaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ansible": {
+          "type": "string"
+        },
+        "ansible-inventory": {
+          "type": "string"
+        },
+        "ansible-galaxy": {
+          "type": "string"
+        },
+        "ansible-playbook": {
+          "type": "string"
+        },
+        "encfs": {
+          "type": "string"
+        },
+        "fusermount": {
+          "type": "string"
+        },
+        "git": {
+          "type": "string"
+        },
+        "git-crypt": {
+          "type": "string"
+        },
+        "gpg": {
+          "type": "string"
+        },
+        "umount": {
+          "type": "string"
+        }
+      }
+    },
+    "custom": {
+      "type": "object",
+      "description": "Reserved for custom configuration options defined outside of DebOps: scripts and integrations can store their parameters here, read them with the 'debops config get' command and override them from the environment with 'DEBOPS_CONFIG__CUSTOM__...' variables. DebOps does not use this section and will not define options in it."
+    },
+    "git": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "init_message": {
+          "type": "string"
+        }
+      }
+    },
+    "override_paths": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "files_path": {
+          "type": "string"
+        },
+        "tasks_path": {
+          "type": "string"
+        },
+        "templates_path": {
+          "type": "string"
+        }
+      }
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "view": {
+          "type": "string"
+        },
+        "default_view": {
+          "type": "string"
+        },
+        "read_only_friday": {
+          "type": "boolean"
+        },
+        "venv": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": [
+                "boolean",
+                "string"
+              ]
+            },
+            "path": {
+              "type": "string"
+            },
+            "requirements": {
+              "type": "string"
+            },
+            "python": {
+              "type": "string"
+            }
+          }
+        },
+        "git": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "auto_commit": {
+              "type": "boolean"
+            },
+            "auto_commit_message": {
+              "type": "string"
+            }
+          }
+        },
+        "inventory_spec": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": [
+                "boolean",
+                "string"
+              ]
+            },
+            "allow_io": {
+              "type": [
+                "boolean",
+                "string"
+              ]
+            },
+            "version": {
+              "type": [
+                "integer",
+                "string"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "syslog": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "facility": {
+          "type": "string",
+          "enum": [
+            "kern",
+            "user",
+            "mail",
+            "daemon",
+            "auth",
+            "syslog",
+            "lpr",
+            "news",
+            "uucp",
+            "authpriv",
+            "ftp",
+            "cron",
+            "local0",
+            "local1",
+            "local2",
+            "local3",
+            "local4",
+            "local5",
+            "local6",
+            "local7"
+          ]
+        },
+        "level": {
+          "type": "string",
+          "enum": [
+            "DEBUG",
+            "INFO",
+            "NOTICE",
+            "WARNING",
+            "ERROR",
+            "CRITICAL"
+          ]
+        }
+      }
+    },
+    "version_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "check_interval": {
+          "type": "integer"
+        },
+        "timeout": {
+          "type": "integer"
+        },
+        "pypi_package": {
+          "type": "string"
+        },
+        "pypi_url": {
+          "type": "string"
+        },
+        "git_remote": {
+          "type": "string"
+        },
+        "git_repo_url": {
+          "type": "string"
+        }
+      }
+    },
+    "views": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "description": "Configuration of an infrastructure view. The sections of a view are open: legacy project directories can define arbitrary sections in the '.debops.cfg' file, and the 'ansible' section mirrors the sections of the 'ansible.cfg' file generated from it.",
+        "properties": {
+          "playbook_collections": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "playbook_sets": {
+            "type": "object"
+          },
+          "ansible": {
+            "type": "object"
+          },
+          "debops": {
+            "type": "object"
+          },
+          "encryption": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "mounted": {
+                "type": "boolean"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
