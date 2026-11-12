@@ -4,6 +4,7 @@
 
 """Tests for ``debops.core.config``."""
 
+import json
 import os
 from unittest import mock
 
@@ -862,3 +863,178 @@ def test_config_list_lists_the_environment_overrides(configuration,
 
     assert "# Environment variable overrides:" in lines
     assert "DEBOPS_CONFIG__SYSLOG__LEVEL" in lines
+
+
+def test_option_file_defaults_to_99(configuration, tmp_path):
+    path = configuration.option_file(str(tmp_path))
+
+    assert path == str(tmp_path / "99_config_set.json")
+
+
+def test_option_file_uses_the_existing_file(configuration, tmp_path):
+    (tmp_path / "50_config_set.json").write_text("{}\n")
+
+    path = configuration.option_file(str(tmp_path))
+
+    assert path == str(tmp_path / "50_config_set.json")
+
+
+def test_option_file_skips_hidden_and_unrelated_files(configuration,
+                                                      tmp_path):
+    (tmp_path / ".99_config_set.json").write_text("{}\n")
+    (tmp_path / "config_set.json").write_text("{}\n")
+    (tmp_path / "options.yml").write_text("a: 1\n")
+
+    path = configuration.option_file(str(tmp_path))
+
+    assert path == str(tmp_path / "99_config_set.json")
+
+
+def test_option_file_refuses_ambiguous_files(configuration, tmp_path):
+    (tmp_path / "50_config_set.json").write_text("{}\n")
+    (tmp_path / "99_config_set.json").write_text("{}\n")
+
+    with pytest.raises(ValueError):
+        configuration.option_file(str(tmp_path))
+
+
+def test_write_option_sets_a_typed_option(configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+
+    configuration.write_option(str(path), "syslog.port", "514")
+
+    assert json.loads(path.read_text()) == {"syslog": {"port": 514}}
+
+
+def test_write_option_sets_a_boolean(configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+
+    configuration.write_option(str(path), "version_check.enabled",
+                               "true")
+
+    assert json.loads(path.read_text()) == {"version_check":
+                                            {"enabled": True}}
+
+
+def test_write_option_creates_the_parent_sections(configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+
+    configuration.write_option(str(path), "views.system.ansible",
+                               '{"defaults": {}}')
+
+    assert json.loads(path.read_text()) == {
+        "views": {"system": {"ansible": {"defaults": {}}}}}
+
+
+def test_write_option_updates_the_file_in_place(configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+
+    configuration.write_option(str(path), "custom.myscript.retries", "5")
+    configuration.write_option(str(path), "custom.myscript.token", "abc")
+
+    assert json.loads(path.read_text()) == {
+        "custom": {"myscript": {"retries": 5, "token": "abc"}}}
+
+
+def test_write_option_sets_a_custom_object(configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+
+    configuration.write_option(str(path), "custom.myscript",
+                               '{"a": 1}')
+
+    assert json.loads(path.read_text()) == {
+        "custom": {"myscript": {"a": 1}}}
+
+
+def test_write_option_expands_variables(configuration, tmp_path,
+                                        monkeypatch):
+    monkeypatch.setenv("DEBOPS_TEST_VALUE", "hello")
+    path = tmp_path / "99_config_set.json"
+
+    configuration.write_option(str(path), "custom.myscript.token",
+                               "$DEBOPS_TEST_VALUE")
+
+    assert json.loads(path.read_text()) == {
+        "custom": {"myscript": {"token": "hello"}}}
+
+
+def test_write_option_refuses_an_unknown_option(configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+
+    with pytest.raises(ValueError) as errmsg:
+        configuration.write_option(str(path), "myscript.retries", "5")
+
+    assert "custom options belong under the 'custom' section" \
+        in str(errmsg.value)
+    assert not path.exists()
+
+
+def test_write_option_refuses_a_value_of_a_wrong_type(configuration,
+                                                      tmp_path):
+    path = tmp_path / "99_config_set.json"
+
+    with pytest.raises(ValueError):
+        configuration.write_option(str(path), "syslog.port", "five")
+
+    assert not path.exists()
+
+
+def test_write_option_refuses_a_missing_value(configuration, tmp_path):
+    with pytest.raises(ValueError):
+        configuration.write_option(str(tmp_path / "f.json"),
+                                   "syslog.port")
+
+
+def test_write_option_removes_an_option(configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+    path.write_text('{"syslog": {"port": 514, "address": "/dev/log"}}\n')
+
+    configuration.write_option(str(path), "syslog.port", delete=True)
+
+    assert json.loads(path.read_text()) == {
+        "syslog": {"address": "/dev/log"}}
+
+
+def test_write_option_prunes_the_empty_sections(configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+    path.write_text('{"git": {"init_message": "msg"}}\n')
+
+    configuration.write_option(str(path), "git.init_message",
+                               delete=True)
+
+    assert json.loads(path.read_text()) == {}
+
+
+def test_write_option_removes_an_unknown_option(configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+    path.write_text('{"myscript": {"retries": 5, "token": "abc"}}\n')
+
+    configuration.write_option(str(path), "myscript.retries",
+                               delete=True)
+
+    assert json.loads(path.read_text()) == {"myscript": {"token": "abc"}}
+
+
+def test_write_option_refuses_to_remove_a_missing_option(configuration,
+                                                         tmp_path):
+    path = tmp_path / "99_config_set.json"
+    path.write_text('{"syslog": {"address": "/dev/log"}}\n')
+
+    with pytest.raises(ValueError):
+        configuration.write_option(str(path), "syslog.port",
+                                   delete=True)
+
+
+def test_write_option_refuses_to_remove_without_a_file(configuration,
+                                                       tmp_path):
+    with pytest.raises(ValueError):
+        configuration.write_option(str(tmp_path / "f.json"),
+                                   "syslog.port", delete=True)
+
+
+def test_write_option_refuses_a_broken_file(configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+    path.write_text('not json at all')
+
+    with pytest.raises(ValueError):
+        configuration.write_option(str(path), "syslog.port", "514")

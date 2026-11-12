@@ -6,5 +6,5 @@ Description
 ===========
 
 The :command:`debops config` command provides access to DebOps configuration
-system. At present it can only be used to inspect the configuration options, in
-the future it will allow modification of them as well.
+system. It can display the effective configuration options and modify them in
+the configuration files.
