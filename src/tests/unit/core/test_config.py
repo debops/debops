@@ -342,6 +342,22 @@ def test_load_ignores_a_file_without_a_dictionary_of_options(configuration,
     assert "list.yaml" in caplog.text
 
 
+@pytest.mark.parametrize("name,content", [
+    ("broken.json", '[syslog]\nport = 514\n'),
+    ("broken.toml", '[syslog\n'),
+])
+def test_load_reports_broken_json_and_toml_files(configuration, tmp_path,
+                                                 caplog, name, content):
+    (tmp_path / name).write_text(content)
+    (tmp_path / "ok.toml").write_text('[git]\ninit_message = "msg"\n')
+
+    assert configuration.load(str(tmp_path)) == {"git": {"init_message":
+                                                         "msg"}}
+    assert name in caplog.text
+    assert configuration._violations[0]["kind"] == "parse"
+    assert configuration._violations[0]["dropped"] is True
+
+
 def test_packaged_defaults_match_the_schema(caplog):
     import jinja2
     import pkgutil
