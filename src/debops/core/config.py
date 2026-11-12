@@ -61,12 +61,54 @@ def _violation_reason(error):
     return error.message
 
 
+# Marker for a configuration path which the schema does not type: the
+# option lives inside a section left open, and its value is parsed as
+# JSON when it looks like JSON and kept as a string otherwise.
+_UNTYPED = object()
+
+
+def _parse_scalar(value):
+    """Parse an environment value as JSON, or keep it as a string."""
+    try:
+        return json.loads(value)
+    except ValueError:
+        return value
+
+
+def _resolve_schema_node(schema, segments):
+    """Find the schema node at the given path of the tree.
+
+    Returns the schema node which describes the option at the path,
+    None when the path cannot name a configuration option, or the
+    _UNTYPED marker when the path enters a section which the schema
+    leaves open.
+    """
+    node = schema
+    for segment in segments:
+        if not isinstance(node, dict):
+            return None
+        if node.get('type') not in (None, 'object'):
+            # The path descends past a scalar option
+            return None
+        properties = node.get('properties', {})
+        if segment in properties:
+            node = properties[segment]
+        elif isinstance(node.get('additionalProperties'), dict):
+            node = node['additionalProperties']
+        elif node.get('additionalProperties') is False:
+            return None
+        else:
+            return _UNTYPED
+    return node
+
+
 class Configuration(object):
 
     def __init__(self):
 
         self._env_files = []
         self._env_vars = {}
+        self._env_overrides = []
 
         # Set default environment variables at runtime
         self.set_env('DEBOPS_ANSIBLE_COLLECTIONS_PATH',
@@ -99,6 +141,11 @@ class Configuration(object):
         self._config_files = []
         for config_dir in self._config_dirs:
             self.merge(config_dir)
+
+        # The environment overrides are the last configuration layer
+        # for clients which use the Configuration on its own; project
+        # directories re-apply them after their own files are merged
+        self.apply_env_overrides()
 
     def _expand_env_vars(self, data):
         """Expand '$VAR' and '${VAR}' references in configuration values.
@@ -239,6 +286,97 @@ class Configuration(object):
         elif isinstance(data, dict):
             self._merge_dict(self._config, data)
 
+    def apply_env_overrides(self, environ=None):
+        """Apply configuration overrides from the environment.
+
+        Each variable named 'DEBOPS_CONFIG__<SECTION>__<KEY>' sets the
+        value at the matching path of the configuration tree, with the
+        path segments separated by '__', for example
+        'DEBOPS_CONFIG__SYSLOG__LEVEL'. The segments are matched
+        case-insensitively; keys which contain a hyphen, like the
+        binary names, keep it in the variable name.
+
+        The value is converted to the type which the configuration
+        schema defines for the path. Unknown paths and values which do
+        not fit their type are reported as warnings and skipped. The
+        overrides merge as the last configuration layer, above the
+        configuration files of the project directory; a project
+        directory re-applies them after its own configuration is
+        merged.
+        """
+        if environ is None:
+            environ = os.environ
+        for name, value in sorted(environ.items()):
+            if not name.startswith('DEBOPS_CONFIG__'):
+                continue
+            tail = name[len('DEBOPS_CONFIG__'):]
+            segments = [segment.lower()
+                        for segment in tail.split('__') if segment]
+            if not segments:
+                logger.warning("Ignoring environment override '%s': no "
+                               "configuration path", name)
+                continue
+            try:
+                option_value = self._coerce_override(segments, value)
+            except (ValueError, TypeError) as errmsg:
+                logger.warning("Ignoring environment override '%s': %s",
+                               name, errmsg)
+                continue
+            if option_value is None:
+                logger.warning("Ignoring environment override '%s': not "
+                               "a DebOps configuration option", name)
+                continue
+            self._merge_override(segments,
+                                 self._expand_env_vars(option_value))
+            if name not in self._env_overrides:
+                self._env_overrides.append(name)
+
+    def _coerce_override(self, segments, value):
+        """Convert an environment override value to the option's type.
+
+        Returns None when the path cannot name a configuration option.
+        """
+        node = _resolve_schema_node(_schema_validator().schema, segments)
+        if node is None:
+            return None
+        if node is _UNTYPED:
+            return _parse_scalar(value)
+        schema_type = node.get('type')
+        if isinstance(schema_type, list):
+            schema_type = schema_type[0]
+        if schema_type is None:
+            return _parse_scalar(value)
+        if schema_type == 'boolean':
+            return bool(strtobool(value))
+        if schema_type == 'integer':
+            return int(value)
+        if schema_type == 'number':
+            try:
+                return int(value)
+            except ValueError:
+                return float(value)
+        if schema_type == 'array':
+            parsed = _parse_scalar(value)
+            if isinstance(parsed, list):
+                return parsed
+            return [entry.strip()
+                    for entry in value.split(',') if entry.strip()]
+        if schema_type == 'object':
+            parsed = _parse_scalar(value)
+            if not isinstance(parsed, dict):
+                raise ValueError('the value must be a JSON object')
+            return parsed
+        return value
+
+    def _merge_override(self, segments, value):
+        """Merge one override value at its path of the tree."""
+        data = {}
+        node = data
+        for segment in segments[:-1]:
+            node = node.setdefault(segment, {})
+        node[segments[-1]] = value
+        self._merge_dict(self._config, data)
+
     def _validated(self, path, data):
         """Validate a parsed configuration file against the schema.
 
@@ -374,6 +512,11 @@ class Configuration(object):
         """Return the lines describing where the configuration comes from."""
         lines = []
         relative_root = os.path.relpath(os.path.abspath('/'))
+        if self._env_overrides:
+            lines.append('# Environment variable overrides:')
+            for name in self._env_overrides:
+                lines.append(name)
+            lines.append('')
         if self._env_files:
             lines.append('# Environment files:')
             for filename in self._env_files:

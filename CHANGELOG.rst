@@ -40,6 +40,15 @@ General
   a mistake in a configuration file cannot silently corrupt the
   merged configuration.
 
+- Configuration options can now be overridden from the environment
+  using ``DEBOPS_CONFIG__SECTION__KEY`` variables, with '__'
+  separating the path segments of the option, for example
+  ``DEBOPS_CONFIG__SYSLOG__LEVEL=DEBUG``. The values are converted to
+  the type of the option and the overrides apply as the last
+  configuration layer, above the project directory configuration
+  files. The applied overrides are listed by the
+  :command:`debops config list` command.
+
 Changed
 ~~~~~~~
 
