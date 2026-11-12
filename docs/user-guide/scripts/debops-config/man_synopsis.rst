@@ -5,7 +5,7 @@
 Synopsis
 ========
 
-``debops config get``  [-h|--help] [--project-dir <project_dir>] [--format json|toml|unix|yaml] [-k|--keys] [-r|--root] [-v|--verbose] [<key>] [key] ...
+``debops config get``  [-h|--help] [--project-dir <project_dir>] [--format json|toml|unix|yaml] [-k|--keys] [-r|--root] [--show-origin] [--show-scope] [-v|--verbose] [<key>] [key] ...
 
 ``debops config list`` [-h|--help] [-v|--verbose] [<project_dir>]
 
