@@ -1218,7 +1218,22 @@ def test_config_get_show_origin_renders_the_columns(configuration):
                                    show_scope=True)
 
     assert out == ("override\tDEBOPS_CONFIG__SYSLOG__LEVEL\t"
-                   "syslog.level\tDEBUG")
+                   "syslog.level=DEBUG")
+
+
+def test_config_get_show_origin_keeps_values_with_spaces(configuration):
+    """The option and its value are joined as the last column, so a
+    value with whitespace stays in one place when the lines are split
+    on whitespace."""
+    configuration._config = {"custom": {"greeting": "hello world"}}
+    configuration._layers = [
+        ("project", "/project/a.yml",
+         {"custom": {"greeting": "hello world"}}),
+    ]
+
+    out = configuration.config_get("custom.greeting", show_origin=True)
+
+    assert out == "/project/a.yml\tcustom.greeting=hello world"
 
 
 def test_config_get_show_origin_refuses_other_formats(configuration):

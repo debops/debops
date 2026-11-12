@@ -33,16 +33,20 @@ Options
   configuration tree, which shows where in the tree the option is defined.
 
 ``--show-origin``
-  Print the options as plain text, one tab-separated line per option,
-  naming the source which last set each option: the configuration
-  file, the runtime state or the environment variable. This rendering
-  cannot be combined with other output formats or options.
+  Print the options as plain text, one line per option: the source
+  which last set each option (the configuration file, the runtime
+  state or the environment variable), then the option and its value
+  joined by ``=``. The columns are separated by tabs and contain no
+  whitespace themselves, so the lines can be split on tabs reliably.
+  This rendering cannot be combined with other output formats or
+  options.
 
 ``--show-scope``
-  Print the options as plain text, one tab-separated line per option,
-  naming the configuration layer which last set each option: the
-  packaged defaults, the system, the user, the project, the runtime
-  state or the environment.
+  Print the options as plain text, one line per option: the
+  configuration layer which last set each option (one of ``defaults``,
+  ``system``, ``user``, ``project``, ``runtime`` or ``override``),
+  then the option and its value joined by ``=``. When combined with
+  ``--show-origin``, the scope column comes first.
 
 ``-v, --verbose``
   Increase output verbosity. More letters means higher verbosity.
