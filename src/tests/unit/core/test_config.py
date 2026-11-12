@@ -607,6 +607,25 @@ def test_init_reads_the_user_configuration_and_paths(tmp_path, monkeypatch):
                      "collections"))
 
 
+def test_init_records_the_scope_of_the_configuration_layers(
+        tmp_path, monkeypatch):
+    monkeypatch.setattr(config_module, "xdg_config_home", str(tmp_path))
+    user_conf_d = tmp_path / "debops" / "conf.d"
+    user_conf_d.mkdir(parents=True)
+    (user_conf_d / "10-user.toml").write_text(
+        'git = { init_message = "custom" }\n')
+
+    config = config_module.Configuration()
+
+    origins = dict(
+        (option, (scope, origin))
+        for option, scope, origin, value in
+        config.config_origins("git.init_message"))
+
+    assert origins["git.init_message"] == (
+        "user", str(user_conf_d / "10-user.toml"))
+
+
 def test_merge_accepts_a_dictionary(configuration):
     configuration._config = {"a": 1}
 

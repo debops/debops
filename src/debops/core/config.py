@@ -172,14 +172,14 @@ class Configuration(object):
 
         # Load configuration files in known directories
         self._config_dirs = [
-            '/usr/lib/debops/conf.d',
-            '/usr/local/lib/debops/conf.d',
-            '/etc/debops/conf.d',
-            os.path.join(xdg_config_home, 'debops', 'conf.d')
+            ('/usr/lib/debops/conf.d', 'system'),
+            ('/usr/local/lib/debops/conf.d', 'system'),
+            ('/etc/debops/conf.d', 'system'),
+            (os.path.join(xdg_config_home, 'debops', 'conf.d'), 'user')
         ]
         self._config_files = []
-        for config_dir in self._config_dirs:
-            self.merge(config_dir)
+        for config_dir, config_scope in self._config_dirs:
+            self.merge(config_dir, scope=config_scope)
 
         # The environment overrides are the last configuration layer
         # for clients which use the Configuration on its own; project
