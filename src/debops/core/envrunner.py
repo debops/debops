@@ -43,7 +43,7 @@ class EnvRunner(ProjectRunner):
 
         rc = 0
         try:
-            unlocked = self.inventory.unlock()
+            unlocked = self.secrets.unlock()
 
             executor = subprocess.Popen(' '.join(self._command),
                                         shell=True, cwd=self.project.path,
@@ -58,7 +58,7 @@ class EnvRunner(ProjectRunner):
 
         finally:
             if unlocked:
-                self.inventory.lock()
+                self.secrets.lock()
 
         run_hooks(self.project.path, 'post-env',
                   extra_env={'DEBOPS_RETURN_CODE': rc},
