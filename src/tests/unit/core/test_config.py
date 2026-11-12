@@ -774,6 +774,19 @@ def test_config_get_root_raises_for_a_missing_option(configuration):
         configuration.config_get("views.system.nope", root=True)
 
 
+def test_config_get_treats_a_scalar_path_element_as_missing(configuration):
+    configuration._config = {"project": {"view": "system"}}
+
+    with pytest.raises(OptionNotFoundError):
+        configuration.config_get("project.view.ansible")
+
+
+def test_get_treats_a_scalar_path_element_as_missing(configuration):
+    configuration._config = {"project": {"view": "system"}}
+
+    assert configuration.get(["project", "view", "ansible"]) == {}
+
+
 def test_apply_env_overrides_sets_a_nested_option(configuration, monkeypatch):
     monkeypatch.setenv("DEBOPS_CONFIG__SYSLOG__PORT", "514")
 
@@ -1275,6 +1288,38 @@ def test_config_get_show_origin_refuses_other_formats(configuration):
     with pytest.raises(ValueError):
         configuration.config_get("syslog", format="json",
                                  show_origin=True)
+
+
+def test_config_get_show_origin_wraps_the_home_path(configuration):
+    home = os.path.expanduser('~')
+    origin = os.path.join(home, '.config', 'debops', 'conf.d', 'a.yml')
+    configuration._config = {"git": {"init_message": "custom"}}
+    configuration._layers = [
+        ("user", origin, {"git": {"init_message": "custom"}})]
+
+    out = configuration.config_get("git.init_message", show_origin=True)
+
+    assert out == "~/.config/debops/conf.d/a.yml\tgit.init_message=custom"
+    # the ledger keeps the absolute path
+    assert configuration._layers[0][1] == origin
+
+
+def test_config_get_show_origin_keeps_non_home_origins(configuration):
+    configuration._config = {"syslog": {"port": 514, "level": "DEBUG"},
+                             "git": {"init_message": "x"}}
+    configuration._layers = [
+        ("system", "/etc/debops/conf.d/a.yml",
+         {"syslog": {"port": 514}}),
+        ("override", "DEBOPS_CONFIG__SYSLOG__LEVEL",
+         {"syslog": {"level": "DEBUG"}}),
+        ("runtime", "debops", {"git": {"init_message": "x"}}),
+    ]
+
+    out = configuration.config_get('.', show_origin=True)
+
+    assert "/etc/debops/conf.d/a.yml\tsyslog.port=514" in out
+    assert "DEBOPS_CONFIG__SYSLOG__LEVEL\tsyslog.level=DEBUG" in out
+    assert "debops\tgit.init_message=x" in out
 
 
 def test_detached_configuration_loads_the_given_paths(tmp_path):
