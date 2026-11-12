@@ -59,6 +59,14 @@ General
   one, which lets the prefix decide where the options rank among the
   configuration files of the directory.
 
+- The new :command:`debops config check` command checks the
+  configuration of a project directory, or of the system, for errors:
+  unknown options, options with values of a wrong type, and
+  configuration files which cannot be parsed. It exits with a
+  non-zero status when an option was dropped or a file could not be
+  parsed, which makes it usable in CI pipelines; the '--strict'
+  option additionally reports unknown options as errors.
+
 - Configuration options can now be overridden from the environment
   using ``DEBOPS_CONFIG__SECTION__KEY`` variables, with '__'
   separating the path segments of the option, for example

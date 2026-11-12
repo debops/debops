@@ -595,6 +595,7 @@ Actions:
                 usage='''debops config <command> [<args>]
 
 Commands:
+    check   check the configuration for errors
     get     return value of a specific configuration option
     list    list configuration files parsed by DebOps
     set     set or remove a configuration option''')
@@ -661,4 +662,15 @@ Commands:
                             help='path of the configuration option')
         parser.add_argument('value', type=str, nargs='?',
                             help='value to set the option to')
+        self.args = parser.parse_args(self.args[3:])
+
+    def do_config_check(self):
+        parser = _argument_parser(
+                parents=[self.global_parser],
+                usage='debops config check [<args>]',
+                description='check the DebOps configuration for errors')
+        parser.add_argument('--strict', default=False,
+                            help='report unknown configuration options '
+                                 'as errors',
+                            action='store_true')
         self.args = parser.parse_args(self.args[3:])
