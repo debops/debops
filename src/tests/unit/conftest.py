@@ -161,5 +161,6 @@ def configuration():
     config._config_files = []
     config._env_files = []
     config._env_overrides = []
+    config._violations = []
     config._env_vars = {}
     return config

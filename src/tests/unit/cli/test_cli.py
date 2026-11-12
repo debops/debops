@@ -14,6 +14,7 @@ from types import SimpleNamespace
 from unittest import mock
 
 import json
+import logging
 import pytest
 
 import debops.cli.interpreter as cli_module
@@ -101,7 +102,7 @@ def test_init_dispatches_the_env_section(monkeypatch):
     method.assert_called_once_with(args)
 
 
-@pytest.mark.parametrize("command", ["list", "get", "set"])
+@pytest.mark.parametrize("command", ["list", "get", "set", "check"])
 def test_init_dispatches_the_config_commands(monkeypatch, command):
     args = make_args(project_dir=".")
     monkeypatch.setattr(cli_module, "Configuration",
@@ -677,6 +678,68 @@ def test_config_set_reports_errors(configuration, monkeypatch, tmp_path,
                                             value="5"))
 
     assert "custom options belong" in capsys.readouterr().err
+
+
+def test_config_check_passes_a_clean_configuration(configuration, monkeypatch,
+                                                   caplog):
+    caplog.set_level(logging.NOTICE)
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(side_effect=NotADirectoryError("nope")))
+    interpreter = make_interpreter(config=configuration)
+
+    interpreter.do_config_check(make_args(project_dir=".", strict=False))
+
+    assert "The DebOps configuration is valid" in caplog.text
+
+
+def test_config_check_fails_on_dropped_options(configuration, monkeypatch):
+    configuration._violations.append(
+        {"kind": "type", "file": "/etc/debops/conf.d/options.yml",
+         "option": "syslog.port", "dropped": True,
+         "message": "option 'syslog.port' must be of type integer, "
+                    "not str"})
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(side_effect=NotADirectoryError("nope")))
+    interpreter = make_interpreter(config=configuration)
+
+    with pytest.raises(SystemExit) as excinfo:
+        interpreter.do_config_check(make_args(project_dir=".",
+                                              strict=False))
+
+    assert excinfo.value.code == 1
+
+
+def test_config_check_tolerates_unknown_options_by_default(
+        configuration, monkeypatch, caplog):
+    caplog.set_level(logging.NOTICE)
+    configuration._violations.append(
+        {"kind": "unknown", "file": "/etc/debops/conf.d/custom.yml",
+         "option": "myscript", "dropped": False,
+         "message": "unknown option 'myscript'"})
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(side_effect=NotADirectoryError("nope")))
+    interpreter = make_interpreter(config=configuration)
+
+    interpreter.do_config_check(make_args(project_dir=".", strict=False))
+
+    assert "The DebOps configuration is valid" in caplog.text
+
+
+def test_config_check_strict_fails_on_unknown_options(configuration,
+                                                      monkeypatch):
+    configuration._violations.append(
+        {"kind": "unknown", "file": "/etc/debops/conf.d/custom.yml",
+         "option": "myscript", "dropped": False,
+         "message": "unknown option 'myscript'"})
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(side_effect=NotADirectoryError("nope")))
+    interpreter = make_interpreter(config=configuration)
+
+    with pytest.raises(SystemExit) as excinfo:
+        interpreter.do_config_check(make_args(project_dir=".",
+                                              strict=True))
+
+    assert excinfo.value.code == 1
 
 
 def test_project_refresh_reports_a_failure(monkeypatch, capsys):
