@@ -102,8 +102,9 @@ else:
     print('Warning: manual pages not built')
 
 setup(
-    install_requires=['distro', 'future', 'jinja2', 'packaging', 'pyyaml',
-                      'pyxdg', 'toml', 'python-dotenv', 'gitpython'],
+    install_requires=['distro', 'future', 'jinja2', 'jsonschema', 'packaging',
+                      'pyyaml', 'pyxdg', 'toml', 'python-dotenv',
+                      'gitpython'],
     extras_require={
         'ansible': ['ansible', 'netaddr', 'passlib',
                     'python-ldap', 'dnspython', 'pyopenssl'],

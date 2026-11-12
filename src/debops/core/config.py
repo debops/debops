@@ -14,6 +14,7 @@ import string
 import collections.abc
 import toml
 import json
+import jsonschema
 import yaml
 from xdg.BaseDirectory import xdg_config_home
 try:
@@ -22,6 +23,42 @@ except ImportError:
     import ConfigParser as configparser
 
 logger = logging.getLogger(__name__)
+
+# The JSON Schema which describes the configuration tree. It is loaded
+# on first use, so that the package data is read where it is needed,
+# not at import time.
+_config_schema_path = os.path.join('_data', 'debops', 'config',
+                                   'schema.json')
+_config_validator = None
+
+
+def _schema_validator():
+    """Return the JSON Schema validator of the configuration tree."""
+    global _config_validator
+    if _config_validator is None:
+        schema = json.loads(
+            pkgutil.get_data('debops', _config_schema_path).decode('utf-8'))
+        _config_validator = jsonschema.Draft7Validator(schema)
+    return _config_validator
+
+
+def _dotted(segments):
+    """Render a path of the configuration tree as an option name."""
+    return '.'.join(str(segment) for segment in segments)
+
+
+def _violation_reason(error):
+    """Describe a schema violation in plain words."""
+    if error.validator == 'type':
+        expected = error.validator_value
+        if isinstance(expected, list):
+            expected = ' or '.join(expected)
+        return ('must be of type {}, not {}'
+                .format(expected, type(error.instance).__name__))
+    if error.validator == 'enum':
+        return 'must be one of: ' + ', '.join(
+            str(value) for value in error.validator_value)
+    return error.message
 
 
 class Configuration(object):
@@ -202,6 +239,66 @@ class Configuration(object):
         elif isinstance(data, dict):
             self._merge_dict(self._config, data)
 
+    def _validated(self, path, data):
+        """Validate a parsed configuration file against the schema.
+
+        A violation is reported as a warning and the offending option
+        is dropped, so that a mistyped option cannot corrupt the merged
+        configuration; the rest of the file applies. An option violated
+        inside an array is dropped whole, with the offending element
+        named in the warning.
+        """
+        if not isinstance(data, dict):
+            if data is not None:
+                logger.warning("Configuration file %s does not contain a "
+                               "dictionary of options, ignoring it", path)
+                return {}
+            return data
+        # The errors are collected before any option is dropped: the
+        # validator walks the data lazily, and dropping an option while
+        # it is being validated would desynchronize the walk
+        for error in list(_schema_validator().iter_errors(data)):
+            self._drop_violation(path, data, error)
+        return data
+
+    def _drop_violation(self, path, data, error):
+        """Report one schema violation and drop the offending option.
+
+        Options which an earlier violation already dropped are not
+        reported again.
+        """
+        if error.validator == 'additionalProperties':
+            # The error reports the container of the unexpected options;
+            # the schema comparison names them without parsing messages
+            known = set(error.schema.get('properties', {}))
+            for key in sorted(set(error.instance) - known):
+                segments = list(error.absolute_path) + [key]
+                logger.warning("Configuration file %s: unknown option "
+                               "'%s'", path, _dotted(segments))
+                del error.instance[key]
+            return
+        segments = list(error.absolute_path)
+        if not segments:
+            logger.warning("Configuration file %s: %s", path,
+                           error.message)
+            return
+        # A violation inside an array drops the whole option, the
+        # offending element is named by the rendered path
+        while segments and isinstance(segments[-1], int):
+            segments.pop()
+        node = data
+        for segment in segments[:-1]:
+            try:
+                node = node[segment]
+            except (KeyError, IndexError, TypeError):
+                return
+        key = segments[-1]
+        if key not in node:
+            return
+        logger.warning("Configuration file %s: option '%s' %s",
+                       path, _dotted(segments), _violation_reason(error))
+        del node[key]
+
     def _load_config_file(self, path):
 
         # Ignore "hidden" files but make exception for legacy '.debops.cfg'
@@ -215,20 +312,20 @@ class Configuration(object):
             with open(path, 'r') as fp:
                 data = toml.loads(fp.read())
                 data = self._expand_env_vars(data)
-                return data
+                return self._validated(path, data)
         elif path.endswith('.json'):
             self._config_files.append(path)
             with open(path, 'r') as fp:
                 data = json.loads(fp.read())
                 data = self._expand_env_vars(data)
-                return data
+                return self._validated(path, data)
         elif (path.endswith('.yaml') or path.endswith('.yml')):
             self._config_files.append(path)
             with open(path, 'r') as fp:
                 try:
                     data = yaml.safe_load(fp.read())
                     data = self._expand_env_vars(data)
-                    return data
+                    return self._validated(path, data)
                 except yaml.YAMLError as e:
                     logger.warning('Error in configuration file: %s:\n %s',
                                    path, e)
@@ -266,6 +363,11 @@ class Configuration(object):
                         except ValueError:
                             (self._converted_data[section]
                              .update({key: value}))
+
+            # The legacy file is a fragment of a view configuration, not
+            # a whole configuration tree: it is merged under a view,
+            # whose sections are free-form, so it is not validated
+            # against the schema
             return self._converted_data
 
     def config_list(self):
