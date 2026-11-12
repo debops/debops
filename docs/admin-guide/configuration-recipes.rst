@@ -37,7 +37,7 @@ The same query works for a whole section. Each option prints on its own
 line, attributed to its own source::
 
   alice@controller:~$ debops config get --show-origin syslog
-  /home/alice/.config/debops/conf.d/99_config_set.json	syslog.facility=local1
+  ~/.config/debops/conf.d/99_config_set.json	syslog.facility=local1
   /usr/share/debops/defaults.toml	syslog.level=NOTICE
 
 
