@@ -9,9 +9,9 @@ from unittest import mock
 
 import pytest
 
-import debops.core.projectrunner as projectrunner_module
-import debops.core.ansiblerunner as runner_module
-from debops.core.ansiblerunner import AnsibleRunner
+import debops.core.ansible.projectrunner as projectrunner_module
+import debops.core.ansible.ansiblerunner as runner_module
+from debops.core.ansible.ansiblerunner import AnsibleRunner
 
 
 @pytest.fixture(autouse=True)
@@ -256,7 +256,7 @@ def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch,
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
     runner.inventory.unlock.return_value = True
 
-    with caplog.at_level(logging.NOTICE, logger="debops.core.ansiblerunner"):
+    with caplog.at_level(logging.NOTICE, logger="debops.core.ansible.ansiblerunner"):
         with pytest.raises(SystemExit):
             runner.execute()
 

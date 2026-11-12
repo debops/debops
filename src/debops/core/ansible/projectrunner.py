@@ -9,7 +9,7 @@ the Ansible environment shared by the runners which execute Ansible and
 user commands inside a project directory.
 """
 
-from .ansible.inventory import AnsibleInventory
+from .inventory import AnsibleInventory
 import configparser
 import logging
 import subprocess

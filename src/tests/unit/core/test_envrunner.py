@@ -9,7 +9,7 @@ from unittest import mock
 
 import pytest
 
-import debops.core.projectrunner as projectrunner_module
+import debops.core.ansible.projectrunner as projectrunner_module
 import debops.core.envrunner as runner_module
 from debops.core.envrunner import EnvRunner
 
