@@ -183,6 +183,11 @@ class ProjectDir(object):
 
         self.config.merge(os.path.join(self.path, '.debops', 'conf.d'))
 
+        # The environment overrides rank above the project's files;
+        # they re-apply here because the project files could have
+        # shadowed the values applied when the configuration was built
+        self.config.apply_env_overrides()
+
         # Point the Ansible binaries and PATH at the project virtual
         # environment, if enabled
         self._apply_venv_runtime()
@@ -987,6 +992,10 @@ class ProjectDir(object):
 
         self.config.merge(os.path.join(self.path, '.debops', 'conf.d'))
 
+        # The environment overrides rank above the freshly written
+        # project configuration
+        self.config.apply_env_overrides()
+
         # Point the Ansible binaries and PATH at the project virtual
         # environment, if enabled; __init__() ran before the project
         # configuration existed, so this is not applied there
@@ -1098,6 +1107,10 @@ class ProjectDir(object):
         project_data['views']['system'].update(
                 self.config.load(os.path.join(self.path, '.debops.cfg')))
         self.config.merge(project_data)
+
+        # The environment overrides rank above the freshly written
+        # project configuration
+        self.config.apply_env_overrides()
 
         encrypted_secrets = self.encrypt
 
