@@ -380,11 +380,13 @@ class Configuration(object):
     def _validated(self, path, data):
         """Validate a parsed configuration file against the schema.
 
-        A violation is reported as a warning and the offending option
-        is dropped, so that a mistyped option cannot corrupt the merged
-        configuration; the rest of the file applies. An option violated
-        inside an array is dropped whole, with the offending element
-        named in the warning.
+        A violation is reported as a warning. An option with a value of
+        a wrong type is dropped, so that a mistyped value cannot
+        corrupt the merged configuration and the configured default
+        applies. An unknown option is reported but kept: nothing in
+        DebOps reads it, and dropping it would break the scripts and
+        integrations which do. An option violated inside an array is
+        dropped whole, with the offending element named in the warning.
         """
         if not isinstance(data, dict):
             if data is not None:
@@ -396,24 +398,30 @@ class Configuration(object):
         # validator walks the data lazily, and dropping an option while
         # it is being validated would desynchronize the walk
         for error in list(_schema_validator().iter_errors(data)):
-            self._drop_violation(path, data, error)
+            self._report_violation(path, data, error)
         return data
 
-    def _drop_violation(self, path, data, error):
-        """Report one schema violation and drop the offending option.
+    def _report_violation(self, path, data, error):
+        """Report one schema violation and apply the dropping policy.
 
-        Options which an earlier violation already dropped are not
+        Unknown options are kept, options of a wrong type are dropped;
+        an option already dropped by an earlier violation is not
         reported again.
         """
         if error.validator == 'additionalProperties':
             # The error reports the container of the unexpected options;
-            # the schema comparison names them without parsing messages
+            # the schema comparison names them without parsing messages.
+            # Unknown options are kept, the warning is their trace
             known = set(error.schema.get('properties', {}))
             for key in sorted(set(error.instance) - known):
-                segments = list(error.absolute_path) + [key]
-                logger.warning("Configuration file %s: unknown option "
-                               "'%s'", path, _dotted(segments))
-                del error.instance[key]
+                if error.absolute_path:
+                    segments = list(error.absolute_path) + [key]
+                    logger.warning("Configuration file %s: unknown option "
+                                   "'%s'", path, _dotted(segments))
+                else:
+                    logger.warning("Configuration file %s: unknown option "
+                                   "'%s', custom options belong under the "
+                                   "'custom' section", path, key)
             return
         segments = list(error.absolute_path)
         if not segments:
