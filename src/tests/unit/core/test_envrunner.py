@@ -10,13 +10,14 @@ from unittest import mock
 import pytest
 
 import debops.core.ansible.projectrunner as projectrunner_module
+import debops.core.runner as runner_base_module
 import debops.core.envrunner as runner_module
 from debops.core.envrunner import EnvRunner
 
 
 @pytest.fixture(autouse=True)
-def stub_ansible_inventory(monkeypatch):
-    monkeypatch.setattr(projectrunner_module, "AnsibleSecretStore",
+def stub_project_secrets(monkeypatch):
+    monkeypatch.setattr(runner_base_module, "SecretManager",
                         mock.Mock())
 
 
@@ -39,27 +40,27 @@ def test_command_is_the_user_supplied_arguments(stub_project):
     assert runner._command == ["env"]
 
 
-def test_missing_ansible_cfg_is_reported(stub_project):
+def test_env_runs_without_ansible_configuration(stub_project):
+    """The env command runs commands in the project environment; it
+    does not consult the Ansible configuration, so a project whose
+    Ansible setup is broken or absent can still use it."""
     project = stub_project(cfg_error=configparser.NoSectionError("defaults"))
-    with pytest.raises(FileNotFoundError):
-        EnvRunner(project, command_args=["env"])
+
+    runner = EnvRunner(project, command_args=["env"])
+
+    assert runner.show_env("local") is not None
 
 
 def test_missing_defaults_section_in_an_existing_file(stub_project, caplog):
+    """The Ansible configuration problems surface when the Ansible
+    runners are constructed, not when the environment is inspected."""
     project = stub_project(cfg_error=configparser.NoSectionError("defaults"))
     with open(project.ansible_cfg.path, "w") as handle:
         handle.write("[other]\n")
 
-    with pytest.raises(ValueError):
-        EnvRunner(project, command_args=["env"])
+    runner = EnvRunner(project, command_args=["env"])
 
-    assert project.ansible_cfg.path in caplog.text
-
-
-def test_missing_inventory_option_aborts(stub_project):
-    project = stub_project(cfg_options={})
-    with pytest.raises(ValueError, match="No inventory specified"):
-        EnvRunner(project, command_args=["env"])
+    assert runner.show_env("local") is not None
 
 
 def test_show_env_local_returns_configured_variables(stub_project,
@@ -200,3 +201,4 @@ def test_execute_handles_interrupt_without_unlocking(stub_project,
         runner.execute()
 
     runner.secrets.lock.assert_not_called()
+    runner.secrets = mock.Mock()
