@@ -34,9 +34,11 @@ Options
 
 ``--show-origin``
   Print the options as plain text, one line per option: the source
-  which last set each option (the configuration file, the runtime
-  state or the environment variable), then the option and its value
-  joined by ``=``. The columns are separated by tabs and contain no
+  which last set each option, then the option and its value joined by
+  ``=``. The source is the configuration file which set the option,
+  the environment variable for the options overridden from the
+  environment, or ``debops`` for the options which the tool computes
+  at runtime. The columns are separated by tabs and contain no
   whitespace themselves, so the lines can be split on tabs reliably.
   This rendering cannot be combined with other output formats or
   options.
