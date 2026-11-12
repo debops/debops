@@ -174,7 +174,7 @@ class ProjectDir(object):
                                            '.debops', 'environment'))
         self.config.merge_env(self.path)
         self.config.merge(project_data, scope='runtime',
-                          origin='project-metadata')
+                          origin='debops')
 
         if self.project_type == 'legacy':
             legacy_cfg = os.path.join(self.path, '.debops.cfg')
@@ -226,7 +226,7 @@ class ProjectDir(object):
                 'view': self.view
                 }
             }
-        self.config.merge(view_data, scope='runtime', origin='view-state')
+        self.config.merge(view_data, scope='runtime', origin='debops')
 
         # Expose current view in runtime environment
         self.config.set_env('DEBOPS_PROJECT_VIEW', self.view)
@@ -284,7 +284,7 @@ class ProjectDir(object):
                       }
                     }
                 self.config.merge(inventory_data, scope='runtime',
-                                  origin='secret-store-state')
+                                  origin='debops')
         logger.debug('Project {} loaded'.format(self.name))
 
     def environment(self):
@@ -373,7 +373,8 @@ class ProjectDir(object):
         self.config.merge({'binaries': {
             name: os.path.join(venv_bin, name)
             for name in ('ansible', 'ansible-inventory',
-                         'ansible-galaxy', 'ansible-playbook')}})
+                         'ansible-galaxy', 'ansible-playbook')}},
+            scope='runtime', origin='debops')
 
     def _apply_venv_runtime(self):
         """Point the Ansible binaries and the PATH environment variable at
@@ -1119,7 +1120,7 @@ class ProjectDir(object):
         }
 
         self.config.merge(project_data, scope='runtime',
-                          origin='project-metadata')
+                          origin='debops')
 
         legacy_cfg = os.path.join(self.path, '.debops.cfg')
         self.config.merge(
@@ -1422,7 +1423,9 @@ class ProjectDir(object):
                                  default_inventory_keyring.render()
                                  + '\n')
 
-                self.config.merge(os.path.join(self.path, '.debops', 'conf.d'))
+                self.config.merge(os.path.join(self.path, '.debops',
+                                               'conf.d'),
+                                  scope='project')
 
                 self.ansible_cfg = AnsibleConfig(
                         os.path.join(self.path, 'ansible', 'views',

@@ -168,6 +168,21 @@ def test_venv_enabled_tolerates_a_config_without_get():
     assert make_project(None)._venv_enabled() is False
 
 
+def test_update_venv_binaries_records_the_venv_origin(tmp_path):
+    project = make_project_at(tmp_path, raw={
+        "binaries": {"ansible": "ansible"}})
+    project.config = make_configuration(raw={
+        "project": {"venv": {"enabled": True, "path": ".debops/venv"}},
+        "binaries": {"ansible": "ansible"}})
+
+    project._update_venv_binaries()
+
+    scope, origin, data = project.config._layers[-1]
+    assert (scope, origin) == ("runtime", "debops")
+    assert project.config.raw["binaries"]["ansible"] == str(
+        tmp_path / ".debops" / "venv" / "bin" / "ansible")
+
+
 def test_inventory_spec_config_tolerates_a_config_without_get():
     policy = make_project(None)._inventory_spec_config()
 
@@ -997,7 +1012,7 @@ def test_update_venv_binaries_points_the_ansible_binaries_at_the_venv(
     project = make_project_at(tmp_path)
     project.config = make_venv_config(tmp_path)
     project.config.raw["binaries"] = {}
-    project.config.merge = mock.Mock(side_effect=lambda data: (
+    project.config.merge = mock.Mock(side_effect=lambda data, **kwargs: (
         project.config.raw["binaries"].update(data["binaries"])))
 
     project._update_venv_binaries()
@@ -1014,7 +1029,7 @@ def test_apply_venv_runtime_computes_binaries_and_path(tmp_path, monkeypatch):
     project = make_project_at(tmp_path)
     project.config = make_venv_config(tmp_path)
     project.config.raw["binaries"] = {}
-    project.config.merge = mock.Mock(side_effect=lambda data: (
+    project.config.merge = mock.Mock(side_effect=lambda data, **kwargs: (
         project.config.raw["binaries"].update(data["binaries"])))
     project.config.set_env = lambda key, value: (
         project.config._env_vars.__setitem__(key, value))
