@@ -2,7 +2,7 @@
 # Copyright (C) 2023-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from .projectrunner import ProjectRunner
+from .projectrunner import AnsibleProjectRunner
 from ..hooks import run_hooks
 import logging
 import subprocess
@@ -10,7 +10,7 @@ import subprocess
 logger = logging.getLogger(__name__)
 
 
-class AnsibleRunner(ProjectRunner):
+class AnsibleRunner(AnsibleProjectRunner):
     """Run the :command:`ansible` command in the project environment."""
 
     def __init__(self, project, ansible_args, bell=False):

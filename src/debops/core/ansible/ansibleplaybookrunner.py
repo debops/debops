@@ -2,7 +2,7 @@
 # Copyright (C) 2020-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from .projectrunner import ProjectRunner
+from .projectrunner import AnsibleProjectRunner
 from ..utils import unexpanduser
 from ..hooks import run_hooks
 import subprocess
@@ -21,7 +21,7 @@ notice_logger = logging.getLogger('debops.notice')
 notice_logger.setLevel(logging.NOTICE)
 
 
-class AnsiblePlaybookRunner(ProjectRunner):
+class AnsiblePlaybookRunner(AnsibleProjectRunner):
     """Run the :command:`ansible-playbook` command in the project
     environment."""
 
