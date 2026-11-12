@@ -67,6 +67,15 @@ General
   parsed, which makes it usable in CI pipelines; the '--strict'
   option additionally reports unknown options as errors.
 
+- The ``debops.core.config.Configuration`` class can now build a
+  standalone configuration from the sources given by the caller:
+  defaults, configuration files and directories, a JSON Schema of the
+  caller's own vocabulary, an environment override prefix and
+  environment files. Without arguments, the class builds the DebOps
+  configuration as before. The new 'config_set()' method sets an
+  option in the configuration tree with the type conversion and the
+  schema checks the command line uses.
+
 - The :command:`debops config get` command now supports the
   '--show-origin' and '--show-scope' options, which render the
   selected options as plain text, one line per option: the source
