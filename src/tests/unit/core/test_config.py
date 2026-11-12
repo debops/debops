@@ -119,14 +119,14 @@ def test_load_returns_empty_for_a_missing_path(configuration, tmp_path):
 @pytest.mark.parametrize("extension", ["toml", "json", "yaml"])
 def test_load_reads_a_single_file(configuration, tmp_path, extension):
     content = {
-        "toml": 'a = "b"\n',
-        "json": '{"a": "b"}\n',
-        "yaml": "a: b\n",
+        "toml": '[syslog]\naddress = "log"\n',
+        "json": '{"syslog": {"address": "log"}}\n',
+        "yaml": "syslog:\n  address: log\n",
     }[extension]
     path = tmp_path / ("config." + extension)
     path.write_text(content)
 
-    assert configuration.load(str(path)) == {"a": "b"}
+    assert configuration.load(str(path)) == {"syslog": {"address": "log"}}
     assert str(path) in configuration._config_files
 
 
@@ -134,23 +134,24 @@ def test_load_expands_environment_variables(configuration, tmp_path,
                                             monkeypatch):
     monkeypatch.setenv("DEBOPS_TEST_VALUE", "hello")
     path = tmp_path / "config.toml"
-    path.write_text('a = "$DEBOPS_TEST_VALUE"\n')
+    path.write_text('[syslog]\naddress = "$DEBOPS_TEST_VALUE"\n')
 
-    assert configuration.load(str(path)) == {"a": "hello"}
+    assert configuration.load(str(path)) == {"syslog": {"address": "hello"}}
 
 
 def test_load_merges_a_directory_in_sorted_order(configuration, tmp_path):
-    (tmp_path / "10-first.toml").write_text('a = 1\nb = 1\n')
-    (tmp_path / "20-second.toml").write_text('b = 2\n')
+    (tmp_path / "10-first.toml").write_text('[syslog]\naddress = "one"\n')
+    (tmp_path / "20-second.toml").write_text('[syslog]\naddress = "two"\n')
 
-    assert configuration.load(str(tmp_path)) == {"a": 1, "b": 2}
+    assert configuration.load(str(tmp_path)) == {"syslog": {"address": "two"}}
 
 
 def test_load_ignores_subdirectories(configuration, tmp_path):
     (tmp_path / "nested").mkdir()
-    (tmp_path / "a.toml").write_text('a = 1\n')
+    (tmp_path / "options.toml").write_text('[git]\ninit_message = "msg"\n')
 
-    assert configuration.load(str(tmp_path)) == {"a": 1}
+    assert configuration.load(str(tmp_path)) == {"git": {"init_message":
+                                                         "msg"}}
 
 
 def test_load_returns_empty_for_a_special_file(configuration, tmp_path):
@@ -161,18 +162,19 @@ def test_load_returns_empty_for_a_special_file(configuration, tmp_path):
 
 
 def test_load_ignores_hidden_files(configuration, tmp_path):
-    (tmp_path / ".hidden.toml").write_text('a = 1\n')
-    (tmp_path / "visible.toml").write_text('b = 2\n')
+    (tmp_path / ".hidden.toml").write_text('[git]\ninit_message = "x"\n')
+    (tmp_path / "visible.toml").write_text('[git]\ninit_message = "y"\n')
 
-    assert configuration.load(str(tmp_path)) == {"b": 2}
+    assert configuration.load(str(tmp_path)) == {"git": {"init_message": "y"}}
 
 
 def test_load_reports_invalid_yaml_and_keeps_going(configuration, tmp_path,
                                                    caplog):
     (tmp_path / "broken.yaml").write_text("a: [unterminated\n")
-    (tmp_path / "ok.toml").write_text('b = 2\n')
+    (tmp_path / "ok.toml").write_text('[git]\ninit_message = "msg"\n')
 
-    assert configuration.load(str(tmp_path)) == {"b": 2}
+    assert configuration.load(str(tmp_path)) == {"git": {"init_message":
+                                                         "msg"}}
     assert "broken.yaml" in caplog.text
 
 
@@ -190,6 +192,122 @@ def test_load_converts_the_legacy_debops_cfg(configuration, tmp_path):
         "ansible": {"defaults": {"become": True, "inventory": "hosts"}},
         "general": {"verbose": True, "name": "debops"},
     }
+
+
+def test_load_warns_and_drops_an_unknown_root_option(
+        configuration, tmp_path, caplog):
+    typo = tmp_path / "typo.toml"
+    typo.write_text('[versionchek]\n'
+                    'enabled = true\n')
+
+    configuration.merge(str(tmp_path))
+
+    assert "versionchek" not in configuration.raw
+    assert "typo.toml" in caplog.text
+    assert "unknown option 'versionchek'" in caplog.text
+
+
+def test_load_drops_an_option_with_a_value_of_a_wrong_type(
+        configuration, tmp_path, caplog):
+    options = tmp_path / "options.toml"
+    options.write_text('[syslog]\n'
+                       'port = "five"\n'
+                       'address = "/dev/log"\n')
+
+    configuration.merge(str(tmp_path))
+
+    assert "port" not in configuration.raw["syslog"]
+    assert configuration.raw["syslog"]["address"] == "/dev/log"
+    assert ("option 'syslog.port' must be of type integer, not str"
+            in caplog.text)
+
+
+def test_load_drops_an_option_outside_of_its_enum(configuration, tmp_path,
+                                                  caplog):
+    (tmp_path / "options.toml").write_text('[syslog]\n'
+                                           'level = "notice"\n')
+
+    configuration.merge(str(tmp_path))
+
+    assert "level" not in configuration.raw["syslog"]
+    assert "must be one of" in caplog.text
+
+
+def test_load_drops_an_option_violated_inside_an_array(
+        configuration, tmp_path, caplog):
+    views = tmp_path / "views.yml"
+    views.write_text('views:\n'
+                     '  prod:\n'
+                     '    playbook_collections:\n'
+                     "      - 'debops.debops'\n"
+                     '      - 5\n')
+
+    configuration.merge(str(tmp_path))
+
+    assert "playbook_collections" not in configuration.raw["views"]["prod"]
+    assert "views.prod.playbook_collections" in caplog.text
+
+
+def test_load_accepts_the_documented_options(configuration, tmp_path,
+                                             caplog):
+    (tmp_path / "options.yaml").write_text('views:\n'
+                                           '  prod:\n'
+                                           '    playbook_collections:\n'
+                                           "      - 'debops.debops'\n"
+                                           '    ansible:\n'
+                                           '      defaults:\n'
+                                           "        inventory: 'inventory'\n")
+
+    configuration.merge(str(tmp_path))
+
+    assert (configuration.raw["views"]["prod"]["ansible"]["defaults"]
+            ["inventory"]) == "inventory"
+    assert "unknown option" not in caplog.text
+
+
+def test_load_allows_unknown_sections_inside_a_view(configuration, tmp_path,
+                                                    caplog):
+    """Legacy project directories merge free-form '.debops.cfg' sections
+    under their view; a view is not closed to unknown sections."""
+    (tmp_path / "views.yml").write_text('views:\n'
+                                        '  system:\n'
+                                        '    globals:\n'
+                                        '      verbose: 1\n')
+
+    configuration.merge(str(tmp_path))
+
+    assert configuration.raw["views"]["system"]["globals"] == {"verbose": 1}
+    assert "unknown option" not in caplog.text
+
+
+def test_load_ignores_a_file_without_a_dictionary_of_options(configuration,
+                                                             tmp_path,
+                                                             caplog):
+    (tmp_path / "list.yaml").write_text("- a\n"
+                                        "- b\n")
+    (tmp_path / "ok.toml").write_text('[git]\ninit_message = "msg"\n')
+
+    assert configuration.load(str(tmp_path)) == {"git": {"init_message":
+                                                         "msg"}}
+    assert "list.yaml" in caplog.text
+
+
+def test_packaged_defaults_match_the_schema(caplog):
+    import jinja2
+    import pkgutil
+    import toml
+
+    from debops.core.config import _schema_validator
+
+    template = jinja2.Template(
+        pkgutil.get_data("debops", os.path.join("_data", "defaults.toml"))
+        .decode("utf-8"), trim_blocks=True)
+    defaults = toml.loads(template.render(env=os.environ))
+
+    errors = list(_schema_validator().iter_errors(defaults))
+
+    assert not errors
+    assert not caplog.text
 
 
 def test_merge_env_reads_a_dotenv_directory(configuration, tmp_path,
@@ -448,11 +566,11 @@ def test_merge_accepts_a_dictionary(configuration):
 
 
 def test_merge_loads_from_a_directory(configuration, tmp_path):
-    (tmp_path / "10-extra.toml").write_text('extra = "yes"\n')
+    (tmp_path / "10-extra.toml").write_text('[git]\ninit_message = "msg"\n')
 
     configuration.merge(str(tmp_path))
 
-    assert configuration.raw["extra"] == "yes"
+    assert configuration.raw["git"] == {"init_message": "msg"}
 
 
 def test_config_list_returns_env_and_config_files(configuration, tmp_path):

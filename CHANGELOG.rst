@@ -34,6 +34,12 @@ General
   infrastructure view the operation runs in, so that entries from
   different projects can be told apart in the system journal.
 
+- Configuration files are now validated against a JSON schema when
+  they are loaded. Unknown configuration options and options with a
+  value of a wrong type are reported as warnings and ignored, so that
+  a mistake in a configuration file cannot silently corrupt the
+  merged configuration.
+
 Changed
 ~~~~~~~
 
