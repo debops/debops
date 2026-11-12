@@ -1286,6 +1286,47 @@ def test_init_detects_a_modern_project_from_a_subdirectory(
             == str(tmp_path / "ansible" / "views" / "system" / "inventory"))
 
 
+def test_init_loads_the_view_dotenv(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    write_modern_project(tmp_path)
+    view_dir = tmp_path / "ansible" / "views" / "system"
+    view_dir.mkdir(parents=True)
+    (view_dir / ".env").write_text("VIEW_LOCAL=from-view\n")
+
+    project = ProjectDir(str(tmp_path), config=make_configuration())
+
+    assert project.config._env_vars["VIEW_LOCAL"] == "from-view"
+
+
+def test_init_the_view_dotenv_ranks_above_the_project_dotenv(
+        tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    write_modern_project(tmp_path)
+    (tmp_path / ".env").write_text("SHARED=from-project\n"
+                                   "PROJECT_ONLY=1\n")
+    view_dir = tmp_path / "ansible" / "views" / "system"
+    view_dir.mkdir(parents=True)
+    (view_dir / ".env").write_text("SHARED=from-view\n")
+
+    project = ProjectDir(str(tmp_path), config=make_configuration())
+
+    assert project.config._env_vars["SHARED"] == "from-view"
+    assert project.config._env_vars["PROJECT_ONLY"] == "1"
+
+
+def test_init_loads_the_legacy_view_dotenv_once(tmp_path, monkeypatch):
+    """A legacy project's only view is the project root itself, whose
+    '.env' is already loaded as the project environment."""
+    monkeypatch.chdir(tmp_path)
+    write_legacy_project(tmp_path)
+    (tmp_path / ".env").write_text("ONCE=1\n")
+
+    project = ProjectDir(str(tmp_path), config=make_configuration())
+
+    assert project.config._env_vars["ONCE"] == "1"
+    assert project.config._env_files.count(str(tmp_path / ".env")) == 1
+
+
 def test_init_rejects_a_directory_without_a_project(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
