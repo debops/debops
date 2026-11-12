@@ -4,7 +4,7 @@
 
 from .constants import DEBOPS_PACKAGE_DATA
 from .exceptions import OptionNotFoundError
-from .utils import unexpanduser, strtobool
+from .utils import unexpanduser, strtobool, write_file
 import os
 import logging
 import dotenv
@@ -73,6 +73,25 @@ def _parse_scalar(value):
         return json.loads(value)
     except ValueError:
         return value
+
+
+def _prune_empty(data, segments):
+    """Remove the sections left empty by removing an option.
+
+    Walks from the parent of the removed option towards the root,
+    dropping the parent sections which became empty dictionaries, and
+    stops at the first section which is not empty.
+    """
+    for depth in range(len(segments) - 1, 0, -1):
+        node = data
+        for segment in segments[:depth]:
+            node = node[segment]
+        if node != {}:
+            break
+        parent = data
+        for segment in segments[:depth - 1]:
+            parent = parent[segment]
+        del parent[segments[depth - 1]]
 
 
 def _resolve_schema_node(schema, segments):
@@ -376,6 +395,106 @@ class Configuration(object):
             node = node.setdefault(segment, {})
         node[segments[-1]] = value
         self._merge_dict(self._config, data)
+
+    def option_file(self, directory):
+        """Return the configuration file managed by 'config set'.
+
+        The files whose names end with '_config_set.json' are the ones
+        the command manages; the numeric prefix of the name decides
+        where the options rank among the files of the directory, so
+        when the operator creates a file with a different prefix, it
+        replaces the default one. Returns the path of the file to
+        operate on; the file itself is not created.
+        """
+        matches = []
+        if os.path.isdir(directory):
+            for name in sorted(os.listdir(directory)):
+                path = os.path.join(directory, name)
+                if (os.path.isfile(path)
+                        and name.endswith('_config_set.json')
+                        and not name.startswith('.')):
+                    matches.append(path)
+        if not matches:
+            return os.path.join(directory, '99_config_set.json')
+        if len(matches) > 1:
+            raise ValueError(
+                'Multiple configuration files managed by '
+                "'debops config set' in " + directory + ': '
+                + ', '.join(unexpanduser(m) for m in matches))
+        return matches[0]
+
+    def write_option(self, path, key, value=None, delete=False):
+        """Set or remove a configuration option in a JSON file.
+
+        The option is addressed by its dotted path in the
+        configuration tree. When set, the value is converted to the
+        type the configuration schema defines for the option, and
+        options unknown to the schema are refused, except under the
+        'custom' section, which is reserved for options defined
+        outside of DebOps. When removed, the option is deleted from
+        the file together with the sections left empty by its removal;
+        options unknown to the schema are removed as well, so that the
+        command can clean up configurations which predate the schema.
+
+        Raises ValueError when the option cannot be set or removed;
+        the file is written only when the operation succeeds.
+        """
+        segments = [segment.lower() for segment in key.split('.')
+                    if segment]
+        if not segments:
+            raise ValueError('No configuration option specified')
+        if not delete and value is None:
+            raise ValueError("No value specified for the '{}' option"
+                             .format(_dotted(segments)))
+
+        data = {}
+        if os.path.isfile(path):
+            with open(path, 'r') as fp:
+                content = fp.read()
+            try:
+                data = json.loads(content) if content.strip() else {}
+            except json.JSONDecodeError as errmsg:
+                raise ValueError('{}: {}'.format(path, errmsg))
+        if not isinstance(data, dict):
+            raise ValueError('{}: the file does not contain a '
+                             'dictionary of options'.format(path))
+
+        if delete:
+            node = data
+            for segment in segments[:-1]:
+                if not isinstance(node, dict) or segment not in node:
+                    raise ValueError("The '{}' option is not set in {}"
+                                     .format(_dotted(segments), path))
+                node = node[segment]
+            leaf = segments[-1]
+            if not isinstance(node, dict) or leaf not in node:
+                raise ValueError("The '{}' option is not set in {}"
+                                 .format(_dotted(segments), path))
+            del node[leaf]
+            _prune_empty(data, segments)
+        else:
+            try:
+                option_value = self._coerce_override(segments, value)
+            except (ValueError, TypeError) as errmsg:
+                raise ValueError('{}: {}'.format(_dotted(segments),
+                                                 errmsg))
+            if option_value is None:
+                raise ValueError(
+                    "The '{}' option is not defined in the DebOps "
+                    "configuration; custom options belong under the "
+                    "'custom' section".format(_dotted(segments)))
+            option_value = self._expand_env_vars(option_value)
+            node = data
+            for segment in segments[:-1]:
+                child = node.get(segment)
+                if not isinstance(child, dict):
+                    child = {}
+                    node[segment] = child
+                node = child
+            node[segments[-1]] = option_value
+
+        write_file(path, json.dumps(data, indent=2, sort_keys=True)
+                   + '\n', overwrite=True)
 
     def _validated(self, path, data):
         """Validate a parsed configuration file against the schema.
