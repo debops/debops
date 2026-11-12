@@ -178,6 +178,42 @@ used instead of the default one, so the prefix decides where the managed
 options rank among the configuration files of the directory.
 
 
+:command:`debops config check`
+------------------------------
+
+Check the DebOps configuration for errors: unknown options, options with
+values of a wrong type, configuration files which cannot be parsed. The
+command exits with a non-zero status when the configuration was modified by
+the check: an option was dropped, or a file could not be parsed. This makes
+the command usable in CI pipelines, before the configuration is deployed.
+
+Options
+~~~~~~~
+
+``-h, --help``
+  Display the help and usage information
+
+``--project-dir <project_dir>``
+  Path to the project directory to work on. If it's not specified, the script
+  will use the current directory.
+
+``--strict``
+  Report unknown configuration options as errors as well, not only the
+  options which the check drops.
+
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
+Examples
+~~~~~~~~
+
+Check the configuration of the current project directory:
+
+.. code-block:: shell
+
+   debops config check
+
+
 Configuration files
 -------------------
 

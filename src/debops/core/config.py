@@ -128,6 +128,7 @@ class Configuration(object):
         self._env_files = []
         self._env_vars = {}
         self._env_overrides = []
+        self._violations = []
 
         # Set default environment variables at runtime
         self.set_env('DEBOPS_ANSIBLE_COLLECTIONS_PATH',
@@ -332,18 +333,24 @@ class Configuration(object):
             segments = [segment.lower()
                         for segment in tail.split('__') if segment]
             if not segments:
-                logger.warning("Ignoring environment override '%s': no "
-                               "configuration path", name)
+                self._record_violation(
+                    'override', None, name, True,
+                    "ignoring environment override '{}': no "
+                    "configuration path".format(name))
                 continue
             try:
                 option_value = self._coerce_override(segments, value)
             except (ValueError, TypeError) as errmsg:
-                logger.warning("Ignoring environment override '%s': %s",
-                               name, errmsg)
+                self._record_violation(
+                    'override', None, name, True,
+                    "ignoring environment override '{}': {}".format(
+                        name, errmsg))
                 continue
             if option_value is None:
-                logger.warning("Ignoring environment override '%s': not "
-                               "a DebOps configuration option", name)
+                self._record_violation(
+                    'override', None, name, True,
+                    "ignoring environment override '{}': not a DebOps "
+                    "configuration option".format(name))
                 continue
             self._merge_override(segments,
                                  self._expand_env_vars(option_value))
@@ -509,8 +516,10 @@ class Configuration(object):
         """
         if not isinstance(data, dict):
             if data is not None:
-                logger.warning("Configuration file %s does not contain a "
-                               "dictionary of options, ignoring it", path)
+                self._record_violation(
+                    'parse', path, None, True,
+                    'the file does not contain a dictionary of options, '
+                    'ignoring it')
                 return {}
             return data
         # The errors are collected before any option is dropped: the
@@ -519,6 +528,18 @@ class Configuration(object):
         for error in list(_schema_validator().iter_errors(data)):
             self._report_violation(path, data, error)
         return data
+
+    def _record_violation(self, kind, path, option, dropped, message):
+        """Record a configuration violation and report it.
+
+        The ledger of recorded violations is what 'debops config
+        check' turns into an exit code, and what a configuration
+        reload can present as the list of problems found.
+        """
+        self._violations.append({'kind': kind, 'file': path,
+                                 'option': option, 'dropped': dropped,
+                                 'message': message})
+        logger.warning("Configuration file %s: %s", path, message)
 
     def _report_violation(self, path, data, error):
         """Report one schema violation and apply the dropping policy.
@@ -535,17 +556,19 @@ class Configuration(object):
             for key in sorted(set(error.instance) - known):
                 if error.absolute_path:
                     segments = list(error.absolute_path) + [key]
-                    logger.warning("Configuration file %s: unknown option "
-                                   "'%s'", path, _dotted(segments))
+                    self._record_violation(
+                        'unknown', path, _dotted(segments), False,
+                        "unknown option '{}'".format(_dotted(segments)))
                 else:
-                    logger.warning("Configuration file %s: unknown option "
-                                   "'%s', custom options belong under the "
-                                   "'custom' section", path, key)
+                    self._record_violation(
+                        'unknown', path, key, False,
+                        "unknown option '{}', custom options belong "
+                        "under the 'custom' section".format(key))
             return
         segments = list(error.absolute_path)
         if not segments:
-            logger.warning("Configuration file %s: %s", path,
-                           error.message)
+            self._record_violation('schema', path, None, False,
+                                   error.message)
             return
         # A violation inside an array drops the whole option, the
         # offending element is named by the rendered path
@@ -560,8 +583,10 @@ class Configuration(object):
         key = segments[-1]
         if key not in node:
             return
-        logger.warning("Configuration file %s: option '%s' %s",
-                       path, _dotted(segments), _violation_reason(error))
+        option = _dotted(segments)
+        self._record_violation(error.validator, path, option, True,
+                               "option '{}' {}".format(
+                                   option, _violation_reason(error)))
         del node[key]
 
     def _load_config_file(self, path):
@@ -591,9 +616,10 @@ class Configuration(object):
                     data = yaml.safe_load(fp.read())
                     data = self._expand_env_vars(data)
                     return self._validated(path, data)
-                except yaml.YAMLError as e:
-                    logger.warning('Error in configuration file: %s:\n %s',
-                                   path, e)
+                except yaml.YAMLError as errmsg:
+                    self._record_violation(
+                        'parse', path, None, True,
+                        'the file cannot be parsed: {}'.format(errmsg))
 
         elif path.endswith('/.debops.cfg'):
             self._config_files.append(path)

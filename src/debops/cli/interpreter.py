@@ -80,6 +80,8 @@ class Interpreter(object):
                 self.do_config_get(self.parsed_args.args)
             elif self.parsed_args.command == 'set':
                 self.do_config_set(self.parsed_args.args)
+            elif self.parsed_args.command == 'check':
+                self.do_config_check(self.parsed_args.args)
 
     def do_project_init(self, args):
         try:
@@ -344,3 +346,22 @@ class Interpreter(object):
             logger.notice("Set '%s' to '%s' in %s", args.key, args.value,
                           option_file,
                           extra={'allow': ['stderr', 'syslog']})
+
+    def do_config_check(self, args):
+        try:
+            ProjectDir(path=args.project_dir, config=self.config,
+                       cwd=self.cwd)
+        except (IsADirectoryError, NotADirectoryError):
+            # The configuration is checked without the project's files
+            # when there is no project directory to work on
+            pass
+
+        failures = [violation for violation in self.config._violations
+                    if violation['dropped']]
+        if args.strict:
+            failures += [violation for violation in self.config._violations
+                         if not violation['dropped']]
+        if failures:
+            sys.exit(1)
+        logger.notice('The DebOps configuration is valid',
+                      extra={'allow': ['stderr', 'syslog']})
