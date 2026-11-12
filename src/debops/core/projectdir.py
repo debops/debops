@@ -174,7 +174,7 @@ class ProjectDir(object):
                                            '.debops', 'environment'))
         self.config.merge_env(self.path)
         self.config.merge(project_data, scope='runtime',
-                          origin='project metadata')
+                          origin='project-metadata')
 
         if self.project_type == 'legacy':
             legacy_cfg = os.path.join(self.path, '.debops.cfg')
@@ -226,7 +226,7 @@ class ProjectDir(object):
                 'view': self.view
                 }
             }
-        self.config.merge(view_data, scope='runtime', origin='view state')
+        self.config.merge(view_data, scope='runtime', origin='view-state')
 
         # Expose current view in runtime environment
         self.config.set_env('DEBOPS_PROJECT_VIEW', self.view)
@@ -284,7 +284,7 @@ class ProjectDir(object):
                       }
                     }
                 self.config.merge(inventory_data, scope='runtime',
-                                  origin='secret store state')
+                                  origin='secret-store-state')
         logger.debug('Project {} loaded'.format(self.name))
 
     def environment(self):
@@ -1119,7 +1119,7 @@ class ProjectDir(object):
         }
 
         self.config.merge(project_data, scope='runtime',
-                          origin='project metadata')
+                          origin='project-metadata')
 
         legacy_cfg = os.path.join(self.path, '.debops.cfg')
         self.config.merge(
