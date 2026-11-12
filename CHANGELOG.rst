@@ -30,80 +30,60 @@ General
 '''''''
 
 - Journal records emitted by the :command:`debops` command now carry
-  a ``[project:view]`` prefix naming the project directory and the
-  infrastructure view the operation runs in, so that entries from
+  a ``[project:view]`` prefix which names the project directory and
+  the infrastructure view of the operation, so entries from
   different projects can be told apart in the system journal.
 
-- Configuration files are now validated against a JSON schema when
-  they are loaded. Options with a value of a wrong type are reported
-  as warnings and ignored, so that a mistake in a configuration file
-  cannot silently corrupt the merged configuration. Options not
-  defined by DebOps are reported as unknown and left in place, so
-  that custom configurations keep working; custom options should be
-  moved under the 'custom' section of the configuration tree.
+- Configuration files are now validated when they are loaded.
+  Options not defined by DebOps are reported as warnings and kept.
+  Options with a value of a wrong type are reported and ignored, so
+  a mistake cannot silently change the effective configuration.
 
 - The new 'custom' section of the configuration tree is reserved for
-  custom configuration options defined outside of DebOps: scripts and
-  integrations can store their parameters there, read them with the
-  :command:`debops config get` command and override them from the
-  environment with ``DEBOPS_CONFIG__CUSTOM__...`` variables. DebOps
-  does not use this section and will not define options in it.
+  options defined outside of DebOps: scripts and integrations can
+  store their parameters there, read them with :command:`debops
+  config get` and override them from the environment. DebOps does
+  not use it and will not define options in it.
 
 - The new :command:`debops config set` command sets or removes
-  configuration options in the configuration files. In a project
-  directory it manages the '.debops/conf.d/99_config_set.json' file,
-  outside of it the user's configuration. The values are converted to
-  the type of the option, custom options are stored under the
-  'custom' section, and when a file with a different numeric prefix
-  (``*_config_set.json``) exists, it is used instead of the default
-  one, which lets the prefix decide where the options rank among the
-  configuration files of the directory.
+  configuration options in the configuration files, in a project
+  directory or in the user configuration with ``--user``. The
+  values are converted to the type of the option. The command
+  manages files named ``*_config_set.json`` and uses a file with a
+  different numeric prefix when one exists, so the prefix decides
+  where the managed options rank among the files of the directory.
 
 - The new :command:`debops config check` command checks the
-  configuration of a project directory, or of the system, for errors:
-  unknown options, options with values of a wrong type, and
-  configuration files which cannot be parsed. It exits with a
-  non-zero status when an option was dropped or a file could not be
-  parsed, which makes it usable in CI pipelines; the '--strict'
-  option additionally reports unknown options as errors.
+  configuration for errors and exits with a non-zero status when an
+  option was dropped or a file could not be parsed, which makes it
+  usable in CI pipelines. The ``--strict`` option also fails the
+  check on unknown options.
 
 - The ``debops.core.config.Configuration`` class can now build a
-  standalone configuration from the sources given by the caller:
-  defaults, configuration files and directories, a JSON Schema of the
-  caller's own vocabulary, an environment override prefix and
-  environment files. Without arguments, the class builds the DebOps
-  configuration as before. The new 'config_set()' method sets an
-  option in the configuration tree with the type conversion and the
-  schema checks the command line uses.
+  standalone configuration from caller-provided sources: defaults,
+  configuration files and directories, a JSON Schema, an
+  environment override prefix and environment files. The new
+  ``config_set()`` method sets an option in the tree with the type
+  conversion the command line uses. Without arguments, the class
+  builds the DebOps configuration as before.
 
-- The :command:`debops config get` command now supports the
-  '--show-origin' and '--show-scope' options, which render the
-  selected options as plain text, one line per option: the source
-  which last set it (a configuration file, the packaged defaults,
-  the runtime state of the project or an environment variable) and
-  the option with its value. This answers the question of where a
-  configuration value comes from, and why a setting does not take
-  effect when an environment override is responsible.
+- The :command:`debops config get` command gained new ways to read
+  the configuration: options can be printed from the root of the
+  configuration tree, with the layer and the source which last set
+  each of them. Run :command:`debops config --help` for the new
+  options.
 
 - Configuration options can now be overridden from the environment
-  using ``DEBOPS_CONFIG__SECTION__KEY`` variables, with '__'
-  separating the path segments of the option, for example
-  ``DEBOPS_CONFIG__SYSLOG__LEVEL=DEBUG``. The values are converted to
-  the type of the option and the overrides apply as the last
-  configuration layer, above the project directory configuration
-  files. The applied overrides are listed by the
-  :command:`debops config list` command.
+  with ``DEBOPS_CONFIG__SECTION__KEY`` variables, for example
+  ``DEBOPS_CONFIG__SYSLOG__LEVEL=DEBUG``. The values are converted
+  to the type of the option, the overrides rank above all
+  configuration files, and :command:`debops config list` shows
+  which overrides are in effect.
 
-- The :command:`debops` command now loads a '.env' file located at the
-  root of the infrastructure view ('ansible/views/<view>/.env') in
-  modern project directories, on top of the project directory
-  environment. The file is ignored by git and can be used to define
-  local variables specific to a view.
-
-- The :command:`debops config get` command now accepts the '--root'
-  ('-r') option which prints the selected configuration option nested
-  under its full path from the root of the configuration tree, showing
-  where in the tree the option is defined.
+- The :command:`debops` command now loads a '.env' file from the
+  root of the infrastructure view, 'ansible/views/<view>/.env', on
+  top of the project directory environment. The file is ignored by
+  git and holds variables specific to one view.
 
 Changed
 ~~~~~~~
@@ -205,6 +185,19 @@ General
   encrypted project before creating the directory and refuses keys
   which cannot encrypt; a git-crypt failure during initialization
   aborts the command instead of finishing silently.
+
+- A configuration file whose content does not match its extension,
+  for example a TOML document saved as '.json', crashed the
+  :command:`debops` command with a traceback. The file is now
+  reported as unparsable and skipped.
+
+- A configuration path which descends into an option which is not a
+  section, for example 'project.view.ansible', crashed the
+  :command:`debops config get` command with a traceback. Such paths
+  are now reported as undefined options.
+
+- Every configuration file was loaded and validated twice per
+  :command:`debops` invocation, reporting each problem twice.
 
 
 Removed
