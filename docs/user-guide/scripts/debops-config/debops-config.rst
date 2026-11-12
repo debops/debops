@@ -19,7 +19,7 @@ Options
   will use the current directory.
 
 ``--format json|toml|unix|yaml``
-  Specify the format of the output. The default format is TOML which is
+  Specify the format of the output. The default format is 'unix' which is
   considered human-friendly. The JSON format can be used to enable easy parsing
   by programs.
 
@@ -27,6 +27,10 @@ Options
   Instead of returning the entire configuration tree, return a list of
   configuration keys present at a given configuration level. Empty output or
   list means that there are no more subkeys present at a given level.
+
+``-r, --root``
+  Print the option nested under its full path from the root of the
+  configuration tree, which shows where in the tree the option is defined.
 
 ``-v, --verbose``
   Increase output verbosity. More letters means higher verbosity.

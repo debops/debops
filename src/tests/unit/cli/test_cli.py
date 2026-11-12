@@ -571,15 +571,15 @@ def test_config_get_prints_the_requested_keys(monkeypatch):
                         mock.Mock(return_value=project))
     interpreter = make_interpreter()
     args = make_args(project_dir=".", key=["project.name", "project.type"],
-                     format="json", keys=True)
+                     format="json", keys=True, root=False)
 
     interpreter.do_config_get(args)
 
     assert interpreter.config.config_get.call_count == 2
     interpreter.config.config_get.assert_any_call(
-        "project.name", format="json", keys=True)
+        "project.name", format="json", keys=True, root=False)
     interpreter.config.config_get.assert_any_call(
-        "project.type", format="json", keys=True)
+        "project.type", format="json", keys=True, root=False)
 
 
 def test_config_get_prints_the_whole_configuration(monkeypatch):
@@ -588,10 +588,11 @@ def test_config_get_prints_the_whole_configuration(monkeypatch):
     interpreter = make_interpreter()
 
     interpreter.do_config_get(make_args(project_dir=".", key=None,
-                                        format="unix", keys=False))
+                                        format="unix", keys=False,
+                                        root=False))
 
     interpreter.config.config_get.assert_called_once_with(
-        ".", format="unix", keys=False)
+        ".", format="unix", keys=False, root=False)
 
 
 def test_project_refresh_reports_a_failure(monkeypatch, capsys):

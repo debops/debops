@@ -530,9 +530,13 @@ class Configuration(object):
                 lines.append(relative_file.replace(relative_root, '', 1))
         return lines
 
-    def config_get(self, key, format='unix', keys=False):
+    def config_get(self, key, format='unix', keys=False, root=False):
         """Return the value of a configuration option, rendered in the
         requested format.
+
+        With 'root' set, the option is rendered nested under its full
+        path from the root of the configuration tree, which shows where
+        in the tree the option is defined.
 
         Raises OptionNotFoundError when the option is not defined; the
         clients decide how absence is presented.
@@ -564,6 +568,10 @@ class Configuration(object):
         if not key_found:
             raise OptionNotFoundError('The "' + key + '" option is not '
                                       'defined in the DebOps configuration')
+
+        if root and key != '.':
+            for element in reversed(key_path):
+                _config = {element: _config}
 
         if isinstance(_config, dict):
             if format in ['unix', 'yaml']:

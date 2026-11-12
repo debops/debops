@@ -55,6 +55,11 @@ General
   environment. The file is ignored by git and can be used to define
   local variables specific to a view.
 
+- The :command:`debops config get` command now accepts the '--root'
+  ('-r') option which prints the selected configuration option nested
+  under its full path from the root of the configuration tree, showing
+  where in the tree the option is defined.
+
 Changed
 ~~~~~~~
 
