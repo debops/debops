@@ -32,6 +32,18 @@ Options
   Print the option nested under its full path from the root of the
   configuration tree, which shows where in the tree the option is defined.
 
+``--show-origin``
+  Print the options as plain text, one tab-separated line per option,
+  naming the source which last set each option: the configuration
+  file, the runtime state or the environment variable. This rendering
+  cannot be combined with other output formats or options.
+
+``--show-scope``
+  Print the options as plain text, one tab-separated line per option,
+  naming the configuration layer which last set each option: the
+  packaged defaults, the system, the user, the project, the runtime
+  state or the environment.
+
 ``-v, --verbose``
   Increase output verbosity. More letters means higher verbosity.
 

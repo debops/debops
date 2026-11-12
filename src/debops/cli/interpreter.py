@@ -296,22 +296,30 @@ class Interpreter(object):
         if args.key:
             for option_name in args.key:
                 try:
-                    output = self.config.config_get(option_name,
-                                                    format=args.format,
-                                                    keys=args.keys,
-                                                    root=args.root)
+                    output = self.config.config_get(
+                        option_name, format=args.format, keys=args.keys,
+                        root=args.root, show_origin=args.show_origin,
+                        show_scope=args.show_scope)
                 except OptionNotFoundError:
                     # An undefined option is reported as an empty JSON
                     # object and a non-zero exit code
                     if args.format == 'json':
                         print('{}')
                     sys.exit(1)
+                except ValueError as errmsg:
+                    print_error(errmsg)
+                    sys.exit(1)
                 if output is not None:
                     print(output)
         else:
-            output = self.config.config_get('.', format=args.format,
-                                            keys=args.keys,
-                                            root=args.root)
+            try:
+                output = self.config.config_get(
+                    '.', format=args.format, keys=args.keys,
+                    root=args.root, show_origin=args.show_origin,
+                    show_scope=args.show_scope)
+            except ValueError as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
             if output is not None:
                 print(output)
 

@@ -166,12 +166,6 @@ class ProjectDir(object):
             'views': {}
         }
 
-        if self.project_type == 'legacy':
-            project_data['views'].update({'system': {}})
-            project_data['views']['system'].update(
-                    self.config.load(os.path.join(self.path,
-                                                  '.debops.cfg')))
-
         # Expose project root directory in runtime environment
         self.config.set_env('DEBOPS_PROJECT_PATH',
                             unexpanduser(self.path))
@@ -179,9 +173,19 @@ class ProjectDir(object):
         self.config.merge_env(os.path.join(self.path,
                                            '.debops', 'environment'))
         self.config.merge_env(self.path)
-        self.config.merge(project_data)
+        self.config.merge(project_data, scope='runtime',
+                          origin='project metadata')
 
-        self.config.merge(os.path.join(self.path, '.debops', 'conf.d'))
+        if self.project_type == 'legacy':
+            legacy_cfg = os.path.join(self.path, '.debops.cfg')
+            self.config.merge(
+                {'views': {'system':
+                           self.config.load(legacy_cfg,
+                                            scope='project')}},
+                scope='project', origin=legacy_cfg)
+
+        self.config.merge(os.path.join(self.path, '.debops', 'conf.d'),
+                          scope='project')
 
         # The environment overrides rank above the project's files;
         # they re-apply here because the project files could have
@@ -222,7 +226,7 @@ class ProjectDir(object):
                 'view': self.view
                 }
             }
-        self.config.merge(view_data)
+        self.config.merge(view_data, scope='runtime', origin='view state')
 
         # Expose current view in runtime environment
         self.config.set_env('DEBOPS_PROJECT_VIEW', self.view)
@@ -279,7 +283,8 @@ class ProjectDir(object):
                         }
                       }
                     }
-                self.config.merge(inventory_data)
+                self.config.merge(inventory_data, scope='runtime',
+                                  origin='secret store state')
         logger.debug('Project {} loaded'.format(self.name))
 
     def environment(self):
@@ -998,7 +1003,8 @@ class ProjectDir(object):
                          default_inventory_keyring.render()
                          + '\n')
 
-        self.config.merge(os.path.join(self.path, '.debops', 'conf.d'))
+        self.config.merge(os.path.join(self.path, '.debops', 'conf.d'),
+                          scope='project')
 
         # The environment overrides rank above the freshly written
         # project configuration
@@ -1112,9 +1118,14 @@ class ProjectDir(object):
             }
         }
 
-        project_data['views']['system'].update(
-                self.config.load(os.path.join(self.path, '.debops.cfg')))
-        self.config.merge(project_data)
+        self.config.merge(project_data, scope='runtime',
+                          origin='project metadata')
+
+        legacy_cfg = os.path.join(self.path, '.debops.cfg')
+        self.config.merge(
+            {'views': {'system': self.config.load(legacy_cfg,
+                                                  scope='project')}},
+            scope='project', origin=legacy_cfg)
 
         # The environment overrides rank above the freshly written
         # project configuration
