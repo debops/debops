@@ -227,6 +227,14 @@ class ProjectDir(object):
         # Expose current view in runtime environment
         self.config.set_env('DEBOPS_PROJECT_VIEW', self.view)
 
+        # Load the view's local environment, defined in the '.env' file
+        # at the root of the view directory; the variables configure
+        # the commands which the view runs, and rank above the project
+        # directory environment
+        if self.project_type == 'modern':
+            self.config.merge_env(os.path.join(self.path, 'ansible',
+                                               'views', self.view))
+
         if self.project_type == 'legacy':
             self.ansible_cfg = AnsibleConfig(
                     os.path.join(self.path, 'ansible.cfg'),
