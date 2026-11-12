@@ -92,7 +92,7 @@ Sections:
     run      run Ansible playbook(s) against hosts
     check    run Ansible playbook(s) in check mode
     env      run shell commands in project environment
-    config   display DebOps configuration options''')
+    config   manage DebOps configuration options''')
 
         parser.add_argument('section', help='Section to run')
         parser.add_argument('--version', action='version',
@@ -596,7 +596,8 @@ Actions:
 
 Commands:
     get     return value of a specific configuration option
-    list    list configuration files parsed by DebOps''')
+    list    list configuration files parsed by DebOps
+    set     set or remove a configuration option''')
         parser.add_argument('command', help='config command to run')
         self._command = parser.parse_args(self.args[2:3])
         self.command = self._command.command
@@ -639,4 +640,25 @@ Commands:
                             nargs=argparse.REMAINDER,
                             help='name of the '
                                  'configuration option')
+        self.args = parser.parse_args(self.args[3:])
+
+    def do_config_set(self):
+        parser = _argument_parser(
+                parents=[self.global_parser],
+                usage='debops config set [<args>] [--] <key> [<value>]',
+                description='set or remove a DebOps configuration '
+                            'option in the configuration files')
+        parser.add_argument('-u', '--user', default=False,
+                            help='set the option in the user '
+                                 'configuration instead of the project '
+                                 'configuration',
+                            action='store_true')
+        parser.add_argument('-d', '--delete', default=False,
+                            help='remove the option from the '
+                                 'configuration file',
+                            action='store_true')
+        parser.add_argument('key', type=str,
+                            help='path of the configuration option')
+        parser.add_argument('value', type=str, nargs='?',
+                            help='value to set the option to')
         self.args = parser.parse_args(self.args[3:])

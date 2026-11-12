@@ -108,6 +108,76 @@ List currently parsed configuration files:
    debops config list
 
 
+:command:`debops config set`
+----------------------------
+
+Set or remove DebOps configuration options in the configuration files. In a
+project directory, the options are managed in the
+:file:`.debops/conf.d/99_config_set.json` file of the project; outside of one,
+in the user's configuration directory. The values are converted to the type of
+the option as defined by DebOps.
+
+Options
+~~~~~~~
+
+``-h, --help``
+  Display the help and usage information
+
+``--project-dir <project_dir>``
+  Path to the project directory to work on. If it's not specified, the script
+  will use the current directory.
+
+``-u, --user``
+  Set the option in the user configuration
+  (:file:`$XDG_CONFIG_HOME/debops/conf.d/`) instead of the project
+  configuration.
+
+``-d, --delete``
+  Remove the option from the configuration file instead of setting it.
+
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
+``key``
+  Path of the configuration option in the configuration tree, with subkeys
+  specified using dot (``.``) as a separator.
+
+``value``
+  The value to set the option to. The value is converted to the type of the
+  option: integers, booleans and lists are recognized for the options which
+  DebOps defines, other options are parsed as JSON when they look like JSON
+  and stored as strings otherwise. Custom options can be defined under the
+  ``custom`` section of the configuration tree, which DebOps reserves for
+  options defined outside of DebOps.
+
+Examples
+~~~~~~~~
+
+Change the syslog facility used by the :command:`debops` command:
+
+.. code-block:: shell
+
+   debops config set syslog.facility local1
+
+Define a custom option used by an external script:
+
+.. code-block:: shell
+
+   debops config set custom.myscript.retries 5
+
+Remove an option from the configuration file:
+
+.. code-block:: shell
+
+   debops config set -d custom.myscript.retries
+
+The :command:`debops config set` command manages the files whose names end
+with :file:`_config_set.json`. When a file with a different numeric prefix
+exists in the target directory, for example :file:`50_config_set.json`, it is
+used instead of the default one, so the prefix decides where the managed
+options rank among the configuration files of the directory.
+
+
 Configuration files
 -------------------
 

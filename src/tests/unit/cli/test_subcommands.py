@@ -290,6 +290,22 @@ def test_config_get_root_flag():
     assert subcommands.args.root is True
 
 
+def test_config_set_defaults():
+    subcommands = parse_cli("config", "set", "syslog.level", "DEBUG")
+
+    assert subcommands.args.key == "syslog.level"
+    assert subcommands.args.value == "DEBUG"
+    assert subcommands.args.user is False
+    assert subcommands.args.delete is False
+
+
+def test_config_set_delete_flag():
+    subcommands = parse_cli("config", "set", "-d", "syslog.port")
+
+    assert subcommands.args.delete is True
+    assert subcommands.args.value is None
+
+
 def test_config_get_format_choice():
     subcommands = parse_cli("config", "get", "--format", "json",
                             "project.name")

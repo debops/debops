@@ -8,3 +8,5 @@ Synopsis
 ``debops config get``  [-h|--help] [--project-dir <project_dir>] [--format json|toml|unix|yaml] [-k|--keys] [-r|--root] [-v|--verbose] [<key>] [key] ...
 
 ``debops config list`` [-h|--help] [-v|--verbose] [<project_dir>]
+
+``debops config set``  [-h|--help] [--project-dir <project_dir>] [-u|--user] [-d|--delete] [-v|--verbose] [--] <key> [<value>]

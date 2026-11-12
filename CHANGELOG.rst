@@ -49,6 +49,16 @@ General
   environment with ``DEBOPS_CONFIG__CUSTOM__...`` variables. DebOps
   does not use this section and will not define options in it.
 
+- The new :command:`debops config set` command sets or removes
+  configuration options in the configuration files. In a project
+  directory it manages the '.debops/conf.d/99_config_set.json' file,
+  outside of it the user's configuration. The values are converted to
+  the type of the option, custom options are stored under the
+  'custom' section, and when a file with a different numeric prefix
+  (``*_config_set.json``) exists, it is used instead of the default
+  one, which lets the prefix decide where the options rank among the
+  configuration files of the directory.
+
 - Configuration options can now be overridden from the environment
   using ``DEBOPS_CONFIG__SECTION__KEY`` variables, with '__'
   separating the path segments of the option, for example
