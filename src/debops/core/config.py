@@ -137,54 +137,120 @@ def _resolve_schema_node(schema, segments):
 
 class Configuration(object):
 
-    def __init__(self):
+    def __init__(self, defaults=None, paths=None, schema=None,
+                 env_prefix=None, env_files=None):
+        """Build a configuration.
 
+        Without arguments, this is the configuration of the DebOps
+        tool: the packaged defaults, the system and user configuration
+        directories, the packaged schema which validates every loaded
+        file, the DebOps environment files and the 'DEBOPS_CONFIG__'
+        environment overrides.
+
+        With arguments, a standalone configuration is built only from
+        the sources the caller provides, with the same semantics: the
+        files and directories are merged in the given order, the
+        values expand '$VARIABLE' and '${VARIABLE}' references, and
+        the options are validated against the schema when one is
+        given.
+
+        The 'defaults' is a dictionary, or a path to a TOML, JSON or
+        YAML file which is rendered as a Jinja template first, so that
+        the defaults can be computed from the environment. The 'paths'
+        is a list of configuration files or directories, merged in the
+        given order; every item is a path recorded in the 'system'
+        layer, or a (path, scope) tuple which names its layer in the
+        origin output. The 'schema' is a path to a JSON Schema file;
+        without it, the options are not validated and their values
+        from the environment and 'config_set' are parsed as JSON when
+        they look like JSON and kept as strings otherwise. The
+        'env_prefix' enables the environment overrides: every
+        environment variable named '<PREFIX>__<SECTION>__<KEY>'
+        overrides the option at the matching path of the tree. The
+        'env_files' is a list of environment files, merged in order
+        into the environment of the commands this configuration
+        describes.
+        """
         self._env_files = []
         self._env_vars = {}
         self._env_overrides = []
         self._violations = []
         self._layers = []
-
-        # Set default environment variables at runtime
-        self.set_env('DEBOPS_ANSIBLE_COLLECTIONS_PATH',
-                     unexpanduser(os.path.join(DEBOPS_PACKAGE_DATA, 'ansible',
-                                               'collections')))
-
-        # Include variables from the system-wide configuration
-        self.merge_env(os.path.join('/etc', 'default', 'debops'))
-
-        # Include global DebOps environment variables defined by the user
-        self.merge_env(os.path.join(xdg_config_home, 'debops', 'environment'))
-
-        # Instantiate project configuration
         self._config = {}
-
-        # Load the default configuration options defined by DebOps
-        self._config_template = jinja2.Template(
-                pkgutil.get_data('debops',
-                                 os.path.join('_data', 'defaults.toml'))
-                .decode('utf-8'), trim_blocks=True)
-        self._config = toml.loads(self._config_template.render(env=os.environ))
-        self._record_layer('defaults',
-                           os.path.join(DEBOPS_PACKAGE_DATA,
-                                        'defaults.toml'),
-                           self._config)
-
-        # Load configuration files in known directories
-        self._config_dirs = [
-            ('/usr/lib/debops/conf.d', 'system'),
-            ('/usr/local/lib/debops/conf.d', 'system'),
-            ('/etc/debops/conf.d', 'system'),
-            (os.path.join(xdg_config_home, 'debops', 'conf.d'), 'user')
-        ]
         self._config_files = []
-        for config_dir, config_scope in self._config_dirs:
-            self.merge(config_dir, scope=config_scope)
+        self._schema_source = 'debops'
+        self._schema_instance = None
+        self._env_prefix = 'DEBOPS_CONFIG__'
+
+        if (defaults is not None or paths is not None
+                or schema is not None or env_prefix is not None
+                or env_files is not None):
+            # A standalone configuration: only the sources the caller
+            # asked for, none of DebOps' own
+            self._schema_source = schema
+            self._env_prefix = env_prefix
+            if isinstance(defaults, dict):
+                self._config = self._record_layer(
+                    'defaults', 'defaults', defaults)
+            elif defaults is not None:
+                self._load_defaults(defaults)
+            for item in (paths or []):
+                if isinstance(item, (tuple, list)):
+                    path, scope = item
+                else:
+                    path, scope = item, 'system'
+                self.merge(path, scope=scope)
+            for env_file in (env_files or []):
+                self.merge_env(env_file)
+        else:
+            # The configuration of the DebOps tool itself
+            self.set_env('DEBOPS_ANSIBLE_COLLECTIONS_PATH',
+                         unexpanduser(os.path.join(
+                             DEBOPS_PACKAGE_DATA, 'ansible',
+                             'collections')))
+            self.merge_env(os.path.join('/etc', 'default', 'debops'))
+            self.merge_env(os.path.join(xdg_config_home, 'debops',
+                                        'environment'))
+            self._load_defaults(os.path.join(DEBOPS_PACKAGE_DATA,
+                                             'defaults.toml'))
+            self._config_dirs = [
+                ('/usr/lib/debops/conf.d', 'system'),
+                ('/usr/local/lib/debops/conf.d', 'system'),
+                ('/etc/debops/conf.d', 'system'),
+                (os.path.join(xdg_config_home, 'debops', 'conf.d'),
+                 'user')
+            ]
+            for config_dir, config_scope in self._config_dirs:
+                self.merge(config_dir, scope=config_scope)
 
         # The environment overrides are the last configuration layer
         # for clients which use the Configuration on its own; project
         # directories re-apply them after their own files are merged
         self.apply_env_overrides()
+
+    def _load_defaults(self, path):
+        """Load the default configuration options from a file.
+
+        The file is rendered as a Jinja template first, so that the
+        defaults can be computed from the environment; the rendered
+        text is parsed according to the file extension. The defaults
+        are the base of the configuration tree, the layer every other
+        layer merges on top of.
+        """
+        with open(path, 'r') as fp:
+            template = jinja2.Template(fp.read(), trim_blocks=True)
+        rendered = template.render(env=os.environ)
+        if path.endswith('.toml'):
+            data = toml.loads(rendered)
+        elif path.endswith('.json'):
+            data = json.loads(rendered)
+        elif path.endswith('.yaml') or path.endswith('.yml'):
+            data = yaml.safe_load(rendered)
+        else:
+            raise ValueError('Unsupported defaults file format: '
+                             + path)
+        self._config = self._record_layer(
+            'defaults', path, self._validated(path, data) or {})
 
     def _expand_env_vars(self, data):
         """Expand '$VAR' and '${VAR}' references in configuration values.
@@ -340,12 +406,14 @@ class Configuration(object):
     def apply_env_overrides(self, environ=None):
         """Apply configuration overrides from the environment.
 
-        Each variable named 'DEBOPS_CONFIG__<SECTION>__<KEY>' sets the
+        Each variable named '<PREFIX>__<SECTION>__<KEY>' sets the
         value at the matching path of the configuration tree, with the
-        path segments separated by '__', for example
-        'DEBOPS_CONFIG__SYSLOG__LEVEL'. The segments are matched
-        case-insensitively; keys which contain a hyphen, like the
-        binary names, keep it in the variable name.
+        path segments separated by '__' -- for the DebOps
+        configuration the prefix is 'DEBOPS_CONFIG__', for a
+        standalone configuration the prefix given at construction, and
+        without a prefix the environment is not scanned at all. The
+        segments are matched case-insensitively; keys which contain a
+        hyphen, like the binary names, keep it in the variable name.
 
         The value is converted to the type which the configuration
         schema defines for the path. Unknown paths and values which do
@@ -357,10 +425,12 @@ class Configuration(object):
         """
         if environ is None:
             environ = os.environ
+        if not self._env_prefix:
+            return
         for name, value in sorted(environ.items()):
-            if not name.startswith('DEBOPS_CONFIG__'):
+            if not name.startswith(self._env_prefix):
                 continue
-            tail = name[len('DEBOPS_CONFIG__'):]
+            tail = name[len(self._env_prefix):]
             segments = [segment.lower()
                         for segment in tail.split('__') if segment]
             if not segments:
@@ -380,8 +450,9 @@ class Configuration(object):
             if option_value is None:
                 self._record_violation(
                     'override', None, name, True,
-                    "ignoring environment override '{}': not a DebOps "
-                    "configuration option".format(name))
+                    "ignoring environment override '{}': {}".format(
+                        name, self._unknown_option_message(
+                            _dotted(segments))))
                 continue
             override = self._merge_override(
                 segments, self._expand_env_vars(option_value))
@@ -395,7 +466,10 @@ class Configuration(object):
 
         Returns None when the path cannot name a configuration option.
         """
-        node = _resolve_schema_node(_schema_validator().schema, segments)
+        validator = self._schema()
+        if validator is None:
+            return _parse_scalar(value)
+        node = _resolve_schema_node(validator.schema, segments)
         if node is None:
             return None
         if node is _UNTYPED:
@@ -525,9 +599,7 @@ class Configuration(object):
                                                  errmsg))
             if option_value is None:
                 raise ValueError(
-                    "The '{}' option is not defined in the DebOps "
-                    "configuration; custom options belong under the "
-                    "'custom' section".format(_dotted(segments)))
+                    self._unknown_option_message(_dotted(segments)))
             option_value = self._expand_env_vars(option_value)
             node = data
             for segment in segments[:-1]:
@@ -540,6 +612,51 @@ class Configuration(object):
 
         write_file(path, json.dumps(data, indent=2, sort_keys=True)
                    + '\n', overwrite=True)
+
+    def config_set(self, key, value):
+        """Set a configuration option in the configuration tree.
+
+        The option is addressed by its dotted path. A string value is
+        converted to the type which the schema defines for the option,
+        like the environment overrides are; any other value is checked
+        against the schema when it defines one for the option, and
+        stored as given. Options unknown to the schema are refused,
+        except under the 'custom' section of the DebOps configuration.
+        The change is recorded as the last configuration layer, so
+        that the origin output names it.
+
+        Raises ValueError when the option cannot be set.
+        """
+        segments = [segment.lower() for segment in key.split('.')
+                    if segment]
+        if not segments:
+            raise ValueError('No configuration option specified')
+        validator = self._schema()
+        if isinstance(value, str):
+            try:
+                option_value = self._coerce_override(segments, value)
+            except (ValueError, TypeError) as errmsg:
+                raise ValueError('{}: {}'.format(_dotted(segments),
+                                                 errmsg))
+            if option_value is None:
+                raise ValueError(
+                    self._unknown_option_message(_dotted(segments)))
+        else:
+            option_value = value
+        if validator is not None and not isinstance(value, str):
+            node = _resolve_schema_node(validator.schema, segments)
+            if node is None:
+                raise ValueError(
+                    self._unknown_option_message(_dotted(segments)))
+            if node is not _UNTYPED:
+                errors = list(validator.evolve(
+                    schema=node).iter_errors(value))
+                if errors:
+                    raise ValueError('{}: {}'.format(
+                        _dotted(segments), errors[0].message))
+        merged = self._merge_override(segments, option_value)
+        self._layers.append(('override', 'config_set',
+                             copy.deepcopy(merged)))
 
     def _validated(self, path, data):
         """Validate a parsed configuration file against the schema.
@@ -560,10 +677,13 @@ class Configuration(object):
                     'ignoring it')
                 return {}
             return data
+        validator = self._schema()
+        if validator is None:
+            return data
         # The errors are collected before any option is dropped: the
         # validator walks the data lazily, and dropping an option while
         # it is being validated would desynchronize the walk
-        for error in list(_schema_validator().iter_errors(data)):
+        for error in list(validator.iter_errors(data)):
             self._report_violation(path, data, error)
         return data
 
@@ -577,7 +697,12 @@ class Configuration(object):
         self._violations.append({'kind': kind, 'file': path,
                                  'option': option, 'dropped': dropped,
                                  'message': message})
-        logger.warning("Configuration file %s: %s", path, message)
+        if path is None:
+            # The violation does not belong to a file, the message
+            # names its source on its own
+            logger.warning(message)
+        else:
+            logger.warning("Configuration file %s: %s", path, message)
 
     def _record_layer(self, scope, origin, data):
         """Record a configuration layer and return its data.
@@ -590,6 +715,37 @@ class Configuration(object):
         """
         self._layers.append((scope, origin, copy.deepcopy(data)))
         return data
+
+    def _schema(self):
+        """Return the JSON Schema validator of this configuration.
+
+        Returns None when the configuration has no schema: the options
+        are then not validated, and their values from the environment
+        overrides and 'config_set' are parsed as JSON when they look
+        like JSON and kept as strings otherwise.
+        """
+        if self._schema_source is None:
+            return None
+        if self._schema_source == 'debops':
+            return _schema_validator()
+        if self._schema_instance is None:
+            with open(self._schema_source, 'r') as fp:
+                self._schema_instance = jsonschema.Draft7Validator(
+                    json.load(fp))
+        return self._schema_instance
+
+    def _unknown_option_message(self, option):
+        """The message for an option which the schema does not know.
+
+        The DebOps configuration reserves the 'custom' section for
+        options defined outside of DebOps and points to it; a
+        standalone configuration has no such convention.
+        """
+        message = "unknown option '{}'".format(option)
+        if self._schema_source == 'debops':
+            message += ", custom options belong under the 'custom' " \
+                       "section"
+        return message
 
     def _report_violation(self, path, data, error):
         """Report one schema violation and apply the dropping policy.
@@ -610,10 +766,9 @@ class Configuration(object):
                         'unknown', path, _dotted(segments), False,
                         "unknown option '{}'".format(_dotted(segments)))
                 else:
-                    self._record_violation(
-                        'unknown', path, key, False,
-                        "unknown option '{}', custom options belong "
-                        "under the 'custom' section".format(key))
+                    self._record_violation('unknown', path, key, False,
+                                           self._unknown_option_message(
+                                               key))
             return
         segments = list(error.absolute_path)
         if not segments:

@@ -823,7 +823,7 @@ def test_apply_env_overrides_ignores_an_unknown_option(configuration,
 
     assert "flcility" not in configuration.raw
     assert "DEBOPS_CONFIG__SYSLOG__FLCILITY" in caplog.text
-    assert "not a DebOps configuration option" in caplog.text
+    assert "unknown option 'syslog.flcility'" in caplog.text
 
 
 def test_apply_env_overrides_ignores_a_value_of_a_wrong_type(configuration,
@@ -1259,3 +1259,153 @@ def test_config_get_show_origin_refuses_other_formats(configuration):
     with pytest.raises(ValueError):
         configuration.config_get("syslog", format="json",
                                  show_origin=True)
+
+
+def test_detached_configuration_loads_the_given_paths(tmp_path):
+    (tmp_path / "system" / "conf.d").mkdir(parents=True)
+    (tmp_path / "user" / "conf.d").mkdir(parents=True)
+    (tmp_path / "system" / "conf.d" / "a.toml").write_text(
+        '[server]\nport = 8080\nhost = "one"\n')
+    (tmp_path / "user" / "conf.d" / "b.toml").write_text(
+        '[server]\nhost = "two"\n')
+
+    config = config_module.Configuration(
+        paths=[str(tmp_path / "system" / "conf.d"),
+               (str(tmp_path / "user" / "conf.d"), "user")])
+
+    assert config.raw["server"] == {"port": 8080, "host": "two"}
+    origins = dict(
+        (option, scope) for option, scope, origin, value in
+        config.config_origins("server"))
+
+    assert origins["server.host"] == "user"
+    assert origins["server.port"] == "system"
+
+
+def test_detached_configuration_renders_its_defaults(tmp_path,
+                                                     monkeypatch):
+    monkeypatch.setenv("DEBOPS_TEST_PORT", "9090")
+    defaults = tmp_path / "defaults.toml"
+    defaults.write_text("[server]\n"
+                        "port = {{ env['DEBOPS_TEST_PORT'] | d('8080') }}"
+                        "\n")
+
+    config = config_module.Configuration(defaults=str(defaults))
+
+    assert config.raw["server"]["port"] == 9090
+
+
+def test_detached_configuration_accepts_dictionary_defaults():
+    config = config_module.Configuration(
+        defaults={"server": {"port": 8080}})
+
+    assert config.raw["server"]["port"] == 8080
+    assert config.config_origins("server.port") == [
+        ("server.port", "defaults", "defaults", 8080)]
+
+
+def test_detached_configuration_validates_against_its_schema(tmp_path):
+    schema = tmp_path / "schema.json"
+    schema.write_text(json.dumps({
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "server": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "port": {"type": "integer"}}}}}))
+    (tmp_path / "conf.d").mkdir()
+    (tmp_path / "conf.d" / "options.toml").write_text(
+        '[server]\nport = "five"\n')
+
+    config = config_module.Configuration(
+        paths=[str(tmp_path / "conf.d")], schema=str(schema))
+
+    assert "port" not in config.raw["server"]
+    assert config._violations[0]["kind"] == "type"
+
+
+def test_detached_configuration_without_schema_validates_nothing(
+        tmp_path, caplog):
+    (tmp_path / "conf.d").mkdir()
+    (tmp_path / "conf.d" / "options.yml").write_text("mine:\n  key: 1\n")
+
+    config = config_module.Configuration(paths=[str(tmp_path / "conf.d")])
+
+    assert config.raw["mine"] == {"key": 1}
+    assert not caplog.text
+
+
+def test_detached_unknown_options_have_no_debops_hint(tmp_path, caplog):
+    schema = tmp_path / "schema.json"
+    schema.write_text(json.dumps({
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {"server": {"type": "object"}}}))
+    (tmp_path / "conf.d").mkdir()
+    (tmp_path / "conf.d" / "options.yml").write_text("other: 1\n")
+
+    config = config_module.Configuration(
+        paths=[str(tmp_path / "conf.d")], schema=str(schema))
+
+    assert "unknown option 'other'" in caplog.text
+    assert "custom" not in caplog.text
+
+
+def test_detached_configuration_applies_its_own_env_prefix(monkeypatch):
+    monkeypatch.setenv("MYSVC_CONFIG__SERVER__PORT", "8080")
+
+    config = config_module.Configuration(env_prefix="MYSVC_CONFIG__")
+
+    assert config.raw["server"]["port"] == 8080
+
+
+def test_detached_configuration_ignores_the_debops_overrides(monkeypatch):
+    monkeypatch.setenv("DEBOPS_CONFIG__SYSLOG__LEVEL", "DEBUG")
+
+    config = config_module.Configuration(env_prefix="MYSVC_CONFIG__")
+
+    assert "syslog" not in config.raw
+
+
+def test_detached_configuration_reads_its_env_files(tmp_path):
+    env_file = tmp_path / "environment"
+    env_file.write_text("MYSVC_TOKEN=secret\n")
+
+    config = config_module.Configuration(env_files=[str(env_file)])
+
+    assert config.get_env("MYSVC_TOKEN") == "secret"
+
+
+def test_config_set_coerces_a_string_value(configuration):
+    configuration.config_set("syslog.port", "514")
+
+    assert configuration.raw["syslog"]["port"] == 514
+
+
+def test_config_set_stores_python_values(configuration):
+    configuration.config_set("custom.myscript", {"retries": 5})
+
+    assert configuration.raw["custom"]["myscript"] == {"retries": 5}
+
+
+def test_config_set_checks_python_values_against_the_schema(configuration):
+    with pytest.raises(ValueError):
+        configuration.config_set("syslog.port", ["not", "an", "integer"])
+
+
+def test_config_set_refuses_an_unknown_option(configuration):
+    with pytest.raises(ValueError) as errmsg:
+        configuration.config_set("myscript.retries", 5)
+
+    assert "custom options belong" in str(errmsg.value)
+
+
+def test_config_set_records_its_layer(configuration):
+    configuration.config_set("syslog.port", 514)
+
+    scope, origin, data = configuration._layers[-1]
+
+    assert (scope, origin) == ("override", "config_set")
