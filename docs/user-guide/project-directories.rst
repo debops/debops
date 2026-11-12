@@ -208,6 +208,7 @@ changes with the previous layout are:
 - DebOps configuration is now a :file:`.debops/conf.d/` directory within the
   project directory instead of a single file. It can contain files in JSON,
   TOML and YAML formats that are merged into a unified configuration structure.
+  See the :ref:`debops_configuration` guide for how the configuration works.
 
 - Parts of the project directory (Ansible inventory, custom resources, secrets)
   are moved into :file:`ansible/views/system/` subdirectory. The "system" view
