@@ -12,6 +12,7 @@ from ..core.projectvenv import ProjectVenv
 from ..core.ansible.ansiblerunner import AnsibleRunner
 from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
+from xdg.BaseDirectory import xdg_config_home
 import logging
 import getpass
 import sys
@@ -77,6 +78,8 @@ class Interpreter(object):
                 self.do_config_list(self.parsed_args.args)
             elif self.parsed_args.command == 'get':
                 self.do_config_get(self.parsed_args.args)
+            elif self.parsed_args.command == 'set':
+                self.do_config_set(self.parsed_args.args)
 
     def do_project_init(self, args):
         try:
@@ -309,3 +312,35 @@ class Interpreter(object):
                                             root=args.root)
             if output is not None:
                 print(output)
+
+    def do_config_set(self, args):
+        directory = None
+        if not args.user:
+            try:
+                project = ProjectDir(path=args.project_dir,
+                                     config=self.config, cwd=self.cwd)
+                directory = os.path.join(project.path, '.debops',
+                                         'conf.d')
+            except (IsADirectoryError, NotADirectoryError):
+                # Outside of a project directory, the options are set
+                # in the user configuration
+                directory = None
+        if directory is None:
+            directory = os.path.join(xdg_config_home, 'debops', 'conf.d')
+
+        try:
+            option_file = self.config.option_file(directory)
+            self.config.write_option(option_file, args.key,
+                                     value=args.value,
+                                     delete=args.delete)
+        except (ValueError, OSError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        if args.delete:
+            logger.notice("Removed '%s' from %s", args.key, option_file,
+                          extra={'allow': ['stderr', 'syslog']})
+        else:
+            logger.notice("Set '%s' to '%s' in %s", args.key, args.value,
+                          option_file,
+                          extra={'allow': ['stderr', 'syslog']})

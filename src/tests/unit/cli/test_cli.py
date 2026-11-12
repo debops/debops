@@ -13,6 +13,7 @@ project directory and the runners stubbed out.
 from types import SimpleNamespace
 from unittest import mock
 
+import json
 import pytest
 
 import debops.cli.interpreter as cli_module
@@ -100,7 +101,7 @@ def test_init_dispatches_the_env_section(monkeypatch):
     method.assert_called_once_with(args)
 
 
-@pytest.mark.parametrize("command", ["list", "get"])
+@pytest.mark.parametrize("command", ["list", "get", "set"])
 def test_init_dispatches_the_config_commands(monkeypatch, command):
     args = make_args(project_dir=".")
     monkeypatch.setattr(cli_module, "Configuration",
@@ -593,6 +594,89 @@ def test_config_get_prints_the_whole_configuration(monkeypatch):
 
     interpreter.config.config_get.assert_called_once_with(
         ".", format="unix", keys=False, root=False)
+
+
+def test_config_set_writes_to_the_project_configuration(
+        configuration, monkeypatch, tmp_path):
+    project = mock.Mock()
+    project.path = str(tmp_path)
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    interpreter = make_interpreter(config=configuration)
+
+    interpreter.do_config_set(make_args(project_dir=".", user=False,
+                                        delete=False, key="syslog.level",
+                                        value="DEBUG"))
+
+    path = tmp_path / ".debops" / "conf.d" / "99_config_set.json"
+    assert json.loads(path.read_text()) == {"syslog": {"level": "DEBUG"}}
+
+
+def test_config_set_writes_to_the_user_configuration(
+        configuration, monkeypatch, tmp_path):
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(side_effect=NotADirectoryError("nope")))
+    monkeypatch.setattr(cli_module, "xdg_config_home", str(tmp_path))
+    interpreter = make_interpreter(config=configuration)
+
+    interpreter.do_config_set(make_args(project_dir=".", user=False,
+                                        delete=False, key="syslog.level",
+                                        value="DEBUG"))
+
+    path = tmp_path / "debops" / "conf.d" / "99_config_set.json"
+    assert json.loads(path.read_text()) == {"syslog": {"level": "DEBUG"}}
+
+
+def test_config_set_user_flag_skips_the_project_resolution(
+        configuration, monkeypatch, tmp_path):
+    project_dir_mock = mock.Mock(side_effect=AssertionError("called"))
+    monkeypatch.setattr(cli_module, "ProjectDir", project_dir_mock)
+    monkeypatch.setattr(cli_module, "xdg_config_home", str(tmp_path))
+    interpreter = make_interpreter(config=configuration)
+
+    interpreter.do_config_set(make_args(project_dir=".", user=True,
+                                        delete=False, key="syslog.level",
+                                        value="DEBUG"))
+
+    project_dir_mock.assert_not_called()
+    path = tmp_path / "debops" / "conf.d" / "99_config_set.json"
+    assert json.loads(path.read_text()) == {"syslog": {"level": "DEBUG"}}
+
+
+def test_config_set_deletes_from_the_project_configuration(
+        configuration, monkeypatch, tmp_path):
+    project = mock.Mock()
+    project.path = str(tmp_path)
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    option_file = tmp_path / ".debops" / "conf.d" / "99_config_set.json"
+    option_file.parent.mkdir(parents=True)
+    option_file.write_text('{"syslog": {"level": "DEBUG", '
+                           '"facility": "user"}}\n')
+    interpreter = make_interpreter(config=configuration)
+
+    interpreter.do_config_set(make_args(project_dir=".", user=False,
+                                        delete=True, key="syslog.level",
+                                        value=None))
+
+    assert json.loads(option_file.read_text()) == {
+        "syslog": {"facility": "user"}}
+
+
+def test_config_set_reports_errors(configuration, monkeypatch, tmp_path,
+                                   capsys):
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(side_effect=NotADirectoryError("nope")))
+    monkeypatch.setattr(cli_module, "xdg_config_home", str(tmp_path))
+    interpreter = make_interpreter(config=configuration)
+
+    with pytest.raises(SystemExit):
+        interpreter.do_config_set(make_args(project_dir=".", user=False,
+                                            delete=False,
+                                            key="myscript.retries",
+                                            value="5"))
+
+    assert "custom options belong" in capsys.readouterr().err
 
 
 def test_project_refresh_reports_a_failure(monkeypatch, capsys):
