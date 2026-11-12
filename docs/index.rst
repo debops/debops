@@ -86,6 +86,7 @@ infrastructure environments.
 
    user-guide/debops-for-ansible
    user-guide/project-directories
+   user-guide/configuration
    user-guide/scripts/index
    user-guide/hooks
    user-guide/global-variables
@@ -102,6 +103,7 @@ infrastructure environments.
    :maxdepth: 2
    :hidden:
 
+   admin-guide/configuration-recipes
    admin-guide/linux-containers
    admin-guide/service-ports
    admin-guide/local-apt-repository
@@ -116,6 +118,7 @@ infrastructure environments.
    developer-guide/contributing-docs
    developer-guide/testing
    developer-guide/gh-ci-pipeline
+   developer-guide/configuration-options
    developer-guide/development-model
    dep/index
 
