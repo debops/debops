@@ -284,6 +284,12 @@ def test_config_get_keys_flag():
     assert subcommands.args.keys is True
 
 
+def test_config_get_root_flag():
+    subcommands = parse_cli("config", "get", "-r", "views.system.ansible")
+
+    assert subcommands.args.root is True
+
+
 def test_config_get_format_choice():
     subcommands = parse_cli("config", "get", "--format", "json",
                             "project.name")

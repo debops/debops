@@ -634,6 +634,61 @@ def test_config_get_keys_on_a_scalar_renders_nothing(configuration):
     assert configuration.config_get("a", keys=True) is None
 
 
+def test_config_get_root_renders_the_full_path(configuration):
+    configuration._config = {"views": {"system": {"ansible": {
+        "defaults": {"inventory": "hosts"}}}}}
+
+    out = configuration.config_get("views.system.ansible", root=True)
+
+    assert "views:" in out
+    assert "  system:" in out
+    assert "    ansible:" in out
+    assert "        inventory: hosts" in out
+
+
+def test_config_get_root_renders_nested_json(configuration):
+    import json
+
+    configuration._config = {"syslog": {"level": "NOTICE"}}
+
+    out = configuration.config_get("syslog.level", format="json", root=True)
+
+    assert json.loads(out) == {"syslog": {"level": "NOTICE"}}
+
+
+def test_config_get_root_wraps_a_scalar(configuration):
+    configuration._config = {"syslog": {"facility": "user"}}
+
+    out = configuration.config_get("syslog.facility", root=True)
+
+    assert "syslog:" in out
+    assert "  facility: user" in out
+
+
+def test_config_get_root_leaves_the_whole_tree_unchanged(configuration):
+    configuration._config = {"syslog": {"facility": "user"}}
+
+    out = configuration.config_get(".", root=True)
+
+    assert "syslog:" in out
+    assert "  facility: user" in out
+    assert out.count("syslog:") == 1
+
+
+def test_config_get_root_wraps_the_key_listing(configuration):
+    configuration._config = {"views": {"system": {"ansible": {}}}}
+
+    out = configuration.config_get("views.system.ansible", keys=True,
+                                   root=True)
+
+    assert "ansible:" in out
+
+
+def test_config_get_root_raises_for_a_missing_option(configuration):
+    with pytest.raises(OptionNotFoundError):
+        configuration.config_get("views.system.nope", root=True)
+
+
 def test_apply_env_overrides_sets_a_nested_option(configuration, monkeypatch):
     monkeypatch.setenv("DEBOPS_CONFIG__SYSLOG__PORT", "514")
 

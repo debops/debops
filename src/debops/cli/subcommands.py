@@ -631,6 +631,10 @@ Commands:
                             help='list configuration keys '
                                  'at the specified level',
                             action='store_true')
+        parser.add_argument('-r', '--root', default=False,
+                            help='print the option nested under its '
+                                 'full path in the configuration tree',
+                            action='store_true')
         parser.add_argument('key', type=str,
                             nargs=argparse.REMAINDER,
                             help='name of the '
