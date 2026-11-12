@@ -637,6 +637,14 @@ Commands:
                             help='print the option nested under its '
                                  'full path in the configuration tree',
                             action='store_true')
+        parser.add_argument('--show-origin', default=False,
+                            help='show the source which last set each '
+                                 'option',
+                            action='store_true')
+        parser.add_argument('--show-scope', default=False,
+                            help='show the configuration layer which '
+                                 'last set each option',
+                            action='store_true')
         parser.add_argument('key', type=str,
                             nargs=argparse.REMAINDER,
                             help='name of the '

@@ -1231,6 +1231,7 @@ def make_configuration(raw=None):
     config._env_vars = {}
     config._env_overrides = []
     config._violations = []
+    config._layers = []
     config._config_files = []
     config._config = (dict(DEFAULT_PROJECT_RAW) if raw is None
                       else dict(raw))
@@ -1263,6 +1264,11 @@ def test_init_detects_a_legacy_project(tmp_path, monkeypatch):
     assert get_project_context() == "{}:system".format(os.path.basename(tmp_path))
     assert project.config.raw["views"]["system"]["debops"] == {
             "namespace": "debops"}
+    # The option's origin is the legacy configuration file it came from
+    assert project.config.config_origins(
+            "views.system.debops.namespace") == [
+        ("views.system.debops.namespace", "project",
+         str(tmp_path / ".debops.cfg"), "debops")]
     assert project.config._env_vars["DEBOPS_PROJECT_PATH"] == str(tmp_path)
     assert project.config._env_vars["ANSIBLE_CONFIG"] == str(tmp_path / "ansible.cfg")
     assert (project.config._env_vars["DEBOPS_ANSIBLE_INVENTORY"]

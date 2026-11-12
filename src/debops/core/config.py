@@ -5,6 +5,7 @@
 from .constants import DEBOPS_PACKAGE_DATA
 from .exceptions import OptionNotFoundError
 from .utils import unexpanduser, strtobool, write_file
+import copy
 import os
 import logging
 import dotenv
@@ -75,6 +76,19 @@ def _parse_scalar(value):
         return value
 
 
+def _config_leaves(path, node, leaves):
+    """Collect the leaf options of a configuration subtree.
+
+    An empty section counts as a leaf: it has a location in the tree
+    and an origin, even though it holds no options.
+    """
+    if isinstance(node, dict) and node:
+        for key in node:
+            _config_leaves(path + [key], node[key], leaves)
+    else:
+        leaves.append((path, node))
+
+
 def _prune_empty(data, segments):
     """Remove the sections left empty by removing an option.
 
@@ -129,6 +143,7 @@ class Configuration(object):
         self._env_vars = {}
         self._env_overrides = []
         self._violations = []
+        self._layers = []
 
         # Set default environment variables at runtime
         self.set_env('DEBOPS_ANSIBLE_COLLECTIONS_PATH',
@@ -150,6 +165,10 @@ class Configuration(object):
                                  os.path.join('_data', 'defaults.toml'))
                 .decode('utf-8'), trim_blocks=True)
         self._config = toml.loads(self._config_template.render(env=os.environ))
+        self._record_layer('defaults',
+                           os.path.join(DEBOPS_PACKAGE_DATA,
+                                        'defaults.toml'),
+                           self._config)
 
         # Load configuration files in known directories
         self._config_dirs = [
@@ -284,26 +303,38 @@ class Configuration(object):
                 self._env_files.append(path)
                 self._merge_env_file(path)
 
-    def load(self, path):
+    def load(self, path, scope=None):
         if os.path.exists(path):
             if os.path.isfile(path):
-                return self._load_config_file(path)
+                return self._load_config_file(path, scope=scope)
             elif os.path.isdir(path):
                 data = {}
                 for config_file in sorted(os.listdir(path)):
                     if os.path.isfile(os.path.join(path, config_file)):
-                        self._merge_dict(data,
-                                         self._load_config_file(
-                                             os.path.join(path, config_file)))
+                        self._merge_dict(
+                            data,
+                            self._load_config_file(
+                                os.path.join(path, config_file),
+                                scope=scope))
                 return data
 
         # Path doesn't exist, return empty dictionary for merging
         return dict()
 
-    def merge(self, data):
+    def merge(self, data, scope=None, origin=None):
+        """Merge a file, a directory or a dictionary into the tree.
+
+        The scope and the origin name the configuration layer the data
+        belongs to, for the 'debops config get --show-origin' output;
+        the scope is one of 'defaults', 'system', 'user', 'project',
+        'runtime' or 'override', and the origin is the file path or
+        the label of the source.
+        """
         if isinstance(data, str):
-            self._merge_dict(self._config, self.load(data))
+            self._merge_dict(self._config, self.load(data, scope=scope))
         elif isinstance(data, dict):
+            self._record_layer(scope, origin or 'configuration data',
+                               data)
             self._merge_dict(self._config, data)
 
     def apply_env_overrides(self, environ=None):
@@ -352,8 +383,10 @@ class Configuration(object):
                     "ignoring environment override '{}': not a DebOps "
                     "configuration option".format(name))
                 continue
-            self._merge_override(segments,
-                                 self._expand_env_vars(option_value))
+            override = self._merge_override(
+                segments, self._expand_env_vars(option_value))
+            self._layers.append(('override', name,
+                                 copy.deepcopy(override)))
             if name not in self._env_overrides:
                 self._env_overrides.append(name)
 
@@ -395,13 +428,18 @@ class Configuration(object):
         return value
 
     def _merge_override(self, segments, value):
-        """Merge one override value at its path of the tree."""
+        """Merge one override value at its path of the tree.
+
+        Returns the dictionary of the merged option, for the layer
+        recording.
+        """
         data = {}
         node = data
         for segment in segments[:-1]:
             node = node.setdefault(segment, {})
         node[segments[-1]] = value
         self._merge_dict(self._config, data)
+        return data
 
     def option_file(self, directory):
         """Return the configuration file managed by 'config set'.
@@ -541,6 +579,18 @@ class Configuration(object):
                                  'message': message})
         logger.warning("Configuration file %s: %s", path, message)
 
+    def _record_layer(self, scope, origin, data):
+        """Record a configuration layer and return its data.
+
+        The layers record where every option of the tree came from;
+        the data is recorded as a deep copy, because the merged tree
+        shares the objects of the merged data and the later merges
+        would otherwise modify the recorded layers in place, changing
+        the origins they report.
+        """
+        self._layers.append((scope, origin, copy.deepcopy(data)))
+        return data
+
     def _report_violation(self, path, data, error):
         """Report one schema violation and apply the dropping policy.
 
@@ -589,7 +639,7 @@ class Configuration(object):
                                    option, _violation_reason(error)))
         del node[key]
 
-    def _load_config_file(self, path):
+    def _load_config_file(self, path, scope=None):
 
         # Ignore "hidden" files but make exception for legacy '.debops.cfg'
         if (os.path.basename(path).startswith('.')
@@ -602,20 +652,23 @@ class Configuration(object):
             with open(path, 'r') as fp:
                 data = toml.loads(fp.read())
                 data = self._expand_env_vars(data)
-                return self._validated(path, data)
+                return self._record_layer(scope, path,
+                                          self._validated(path, data))
         elif path.endswith('.json'):
             self._config_files.append(path)
             with open(path, 'r') as fp:
                 data = json.loads(fp.read())
                 data = self._expand_env_vars(data)
-                return self._validated(path, data)
+                return self._record_layer(scope, path,
+                                          self._validated(path, data))
         elif (path.endswith('.yaml') or path.endswith('.yml')):
             self._config_files.append(path)
             with open(path, 'r') as fp:
                 try:
                     data = yaml.safe_load(fp.read())
                     data = self._expand_env_vars(data)
-                    return self._validated(path, data)
+                    return self._record_layer(scope, path,
+                                              self._validated(path, data))
                 except yaml.YAMLError as errmsg:
                     self._record_violation(
                         'parse', path, None, True,
@@ -659,7 +712,7 @@ class Configuration(object):
             # a whole configuration tree: it is merged under a view,
             # whose sections are free-form, so it is not validated
             # against the schema
-            return self._converted_data
+            return self._record_layer(scope, path, self._converted_data)
 
     def config_list(self):
         """Return the lines describing where the configuration comes from."""
@@ -683,7 +736,52 @@ class Configuration(object):
                 lines.append(relative_file.replace(relative_root, '', 1))
         return lines
 
-    def config_get(self, key, format='unix', keys=False, root=False):
+    def config_origins(self, key):
+        """Return the origin of every option under a configuration path.
+
+        Returns a list of (dotted_path, scope, origin, value) tuples,
+        one for each leaf option found under the path in the final
+        configuration tree. The scope and the origin name the
+        configuration layer which last set the option: the packaged
+        defaults, a configuration file of one of the layers, the
+        runtime state of the project or an environment override.
+
+        Raises OptionNotFoundError when the option is not defined.
+        """
+        key_path = list(filter(None, key.split('.'))) if key != '.' else []
+        node = self._config
+        try:
+            for element in key_path:
+                node = node[element]
+        except (KeyError, TypeError):
+            raise OptionNotFoundError('The "' + key + '" option is not '
+                                      'defined in the DebOps '
+                                      'configuration')
+
+        leaves = []
+        _config_leaves(key_path, node, leaves)
+        origins = []
+        for leaf_path, value in leaves:
+            scope = None
+            origin = None
+            for layer_scope, layer_origin, layer_data in self._layers:
+                layer_node = layer_data
+                found = True
+                for element in leaf_path:
+                    if (isinstance(layer_node, dict)
+                            and element in layer_node):
+                        layer_node = layer_node[element]
+                    else:
+                        found = False
+                        break
+                if found:
+                    scope, origin = layer_scope, layer_origin
+            origins.append((_dotted(leaf_path) or '.', scope, origin,
+                            value))
+        return origins
+
+    def config_get(self, key, format='unix', keys=False, root=False,
+                   show_origin=False, show_scope=False):
         """Return the value of a configuration option, rendered in the
         requested format.
 
@@ -691,9 +789,32 @@ class Configuration(object):
         path from the root of the configuration tree, which shows where
         in the tree the option is defined.
 
+        With 'show_origin' or 'show_scope' set, the options are
+        rendered as plain text, one tab-separated line per option,
+        naming the configuration layer and the source which last set
+        each option. This rendering cannot be combined with the other
+        formats or options.
+
         Raises OptionNotFoundError when the option is not defined; the
         clients decide how absence is presented.
         """
+        if show_origin or show_scope:
+            if format != 'unix' or keys or root:
+                raise ValueError('The origin of the options is rendered '
+                                 'as plain text and cannot be combined '
+                                 'with other formats or options')
+            lines = []
+            for option, scope, origin, value in self.config_origins(key):
+                columns = []
+                if show_scope:
+                    columns.append(scope or 'unknown')
+                if show_origin:
+                    columns.append(origin or 'unknown')
+                columns.append(option)
+                columns.append(value if isinstance(value, str)
+                               else json.dumps(value))
+                lines.append('\t'.join(columns))
+            return '\n'.join(lines) if lines else None
         key_path = ['.']
         if key != '.':
             key_path = list(filter(None, key.split('.')))
