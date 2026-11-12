@@ -71,7 +71,11 @@ def test_main_runs_the_interpreter_with_the_command_line(clean_logging,
 
     main_module.main()
 
-    interpreter_class.assert_called_once_with(list(os.sys.argv))
+    # The interpreter receives the configuration main() already built:
+    # building a second one would load every configuration file twice
+    interpreter_class.assert_called_once_with(
+        list(os.sys.argv),
+        config=main_module.Configuration.return_value)
 
 
 def test_importing_the_package_installs_the_notice_level():

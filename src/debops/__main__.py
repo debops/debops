@@ -156,7 +156,7 @@ def main():
     except Exception:
         logger.debug('Version check initialization failed', exc_info=True)
 
-    interpreter = Interpreter(args)
+    interpreter = Interpreter(args, config=config)
 
 
 def run():

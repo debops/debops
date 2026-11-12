@@ -38,12 +38,15 @@ def _inspect_mode(args):
 
 class Interpreter(object):
 
-    def __init__(self, args=None):
+    def __init__(self, args=None, config=None):
         # The shell's working directory, captured before anything runs:
         # the view resolution is anchored here
         self.cwd = os.getcwd()
         self.args = args
-        self.config = Configuration()
+        # The configuration arrives from main(), which has already built
+        # one for the logging setup; building a second one here would
+        # load and validate every configuration file twice
+        self.config = config if config is not None else Configuration()
         self.parsed_args = Subcommands(self.args)
         logger.debug('Command line interpreter initialized')
         logger.debug('Control user=' + getpass.getuser())
