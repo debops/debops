@@ -23,6 +23,7 @@ from unittest import mock
 import pytest
 
 import debops.core.projectdir as projectdir_module
+from debops import get_project_context
 from debops.core.config import Configuration
 from debops.core.exceptions import ViewNotFoundError
 from debops.core.projectdir import ProjectDir
@@ -1256,6 +1257,8 @@ def test_init_detects_a_legacy_project(tmp_path, monkeypatch):
 
     assert project.project_type == "legacy"
     assert project.name == os.path.basename(tmp_path)
+    # The project context is recorded for the journal's correlation
+    assert get_project_context() == "{}:system".format(os.path.basename(tmp_path))
     assert project.config.raw["views"]["system"]["debops"] == {
             "namespace": "debops"}
     assert project.config._env_vars["DEBOPS_PROJECT_PATH"] == str(tmp_path)

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .constants import DEBOPS_USER_HOME_DIR
+from .. import set_project_context
 from .exceptions import ViewNotFoundError
 from .utils import (unexpanduser, write_file, host_is_controller, strtobool,
                     verify_gpg_recipients)
@@ -206,6 +207,9 @@ class ProjectDir(object):
             root=self.path, cwd=cwd,
             views=list(self.config.raw['views'].keys()),
             explicit=view, default=config_default_view)
+
+        # Record the project context for the journal's correlation
+        set_project_context(self.name, self.view)
 
         # Expose current view in configuration tree
         view_data = {

@@ -7,6 +7,8 @@ import os
 import logging
 from logging.handlers import SysLogHandler
 
+from . import ProjectContextFilter, ProjectFormatter
+
 from .cli.interpreter import Interpreter
 from .core.config import Configuration
 from .cli.subcommands import Subcommands
@@ -135,8 +137,8 @@ def main():
                                        config.raw['syslog']['facility'],
                                        SysLogHandler.LOG_USER))
     syslog_handler.addFilter(build_handler_filters('syslog'))
-    syslog_fmt = logging.Formatter('[%(levelname)s] %(message)s')
-    syslog_handler.setFormatter(syslog_fmt)
+    syslog_handler.addFilter(ProjectContextFilter())
+    syslog_handler.setFormatter(ProjectFormatter('[%(levelname)s] %(message)s'))
     logger.addHandler(syslog_handler)
     if isinstance(syslog_address, str):
         logger.debug('Logging to {} enabled'.format(syslog_address))

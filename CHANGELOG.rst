@@ -23,6 +23,17 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v3.4.0...master
 
+Added
+~~~~~
+
+General
+'''''''
+
+- Journal records emitted by the :command:`debops` command now carry
+  a ``[project:view]`` prefix naming the project directory and the
+  infrastructure view the operation runs in, so that entries from
+  different projects can be told apart in the system journal.
+
 Changed
 ~~~~~~~
 

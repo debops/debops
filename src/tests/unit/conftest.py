@@ -9,7 +9,18 @@ import os
 
 import pytest
 
+from debops import set_project_context
 from debops.core.config import Configuration
+
+
+@pytest.fixture(autouse=True)
+def _clear_project_context():
+    """Keep the project context from leaking between tests: project
+    constructions set it, and only the tests which assert on it should
+    see it."""
+    set_project_context(None, None)
+    yield
+    set_project_context(None, None)
 
 
 class StubConfig:
