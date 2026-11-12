@@ -49,6 +49,12 @@ General
   files. The applied overrides are listed by the
   :command:`debops config list` command.
 
+- The :command:`debops` command now loads a '.env' file located at the
+  root of the infrastructure view ('ansible/views/<view>/.env') in
+  modern project directories, on top of the project directory
+  environment. The file is ignored by git and can be used to define
+  local variables specific to a view.
+
 Changed
 ~~~~~~~
 
