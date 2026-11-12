@@ -10,6 +10,8 @@ from .projectvenv import (seed_requirements, seed_names, check_scope,
                           find_missing_external_deps, comment_external_deps)
 from .ansible.ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
+from .ansible.secrets import AnsibleSecretStore
+from .secrets import SecretManager
 from .ansible.inventoryspec import (parse_spec, merge_specs, apply_spec,
                                     render_keep,
                                     render_spec, load_template,
@@ -245,17 +247,17 @@ class ProjectDir(object):
 
         project_views = list(self.config.raw['views'].keys())
         for view in project_views:
-            inventory = AnsibleInventory(self, view, keys=self.keys,
-                                         encrypt=self.encrypt)
+            store = AnsibleSecretStore(self, view, keys=self.keys,
+                                       encrypt=self.encrypt)
 
-            if inventory.encrypted:
+            if store.encrypted:
                 inventory_data = {
                     'views': {
                         view: {
                           'encryption': {
-                            'enabled': inventory.encrypted,
-                            'mounted': inventory.decrypted,
-                            'type': str(inventory.crypt_method or 'none')
+                            'enabled': store.encrypted,
+                            'mounted': store.decrypted,
+                            'type': str(store.crypt_method or 'none')
                           }
                         }
                       }
@@ -828,12 +830,15 @@ class ProjectDir(object):
         # Create modern project directory structure
         self.createdirs(path)
 
-        inventory = AnsibleInventory(self, default_view, keys=self.keys,
-                                     encrypt=self.encrypt)
+        inventory = AnsibleInventory(self, default_view)
 
         pre_existing = inventory.existing_paths()
 
         inventory.create()
+
+        if self.encrypt == 'encfs':
+            AnsibleSecretStore(self, default_view, keys=self.keys,
+                               encrypt=self.encrypt).encrypt_encfs()
 
         default_project_yml = jinja2.Template(
                 pkgutil.get_data('debops',
@@ -1010,8 +1015,7 @@ class ProjectDir(object):
         logger.debug('Initializing new "legacy" project directory')
         self.project_type = 'legacy'
 
-        inventory = AnsibleInventory(self, self.name, keys=self.keys,
-                                     encrypt=self.encrypt)
+        inventory = AnsibleInventory(self, self.name)
 
         pre_existing = inventory.existing_paths()
 
@@ -1298,8 +1302,7 @@ class ProjectDir(object):
         filename_view = view.replace('/', '-')
         if self.project_type == 'modern':
             if view:
-                inventory = AnsibleInventory(self, view, keys=self.keys,
-                                             encrypt=self.encrypt)
+                inventory = AnsibleInventory(self, view)
 
                 pre_existing = inventory.existing_paths()
 
@@ -1805,8 +1808,7 @@ class ProjectDir(object):
         project_views = list(self.config.raw['views'].keys())
         inspect_output = None
         for view in project_views:
-            inventory = AnsibleInventory(self, view, keys=self.keys,
-                                         encrypt=self.encrypt)
+            inventory = AnsibleInventory(self, view)
             pre_existing = inventory.existing_paths()
             inventory.createdirs()
 
@@ -1845,12 +1847,10 @@ class ProjectDir(object):
 
     def unlock(self):
         run_hooks(self.path, 'pre-unlock', env=self.environment())
-        inventory = AnsibleInventory(self, self.view)
-        inventory.unlock()
+        SecretManager(self, self.view).unlock()
         run_hooks(self.path, 'post-unlock', env=self.environment())
 
     def lock(self):
         run_hooks(self.path, 'pre-lock', env=self.environment())
-        inventory = AnsibleInventory(self, self.view)
-        inventory.lock()
+        SecretManager(self, self.view).lock()
         run_hooks(self.path, 'post-lock', env=self.environment())

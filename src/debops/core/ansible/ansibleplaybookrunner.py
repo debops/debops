@@ -299,7 +299,7 @@ class AnsiblePlaybookRunner(ProjectRunner):
 
         rc = 0
         try:
-            unlocked = self.inventory.unlock()
+            unlocked = self.secrets.unlock()
 
             if run_check_mode == 'check':
                 logger.info('Checking Ansible playbooks: {}'.format(
@@ -337,7 +337,7 @@ class AnsiblePlaybookRunner(ProjectRunner):
 
         finally:
             if unlocked:
-                self.inventory.lock()
+                self.secrets.lock()
 
         post_hook_name = 'post-' + run_check_mode
         run_hooks(self.project.path, post_hook_name,
