@@ -87,7 +87,7 @@ When you need to know where a value comes from, add ``--show-origin`` or
 with its value joined by ``=``, and the columns separated by tabs::
 
   alice@controller:~$ debops config get --show-origin --show-scope syslog.level
-  user	/home/alice/.config/debops/conf.d/99_config_set.json	syslog.level=DEBUG
+  user	~/.config/debops/conf.d/99_config_set.json	syslog.level=DEBUG
 
 The scope is the layer which last set the option: ``defaults``,
 ``system``, ``user``, ``project``, ``runtime`` or ``override``. The
