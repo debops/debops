@@ -1038,3 +1038,53 @@ def test_write_option_refuses_a_broken_file(configuration, tmp_path):
 
     with pytest.raises(ValueError):
         configuration.write_option(str(path), "syslog.port", "514")
+
+
+def test_violations_record_a_dropped_option(configuration, tmp_path):
+    (tmp_path / "options.toml").write_text('[syslog]\n'
+                                           'port = "five"\n')
+
+    configuration.merge(str(tmp_path))
+
+    assert configuration._violations == [{
+        "kind": "type",
+        "file": str(tmp_path / "options.toml"),
+        "option": "syslog.port",
+        "dropped": True,
+        "message": "option 'syslog.port' must be of type integer, "
+                   "not str",
+    }]
+
+
+def test_violations_record_unknown_options_as_kept(configuration, tmp_path):
+    (tmp_path / "typo.toml").write_text('[versionchek]\n'
+                                        'enabled = true\n')
+
+    configuration.merge(str(tmp_path))
+
+    assert len(configuration._violations) == 1
+    assert configuration._violations[0]["kind"] == "unknown"
+    assert configuration._violations[0]["dropped"] is False
+
+
+def test_violations_record_a_broken_file(configuration, tmp_path):
+    (tmp_path / "broken.yaml").write_text("a: [unterminated\n")
+
+    configuration.merge(str(tmp_path))
+
+    assert configuration._violations[0]["kind"] == "parse"
+    assert configuration._violations[0]["dropped"] is True
+
+
+def test_violations_record_a_skipped_override(configuration, monkeypatch):
+    monkeypatch.setenv("DEBOPS_CONFIG__SYSLOG__PORT", "five")
+
+    configuration.apply_env_overrides()
+
+    assert len(configuration._violations) == 1
+    violation = configuration._violations[0]
+    assert violation["kind"] == "override"
+    assert violation["file"] is None
+    assert violation["option"] == "DEBOPS_CONFIG__SYSLOG__PORT"
+    assert violation["dropped"] is True
+    assert "invalid literal" in violation["message"]

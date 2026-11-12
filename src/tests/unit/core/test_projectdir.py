@@ -1230,6 +1230,7 @@ def make_configuration(raw=None):
     config._env_files = []
     config._env_vars = {}
     config._env_overrides = []
+    config._violations = []
     config._config_files = []
     config._config = (dict(DEFAULT_PROJECT_RAW) if raw is None
                       else dict(raw))
