@@ -163,5 +163,8 @@ def configuration():
     config._env_overrides = []
     config._violations = []
     config._layers = []
+    config._schema_source = "debops"
+    config._schema_instance = None
+    config._env_prefix = "DEBOPS_CONFIG__"
     config._env_vars = {}
     return config
