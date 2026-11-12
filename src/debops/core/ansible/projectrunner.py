@@ -2,31 +2,27 @@
 # Copyright (C) 2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Common code for commands which run in the context of a DebOps project.
+"""The Ansible-specific layer of the project runners.
 
-The :class:`ProjectRunner` base class resolves the project inventory and
-the Ansible environment shared by the runners which execute Ansible and
-user commands inside a project directory.
+The :class:`AnsibleProjectRunner` base class adds the Ansible argument
+parsing and the Ansible environment construction on top of the
+tool-agnostic :class:`debops.core.runner.Runner`, for the runners
+which execute Ansible and user commands inside a project directory.
 """
 
-from .secrets import AnsibleSecretStore
+from ..runner import Runner
 import configparser
 import logging
-import subprocess
-import sys
-import textwrap
 import os
+import textwrap
 
 logger = logging.getLogger(__name__)
 
 
-class ProjectRunner(object):
+class AnsibleProjectRunner(Runner):
 
     def __init__(self, project, bell=False):
-        self.bell = bell
-
-        self.project = project
-        self.secrets = AnsibleSecretStore(project, view=project.view)
+        super().__init__(project, bell=bell, secrets_name='ansible')
 
         try:
             self._inventory_paths = (
@@ -51,32 +47,11 @@ class ProjectRunner(object):
                              '    [ansible defaults]\n'
                              '    inventory = ansible/inventory')
 
-    def _subprocess_env(self, extra_env=None):
-        """Return the environment a project command runs in.
-
-        The ambient environment with the project's configured variables
-        on top, plus the runner's own additions last. The mapping is
-        handed to the spawned command; the DebOps process environment
-        itself is not modified.
-        """
-        env = self.project.environment()
-        if extra_env:
-            env.update(extra_env)
-        return env
-
     def _quote_spaces(self, string):
         if ' ' in string:
             return '"{}"'.format(string)
         else:
             return string
-
-    def _ring_bell(self):
-        # Notify user at end of execution
-        if self.bell:
-            # A bare BEL, not a log record: a record's newline would
-            # advance the line the bell is meant to leave alone
-            sys.stderr.write('\a')
-            sys.stderr.flush()
 
     def _add_global_vars(self):
         """Add the --extra-vars with 'global-vars.yml' files first so that

@@ -11,13 +11,14 @@ from unittest import mock
 import pytest
 
 import debops.core.ansible.projectrunner as projectrunner_module
+import debops.core.runner as runner_base_module
 import debops.core.ansible.ansibleplaybookrunner as runner_module
 from debops.core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 
 
 @pytest.fixture(autouse=True)
-def stub_ansible_inventory(monkeypatch):
-    monkeypatch.setattr(projectrunner_module, "AnsibleSecretStore",
+def stub_project_secrets(monkeypatch):
+    monkeypatch.setattr(runner_base_module, "SecretManager",
                         mock.Mock())
 
 
@@ -498,6 +499,7 @@ def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch):
 def test_debug_mode_adds_verbosity_and_env(stub_project):
     runner = AnsiblePlaybookRunner(stub_project(), debug=True,
                                    ansible_args=[])
+    runner.secrets = mock.Mock()
 
     assert "-vv" in runner._ansible_command
     assert runner._ansible_env["ANSIBLE_DEBUG"] == "true"

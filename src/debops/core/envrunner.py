@@ -2,7 +2,7 @@
 # Copyright (C) 2023-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from .ansible.projectrunner import ProjectRunner
+from .runner import Runner
 from .hooks import run_hooks
 import logging
 import subprocess
@@ -10,7 +10,7 @@ import subprocess
 logger = logging.getLogger(__name__)
 
 
-class EnvRunner(ProjectRunner):
+class EnvRunner(Runner):
     """Run a command in the DebOps project environment."""
 
     def __init__(self, project, command_args, bell=False):
