@@ -69,13 +69,12 @@ General
 
 - The :command:`debops config get` command now supports the
   '--show-origin' and '--show-scope' options, which render the
-  selected options as plain text, one tab-separated line per option,
-  naming the configuration layer and the source which last set each
-  option: a configuration file, the packaged defaults, the runtime
-  state of the project or an environment variable. This answers the
-  question of where a configuration value comes from, and why a
-  setting does not take effect when an environment override is
-  responsible.
+  selected options as plain text, one line per option: the source
+  which last set it (a configuration file, the packaged defaults,
+  the runtime state of the project or an environment variable) and
+  the option with its value. This answers the question of where a
+  configuration value comes from, and why a setting does not take
+  effect when an environment override is responsible.
 
 - Configuration options can now be overridden from the environment
   using ``DEBOPS_CONFIG__SECTION__KEY`` variables, with '__'

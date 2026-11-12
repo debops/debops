@@ -333,7 +333,7 @@ class Configuration(object):
         if isinstance(data, str):
             self._merge_dict(self._config, self.load(data, scope=scope))
         elif isinstance(data, dict):
-            self._record_layer(scope, origin or 'configuration data',
+            self._record_layer(scope, origin or 'configuration-data',
                                data)
             self._merge_dict(self._config, data)
 
@@ -790,10 +790,12 @@ class Configuration(object):
         in the tree the option is defined.
 
         With 'show_origin' or 'show_scope' set, the options are
-        rendered as plain text, one tab-separated line per option,
-        naming the configuration layer and the source which last set
-        each option. This rendering cannot be combined with the other
-        formats or options.
+        rendered as plain text, one line per option: the columns asked
+        for (the scope, the origin) separated by tabs, and the option
+        with its value joined by '=' as the last column, so that the
+        values which contain whitespace stay in one place. This
+        rendering cannot be combined with the other formats or
+        options.
 
         Raises OptionNotFoundError when the option is not defined; the
         clients decide how absence is presented.
@@ -805,14 +807,14 @@ class Configuration(object):
                                  'with other formats or options')
             lines = []
             for option, scope, origin, value in self.config_origins(key):
+                rendered = (value if isinstance(value, str)
+                            else json.dumps(value))
                 columns = []
                 if show_scope:
                     columns.append(scope or 'unknown')
                 if show_origin:
                     columns.append(origin or 'unknown')
-                columns.append(option)
-                columns.append(value if isinstance(value, str)
-                               else json.dumps(value))
+                columns.append('='.join([option, rendered]))
                 lines.append('\t'.join(columns))
             return '\n'.join(lines) if lines else None
         key_path = ['.']
