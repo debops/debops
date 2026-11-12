@@ -2,8 +2,8 @@
 # Copyright (C) 2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from .exceptions import InventorySpecError
-from .utils import write_file
+from ..exceptions import InventorySpecError
+from ..utils import write_file
 import collections
 import collections.abc
 import fnmatch

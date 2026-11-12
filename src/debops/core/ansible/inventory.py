@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from ..exceptions import NoDefaultViewException
-from ..inventoryspec import apply_spec
+from .inventoryspec import apply_spec
 from ..utils import host_is_controller
 import pkgutil
 import jinja2

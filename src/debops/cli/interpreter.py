@@ -9,8 +9,8 @@ from ..core.config import Configuration
 from .subcommands import Subcommands
 from ..core.projectdir import ProjectDir
 from ..core.projectvenv import ProjectVenv
-from ..core.ansiblerunner import AnsibleRunner
-from ..core.ansibleplaybookrunner import AnsiblePlaybookRunner
+from ..core.ansible.ansiblerunner import AnsibleRunner
+from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
 import logging
 import getpass

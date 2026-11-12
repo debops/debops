@@ -9,13 +9,15 @@ dependencies.
 """
 
 from debops.core.exceptions import InventorySpecError
-from debops.core.inventoryspec import (parse_spec, merge_specs, resolve_paths,
-                                       apply_spec, render_spec, render_keep,
-                                       resolve_keep, load_template,
-                                       _execute_command,
-                                       DEFAULT_VERSION, PATH_RENDERED_VERSIONS,
-                                       CONTENT_RENDERED_VERSIONS, SPEC_TEMPLATES,
-                                       SPEC_VERSION)
+from debops.core.ansible.inventoryspec import (parse_spec, merge_specs,
+                                               resolve_paths, apply_spec,
+                                               render_spec, render_keep,
+                                               resolve_keep, load_template,
+                                               _execute_command,
+                                               DEFAULT_VERSION,
+                                               PATH_RENDERED_VERSIONS,
+                                               CONTENT_RENDERED_VERSIONS,
+                                               SPEC_TEMPLATES, SPEC_VERSION)
 from debops.core.projectdir import ProjectDir
 from unittest import mock
 import io
@@ -400,14 +402,14 @@ class PipeTestCase(unittest.TestCase):
         return render_spec({'file.yml': content}, {}, 'doc.yml',
                            version=version, allow_io=allow_io)['file.yml']
 
-    @mock.patch('debops.core.inventoryspec._execute_command')
+    @mock.patch('debops.core.ansible.inventoryspec._execute_command')
     def test_output_is_returned_without_trailing_newline(self, execute):
         execute.return_value = mock.Mock(returncode=0, stdout='key\n',
                                          stderr='')
 
         self.assertEqual(self.render('{{ pipe("echo key") }}\n'), 'key\n')
 
-    @mock.patch('debops.core.inventoryspec._execute_command')
+    @mock.patch('debops.core.ansible.inventoryspec._execute_command')
     def test_result_is_memoized(self, execute):
         execute.return_value = mock.Mock(returncode=0, stdout='x\n',
                                          stderr='')
@@ -436,7 +438,7 @@ class PipeTestCase(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout, 'hello')
 
-    @mock.patch('debops.core.inventoryspec._execute_command')
+    @mock.patch('debops.core.ansible.inventoryspec._execute_command')
     def test_failed_command_is_reported(self, execute):
         execute.return_value = mock.Mock(returncode=2, stdout='',
                                          stderr='no agent\n')
@@ -447,7 +449,7 @@ class PipeTestCase(unittest.TestCase):
         self.assertIn('exit code 2', str(cm.exception))
         self.assertIn('no agent', str(cm.exception))
 
-    @mock.patch('debops.core.inventoryspec._execute_command')
+    @mock.patch('debops.core.ansible.inventoryspec._execute_command')
     def test_timeout_is_reported(self, execute):
         execute.side_effect = subprocess.TimeoutExpired('cmd', 30)
 
@@ -456,7 +458,7 @@ class PipeTestCase(unittest.TestCase):
 
         self.assertIn('timed out', str(cm.exception))
 
-    @mock.patch('debops.core.inventoryspec._execute_command')
+    @mock.patch('debops.core.ansible.inventoryspec._execute_command')
     def test_empty_command_rejected(self, execute):
         with self.assertRaises(InventorySpecError) as cm:
             self.render('{{ pipe("  ") }}\n')
@@ -586,8 +588,9 @@ class TemplateSourceTestCase(unittest.TestCase):
     because those are examples which can change at any time. The suite brings
     a document of its own instead. `load_template()` only accepts the names
     listed in SPEC_TEMPLATES and reads the document with `pkgutil.get_data()`,
-    and 'debops.core.inventoryspec' and 'debops.core.projectdir' each bind the tuple
-    under its own name, so both bindings and get_data() are replaced here.
+    and 'debops.core.ansible.inventoryspec' and
+    'debops.core.projectdir' each bind the tuple under its own name, so both
+    bindings and get_data() are replaced here.
     """
 
     FIXTURE_NAME = 'fixture'
@@ -604,13 +607,13 @@ class TemplateSourceTestCase(unittest.TestCase):
         self.addCleanup(logger_patch.stop)
         logger_patch.start()
 
-        for module in ('debops.core.inventoryspec', 'debops.core.projectdir'):
+        for module in ('debops.core.ansible.inventoryspec', 'debops.core.projectdir'):
             names_patch = mock.patch(module + '.SPEC_TEMPLATES',
                                      (self.FIXTURE_NAME,))
             self.addCleanup(names_patch.stop)
             names_patch.start()
 
-        data_patch = mock.patch('debops.core.inventoryspec.pkgutil.get_data',
+        data_patch = mock.patch('debops.core.ansible.inventoryspec.pkgutil.get_data',
                                 return_value=self.FIXTURE_DOCUMENT)
         self.addCleanup(data_patch.stop)
         data_patch.start()
@@ -688,7 +691,7 @@ class ShippedTemplateTestCase(unittest.TestCase):
         stubs = {'pipe': lambda command: 'stub',
                  'include': lambda path: 'stub'}
 
-        with mock.patch('debops.core.inventoryspec._render_globals',
+        with mock.patch('debops.core.ansible.inventoryspec._render_globals',
                         return_value=stubs):
             for name in SPEC_TEMPLATES:
                 spec = load_template(name)
@@ -941,7 +944,7 @@ class ProjectSpecConfigTestCase(TemplateSourceTestCase):
     def test_allow_io_from_configuration(self):
         document = ('---\nversion: 3\nfiles:\n  x: "{{ pipe(\'true\') }}"\n')
 
-        with mock.patch('debops.core.inventoryspec._execute_command') as execute:
+        with mock.patch('debops.core.ansible.inventoryspec._execute_command') as execute:
             execute.return_value = mock.Mock(returncode=0, stdout='', stderr='')
 
             with mock.patch.object(sys, 'stdin', io.StringIO(document)):
@@ -963,7 +966,7 @@ class ProjectSpecConfigTestCase(TemplateSourceTestCase):
         # the project configuration denies it
         document = ('---\nversion: 3\nfiles:\n  x: "{{ pipe(\'true\') }}"\n')
 
-        with mock.patch('debops.core.inventoryspec._execute_command') as execute:
+        with mock.patch('debops.core.ansible.inventoryspec._execute_command') as execute:
             execute.return_value = mock.Mock(returncode=0, stdout='', stderr='')
 
             with mock.patch.object(sys, 'stdin', io.StringIO(document)):
