@@ -293,7 +293,8 @@ class Interpreter(object):
                 try:
                     output = self.config.config_get(option_name,
                                                     format=args.format,
-                                                    keys=args.keys)
+                                                    keys=args.keys,
+                                                    root=args.root)
                 except OptionNotFoundError:
                     # An undefined option is reported as an empty JSON
                     # object and a non-zero exit code
@@ -304,6 +305,7 @@ class Interpreter(object):
                     print(output)
         else:
             output = self.config.config_get('.', format=args.format,
-                                            keys=args.keys)
+                                            keys=args.keys,
+                                            root=args.root)
             if output is not None:
                 print(output)
