@@ -194,7 +194,7 @@ def test_load_converts_the_legacy_debops_cfg(configuration, tmp_path):
     }
 
 
-def test_load_warns_and_drops_an_unknown_root_option(
+def test_load_warns_and_keeps_an_unknown_root_option(
         configuration, tmp_path, caplog):
     typo = tmp_path / "typo.toml"
     typo.write_text('[versionchek]\n'
@@ -202,9 +202,58 @@ def test_load_warns_and_drops_an_unknown_root_option(
 
     configuration.merge(str(tmp_path))
 
-    assert "versionchek" not in configuration.raw
+    assert configuration.raw["versionchek"] == {"enabled": True}
     assert "typo.toml" in caplog.text
-    assert "unknown option 'versionchek'" in caplog.text
+    assert ("unknown option 'versionchek', custom options belong under "
+            "the 'custom' section") in caplog.text
+
+
+def test_load_warns_and_keeps_an_unknown_nested_option(
+        configuration, tmp_path, caplog):
+    typo = tmp_path / "typo.toml"
+    typo.write_text('[syslog]\n'
+                    'flcility = "user"\n')
+
+    configuration.merge(str(tmp_path))
+
+    assert configuration.raw["syslog"]["flcility"] == "user"
+    assert "unknown option 'syslog.flcility'" in caplog.text
+    # The migration hint is for the root level, where the custom
+    # section lives
+    assert "custom options belong" not in caplog.text
+
+
+def test_load_merges_the_custom_section(configuration, tmp_path, caplog):
+    (tmp_path / "custom.yaml").write_text('custom:\n'
+                                          '  myscript:\n'
+                                          '    retries: 5\n'
+                                          '    hosts:\n'
+                                          '      - alpha\n'
+                                          '      - beta\n')
+
+    configuration.merge(str(tmp_path))
+
+    assert configuration.raw["custom"]["myscript"] == {
+        "retries": 5,
+        "hosts": ["alpha", "beta"],
+    }
+    assert "unknown option" not in caplog.text
+
+
+def test_config_get_reads_the_custom_section(configuration):
+    configuration._config = {"custom": {"myscript": {"retries": 5}}}
+
+    assert configuration.config_get("custom.myscript.retries") == "5"
+
+
+def test_apply_env_overrides_sets_custom_options(configuration, monkeypatch):
+    monkeypatch.setenv("DEBOPS_CONFIG__CUSTOM__MYSCRIPT__RETRIES", "5")
+    monkeypatch.setenv("DEBOPS_CONFIG__CUSTOM__MYSCRIPT__TOKEN", "abc")
+
+    configuration.apply_env_overrides()
+
+    assert configuration.raw["custom"]["myscript"]["retries"] == 5
+    assert configuration.raw["custom"]["myscript"]["token"] == "abc"
 
 
 def test_load_drops_an_option_with_a_value_of_a_wrong_type(
