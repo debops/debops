@@ -805,14 +805,26 @@ class Configuration(object):
         if path.endswith('.toml'):
             self._config_files.append(path)
             with open(path, 'r') as fp:
-                data = toml.loads(fp.read())
+                try:
+                    data = toml.loads(fp.read())
+                except toml.TomlDecodeError as errmsg:
+                    self._record_violation(
+                        'parse', path, None, True,
+                        'the file cannot be parsed: {}'.format(errmsg))
+                    return {}
                 data = self._expand_env_vars(data)
                 return self._record_layer(scope, path,
                                           self._validated(path, data))
         elif path.endswith('.json'):
             self._config_files.append(path)
             with open(path, 'r') as fp:
-                data = json.loads(fp.read())
+                try:
+                    data = json.loads(fp.read())
+                except json.JSONDecodeError as errmsg:
+                    self._record_violation(
+                        'parse', path, None, True,
+                        'the file cannot be parsed: {}'.format(errmsg))
+                    return {}
                 data = self._expand_env_vars(data)
                 return self._record_layer(scope, path,
                                           self._validated(path, data))
