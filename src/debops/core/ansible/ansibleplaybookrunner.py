@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .projectrunner import ProjectRunner
-from .utils import unexpanduser
-from .hooks import run_hooks
+from ..utils import unexpanduser
+from ..hooks import run_hooks
 import subprocess
 import configparser
 import datetime

@@ -8,14 +8,14 @@ from .utils import (unexpanduser, write_file, host_is_controller, strtobool,
                     verify_gpg_recipients)
 from .projectvenv import (seed_requirements, seed_names, check_scope,
                           find_missing_external_deps, comment_external_deps)
-from .ansibleconfig import AnsibleConfig
+from .ansible.ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
-from .inventoryspec import (parse_spec, merge_specs, apply_spec,
-                            render_keep,
-                            render_spec, load_template,
-                            PATH_RENDERED_VERSIONS,
-                            CONTENT_RENDERED_VERSIONS, SPEC_TEMPLATES,
-                            SPEC_VERSION)
+from .ansible.inventoryspec import (parse_spec, merge_specs, apply_spec,
+                                    render_keep,
+                                    render_spec, load_template,
+                                    PATH_RENDERED_VERSIONS,
+                                    CONTENT_RENDERED_VERSIONS,
+                                    SPEC_TEMPLATES, SPEC_VERSION)
 from .hooks import run_hooks
 import os
 import pkgutil
@@ -569,7 +569,7 @@ class ProjectDir(object):
         reach the terminal as well.
 
         Removals are reported before writes to follow the order in which
-        :func:`debops.core.inventoryspec.apply_spec` performs them, so that a
+        :func:`debops.core.ansible.inventoryspec.apply_spec` performs them, so that a
         document which removes a directory and then re-creates files inside it
         does not read as if it deleted what it had just written.
         """
