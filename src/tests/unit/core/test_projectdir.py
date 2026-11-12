@@ -1247,6 +1247,9 @@ def make_configuration(raw=None):
     config._env_overrides = []
     config._violations = []
     config._layers = []
+    config._schema_source = "debops"
+    config._schema_instance = None
+    config._env_prefix = "DEBOPS_CONFIG__"
     config._config_files = []
     config._config = (dict(DEFAULT_PROJECT_RAW) if raw is None
                       else dict(raw))
