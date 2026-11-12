@@ -632,3 +632,129 @@ def test_config_get_keys_on_a_scalar_renders_nothing(configuration):
     configuration._config = {"a": 1}
 
     assert configuration.config_get("a", keys=True) is None
+
+
+def test_apply_env_overrides_sets_a_nested_option(configuration, monkeypatch):
+    monkeypatch.setenv("DEBOPS_CONFIG__SYSLOG__PORT", "514")
+
+    configuration.apply_env_overrides()
+
+    assert configuration.raw["syslog"]["port"] == 514
+
+
+def test_apply_env_overrides_coerces_a_boolean(configuration, monkeypatch):
+    monkeypatch.setenv("DEBOPS_CONFIG__VERSION_CHECK__ENABLED", "true")
+
+    configuration.apply_env_overrides()
+
+    assert configuration.raw["version_check"]["enabled"] is True
+
+
+def test_apply_env_overrides_parses_a_list(configuration, monkeypatch):
+    monkeypatch.setenv("DEBOPS_CONFIG__VIEWS__PROD__PLAYBOOK_COLLECTIONS",
+                       "debops.debops, custom.collection")
+
+    configuration.apply_env_overrides()
+
+    assert (configuration.raw["views"]["prod"]["playbook_collections"]
+            == ["debops.debops", "custom.collection"])
+
+
+def test_apply_env_overrides_expands_variables(configuration, monkeypatch):
+    monkeypatch.setenv("DEBOPS_TEST_USER", "joe")
+    monkeypatch.setenv("DEBOPS_CONFIG__GIT__INIT_MESSAGE",
+                       "set by ${DEBOPS_TEST_USER}")
+
+    configuration.apply_env_overrides()
+
+    assert configuration.raw["git"]["init_message"] == "set by joe"
+
+
+def test_apply_env_overrides_keeps_a_hyphenated_key(configuration,
+                                                    monkeypatch):
+    monkeypatch.setenv("DEBOPS_CONFIG__BINARIES__ANSIBLE-INVENTORY",
+                       "/usr/bin/ansible-inventory")
+
+    configuration.apply_env_overrides()
+
+    assert (configuration.raw["binaries"]["ansible-inventory"]
+            == "/usr/bin/ansible-inventory")
+
+
+def test_apply_env_overrides_matches_segments_case_insensitively(
+        configuration, monkeypatch):
+    monkeypatch.setenv("DEBOPS_CONFIG__SYSLOG__ADDRESS", "/dev/log")
+
+    configuration.apply_env_overrides()
+
+    assert configuration.raw["syslog"]["address"] == "/dev/log"
+
+
+def test_apply_env_overrides_ignores_an_unknown_option(configuration,
+                                                       monkeypatch,
+                                                       caplog):
+    monkeypatch.setenv("DEBOPS_CONFIG__SYSLOG__FLCILITY", "user")
+
+    configuration.apply_env_overrides()
+
+    assert "flcility" not in configuration.raw
+    assert "DEBOPS_CONFIG__SYSLOG__FLCILITY" in caplog.text
+    assert "not a DebOps configuration option" in caplog.text
+
+
+def test_apply_env_overrides_ignores_a_value_of_a_wrong_type(configuration,
+                                                             monkeypatch,
+                                                             caplog):
+    monkeypatch.setenv("DEBOPS_CONFIG__SYSLOG__PORT", "five")
+
+    configuration.apply_env_overrides()
+
+    assert "syslog" not in configuration.raw
+    assert "DEBOPS_CONFIG__SYSLOG__PORT" in caplog.text
+
+
+def test_apply_env_overrides_rank_above_the_configuration_files(
+        configuration, tmp_path, monkeypatch):
+    (tmp_path / "options.toml").write_text('[syslog]\nport = 999\n')
+
+    configuration.merge(str(tmp_path))
+    monkeypatch.setenv("DEBOPS_CONFIG__SYSLOG__PORT", "514")
+
+    configuration.apply_env_overrides()
+
+    assert configuration.raw["syslog"]["port"] == 514
+
+
+def test_apply_env_overrides_parses_json_in_an_open_section(configuration,
+                                                            monkeypatch):
+    monkeypatch.setenv("DEBOPS_CONFIG__VIEWS__PROD__ANSIBLE",
+                       '{"defaults": {"inventory": "hosts"}}')
+
+    configuration.apply_env_overrides()
+
+    assert (configuration.raw["views"]["prod"]["ansible"]
+            == {"defaults": {"inventory": "hosts"}})
+
+
+def test_apply_env_overrides_keep_a_string_in_an_open_section(configuration,
+                                                              monkeypatch):
+    monkeypatch.setenv(
+        "DEBOPS_CONFIG__VIEWS__PROD__ANSIBLE__DEFAULTS__INVENTORY",
+        "hosts")
+
+    configuration.apply_env_overrides()
+
+    assert (configuration.raw["views"]["prod"]["ansible"]["defaults"]
+            ["inventory"]) == "hosts"
+
+
+def test_config_list_lists_the_environment_overrides(configuration,
+                                                     monkeypatch):
+    monkeypatch.setenv("DEBOPS_CONFIG__SYSLOG__LEVEL", "DEBUG")
+
+    configuration.apply_env_overrides()
+
+    lines = configuration.config_list()
+
+    assert "# Environment variable overrides:" in lines
+    assert "DEBOPS_CONFIG__SYSLOG__LEVEL" in lines

@@ -1229,6 +1229,7 @@ def make_configuration(raw=None):
     config = Configuration.__new__(Configuration)
     config._env_files = []
     config._env_vars = {}
+    config._env_overrides = []
     config._config_files = []
     config._config = (dict(DEFAULT_PROJECT_RAW) if raw is None
                       else dict(raw))
