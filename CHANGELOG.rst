@@ -35,10 +35,19 @@ General
   different projects can be told apart in the system journal.
 
 - Configuration files are now validated against a JSON schema when
-  they are loaded. Unknown configuration options and options with a
-  value of a wrong type are reported as warnings and ignored, so that
-  a mistake in a configuration file cannot silently corrupt the
-  merged configuration.
+  they are loaded. Options with a value of a wrong type are reported
+  as warnings and ignored, so that a mistake in a configuration file
+  cannot silently corrupt the merged configuration. Options not
+  defined by DebOps are reported as unknown and left in place, so
+  that custom configurations keep working; custom options should be
+  moved under the 'custom' section of the configuration tree.
+
+- The new 'custom' section of the configuration tree is reserved for
+  custom configuration options defined outside of DebOps: scripts and
+  integrations can store their parameters there, read them with the
+  :command:`debops config get` command and override them from the
+  environment with ``DEBOPS_CONFIG__CUSTOM__...`` variables. DebOps
+  does not use this section and will not define options in it.
 
 - Configuration options can now be overridden from the environment
   using ``DEBOPS_CONFIG__SECTION__KEY`` variables, with '__'

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "DebOps configuration",
-  "description": "Schema of the DebOps configuration tree. Configuration files are validated against this schema when they are loaded; unknown options and values of a wrong type are reported as warnings and the offending options are dropped, so that a mistake in a configuration file cannot corrupt the merged configuration.",
+  "description": "Schema of the DebOps configuration tree. Configuration files are validated against this schema when they are loaded; options unknown to the schema and values of a wrong type are reported as warnings, and options with a value of a wrong type are dropped, so that a mistake in a configuration file cannot corrupt the merged configuration.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -40,6 +40,10 @@
           "type": "string"
         }
       }
+    },
+    "custom": {
+      "type": "object",
+      "description": "Reserved for custom configuration options defined outside of DebOps: scripts and integrations can store their parameters here, read them with the 'debops config get' command and override them from the environment with 'DEBOPS_CONFIG__CUSTOM__...' variables. DebOps does not use this section and will not define options in it."
     },
     "git": {
       "type": "object",
