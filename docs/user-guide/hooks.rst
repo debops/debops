@@ -123,6 +123,39 @@ The availability of decrypted secrets depends on the hook point:
   may be in either state depending on the current lock status.
 - **Post-hooks for lock/unlock** run after the respective operation completes.
 
+Hooks and the configuration
+---------------------------
+
+A hook inherits the full environment of the DebOps command which started
+it. Because of that, a :command:`debops config get` call inside the hook
+sees the same effective configuration as that command: the same file
+layers, and the same ``DEBOPS_CONFIG__*`` overrides.
+
+.. code-block:: shell
+
+   #!/bin/bash
+   # .debops/hooks/pre-run/10-maintenance-gate
+
+   state=$(debops config get custom.maintenance.enabled \
+           --project-dir "${DEBOPS_PROJECT_PATH}")
+   if [ "${state}" = "true" ]; then
+       echo "Maintenance mode is enabled, refusing to run."
+       exit 1
+   fi
+
+The hook can change the configuration only for the next invocation. The
+tree is merged once, when the command starts, and nothing re-reads the
+files afterwards. Environment variables which a hook exports are lost
+with the hook's own process: children cannot change the environment of
+their parent.
+
+Changes written to disk take effect from the next run on: edits to the
+:file:`.debops/conf.d/` files, and variables added to the :file:`.env`
+files. A ``pre-run`` hook has one direct lever on the current run. The
+generated :file:`ansible/views/<view>/ansible.cfg` file is read by
+:command:`ansible-playbook` at execution time, so a hook which edits it
+before the playbook starts changes that run.
+
 Examples
 --------
 
