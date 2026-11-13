@@ -93,6 +93,7 @@ Sections:
     check    run Ansible playbook(s) in check mode
     env      run shell commands in project environment
     ssh      connect to hosts over ssh and manage known_hosts
+    scp      copy files to and from hosts over ssh
     config   manage DebOps configuration options''')
 
         parser.add_argument('section', help='Section to run')
@@ -813,3 +814,38 @@ Connection of a host:""")
                                  '~/.ssh/config file',
                             action='store_true')
         self.args = parser.parse_args(self.args[3:])
+
+    def do_scp(self):
+        parser = _argument_parser(
+                parents=[self.global_parser],
+                usage='debops scp [<args>] [<scp options>] <source> '
+                      '<destination>',
+                description='copy files to and from hosts over ssh, '
+                            'using the connection parameters of the '
+                            'Ansible inventory',
+                epilog='Note: the composed ssh options apply to both '
+                       'connections. Operands whose inventory entries '
+                       'define different jump hosts or other connection '
+                       'options will not both work; use the '
+                       '\'~/.ssh/config\' file for them.')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view')
+        parser.add_argument('-i', '--identity', type=str, metavar='KEY',
+                            help='use this private key for both sides')
+        parser.add_argument('-a', '--accept', default=False,
+                            help='accept unseen ssh host keys on first '
+                                 'contact for this invocation',
+                            action='store_true')
+        parser.add_argument('--eval', default=False,
+                            help='print the scp command and exit',
+                            action='store_true')
+        parser.add_argument('source', nargs='?',
+                            help='the source operand: '
+                                 '[[user@]host:]path or a local path')
+        parser.add_argument('destination', nargs='?',
+                            help='the destination operand: '
+                                 '[[user@]host:]path or a local path')
+        # The scp options which DebOps does not interpret are gathered
+        # as unrecognized arguments and passed to scp unchanged
+        self.args, extras = parser.parse_known_args(self.args[2:])
+        self.args.scp_extra_args = extras

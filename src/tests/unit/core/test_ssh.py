@@ -14,9 +14,7 @@ its binary is a plain path in the configuration.
 
 import getpass
 import os
-import shlex
 import socket
-import stat
 from unittest import mock
 
 import pytest
@@ -46,56 +44,6 @@ def test_split_destination_covers_the_ssh_grammar(destination, user, host,
     support -- the port on the plain destination -- pass through
     verbatim and fail the same way ssh fails on them."""
     assert split_destination(destination) == (user, host, port)
-
-
-HOST_VARS = ('{"ansible_host": "192.0.2.10", "ansible_user": "admin", '
-             '"ansible_port": 2222,'
-             ' "ansible_ssh_private_key_file": "/keys/web",'
-             ' "ansible_ssh_common_args": "-J jump@bastion",'
-             ' "ansible_ssh_extra_args": "-o Foo=1"}')
-
-FAKE_KEY = "|1|hashed|key| ssh-ed25519 AAAAfakekey"
-
-
-def write_fake_binary(path, body):
-    path.write_text(body)
-    path.chmod(path.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP
-               | stat.S_IXOTH)
-    return str(path)
-
-
-@pytest.fixture
-def fake_tools(tmp_path):
-    """Fake external tools: an inventory which knows the 'web' host and
-    rejects everything else, a key scan which answers for 'web' and its
-    address only, and a key removal which logs its arguments. The
-    'binaries' dict uses the configuration keys the library reads."""
-    log = tmp_path / "keygen.log"
-
-    inventory = write_fake_binary(tmp_path / "fake-ansible-inventory",
-                                  "#!/bin/sh\n"
-                                  'if [ "$2" = "web" ]; then\n'
-                                  "    printf '%s' '" + HOST_VARS + "'\n"
-                                  "else\n"
-                                  "    echo 'ERROR! You must pass a single "
-                                  "valid host to --host parameter' >&2\n"
-                                  "    exit 5\n"
-                                  "fi\n")
-    keygen = write_fake_binary(tmp_path / "fake-ssh-keygen",
-                               "#!/bin/sh\n"
-                               "printf '%s\\n' \"$*\" >> "
-                               + shlex.quote(str(log)) + "\n")
-    keyscan = write_fake_binary(tmp_path / "fake-ssh-keyscan",
-                                "#!/bin/sh\n"
-                                'if [ "$4" = "web" ] || '
-                                '[ "$4" = "192.0.2.10" ]; then\n'
-                                "    printf '%s\\n' '" + FAKE_KEY + "'\n"
-                                "fi\n")
-    return {
-        "binaries": {"ansible-inventory": inventory, "ssh-keygen": keygen,
-                     "ssh-keyscan": keyscan, "ssh": "/usr/bin/ssh"},
-        "log": str(log),
-    }
 
 
 def in_sequence(command, arguments):
