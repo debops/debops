@@ -6,9 +6,9 @@
 
 The known_hosts store selection, the store layout of a project view,
 the resolution of the connection parameters of an inventory host and
-the splitting of ssh-style argument lists are used by 'debops ssh' and
-'debops scp' alike; the command-specific builders live in the sibling
-modules.
+the splitting of ssh-style argument lists are shared by the
+'debops ssh', 'debops scp' and 'debops sftp' subcommands; the
+command-specific builders live in the sibling modules.
 """
 
 import configparser
@@ -107,6 +107,37 @@ def ssh_store_dir(project_path, view):
 def ssh_store_file(project_path, view):
     """Return the known_hosts file of the view's isolated store."""
     return os.path.join(ssh_store_dir(project_path, view), 'known_hosts')
+
+
+def ensure_store_dir(store_file):
+    """Create the directory chain of a view's known_hosts store.
+
+    The directories from the '.debops/ssh' root of the project down
+    to the store directory are created with the 0700 mode of the
+    real '~/.ssh'; existing directories which are open to the group
+    or the others are tightened to the same mode. A store outside of
+    the project layout gets only its own directory ensured. Returns
+    the store directory.
+    """
+    store_file = os.path.expanduser(store_file)
+    store_dir = os.path.dirname(os.path.abspath(store_file))
+    views_dir = os.path.dirname(store_dir)
+    ssh_dir = os.path.dirname(views_dir)
+    if (os.path.basename(views_dir) == 'views'
+            and os.path.basename(ssh_dir) == 'ssh'
+            and os.path.basename(os.path.dirname(ssh_dir)) == '.debops'):
+        # The '.debops' directory keeps the default permissions; only
+        # the 'ssh' tree becomes private
+        os.makedirs(os.path.dirname(ssh_dir), exist_ok=True)
+        chain = [ssh_dir, views_dir, store_dir]
+    else:
+        chain = [store_dir]
+    for directory in chain:
+        os.makedirs(directory, mode=0o700, exist_ok=True)
+        mode = os.stat(directory).st_mode & 0o777
+        if mode & 0o077:
+            os.chmod(directory, 0o700)
+    return store_dir
 
 
 def render_ssh_drop_in(view):

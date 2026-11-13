@@ -16,6 +16,8 @@ import logging
 import os
 import textwrap
 
+from ..ssh.utils import declared_known_hosts_store, ensure_store_dir
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,6 +48,25 @@ class AnsibleProjectRunner(Runner):
             raise ValueError(textwrap.fill(errmsg, 78) + '\n\n'
                              '    [ansible defaults]\n'
                              '    inventory = ansible/inventory')
+
+        self._ensure_known_hosts_store()
+
+    def _ensure_known_hosts_store(self):
+        """Create the known_hosts store directory which the view
+        declares in its 'ansible.cfg'.
+
+        The ssh client cannot create the missing parent directories
+        when it accepts a host key into the store, so the directory
+        chain is ensured before the connections run.
+        """
+        store = declared_known_hosts_store(self.project)
+        if store:
+            try:
+                ensure_store_dir(store)
+            except OSError as error:
+                logger.notice('Cannot ensure the known_hosts store of '
+                              'the view: ' + str(error),
+                              extra={'allow': 'stderr'})
 
     def _enable_accept_new(self, env):
         """Compose the 'ANSIBLE_SSH_ARGS' environment variable which

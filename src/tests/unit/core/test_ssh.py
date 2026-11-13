@@ -20,10 +20,10 @@ from unittest import mock
 import pytest
 
 import debops.core.ssh as ssh_module
-from debops.core.ssh import (build_ssh_command, host_identifiers,
-                             known_hosts_mode, known_hosts_store,
-                             render_config_snippet, resolve_host,
-                             rescan_hosts, split_destination,
+from debops.core.ssh import (build_ssh_command, ensure_store_dir,
+                             host_identifiers, known_hosts_mode,
+                             known_hosts_store, render_config_snippet,
+                             resolve_host, rescan_hosts, split_destination,
                              write_config_snippet)
 
 
@@ -307,3 +307,57 @@ def test_write_config_snippet_creates_a_private_file(stub_project, tmp_path):
     write_config_snippet(stub_project(), str(config))
 
     assert (os.stat(config).st_mode & 0o777) == 0o600
+
+
+def test_ensure_store_dir_creates_the_chain_private(tmp_path):
+    """The store directory chain is created with the 0700 mode of the
+    real '~/.ssh'."""
+    store = (tmp_path / ".debops" / "ssh" / "views" / "system" /
+             "known_hosts")
+
+    store_dir = ensure_store_dir(str(store))
+
+    assert store_dir == str(tmp_path / ".debops" / "ssh" / "views" /
+                            "system")
+    for directory in (tmp_path / ".debops" / "ssh",
+                      tmp_path / ".debops" / "ssh" / "views",
+                      tmp_path / ".debops" / "ssh" / "views" / "system"):
+        assert (os.stat(directory).st_mode & 0o777) == 0o700
+
+
+def test_ensure_store_dir_tightens_an_open_chain(tmp_path):
+    """Directories of an existing store which are open to the group
+    or the others are tightened to 0700."""
+    ssh_dir = tmp_path / ".debops" / "ssh" / "views" / "system"
+    ssh_dir.mkdir(parents=True)
+    os.chmod(tmp_path / ".debops" / "ssh", 0o755)
+    os.chmod(tmp_path / ".debops" / "ssh" / "views", 0o755)
+    os.chmod(ssh_dir, 0o755)
+
+    ensure_store_dir(str(ssh_dir / "known_hosts"))
+
+    for directory in (tmp_path / ".debops" / "ssh",
+                      tmp_path / ".debops" / "ssh" / "views", ssh_dir):
+        assert (os.stat(directory).st_mode & 0o777) == 0o700
+
+
+def test_ensure_store_dir_keeps_stricter_modes(tmp_path):
+    """A directory stricter than 0700 stays as the operator set it."""
+    ssh_dir = tmp_path / ".debops" / "ssh" / "views" / "system"
+    ssh_dir.mkdir(parents=True)
+    os.chmod(ssh_dir, 0o500)
+
+    ensure_store_dir(str(ssh_dir / "known_hosts"))
+
+    assert (os.stat(ssh_dir).st_mode & 0o777) == 0o500
+
+
+def test_ensure_store_dir_ensures_a_foreign_store_leaf(tmp_path):
+    """A store outside of the '.debops/ssh' layout gets only its own
+    directory ensured."""
+    store = tmp_path / "elsewhere" / "known_hosts"
+
+    ensure_store_dir(str(store))
+
+    assert (os.stat(tmp_path / "elsewhere").st_mode & 0o777) == 0o700
+    assert not (tmp_path / ".debops").exists()

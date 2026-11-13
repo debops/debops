@@ -28,8 +28,8 @@ import shlex
 import socket
 import subprocess
 
-from .utils import (USER_KNOWN_HOSTS_STORE, known_hosts_mode,
-                    known_hosts_store, resolve_host)
+from .utils import (USER_KNOWN_HOSTS_STORE, ensure_store_dir,
+                    known_hosts_mode, known_hosts_store, resolve_host)
 
 logger = logging.getLogger(__name__)
 
@@ -226,9 +226,7 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                 keys.extend(line for line in process.stdout.splitlines()
                             if line and not line.startswith('#'))
             if keys:
-                store_dir = os.path.dirname(store)
-                if store_dir:
-                    os.makedirs(store_dir, exist_ok=True)
+                ensure_store_dir(store)
                 with open(store, 'a') as handle:
                     handle.write('\n'.join(keys) + '\n')
                 os.chmod(store, 0o600)
