@@ -81,6 +81,8 @@ class AnsibleConfig(object):
             if not self.config.has_section(section) and pairs:
                 self.config.add_section(section)
             for option, value in pairs.items():
+                if isinstance(value, (list, tuple)):
+                    value = ' '.join(str(item) for item in value)
                 self.config.set(section, option, str(value))
 
     def load_config(self):
