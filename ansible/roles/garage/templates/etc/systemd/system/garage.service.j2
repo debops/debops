@@ -1,0 +1,52 @@
+{# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+[Unit]
+Description=Garage S3 object store
+Documentation=https://garagehq.deuxfleurs.fr/documentation/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{ garage__user }}
+Group={{ garage__group }}
+Environment=GARAGE_LOG_TO_JOURNALD=1
+{% if garage__default_bucket | length > 0 %}
+EnvironmentFile={{ garage__secret_dir }}/default-credentials.env
+{% endif %}
+ExecStart={{ garage__bin_path }} -c {{ garage__config_file }} server{% if garage__single_node | bool %} --single-node{% endif %}{% if garage__default_bucket | length > 0 %} --default-bucket{% endif %}
+
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=42000
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+CapabilityBoundingSet=
+AmbientCapabilities=
+ReadWritePaths={{ garage__home }} {{ garage__metadata_dir }} {{ garage__data_dir }}{% if garage__metadata_snapshots_dir | length > 0 %} {{ garage__metadata_snapshots_dir }}{% endif %}
+
+
+[Install]
+WantedBy=multi-user.target

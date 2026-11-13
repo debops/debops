@@ -1,0 +1,50 @@
+{# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+replication_factor = {{ garage__replication_factor | int }}
+consistency_mode = "{{ garage__consistency_mode }}"
+
+metadata_dir = "{{ garage__metadata_dir }}"
+data_dir = "{{ garage__data_dir }}"
+{% if garage__metadata_snapshots_dir | length > 0 %}
+metadata_snapshots_dir = "{{ garage__metadata_snapshots_dir }}"
+{% endif %}
+{% if garage__metadata_auto_snapshot_interval | length > 0 %}
+metadata_auto_snapshot_interval = "{{ garage__metadata_auto_snapshot_interval }}"
+{% endif %}
+
+db_engine = "{{ garage__db_engine }}"
+
+rpc_secret_file = "{{ garage__secret_dir }}/rpc_secret"
+rpc_bind_addr = "{{ garage__rpc_bind_addr }}"
+rpc_public_addr = "{{ garage__rpc_public_addr }}"
+
+{% if garage__bootstrap_peers | length > 0 %}
+bootstrap_peers = [
+{%   for peer in garage__bootstrap_peers %}
+    "{{ peer }}"{% if not loop.last %},{% endif %}
+
+{%   endfor %}
+]
+{% endif %}
+
+{% if garage__configuration_extra | length > 0 %}
+{{ garage__configuration_extra }}
+
+{% endif %}
+[s3_api]
+api_bind_addr = "{{ garage__s3_bind_addr }}"
+s3_region = "{{ garage__s3_region }}"
+root_domain = "{{ garage__s3_root_domain }}"
+
+[s3_web]
+bind_addr = "{{ garage__web_bind_addr }}"
+root_domain = "{{ garage__web_root_domain }}"
+
+[admin]
+api_bind_addr = "{{ garage__admin_bind_addr }}"
+admin_token_file = "{{ garage__secret_dir }}/admin_token"
+metrics_token_file = "{{ garage__secret_dir }}/metrics_token"

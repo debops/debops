@@ -1,0 +1,198 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Check whether a garage binary is already installed
+  ansible.builtin.stat:
+    path: '{{ garage__bin_path }}'
+  register: garage__register_binary
+
+- name: Read currently installed garage version
+  ansible.builtin.command:
+    argv: [ '{{ garage__bin_path }}', '--version' ]
+  register: garage__register_version
+  changed_when: False
+  failed_when: False
+  check_mode: False
+  when: garage__register_binary.stat.exists | bool
+
+- name: Set installed garage version fact
+  ansible.builtin.set_fact:
+    garage__current_version: '{{ garage__register_version.stdout | d("")
+                                 | regex_search("[0-9]+[.][0-9]+[.][0-9]+")
+                                 | d("", True) }}'
+
+- name: Refuse to replace a garage binary of unknown version
+  ansible.builtin.assert:
+    that:
+      - (not garage__register_binary.stat.exists) or
+        (garage__current_version | length > 0)
+    quiet: True
+    fail_msg: >-
+      {{ garage__bin_path }} exists, but '{{ garage__bin_path }} --version'
+      does not report a version. Check or remove the binary by hand before
+      the role replaces it.
+
+- name: Decide whether the garage binary needs to change
+  ansible.builtin.set_fact:
+    garage__install_needed: '{{ garage__current_version != garage__version }}'
+    garage__upgrade_needed: '{{ garage__current_version | length > 0 and
+                                garage__current_version != garage__version }}'
+
+- name: Assert that garage__upgrade has a recognized value
+  ansible.builtin.assert:
+    that:
+      - garage__upgrade in [ 'none', 'minor', 'major' ]
+    quiet: True
+    fail_msg: >-
+      garage__upgrade must be one of 'none', 'minor', 'major'
+      (got '{{ garage__upgrade }}').
+
+- name: Refuse to upgrade garage older than 1.0.0
+  ansible.builtin.assert:
+    that:
+      - garage__current_version is version('1.0.0', '>=')
+    quiet: True
+    fail_msg: >-
+      Installed garage {{ garage__current_version }} is older than 1.0.0.
+      Upgrade it to the latest 1.x release by hand, following the upstream
+      migration guides, before the role can manage it.
+  when: garage__upgrade_needed | bool
+
+- name: Refuse to downgrade garage
+  ansible.builtin.assert:
+    that:
+      - garage__version is version(garage__current_version, '>')
+    quiet: True
+    fail_msg: >-
+      Downgrade of garage from {{ garage__current_version }} to
+      {{ garage__version }} is not supported.
+  when: garage__upgrade_needed | bool
+
+- name: Refuse to change garage when upgrades are disabled
+  ansible.builtin.assert:
+    that:
+      - garage__upgrade != 'none'
+    quiet: True
+    fail_msg: >-
+      Installed garage {{ garage__current_version }} differs from
+      garage__version {{ garage__version }}, but garage__upgrade is
+      'none'. Set garage__upgrade to 'minor' or 'major' after reading
+      the upgrade guide.
+  when: garage__upgrade_needed | bool
+
+- name: Refuse a garage upgrade not allowed by garage__upgrade
+  ansible.builtin.assert:
+    that:
+      - ((garage__version.split('.')[0] | int)
+         - (garage__current_version.split('.')[0] | int))
+        <= (1 if garage__upgrade == 'major' else 0)
+    quiet: True
+    fail_msg: >-
+      Upgrading garage from {{ garage__current_version }} to
+      {{ garage__version }} crosses a major version.
+      {{ "Upgrade through each major version in turn."
+         if garage__upgrade == 'major'
+         else ("Set garage__upgrade to 'major' only after reading the upstream"
+               ~ " changelog and the role upgrade guide.") }}
+  when: garage__upgrade_needed | bool
+
+- name: Check whether garage.service is running before an upgrade
+  ansible.builtin.command:
+    argv: [ 'systemctl', 'is-active', 'garage.service' ]
+  register: garage__register_service_active
+  changed_when: False
+  failed_when: False
+  check_mode: False
+  when:
+    - garage__upgrade_needed | bool
+    - garage__upgrade_snapshot | bool
+
+- name: Snapshot garage metadata before an upgrade
+  ansible.builtin.command:
+    argv: [ '{{ garage__bin_path }}', '-c', '{{ garage__config_file }}',
+            'meta', 'snapshot' ]
+  changed_when: True
+  when:
+    - garage__upgrade_needed | bool
+    - garage__upgrade_snapshot | bool
+    - (garage__register_service_active.stdout | d('')) == 'active'
+
+- name: Install garage binary from the Ansible Controller
+  when:
+    - garage__install_needed | bool
+    - garage__controller_binary_path | length > 0
+  block:
+
+    - name: Assert that the garage binary path on the Controller is absolute
+      ansible.builtin.assert:
+        that:
+          - garage__controller_binary_path is abs
+        quiet: True
+        fail_msg: >-
+          garage__controller_binary_path must be an absolute path
+          (got '{{ garage__controller_binary_path }}').
+
+    - name: Check the garage binary on the Ansible Controller
+      ansible.builtin.stat:
+        path: '{{ garage__controller_binary_path }}'
+        checksum_algorithm: 'sha256'
+      register: garage__register_controller_binary
+      delegate_to: 'localhost'
+      become: False
+
+    - name: Assert that the garage binary on the Controller is valid
+      ansible.builtin.assert:
+        that:
+          - garage__register_controller_binary.stat.exists | bool
+          - garage__register_controller_binary.stat.checksum == garage__binary_sha256
+        quiet: True
+        fail_msg: >-
+          SHA256 of {{ garage__controller_binary_path }} on the Ansible
+          Controller does not match the expected value for garage
+          {{ garage__version }} ({{ garage__arch }}). Got
+          '{{ garage__register_controller_binary.stat.checksum | d("missing") }}',
+          expected '{{ garage__binary_sha256 }}'.
+
+    - name: Copy garage binary from the Ansible Controller
+      ansible.builtin.copy:
+        src: '{{ garage__controller_binary_path }}'
+        dest: '{{ garage__bin_path }}'
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
+      notify: [ 'Restart garage' ]
+
+- name: Install garage binary from the release URL
+  when:
+    - garage__install_needed | bool
+    - garage__controller_binary_path | length == 0
+  block:
+
+    # ansible-core < 2.18 moves the download over 'dest' before it verifies
+    # the checksum and removes 'dest' on a mismatch.
+    - name: Download garage binary
+      ansible.builtin.get_url:
+        url: '{{ garage__release_url }}'
+        dest: '{{ garage__bin_path }}.download'
+        checksum: 'sha256:{{ garage__binary_sha256 }}'
+        owner: 'root'
+        group: 'root'
+        mode: '0700'
+
+    - name: Install downloaded garage binary
+      ansible.builtin.copy:
+        src: '{{ garage__bin_path }}.download'
+        dest: '{{ garage__bin_path }}'
+        remote_src: True
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
+      notify: [ 'Restart garage' ]
+      when: not ansible_check_mode | bool
+
+    - name: Remove downloaded garage binary
+      ansible.builtin.file:
+        path: '{{ garage__bin_path }}.download'
+        state: 'absent'

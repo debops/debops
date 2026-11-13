@@ -1,0 +1,256 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  ansible.builtin.import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps secret role
+  ansible.builtin.import_role:
+    name: 'secret'
+
+- name: Pre hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "garage/pre_main.yml") }}'
+
+- name: Make sure that Ansible local fact directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+# In check mode the unit below is not written, so the service can only be
+# managed when the unit is already installed.
+- name: Check whether the garage systemd unit is installed
+  ansible.builtin.stat:
+    path: '/etc/systemd/system/garage.service'
+  register: garage__register_unit_stat
+
+- name: Install and configure garage
+  when: garage__deploy_state != 'absent'
+  block:
+
+    - name: Assert host architecture is supported by garage
+      ansible.builtin.assert:
+        that:
+          - ansible_architecture in garage__arch_map
+        quiet: True
+        fail_msg: >-
+          garage has no release binary for architecture
+          '{{ ansible_architecture }}'. Supported architectures:
+          {{ garage__arch_map.keys() | list | sort }}.
+      when: not (garage__skip_install | bool)
+
+    - name: Assert garage cluster parameters are consistent
+      ansible.builtin.assert:
+        that:
+          - (hostvars[item]['garage__replication_factor']
+             | d(garage__replication_factor) | int)
+            == (garage__replication_factor | int)
+          - (hostvars[item]['garage__cluster_name']
+             | d(garage__cluster_name))
+            == garage__cluster_name
+        quiet: True
+        fail_msg: >-
+          Host {{ item }} has garage__replication_factor={{
+          hostvars[item]['garage__replication_factor'] | d('unset') }}
+          and garage__cluster_name={{
+          hostvars[item]['garage__cluster_name'] | d('unset') }},
+          which does not match this host
+          ({{ garage__replication_factor }}/{{ garage__cluster_name }}).
+          Both must be identical on every host in garage__cluster_hosts
+          because rpc_secret and the layout quorum are cluster-wide.
+      loop: '{{ garage__cluster_hosts }}'
+      loop_control:
+        label: '{{ item }}'
+
+    - name: Assert single-node bootstrap is supported by garage__version
+      ansible.builtin.assert:
+        that:
+          - garage__version is version('2.3.0', '>=')
+        quiet: True
+        fail_msg: >-
+          The --single-node flag requires garage 2.3.0 or newer
+          (garage__version is {{ garage__version }}). Upgrade garage or set
+          garage__single_node: False and bootstrap the layout by hand.
+      when: garage__single_node | bool
+
+    - name: Assert single-node bootstrap will not crash the daemon
+      ansible.builtin.assert:
+        that:
+          - (ansible_local.garage.layout_version | d(0) | int) <= 1
+        quiet: True
+        fail_msg: >-
+          Garage layout version is
+          {{ ansible_local.garage.layout_version | d('unknown') }},
+          which is greater than 1. The daemon refuses to start with
+          --single-node in that state and would enter a crash loop.
+          Set garage__single_node: False before the next run.
+      when: garage__single_node | bool
+
+    - name: Assert single-node bootstrap matches replication_factor
+      ansible.builtin.assert:
+        that:
+          - garage__replication_factor | int == 1
+        quiet: True
+        fail_msg: >-
+          --single-node requires garage__replication_factor == 1
+          (currently {{ garage__replication_factor }}). Either lower
+          the replication factor or set garage__single_node: False.
+      when: garage__single_node | bool
+
+    - name: Assert default-bucket bootstrap is used with single-node mode
+      ansible.builtin.assert:
+        that:
+          - garage__single_node | bool
+        quiet: True
+        fail_msg: >-
+          Garage accepts --default-bucket only together with --single-node.
+          Clear garage__default_bucket or set garage__single_node: True.
+      when: garage__default_bucket | length > 0
+
+    - name: Create garage system group
+      ansible.builtin.group:
+        name: '{{ garage__group }}'
+        state: 'present'
+        system: True
+
+    - name: Create garage system user
+      ansible.builtin.user:
+        name: '{{ garage__user }}'
+        group: '{{ garage__group }}'
+        home: '{{ garage__home }}'
+        shell: '{{ garage__shell }}'
+        system: True
+        create_home: True
+        state: 'present'
+
+    - name: Create garage secret directory
+      ansible.builtin.file:
+        path: '{{ garage__secret_dir }}'
+        state: 'directory'
+        owner: 'root'
+        group: '{{ garage__group }}'
+        mode: '0750'
+
+    - name: Create garage data directories
+      ansible.builtin.file:
+        path: '{{ item }}'
+        state: 'directory'
+        owner: '{{ garage__user }}'
+        group: '{{ garage__group }}'
+        mode: '0750'
+      loop: '{{ [garage__home, garage__metadata_dir, garage__data_dir,
+                 garage__metadata_snapshots_dir] | select | list }}'
+
+    - name: Install garage binary
+      ansible.builtin.include_tasks: 'install_binary.yml'
+      when: not (garage__skip_install | bool)
+
+    - name: Deploy garage secret files
+      ansible.builtin.copy:
+        dest: '{{ item.dest }}'
+        content: '{{ item.content }}'
+        owner: '{{ garage__user }}'
+        group: '{{ garage__group }}'
+        mode: '0600'
+      no_log: True
+      loop:
+        - dest: '{{ garage__secret_dir }}/rpc_secret'
+          content: '{{ garage__rpc_secret }}'
+        - dest: '{{ garage__secret_dir }}/admin_token'
+          content: '{{ garage__admin_token }}'
+        - dest: '{{ garage__secret_dir }}/metrics_token'
+          content: '{{ garage__metrics_token }}'
+      loop_control:
+        label: '{{ item.dest }}'
+      notify: [ 'Restart garage' ]
+
+    - name: Deploy garage default-bucket credentials
+      ansible.builtin.template:
+        src: 'etc/garage/default-credentials.env.j2'
+        dest: '{{ garage__secret_dir }}/default-credentials.env'
+        owner: 'root'
+        group: 'root'
+        mode: '0600'
+      no_log: True
+      notify: [ 'Restart garage' ]
+      when: garage__default_bucket | length > 0
+
+    - name: Remove leftover default-bucket credentials
+      ansible.builtin.file:
+        path: '{{ garage__secret_dir }}/default-credentials.env'
+        state: 'absent'
+      when: garage__default_bucket | length == 0
+
+    - name: Deploy garage configuration
+      ansible.builtin.template:
+        src: 'etc/garage.toml.j2'
+        dest: '{{ garage__config_file }}'
+        owner: 'root'
+        group: '{{ garage__group }}'
+        mode: '0640'
+      notify: [ 'Restart garage' ]
+
+    - name: Install garage systemd unit
+      ansible.builtin.template:
+        src: 'etc/systemd/system/garage.service.j2'
+        dest: '/etc/systemd/system/garage.service'
+        owner: 'root'
+        group: 'root'
+        mode: '0644'
+      notify: [ 'Reload service manager', 'Restart garage' ]
+
+- name: Remove garage installation
+  when: garage__deploy_state == 'absent'
+  block:
+
+    - name: Stop and disable garage service
+      ansible.builtin.systemd:
+        name: 'garage.service'
+        enabled: False
+        state: 'stopped'
+      when: garage__register_unit_stat.stat.exists | bool
+
+    - name: Remove garage systemd unit
+      ansible.builtin.file:
+        path: '/etc/systemd/system/garage.service'
+        state: 'absent'
+      notify: [ 'Reload service manager' ]
+
+    - name: Remove garage binary and configuration
+      ansible.builtin.file:
+        path: '{{ item }}'
+        state: 'absent'
+      loop:
+        - '{{ garage__bin_path }}'
+        - '{{ garage__config_file }}'
+        - '{{ garage__secret_dir }}'
+
+- name: Flush handlers before managing the service
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Enable and start garage
+  ansible.builtin.systemd:
+    name: 'garage.service'
+    enabled: True
+    state: 'started'
+  when:
+    - garage__deploy_state != 'absent'
+    - (garage__register_unit_stat.stat.exists | d(False) | bool) or
+      not (ansible_check_mode | bool)
+
+- name: Save garage local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/garage.fact.j2'
+    dest: '/etc/ansible/facts.d/garage.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Reload Ansible local facts
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Post hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "garage/post_main.yml") }}'
