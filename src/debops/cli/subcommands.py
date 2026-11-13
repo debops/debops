@@ -774,10 +774,11 @@ Connection of a host:""")
     def do_ssh_rescan(self):
         parser = _argument_parser(
                 parents=[self.global_parser],
-                usage='debops ssh rescan [<args>] <host> [<host>...]',
-                description='refresh the known_hosts entries of hosts: '
-                            'remove the stale entries and scan the '
-                            'current host keys')
+                usage='debops ssh rescan [<args>] <pattern> [<pattern>...]',
+                description='refresh the known_hosts entries of the '
+                            'hosts matching the Ansible inventory '
+                            'patterns: remove the stale entries and '
+                            'scan the current host keys')
         parser.add_argument('-V', '--view', type=str,
                             help='select the infrastructure view')
         parser.add_argument('--remove', default=False,
@@ -799,9 +800,10 @@ Connection of a host:""")
                             metavar='SECONDS',
                             help='timeout of each key scan (default: '
                                  '10)')
-        parser.add_argument('hosts', nargs='+',
-                            help='hosts to refresh the known_hosts '
-                                 'entries of')
+        parser.add_argument('hosts', nargs='+', metavar='pattern',
+                            help='hosts, groups or the other Ansible '
+                                 'inventory patterns to refresh the '
+                                 'known_hosts entries of')
         self.args = parser.parse_args(self.args[3:])
 
     def do_ssh_config(self):

@@ -23,8 +23,9 @@ import debops.core.ssh as ssh_module
 from debops.core.ssh import (build_ssh_command, ensure_store_dir,
                              host_identifiers, known_hosts_mode,
                              known_hosts_store, render_config_snippet,
-                             resolve_host, rescan_hosts, split_destination,
-                             write_config_snippet)
+                             resolve_destination, resolve_host,
+                             resolve_patterns, rescan_hosts,
+                             split_destination, write_config_snippet)
 
 
 @pytest.mark.parametrize("destination,user,host,port", [
@@ -361,3 +362,69 @@ def test_ensure_store_dir_ensures_a_foreign_store_leaf(tmp_path):
 
     assert (os.stat(tmp_path / "elsewhere").st_mode & 0o777) == 0o700
     assert not (tmp_path / ".debops").exists()
+
+
+def test_resolve_patterns_expands_the_inventory_patterns(stub_project,
+                                                         fake_tools):
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+
+    hosts, unmatched = resolve_patterns(project, ["multi"])
+
+    assert hosts == ["web-1", "web-2"]
+    assert unmatched == []
+
+
+def test_resolve_patterns_unions_and_deduplicates(stub_project, fake_tools):
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+
+    hosts, unmatched = resolve_patterns(project, ["multi", "solo", "multi"])
+
+    assert hosts == ["web-1", "web-2", "web-3"]
+    assert unmatched == []
+
+
+def test_resolve_patterns_reports_the_unmatched(stub_project, fake_tools):
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+
+    hosts, unmatched = resolve_patterns(project, ["none"])
+
+    assert hosts == []
+    assert unmatched == ["none"]
+
+
+def test_resolve_patterns_reports_a_failing_expansion(stub_project,
+                                                      fake_tools):
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+
+    with pytest.raises(ValueError):
+        resolve_patterns(project, ["broken"])
+
+
+def test_resolve_destination_resolves_the_literal_host(stub_project,
+                                                       fake_tools):
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+
+    parameters = resolve_destination(project, "web")
+
+    assert parameters["destination"] == "192.0.2.10"
+
+
+def test_resolve_destination_rejects_the_pattern(stub_project, fake_tools):
+    """'all' and the other patterns are not single-host destinations,
+    even when they would match one host."""
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+
+    with pytest.raises(ValueError) as error:
+        resolve_destination(project, "solo")
+
+    assert "inventory pattern" in str(error.value)
+
+
+def test_resolve_destination_rejects_the_unknown_host(stub_project,
+                                                      fake_tools):
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+
+    with pytest.raises(ValueError) as error:
+        resolve_destination(project, "no-such-host")
+
+    assert "Cannot resolve the host" in str(error.value)
