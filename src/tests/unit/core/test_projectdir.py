@@ -934,13 +934,10 @@ def test_create_ssh_writes_the_known_hosts_configuration(tmp_path):
     assert store_dir.is_dir()
     assert (os.stat(store_dir).st_mode & 0o777) == 0o700
 
-    ssh_gitignore = (tmp_path / "example" / ".debops" / "ssh" /
-                     ".gitignore")
-    assert ssh_gitignore.read_text() == (
-        "#-- The SSH known_hosts stores of the project views are "
-        "runtime state\n"
-        "*\n"
-        "!.gitignore\n")
+    gitignore = (tmp_path / "example" / ".gitignore").read_text()
+    assert "/.debops/ssh/" in gitignore
+    assert not (tmp_path / "example" / ".debops" / "ssh" /
+                ".gitignore").exists()
 
     ansible_cfg = (tmp_path / "example" / "ansible" / "views" / "system" /
                    "ansible.cfg").read_text()
