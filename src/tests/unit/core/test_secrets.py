@@ -18,6 +18,7 @@ import pytest
 
 import debops.core.secrets as secrets_module
 from debops.core.ansible.secrets import AnsibleSecretStore
+from debops.core.secrets import SecretManager
 
 
 def make_store(project, view="system", **kwargs):
@@ -484,3 +485,55 @@ def test_lock_git_crypt_reports_a_failure(stub_project, monkeypatch):
 
     with pytest.raises(ChildProcessError, match="Cannot lock"):
         store.lock()
+
+
+def make_manager(project, stores):
+    """A ``SecretManager`` whose registered factories return the given
+    store mocks, keyed by store name."""
+    manager = SecretManager(project)
+    manager._factories = lambda: {
+        name: (lambda project, view, store=store: store)
+        for name, store in stores.items()}
+    return manager
+
+
+def test_manager_unlock_returns_one_result_per_store(stub_project):
+    """The manager unlocks every registered store and reports one
+    result per store, in the registration order."""
+    ansible = mock.Mock()
+    ansible.unlock.return_value = True
+    other = mock.Mock()
+    other.unlock.return_value = False
+    manager = make_manager(stub_project(),
+                           {"ansible": ansible, "other": other})
+
+    assert manager.unlock() == [True, False]
+
+
+def test_manager_unlock_selects_a_named_store(stub_project):
+    ansible = mock.Mock()
+    ansible.unlock.return_value = True
+    other = mock.Mock()
+    manager = make_manager(stub_project(),
+                           {"ansible": ansible, "other": other})
+
+    assert manager.unlock("ansible") == [True]
+    other.unlock.assert_not_called()
+
+
+def test_manager_lock_returns_one_result_per_store(stub_project):
+    ansible = mock.Mock()
+    ansible.lock.return_value = True
+    other = mock.Mock()
+    other.lock.return_value = False
+    manager = make_manager(stub_project(),
+                           {"ansible": ansible, "other": other})
+
+    assert manager.lock() == [True, False]
+
+
+def test_manager_rejects_an_unknown_store_name(stub_project):
+    manager = make_manager(stub_project(), {"ansible": mock.Mock()})
+
+    with pytest.raises(KeyError):
+        manager.store("nope")
