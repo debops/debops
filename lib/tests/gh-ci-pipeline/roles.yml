@@ -26,6 +26,14 @@
   playbook: 'service/apt_listchanges'
   idempotency: 'advisory'
 
+- name: 'cloudflared'
+  playbook: 'service/cloudflared'
+  groups: [ 'debops_service_cloudflared' ]
+  idempotency: 'advisory'
+  post_script: |
+    cloudflared --version
+    test -f /etc/systemd/system/cloudflared@.service
+
 - name: 'mariadb_server'
   playbook: 'service/mariadb_server'
   groups: [ 'debops_service_mariadb_server' ]
