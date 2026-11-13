@@ -235,3 +235,23 @@ def test_ssh_project_mode_uses_the_declared_store(run_debops, tmp_path,
     assert result.returncode == 0
     assert any("-f " + str(store) in line
                for line in result.stdout.splitlines())
+
+
+def test_init_ssh_activates_the_project_mode(run_debops, tmp_path,
+                                             debops_env):
+    """'project init --ssh' writes the drop-in before the project
+    configuration is merged, so the generated 'ansible.cfg' carries the
+    declared store without a refresh."""
+    project_dir = tmp_path / "example-ssh-init"
+    run_debops("project", "init", "-t", "modern", "--no-requirements",
+               "--ssh", str(project_dir), env=debops_env, check=True)
+    add_inventory_host(project_dir)
+    store = (project_dir / ".debops" / "ssh" / "views" / "system" /
+             "known_hosts")
+
+    result = run_debops("ssh", "rescan", "--eval", "testhost",
+                        cwd=str(project_dir), env=debops_env)
+
+    assert result.returncode == 0
+    assert any("-f " + str(store) in line
+               for line in result.stdout.splitlines())
