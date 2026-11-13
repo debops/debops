@@ -353,3 +353,36 @@ def resolve_destination(project, name):
     raise ValueError('The destination "' + name + '" matches '
                      + str(len(hosts)) + ' inventory hosts; a single '
                      'host destination is required')
+
+
+def ssh_executable(project):
+    """Return the ssh binary which the connections use.
+
+    The 'ssh_executable' option of the view's 'ansible.cfg' overrides
+    the configured default.
+    """
+    try:
+        return project.ansible_cfg.get_option(
+            'ssh_executable', section='ssh_connection')
+    except (configparser.NoOptionError, configparser.NoSectionError):
+        return None
+
+
+def build_handoff_command(project, command, arguments, identity=None,
+                          accept=False):
+    """Build the command line of the '--' handoff invocation.
+
+    The arguments which follow the '--' marker go to the command
+    unchanged: the inventory is not consulted and the known_hosts
+    store is not injected, so the command behaves like the plain
+    binary. Only the options which DebOps itself interprets apply:
+    the identity and the accept-new option.
+    """
+    binary = ssh_executable(project) if command == 'ssh' else None
+    options = []
+    if identity:
+        options.extend(['-i', identity])
+    if accept:
+        options.extend(['-o', 'StrictHostKeyChecking=accept-new'])
+    return [binary or project.config.raw['binaries'][command]] \
+        + options + list(arguments)

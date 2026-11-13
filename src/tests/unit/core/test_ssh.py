@@ -21,11 +21,11 @@ import pytest
 
 import debops.core.ssh as ssh_module
 from debops.core.ssh import (SFTP_OPTIONS_WITH_VALUE, SSH_OPTIONS_WITH_VALUE,
-                             build_ssh_command, ensure_store_dir,
-                             host_identifiers, known_hosts_mode,
-                             known_hosts_store, render_config_snippet,
-                             resolve_destination, resolve_host,
-                             resolve_patterns, rescan_hosts,
+                             build_handoff_command, build_ssh_command,
+                             ensure_store_dir, host_identifiers,
+                             known_hosts_mode, known_hosts_store,
+                             render_config_snippet, resolve_destination,
+                             resolve_host, resolve_patterns, rescan_hosts,
                              split_destination, split_options_operand,
                              write_config_snippet)
 
@@ -485,3 +485,38 @@ def test_split_options_operand_keeps_the_sftp_batch_value():
     assert head == ["-b", "/tmp/batch"]
     assert operand == "host"
     assert tail == []
+
+
+def test_build_handoff_command_passes_the_arguments(stub_project,
+                                                    fake_tools):
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+
+    command = build_handoff_command(project, "ssh", ["--help"])
+
+    assert command == ["/usr/bin/ssh", "--help"]
+
+
+def test_build_handoff_command_applies_the_own_options(stub_project,
+                                                       fake_tools):
+    """The identity and the accept-new option are the only options
+    DebOps applies to the handoff invocation."""
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+
+    command = build_handoff_command(project, "sftp",
+                                    ["-b", "batch", "host"],
+                                    identity="/keys/id", accept=True)
+
+    assert command == ["/usr/bin/sftp", "-i", "/keys/id",
+                       "-o", "StrictHostKeyChecking=accept-new",
+                       "-b", "batch", "host"]
+
+
+def test_build_ssh_command_adds_the_accept_option(stub_project,
+                                                  fake_tools):
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+    parameters = {"destination": "192.0.2.10"}
+
+    command = build_ssh_command(project, "web", parameters, accept=True)
+
+    assert "StrictHostKeyChecking=accept-new" in command
+    assert command[-1] == "192.0.2.10"

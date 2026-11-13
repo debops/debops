@@ -767,6 +767,10 @@ Connection of a host:""")
         parser.add_argument('-i', '--identity', type=str, metavar='KEY',
                             help='use this private key instead of the '
                                  'inventory value')
+        parser.add_argument('-a', '--accept', default=False,
+                            help='accept unseen ssh host keys on first '
+                                 'contact for this session',
+                            action='store_true')
         parser.add_argument('--eval', default=False,
                             help='print the ssh command and exit',
                             action='store_true')
@@ -776,15 +780,19 @@ Connection of a host:""")
 
     def do_ssh_connect(self):
         parser = self._ssh_connect_parser()
+        tokens = self.args[2:]
+        marker = tokens.index('--') if '--' in tokens else len(tokens)
+        handoff = tokens[marker + 1:] if marker < len(tokens) else None
         head, destination, tail = split_options_operand(
-            self.args[2:], self.SSH_SUITE_VALUE_OPTIONS,
+            tokens[:marker], self.SSH_SUITE_VALUE_OPTIONS,
             self.SSH_SUITE_LONG_VALUE_OPTIONS)
         self.args, extras = parser.parse_known_args(head)
-        if destination is None:
+        if destination is None and handoff is None:
             parser.error('the following arguments are required: '
                          'destination')
+        self.args.handoff = handoff if destination is None else None
         self.args.host = destination
-        self.args.ssh_args = tail
+        self.args.ssh_args = tail + (handoff or [])
         self.args.ssh_extra_args = extras
 
     def do_ssh_rescan(self):
@@ -864,16 +872,23 @@ Connection of a host:""")
         # argument list by the getopt-style walk in 'do_scp'
         # The scp options which DebOps does not interpret are gathered
         # as unrecognized arguments and passed to scp unchanged
+        tokens = self.args[2:]
+        marker = tokens.index('--') if '--' in tokens else len(tokens)
+        handoff = tokens[marker + 1:] if marker < len(tokens) else None
         head, source, tail = split_options_operand(
-            self.args[2:], self.SSH_SUITE_VALUE_OPTIONS,
+            tokens[:marker], self.SSH_SUITE_VALUE_OPTIONS,
             self.SSH_SUITE_LONG_VALUE_OPTIONS)
-        head2, destination, tail2 = split_options_operand(
-            tail, self.SSH_SUITE_VALUE_OPTIONS,
-            self.SSH_SUITE_LONG_VALUE_OPTIONS)
+        if source is not None:
+            head2, destination, tail2 = split_options_operand(
+                tail + (handoff or []), self.SSH_SUITE_VALUE_OPTIONS,
+                self.SSH_SUITE_LONG_VALUE_OPTIONS)
+        else:
+            head2, destination, tail2 = [], None, []
         self.args, extras = parser.parse_known_args(head + head2)
-        if source is None or destination is None:
+        if handoff is None and (source is None or destination is None):
             parser.error('the following arguments are required: '
                          'source and destination')
+        self.args.handoff = handoff if source is None else None
         self.args.source = source
         self.args.destination = destination
         self.args.scp_extra_args = extras + tail2
@@ -902,13 +917,17 @@ Connection of a host:""")
         # The sftp options which DebOps does not interpret are split
         # into the ones before the destination and the ones after it,
         # and passed to sftp in their places
+        tokens = self.args[2:]
+        marker = tokens.index('--') if '--' in tokens else len(tokens)
+        handoff = tokens[marker + 1:] if marker < len(tokens) else None
         head, destination, tail = split_options_operand(
-            self.args[2:], self.SFTP_SUITE_VALUE_OPTIONS,
+            tokens[:marker], self.SFTP_SUITE_VALUE_OPTIONS,
             self.SSH_SUITE_LONG_VALUE_OPTIONS)
         self.args, extras = parser.parse_known_args(head)
-        if destination is None:
+        if destination is None and handoff is None:
             parser.error('the following arguments are required: '
                          'destination')
+        self.args.handoff = handoff if destination is None else None
         self.args.destination = destination
         self.args.sftp_head_args = extras
-        self.args.sftp_tail_args = tail
+        self.args.sftp_tail_args = tail + (handoff or [])
