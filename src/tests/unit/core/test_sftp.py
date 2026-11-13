@@ -84,3 +84,22 @@ def test_build_sftp_command_passes_the_operator_options(stub_project,
     command = build_sftp_command(project, "web", sftp_args=["-r"])
 
     assert "-r" in command
+
+
+def test_build_sftp_command_drops_the_forwards(stub_project, fake_tools,
+                                               fake_binary):
+    """A forward configured for a host does not transfer to the file
+    transfer session."""
+    inventory = fake_binary(
+        "forward-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_ssh_common_args\": \"-L 1234:localhost:5678\"}'\n")
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = inventory
+    project = stub_project(raw={"binaries": binaries})
+
+    command = build_sftp_command(project, "web")
+
+    assert "-L" not in command
+    assert "1234:localhost:5678" not in command
