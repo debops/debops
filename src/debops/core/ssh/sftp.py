@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def build_sftp_command(project, destination, identity=None, accept=False,
-                       sftp_args=None):
+                       sftp_args=None, sftp_head_args=None):
     """Build the sftp command line for 'debops sftp <destination>'.
 
     The destination follows the sftp grammar, '[user@]host[:path]';
@@ -81,6 +81,7 @@ def build_sftp_command(project, destination, identity=None, accept=False,
     for option in dict.fromkeys(ssh_options):
         command.extend(shlex.split(option))
 
+    command.extend(sftp_head_args or [])
     command.append(destination_token)
     command.extend(sftp_args or [])
     return command
