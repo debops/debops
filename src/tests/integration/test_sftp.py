@@ -10,15 +10,21 @@ otherwise. The '--eval' tests only compose the command and run
 everywhere.
 """
 
-import shlex
-import subprocess
-
 import pytest
 
 pytestmark = pytest.mark.integration
 
 
 def add_inventory_host(project_dir, name="testhost"):
+    hosts = (project_dir / "ansible" / "views" / "system" / "inventory" /
+             "hosts")
+    hosts.write_text(
+        hosts.read_text() + "\n" + name
+        + " ansible_host=127.0.0.1 ansible_user=root\n")
+
+
+def add_ported_inventory_host(project_dir, name="ported"):
+    """Add a host on a non-default ssh port, for the '--eval' tests."""
     hosts = (project_dir / "ansible" / "views" / "system" / "inventory" /
              "hosts")
     hosts.write_text(
@@ -37,8 +43,9 @@ def make_project(run_debops, tmp_path, debops_env, name="example-sftp"):
 def test_sftp_eval_prints_the_resolved_command(run_debops, tmp_path,
                                                debops_env):
     project_dir = make_project(run_debops, tmp_path, debops_env)
+    add_ported_inventory_host(project_dir)
 
-    result = run_debops("sftp", "--eval", "testhost",
+    result = run_debops("sftp", "--eval", "ported",
                         cwd=str(project_dir), env=debops_env)
 
     assert result.returncode == 0
@@ -48,8 +55,9 @@ def test_sftp_eval_prints_the_resolved_command(run_debops, tmp_path,
 
 def test_sftp_eval_keeps_the_start_path(run_debops, tmp_path, debops_env):
     project_dir = make_project(run_debops, tmp_path, debops_env)
+    add_ported_inventory_host(project_dir)
 
-    result = run_debops("sftp", "--eval", "root@testhost:/upload",
+    result = run_debops("sftp", "--eval", "root@ported:/upload",
                         cwd=str(project_dir), env=debops_env)
 
     assert result.returncode == 0
@@ -62,10 +70,10 @@ def test_sftp_eval_translates_the_jump(run_debops, tmp_path, debops_env):
              "hosts")
     hosts.write_text(
         hosts.read_text()
-        + "testhost ansible_host=127.0.0.1 ansible_port=2222 ansible_user=root "
+        + "jumped ansible_host=127.0.0.1 ansible_user=root "
           "ansible_ssh_common_args='-J operator@incus.example.org'\n")
 
-    result = run_debops("sftp", "--eval", "testhost",
+    result = run_debops("sftp", "--eval", "jumped",
                         cwd=str(project_dir), env=debops_env)
 
     assert result.returncode == 0
