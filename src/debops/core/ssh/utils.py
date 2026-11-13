@@ -30,6 +30,47 @@ USER_KNOWN_HOSTS_STORE = '~/.ssh/known_hosts'
 # operands mix.
 SSH_OPTIONS_WITH_VALUE = set('BbcDEeFIiJLlMmOoQRSVWw')
 
+# The sftp options which take a separate value argument, per the
+# sftp(1) usage line.
+SFTP_OPTIONS_WITH_VALUE = set('BbcDFiJlRoPRsS')
+
+
+def split_options_operand(tokens, value_options, long_value_options=()):
+    """Split an argument list into the options and the first operand.
+
+    The walk follows the getopt permutation: an option which takes a
+    value keeps the next token as its value, and the first token which
+    is neither an option nor an option value is the operand. The
+    tokens after the operand are returned as the tail, for the
+    arguments which follow the operand on the command line. The '--'
+    marker ends the options; the next token is the operand even when
+    it looks like an option.
+
+    The 'value_options' are the option letters which take a value and
+    'long_value_options' the long option names; the set carries the
+    options of the parser and the ones passed through to the command.
+    """
+    head = []
+    index = 0
+    while index < len(tokens):
+        token = tokens[index]
+        if token == '--':
+            index += 1
+            break
+        if not token.startswith('-') or token == '-':
+            break
+        head.append(token)
+        letter = token[1] if len(token) > 1 else ''
+        takes_value = ((letter in value_options and len(token) == 2)
+                       or token in long_value_options)
+        if takes_value and index + 1 < len(tokens):
+            index += 1
+            head.append(tokens[index])
+        index += 1
+    if index < len(tokens):
+        return head, tokens[index], tokens[index + 1:]
+    return head, None, []
+
 
 def split_host_path(operand):
     """Split an scp/sftp operand into the host part and the path.

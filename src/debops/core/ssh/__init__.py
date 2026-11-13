@@ -12,10 +12,12 @@ file-transfer composition in :mod:`debops.core.ssh.scp`, and the
 shared machinery in :mod:`debops.core.ssh.utils`.
 """
 
-from .utils import (USER_KNOWN_HOSTS_STORE, declared_known_hosts_store,
+from .utils import (SFTP_OPTIONS_WITH_VALUE, SSH_OPTIONS_WITH_VALUE,
+                    USER_KNOWN_HOSTS_STORE, declared_known_hosts_store,
                     ensure_store_dir, known_hosts_mode, known_hosts_store,
                     resolve_destination, resolve_host, resolve_patterns,
-                    render_ssh_drop_in, ssh_store_dir, ssh_store_file)
+                    render_ssh_drop_in, split_options_operand,
+                    ssh_store_dir, ssh_store_file)
 from .ssh import (build_ssh_command, host_identifiers, rescan_hosts,
                   split_destination, write_config_snippet,
                   render_config_snippet)
