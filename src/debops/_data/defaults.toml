@@ -48,6 +48,29 @@ umount = "{{ env['DEBOPS_CMD_UMOUNT'] | d('umount') }}"
 # hosts with FUSE support. By default it will rely on the system's $PATH.
 fusermount = "{{ env['DEBOPS_CMD_FUSERMOUNT'] | d('fusermount') }}"
 
+# Path to binary which will be used to connect to the hosts over the
+# 'ssh(1)' protocol. By default it will rely on the system's $PATH.
+ssh = "{{ env['DEBOPS_CMD_SSH'] | d('ssh') }}"
+
+# Path to binary which will be used to remove the known_hosts entries of the
+# hosts. By default it will rely on the system's $PATH.
+ssh-keygen = "{{ env['DEBOPS_CMD_SSH_KEYGEN'] | d('ssh-keygen') }}"
+
+# Path to binary which will be used to scan the SSH host keys of the hosts.
+# By default it will rely on the system's $PATH.
+ssh-keyscan = "{{ env['DEBOPS_CMD_SSH_KEYSCAN'] | d('ssh-keyscan') }}"
+
+[ssh]
+
+# The known_hosts store which the 'debops ssh' and 'debops ssh rescan'
+# commands operate on. The 'user' mode uses the user's default
+# '~/.ssh/known_hosts' file, so the hosts known inside and outside of DebOps
+# are the same. The 'project' mode uses the known_hosts store declared in the
+# configuration of the view through the 'UserKnownHostsFile' option of the
+# '[ssh_connection] ssh_args'; a view which does not declare a store keeps
+# using the user's default store.
+known_hosts = "user"
+
 [git]
 
 # The default commit message used for new git repositories.
