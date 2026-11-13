@@ -1,0 +1,109 @@
+---
+# Copyright (C) 2025 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2025 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Manage a single cloudflared tunnel instance. This file is included from
+# main.yml in a loop over the parsed cloudflared__combined_tunnels list.
+
+- name: Deploy tunnel configuration for cloudflared tunnel {{ tunnel.name }}
+  when: tunnel.state | d('present') == 'present'
+  vars:
+    cloudflared__tunnel_mode: '{{ tunnel.mode | d("token") }}'
+    cloudflared__tunnel_secret: '{{ secret + "/" + cloudflared__secret_base_path
+                                    + "/" + tunnel.name + "/"
+                                    + ("credentials.json"
+                                       if (cloudflared__tunnel_mode == "local")
+                                       else "token") }}'
+    cloudflared__tunnel_secret_file: '{{ cloudflared__credentials_dir + "/" + tunnel.name
+                                         + (".json"
+                                            if (cloudflared__tunnel_mode == "local")
+                                            else ".token") }}'
+  block:
+
+    - name: Check parameters of cloudflared tunnel {{ tunnel.name }}
+      ansible.builtin.assert:
+        that:
+          - cloudflared__tunnel_mode in [ 'token', 'local' ]
+          - cloudflared__tunnel_mode != 'local' or (tunnel.tunnel_uuid | d('') is truthy)
+          - cloudflared__tunnel_secret is file
+          - cloudflared__tunnel_mode != 'token' or
+            cloudflared__version == '0.0.0' or
+            cloudflared__version is version('2025.4.0', '>=')
+        fail_msg: 'Tunnel "{{ tunnel.name }}" needs "mode" set to "token" or
+                   "local", "tunnel_uuid" in the "local" mode, the
+                   {{ cloudflared__tunnel_secret }} file on the Ansible
+                   Controller, and cloudflared 2025.4.0 or newer in the
+                   "token" mode (installed: {{ cloudflared__version }}).'
+        quiet: True
+
+    - name: Deploy tunnel secret file for cloudflared tunnel {{ tunnel.name }}
+      ansible.builtin.copy:
+        src: '{{ cloudflared__tunnel_secret }}'
+        dest: '{{ cloudflared__tunnel_secret_file }}'
+        owner: '{{ cloudflared__user }}'
+        group: '{{ cloudflared__group }}'
+        mode: '0600'
+      register: cloudflared__register_secret
+      no_log: '{{ debops__no_log | d(True) }}'
+      diff: False
+
+    - name: Remove unneeded tunnel secret file for cloudflared tunnel {{ tunnel.name }}
+      ansible.builtin.file:
+        path: '{{ cloudflared__credentials_dir + "/" + tunnel.name
+                  + (".token"
+                     if (cloudflared__tunnel_mode == "local")
+                     else ".json") }}'
+        state: 'absent'
+
+    - name: Deploy tunnel configuration file for cloudflared tunnel {{ tunnel.name }}
+      ansible.builtin.template:
+        src: 'etc/cloudflared/config.yml.j2'
+        dest: '{{ cloudflared__config_dir }}/{{ tunnel.name }}.yml'
+        owner: 'root'
+        group: '{{ cloudflared__group }}'
+        mode: '0640'
+      register: cloudflared__register_config
+
+    - name: Enable cloudflared tunnel {{ tunnel.name }}
+      ansible.builtin.systemd:
+        name: 'cloudflared@{{ tunnel.name }}.service'
+        enabled: True
+
+    - name: Restart on configuration change for cloudflared tunnel {{ tunnel.name }}
+      ansible.builtin.systemd:  # noqa no-handler
+        name: 'cloudflared@{{ tunnel.name }}.service'
+        state: 'restarted'
+      when: (cloudflared__register_secret is changed) or
+            (cloudflared__register_config is changed) or
+            (cloudflared__register_unit is changed)
+
+    - name: Ensure started for cloudflared tunnel {{ tunnel.name }}
+      ansible.builtin.systemd:
+        name: 'cloudflared@{{ tunnel.name }}.service'
+        state: 'started'
+
+- name: Remove tunnel configuration for cloudflared tunnel {{ tunnel.name }}
+  when: tunnel.state | d('present') == 'absent'
+  block:
+
+    # Only a missing unit is tolerated here, same as in main.yml.
+    - name: Stop and disable cloudflared tunnel {{ tunnel.name }}
+      ansible.builtin.systemd:
+        name: 'cloudflared@{{ tunnel.name }}.service'
+        enabled: False
+        state: 'stopped'
+      register: cloudflared__register_tunnel_stop
+      failed_when:
+        - cloudflared__register_tunnel_stop is failed
+        - "'Could not find the requested service' not in (cloudflared__register_tunnel_stop.msg | d(''))"
+        - (cloudflared__register_tunnel_stop.status.LoadState | d('')) != 'not-found'
+
+    - name: Remove tunnel files for cloudflared tunnel {{ tunnel.name }}
+      ansible.builtin.file:
+        path: '{{ item }}'
+        state: 'absent'
+      loop:
+        - '{{ cloudflared__config_dir }}/{{ tunnel.name }}.yml'
+        - '{{ cloudflared__credentials_dir }}/{{ tunnel.name }}.json'
+        - '{{ cloudflared__credentials_dir }}/{{ tunnel.name }}.token'
