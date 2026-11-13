@@ -14,7 +14,8 @@ import logging
 import os
 import shlex
 
-from .utils import (known_hosts_mode, known_hosts_store, resolve_host,
+from .utils import (known_hosts_mode, known_hosts_store,
+                    resolve_destination,
                     split_host_path, translate_ssh_args)
 
 logger = logging.getLogger(__name__)
@@ -42,7 +43,7 @@ def build_sftp_command(project, destination, identity=None, accept=False,
             user, _, host_part = host_part.partition('@')
         host = host_part.strip('[]')
 
-    parameters = resolve_host(project, host)
+    parameters = resolve_destination(project, host)
     effective_user = user or parameters.get('user')
     destination_token = (effective_user + '@' if effective_user else '') \
         + parameters.get('destination') \

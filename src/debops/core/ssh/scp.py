@@ -14,7 +14,8 @@ import logging
 import os
 import shlex
 
-from .utils import (known_hosts_mode, known_hosts_store, resolve_host,
+from .utils import (known_hosts_mode, known_hosts_store,
+                    resolve_destination,
                     split_host_path, translate_ssh_args)
 
 logger = logging.getLogger(__name__)
@@ -62,7 +63,7 @@ def build_scp_command(project, source_operand, destination_operand,
         if host is None:
             operands.append(operand)
             continue
-        parameters = resolve_host(project, host)
+        parameters = resolve_destination(project, host)
         side_user = user or parameters.get('user')
         destination_host = parameters.get('destination')
         operands.append((side_user + '@' if side_user else '')

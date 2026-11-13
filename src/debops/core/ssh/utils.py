@@ -237,3 +237,78 @@ def resolve_host(project, host):
         'common_args': variables.get('ansible_ssh_common_args'),
         'extra_args': variables.get('ansible_ssh_extra_args'),
     }
+
+
+def resolve_patterns(project, patterns):
+    """Expand Ansible inventory patterns into inventory host names.
+
+    The patterns are expanded by the 'ansible' binary with
+    '--list-hosts', the same pattern engine the runners use, so
+    'all', the group names, the wildcards and the unions work. Returns
+    '(hosts, unmatched)': the deduplicated host names in the order of
+    the patterns, and the patterns which matched no host. Raises
+    ValueError when the expansion fails, ChildProcessError when it
+    cannot run.
+    """
+    binary = project.config.raw['binaries']['ansible']
+    hosts = []
+    unmatched = []
+    for pattern in patterns:
+        try:
+            process = subprocess.run(
+                [binary, pattern, '--list-hosts'], cwd=project.path,
+                env=project.environment(), capture_output=True, text=True)
+        except OSError as error:
+            raise ChildProcessError(
+                'Cannot run the pattern expansion: ' + str(error))
+        if process.returncode != 0:
+            detail = (process.stderr.strip().splitlines() or [''])[-1]
+            raise ValueError('Cannot expand the pattern "' + pattern
+                             + '": ' + detail)
+        matched = []
+        in_list = False
+        for line in process.stdout.splitlines():
+            if line.startswith('['):
+                continue
+            if not in_list:
+                if line.lstrip().startswith('hosts ('):
+                    in_list = True
+                continue
+            if not line.strip():
+                continue
+            if line.startswith((' ', '\t')):
+                matched.append(line.strip())
+            else:
+                break
+        for host in matched:
+            if host not in hosts:
+                hosts.append(host)
+        if not matched:
+            unmatched.append(pattern)
+    return hosts, unmatched
+
+
+def resolve_destination(project, name):
+    """Resolve the destination of a single-host ssh suite command.
+
+    The destination must be a literal inventory host name: the name is
+    expanded the way the Ansible patterns are, and only a name which
+    matches itself resolves -- 'all' and the other patterns are the
+    domain of 'debops ssh rescan', even when they would match a single
+    host. Raises ValueError when the name is not defined in the
+    inventory or when it matches several hosts, ChildProcessError when
+    the expansion cannot run.
+    """
+    hosts, _ = resolve_patterns(project, [name])
+    if not hosts:
+        raise ValueError('Cannot resolve the host "' + name + '": it is '
+                         'not defined in the inventory of the view')
+    if hosts == [name]:
+        return resolve_host(project, name)
+    if len(hosts) == 1:
+        raise ValueError('The destination "' + name + '" is an '
+                         'inventory pattern; a single host destination '
+                         'is required')
+    raise ValueError('The destination "' + name + '" matches '
+                     + str(len(hosts)) + ' inventory hosts; a single '
+                     'host destination is required')

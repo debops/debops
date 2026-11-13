@@ -33,8 +33,9 @@ def write_fake_binary(path, body):
 @pytest.fixture
 def fake_tools(tmp_path):
     """Fake external tools: an inventory which knows the 'web' host and
-    rejects everything else, a key scan which answers for 'web' and its
-    address only, and a key removal which logs its arguments. The
+    rejects everything else, an 'ansible' which answers the
+    '--list-hosts' expansion, a key scan which answers for 'web' and
+    its address only, and a key removal which logs its arguments. The
     'binaries' dict uses the configuration keys the library reads."""
     log = tmp_path / "keygen.log"
 
@@ -57,9 +58,33 @@ def fake_tools(tmp_path):
                                 '[ "$4" = "192.0.2.10" ]; then\n'
                                 "    printf '%s\\n' '" + FAKE_KEY + "'\n"
                                 "fi\n")
+    ansible = write_fake_binary(tmp_path / "fake-ansible",
+                                "#!/bin/sh\n"
+                                'if [ "$1" = "none" ]; then\n'
+                                "    exit 0\n"
+                                "fi\n"
+                                'if [ "$1" = "broken" ]; then\n'
+                                "    echo 'the expansion failed' >&2\n"
+                                "    exit 3\n"
+                                "fi\n"
+                                'if [ "$1" = "solo" ]; then\n'
+                                "    printf 'hosts (1):\\n    web-3\\n'\n"
+                                "    exit 0\n"
+                                "fi\n"
+                                'if [ "$1" = "multi" ]; then\n'
+                                "    printf 'hosts (2):\\n    web-1\\n"
+                                "    web-2\\n'\n"
+                                "    exit 0\n"
+                                "fi\n"
+                                'if [ "$1" = "web" ]; then\n'
+                                "    printf 'hosts (1):\\n    web\\n'\n"
+                                "    exit 0\n"
+                                "fi\n"
+                                "exit 0\n")
     return {
-        "binaries": {"ansible-inventory": inventory, "ssh-keygen": keygen,
-                     "ssh-keyscan": keyscan, "ssh": "/usr/bin/ssh",
+        "binaries": {"ansible": ansible, "ansible-inventory": inventory,
+                     "ssh-keygen": keygen, "ssh-keyscan": keyscan,
+                     "ssh": "/usr/bin/ssh",
                      "scp": "/usr/bin/scp", "sftp": "/usr/bin/sftp"},
         "log": str(log),
     }
