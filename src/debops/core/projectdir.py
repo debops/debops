@@ -217,6 +217,47 @@ class ProjectDir(object):
             views=list(self.config.raw['views'].keys()),
             explicit=view, default=config_default_view)
 
+        # Record the project context for the journal's correlation, and
+        # set up the view environment
+        self._load_view_environment(self.view)
+
+        project_views = list(self.config.raw['views'].keys())
+        for view in project_views:
+            store = AnsibleSecretStore(self, view, keys=self.keys,
+                                       encrypt=self.encrypt)
+
+            if store.encrypted:
+                inventory_data = {
+                    'views': {
+                        view: {
+                          'encryption': {
+                            'enabled': store.encrypted,
+                            'mounted': store.decrypted,
+                            'type': str(store.crypt_method or 'none')
+                          }
+                        }
+                      }
+                    }
+                self.config.merge(inventory_data, scope='runtime',
+                                  origin='debops')
+        logger.debug('Project {} loaded'.format(self.name))
+
+    def _load_view_environment(self, view, refresh=False):
+        """Set up the project context and the environment for a view.
+
+        Expose the view in the configuration tree and the runtime
+        environment, load the view's local '.env' file and the view's
+        Ansible configuration. Called when the project directory is
+        opened, and again after a new project is created, whose view is
+        known only after the project tree is generated.
+
+        With `refresh` set, the environment variables which describe the
+        view are overwritten even when they are already present; the
+        initial setup keeps values which come from the ambient
+        environment.
+        """
+        self.view = view
+
         # Record the project context for the journal's correlation
         set_project_context(self.name, self.view)
 
@@ -243,49 +284,24 @@ class ProjectDir(object):
             self.ansible_cfg = AnsibleConfig(
                     os.path.join(self.path, 'ansible.cfg'),
                     project_type=self.project_type)
-            if not self.config.get_env('DEBOPS_ANSIBLE_INVENTORY'):
-                self.config.set_env('DEBOPS_ANSIBLE_INVENTORY',
-                                    unexpanduser(os.path.join(self.path,
-                                                              'ansible',
-                                                              'inventory')))
-
+            inventory_path = os.path.join(self.path, 'ansible',
+                                          'inventory')
         elif self.project_type == 'modern':
             self.ansible_cfg = AnsibleConfig(
                     os.path.join(self.path, 'ansible', 'views',
                                  self.view, 'ansible.cfg'),
                     project_type=self.project_type,
                     view=self.view)
-            if not self.config.get_env('DEBOPS_ANSIBLE_INVENTORY'):
-                self.config.set_env('DEBOPS_ANSIBLE_INVENTORY',
-                                    unexpanduser(os.path.join(self.path,
-                                                              'ansible',
-                                                              'views', self.view,
-                                                              'inventory')))
+            inventory_path = os.path.join(self.path, 'ansible', 'views',
+                                          self.view, 'inventory')
+
+        if refresh or not self.config.get_env('DEBOPS_ANSIBLE_INVENTORY'):
+            self.config.set_env('DEBOPS_ANSIBLE_INVENTORY',
+                                unexpanduser(inventory_path))
 
         self.ansible_cfg.load_config()
         self.config.set_env('ANSIBLE_CONFIG',
                             unexpanduser(self.ansible_cfg.path))
-
-        project_views = list(self.config.raw['views'].keys())
-        for view in project_views:
-            store = AnsibleSecretStore(self, view, keys=self.keys,
-                                       encrypt=self.encrypt)
-
-            if store.encrypted:
-                inventory_data = {
-                    'views': {
-                        view: {
-                          'encryption': {
-                            'enabled': store.encrypted,
-                            'mounted': store.decrypted,
-                            'type': str(store.crypt_method or 'none')
-                          }
-                        }
-                      }
-                    }
-                self.config.merge(inventory_data, scope='runtime',
-                                  origin='debops')
-        logger.debug('Project {} loaded'.format(self.name))
 
     def environment(self):
         """Return the environment the project's commands run in.
@@ -1236,6 +1252,13 @@ class ProjectDir(object):
                 self.path, spec_sources=spec_sources, allow_io=allow_io,
                 dry_run=dry_run, force=force, inspect_mode=inspect_mode,
                 inspect_host=inspect_host)
+
+        # The view of a newly created project is known only after the
+        # project tree is generated; point the context and the
+        # environment at the view which was actually created, not at the
+        # fallback resolved before the project existed
+        if self.project_type == 'modern' and not dry_run:
+            self._load_view_environment(default_view, refresh=True)
 
         if git_repo:
             logger.debug('Initializing git repository in project directory')
