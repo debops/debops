@@ -1378,17 +1378,17 @@ class ProjectDir(object):
         os.makedirs(store_dir, exist_ok=True)
         os.chmod(store_dir, 0o700)
 
-        # The trust store is runtime state: a '.gitignore' inside the
-        # store tree ignores everything below it, and the negation
-        # keeps the ignore rule itself tracked, so clones inherit it
-        ssh_gitignore = os.path.join(self.path, '.debops', 'ssh',
-                                     '.gitignore')
-        if not os.path.exists(ssh_gitignore):
-            with open(ssh_gitignore, 'w') as handle:
-                handle.write('#-- The SSH known_hosts stores of the '
-                             'project views are runtime state\n'
-                             '*\n'
-                             '!.gitignore\n')
+        # The trust store is runtime state: the project '.gitignore'
+        # learns to ignore the '.debops/ssh/' tree, and the operator
+        # stays in control of the entry
+        gitignore_path = os.path.join(self.path, '.gitignore')
+        if os.path.exists(gitignore_path):
+            with open(gitignore_path) as handle:
+                content = handle.read()
+            if '.debops/ssh/' not in content:
+                with open(gitignore_path, 'a') as handle:
+                    handle.write('\n#-- SSH known_hosts store of the '
+                                 'project views\n/.debops/ssh/\n')
         return store_dir
 
     def mkview(self, view, ssh=False):
