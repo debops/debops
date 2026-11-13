@@ -22,7 +22,7 @@ def add_inventory_host(project_dir, name="testhost"):
              "hosts")
     hosts.write_text(
         hosts.read_text() + "\n" + name
-        + " ansible_host=127.0.0.1 ansible_user=root\n")
+        + " ansible_host=127.0.0.1\n")
 
 
 def make_project(run_debops, tmp_path, debops_env, name="example-scp"):
@@ -54,7 +54,7 @@ def test_scp_eval_prints_the_resolved_command(run_debops, tmp_path,
                         cwd=str(project_dir), env=debops_env)
 
     assert result.returncode == 0
-    assert "root@127.0.0.1:/tmp/remote-file" in result.stdout
+    assert "127.0.0.1:/tmp/remote-file" in result.stdout
 
 
 def test_scp_eval_keeps_the_operand_user(run_debops, tmp_path, debops_env):
@@ -74,7 +74,7 @@ def test_scp_eval_translates_the_jump(run_debops, tmp_path, debops_env):
              "hosts")
     hosts.write_text(
         hosts.read_text()
-        + "testhost ansible_host=127.0.0.1 ansible_user=root "
+        + "testhost ansible_host=127.0.0.1 "
           "ansible_ssh_common_args='-J operator@incus.example.org'\n")
 
     result = run_debops("scp", "--eval", "/tmp/local-file",

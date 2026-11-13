@@ -11,6 +11,7 @@ directory is re-added through PYTHONPATH, because a changed HOME hides
 it and the package dependencies of the debops command live there.
 """
 
+import getpass
 import os
 import shlex
 import shutil
@@ -28,7 +29,7 @@ def add_inventory_host(project_dir, name="testhost"):
              "hosts")
     hosts.write_text(
         hosts.read_text() + "\n" + name
-        + " ansible_host=127.0.0.1 ansible_user=root\n")
+        + " ansible_host=127.0.0.1\n")
 
 
 def sshd_listens():
@@ -86,7 +87,7 @@ def test_ssh_eval_prints_the_resolved_command(run_debops, tmp_path,
     command = shlex.split(result.stdout)
     assert command[0] == "ssh"
     assert command[-1] == "127.0.0.1"
-    assert command[command.index("-l") + 1] == "root"
+    assert command[command.index("-l") + 1] == getpass.getuser()
 
 
 def test_ssh_eval_places_the_remote_command_like_ssh(run_debops, tmp_path,
