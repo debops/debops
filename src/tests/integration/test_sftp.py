@@ -10,6 +10,8 @@ otherwise. The '--eval' tests only compose the command and run
 everywhere.
 """
 
+import getpass
+
 import pytest
 
 pytestmark = pytest.mark.integration
@@ -20,16 +22,18 @@ def add_inventory_host(project_dir, name="testhost"):
              "hosts")
     hosts.write_text(
         hosts.read_text() + "\n" + name
-        + " ansible_host=127.0.0.1 ansible_user=root\n")
+        + " ansible_host=127.0.0.1\n")
 
 
 def add_ported_inventory_host(project_dir, name="ported"):
-    """Add a host on a non-default ssh port, for the '--eval' tests."""
+    """Add a host on a non-default ssh port with its own user, for the
+    '--eval' tests."""
     hosts = (project_dir / "ansible" / "views" / "system" / "inventory" /
              "hosts")
     hosts.write_text(
         hosts.read_text() + "\n" + name
-        + " ansible_host=127.0.0.1 ansible_port=2222 ansible_user=root\n")
+        + " ansible_host=127.0.0.1 ansible_port=2222"
+          " ansible_user=operator\n")
 
 
 def make_project(run_debops, tmp_path, debops_env, name="example-sftp"):
@@ -49,7 +53,7 @@ def test_sftp_eval_prints_the_resolved_command(run_debops, tmp_path,
                         cwd=str(project_dir), env=debops_env)
 
     assert result.returncode == 0
-    assert "root@127.0.0.1" in result.stdout
+    assert "operator@127.0.0.1" in result.stdout
     assert "-P" in result.stdout and "2222" in result.stdout
 
 
@@ -70,7 +74,7 @@ def test_sftp_eval_translates_the_jump(run_debops, tmp_path, debops_env):
              "hosts")
     hosts.write_text(
         hosts.read_text()
-        + "jumped ansible_host=127.0.0.1 ansible_user=root "
+        + "jumped ansible_host=127.0.0.1 "
           "ansible_ssh_common_args='-J operator@incus.example.org'\n")
 
     result = run_debops("sftp", "--eval", "jumped",
