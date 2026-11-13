@@ -278,3 +278,34 @@ def test_exec_accept_recreates_the_store(run_debops, tmp_path, debops_env,
     assert store.read_text().strip()
     ssh_dir = project_dir / ".debops" / "ssh"
     assert (os.stat(ssh_dir).st_mode & 0o777) == 0o700
+
+
+def test_ssh_rescan_eval_expands_the_patterns(run_debops, tmp_path,
+                                              debops_env):
+    """The rescan patterns expand through the inventory: 'all' drives
+    the same actions as the explicit host."""
+    project_dir = make_project(run_debops, tmp_path, debops_env)
+    store = tmp_path / "known_hosts"
+
+    result = run_debops("ssh", "rescan", "--eval", "-f", str(store),
+                        "all", cwd=str(project_dir), env=debops_env)
+
+    assert result.returncode == 0
+    lines = result.stdout.splitlines()
+    assert any(line.startswith("ssh-keygen") and "-R testhost" in line
+               for line in lines)
+    assert any(line.startswith("ssh-keyscan")
+               and line.endswith("127.0.0.1") for line in lines)
+
+
+def test_ssh_rejects_the_pattern_destination(run_debops, tmp_path,
+                                             debops_env):
+    """'all' is not a single-host destination, even on a one-host
+    view."""
+    project_dir = make_project(run_debops, tmp_path, debops_env)
+
+    result = run_debops("ssh", "all", cwd=str(project_dir),
+                        env=debops_env)
+
+    assert result.returncode == 1
+    assert "inventory pattern" in result.stderr

@@ -375,7 +375,7 @@ class Interpreter(object):
         port = port or args.port
 
         try:
-            parameters = ssh.resolve_host(project, host)
+            parameters = ssh.resolve_destination(project, host)
         except (ValueError, ChildProcessError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
@@ -412,6 +412,19 @@ class Interpreter(object):
         elif args.scan and not args.remove:
             phases = ('scan',)
 
+        try:
+            hosts, unmatched = ssh.resolve_patterns(project, args.hosts)
+        except (ValueError, ChildProcessError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        for pattern in unmatched:
+            logger.notice('The pattern "' + pattern + '" matched no '
+                          'hosts', extra={'allow': 'stderr'})
+        if not hosts:
+            print_error('No hosts matched the given patterns: '
+                        + ' '.join(args.hosts))
+            sys.exit(1)
+
         if args.eval:
             store = args.known_hosts_file or ssh.known_hosts_store(project)
             if not store:
@@ -421,7 +434,7 @@ class Interpreter(object):
                 sys.exit(1)
             keygen = project.config.raw['binaries']['ssh-keygen']
             keyscan = project.config.raw['binaries']['ssh-keyscan']
-            for host in args.hosts:
+            for host in hosts:
                 for identifier, resolvable in ssh.host_identifiers(
                         project, host):
                     if 'remove' in phases:
@@ -433,7 +446,7 @@ class Interpreter(object):
             sys.exit(0)
 
         try:
-            results = ssh.rescan_hosts(project, args.hosts,
+            results = ssh.rescan_hosts(project, hosts,
                                        store=args.known_hosts_file,
                                        phases=phases,
                                        timeout=args.timeout)
