@@ -61,3 +61,21 @@ def gpg_env(debops_env, tmp_path):
         env={**os.environ, **env}, check=True,
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return env
+
+
+@pytest.fixture
+def localhost_ssh():
+    """Skip unless ssh authenticates to localhost without a prompt.
+
+    The file-transfer and session tests drive real connections to
+    127.0.0.1; they need an ssh daemon and a public key the daemon
+    accepts, which not every host that runs the suite has.
+    """
+    try:
+        result = subprocess.run(
+            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=3",
+             "127.0.0.1", "true"], capture_output=True, timeout=10)
+        if result.returncode != 0:
+            pytest.skip("ssh does not authenticate to localhost")
+    except (OSError, subprocess.SubprocessError):
+        pytest.skip("ssh does not authenticate to localhost")

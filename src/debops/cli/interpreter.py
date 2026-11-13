@@ -89,6 +89,9 @@ class Interpreter(object):
         elif self.parsed_args.section == 'scp':
             self.do_scp(self.parsed_args.args)
 
+        elif self.parsed_args.section == 'sftp':
+            self.do_sftp(self.parsed_args.args)
+
         elif self.parsed_args.section == 'config':
             if self.parsed_args.command == 'list':
                 self.do_config_list(self.parsed_args.args)
@@ -321,6 +324,37 @@ class Interpreter(object):
 
         logger.debug('Copying "' + args.source + '" to "'
                      + args.destination + '"', extra={'allow': 'stderr'})
+        try:
+            os.execvp(command[0], command)
+        except FileNotFoundError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+    def do_sftp(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd, view=args.view)
+        except (IsADirectoryError, NotADirectoryError,
+                ViewNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        try:
+            command = ssh.build_sftp_command(
+                project, args.destination,
+                identity=args.identity, accept=args.accept,
+                sftp_args=args.sftp_extra_args)
+        except (ValueError, ChildProcessError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        if args.eval:
+            print(shlex.join(command))
+            sys.exit(0)
+
+        logger.debug('Starting the sftp session with "'
+                     + args.destination + '"',
+                     extra={'allow': 'stderr'})
         try:
             os.execvp(command[0], command)
         except FileNotFoundError as errmsg:
