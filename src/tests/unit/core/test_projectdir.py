@@ -874,6 +874,27 @@ def test_mkview_creates_the_encfs_volume_of_the_new_view(
     store_class.return_value.encrypt_encfs.assert_called_with()
 
 
+def test_create_encfs_initializes_the_legacy_secrets(
+        tmp_path, monkeypatch, gpg_stub):
+    """'init --encrypt encfs' creates the EncFS volume of a legacy
+    project. The secrets split moved the volume creation into the
+    modern creation path only, and a legacy project reported success
+    while staying unencrypted."""
+    gpg = gpg_stub()
+    raw = dict(DEFAULT_PROJECT_RAW, binaries=dict(
+        DEFAULT_PROJECT_RAW["binaries"], gpg=gpg))
+    store_class = mock.Mock()
+    monkeypatch.setattr(projectdir_module, "AnsibleSecretStore",
+                        store_class)
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="legacy", encrypt="encfs",
+                         keys="test@example.org",
+                         config=make_configuration(raw))
+    project.create(git_repo=False)
+
+    store_class.return_value.encrypt_encfs.assert_called_with()
+
+
 def test_create_aborts_on_a_failed_git_crypt_init(tmp_path, monkeypatch,
                                                   gpg_stub):
     """A git-crypt initialization failure aborts the project creation

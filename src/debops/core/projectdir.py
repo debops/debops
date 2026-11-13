@@ -1189,6 +1189,10 @@ class ProjectDir(object):
             allow_io=allow_io, dry_run=dry_run, force=force,
             inspect_mode=inspect_mode, inspect_host=inspect_host)
 
+        if self.encrypt == 'encfs':
+            AnsibleSecretStore(self, self.view, keys=self.keys,
+                               encrypt=self.encrypt).encrypt_encfs()
+
         logger.notice('Created new DebOps project in ' + path,
                       extra={'allow': ['stderr', 'syslog']})
 
