@@ -212,6 +212,15 @@ General
   not search the account-wide Collection path, which broke playbook
   lookup on a fresh install.
 
+- :command:`debops project mkview` with the ``--encrypt`` and
+  ``--keys`` options now applies them. The EncFS volume of the new
+  view is created, and the '.gitattributes' file of a git-crypt view
+  declares the filter as active. The options were previously accepted
+  and silently dropped, and the secrets of the new view were stored
+  in the repository as plaintext. On a repository without git-crypt
+  setup the command now refuses with an error, because creating a
+  view cannot retrofit repository-wide encryption.
+
 Removed
 ~~~~~~~
 
