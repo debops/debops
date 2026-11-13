@@ -26,6 +26,19 @@
   playbook: 'service/apt_listchanges'
   idempotency: 'advisory'
 
+- name: 'garage'
+  playbook: 'service/garage'
+  groups: [ 'debops_service_garage' ]
+  idempotency: 'advisory'
+  excluded: True
+  reason: 'The debops.nginx role used by the playbook does not work with
+    ansible-core 2.21 yet'
+  post_script: |
+    garage --version
+    systemctl is-active garage.service
+    sudo garage status
+    curl --fail --silent http://127.0.0.1:3903/health
+
 - name: 'mariadb_server'
   playbook: 'service/mariadb_server'
   groups: [ 'debops_service_mariadb_server' ]
