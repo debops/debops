@@ -938,9 +938,28 @@ def test_create_ssh_writes_the_known_hosts_configuration(tmp_path):
         assert (os.stat(directory).st_mode & 0o777) == 0o700
 
     gitignore = (tmp_path / "example" / ".gitignore").read_text()
-    assert "/.debops/ssh/" in gitignore
+    assert "/.debops/ssh/views/*/known_hosts" in gitignore
     assert not (tmp_path / "example" / ".debops" / "ssh" /
                 ".gitignore").exists()
+
+
+def test_ssh_replaces_the_broad_gitignore_entry(tmp_path):
+    """A '.gitignore' which ignored the whole '.debops/ssh/' tree is
+    narrowed to the known_hosts files."""
+    project_dir = tmp_path / "example"
+    project_dir.mkdir()
+    (project_dir / ".gitignore").write_text(
+        "#-- operator content\n/.debops/venv/\n/.debops/ssh/\n")
+
+    project = ProjectDir(str(project_dir), create=True,
+                         project_type="modern",
+                         config=make_configuration())
+    project.create(git_repo=False, ssh=True)
+
+    lines = (project_dir / ".gitignore").read_text().splitlines()
+    assert "/.debops/ssh/" not in lines
+    assert "/.debops/ssh/views/*/known_hosts" in lines
+    assert "#-- operator content" in lines
 
     ansible_cfg = (tmp_path / "example" / "ansible" / "views" / "system" /
                    "ansible.cfg").read_text()
