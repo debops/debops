@@ -20,12 +20,14 @@ from unittest import mock
 import pytest
 
 import debops.core.ssh as ssh_module
-from debops.core.ssh import (build_ssh_command, ensure_store_dir,
+from debops.core.ssh import (SFTP_OPTIONS_WITH_VALUE, SSH_OPTIONS_WITH_VALUE,
+                             build_ssh_command, ensure_store_dir,
                              host_identifiers, known_hosts_mode,
                              known_hosts_store, render_config_snippet,
                              resolve_destination, resolve_host,
                              resolve_patterns, rescan_hosts,
-                             split_destination, write_config_snippet)
+                             split_destination, split_options_operand,
+                             write_config_snippet)
 
 
 @pytest.mark.parametrize("destination,user,host,port", [
@@ -428,3 +430,58 @@ def test_resolve_destination_rejects_the_unknown_host(stub_project,
         resolve_destination(project, "no-such-host")
 
     assert "Cannot resolve the host" in str(error.value)
+
+
+def test_split_options_operand_walks_the_options():
+    head, operand, tail = split_options_operand(
+        ["-o", "Foo=1", "-v", "host", "cmd"], SSH_OPTIONS_WITH_VALUE)
+
+    assert head == ["-o", "Foo=1", "-v"]
+    assert operand == "host"
+    assert tail == ["cmd"]
+
+
+def test_split_options_operand_handles_attached_values():
+    head, operand, tail = split_options_operand(
+        ["-oFoo=1", "host"], SSH_OPTIONS_WITH_VALUE)
+
+    assert head == ["-oFoo=1"]
+    assert operand == "host"
+    assert tail == []
+
+
+def test_split_options_operand_ends_the_options_at_the_marker():
+    head, operand, tail = split_options_operand(
+        ["--", "-weird", "rest"], SSH_OPTIONS_WITH_VALUE)
+
+    assert head == []
+    assert operand == "-weird"
+    assert tail == ["rest"]
+
+
+def test_split_options_operand_consumes_the_long_values():
+    head, operand, tail = split_options_operand(
+        ["--view", "system", "host"], SSH_OPTIONS_WITH_VALUE,
+        ("--view",))
+
+    assert head == ["--view", "system"]
+    assert operand == "host"
+
+
+def test_split_options_operand_reports_a_missing_operand():
+    head, operand, tail = split_options_operand(["-v"], SSH_OPTIONS_WITH_VALUE)
+
+    assert head == ["-v"]
+    assert operand is None
+    assert tail == []
+
+
+def test_split_options_operand_keeps_the_sftp_batch_value():
+    """The '-b' option of sftp takes a value; the batch file is not
+    mistaken for the destination."""
+    head, operand, tail = split_options_operand(
+        ["-b", "/tmp/batch", "host"], SFTP_OPTIONS_WITH_VALUE)
+
+    assert head == ["-b", "/tmp/batch"]
+    assert operand == "host"
+    assert tail == []

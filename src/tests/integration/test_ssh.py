@@ -310,3 +310,18 @@ def test_ssh_rejects_the_pattern_destination(run_debops, tmp_path,
 
     assert result.returncode == 1
     assert "inventory pattern" in result.stderr
+
+
+def test_ssh_eval_carries_the_options_before_the_host(run_debops, tmp_path,
+                                                      debops_env):
+    """The ssh options before the destination pass through to ssh in
+    front of it."""
+    project_dir = make_project(run_debops, tmp_path, debops_env)
+
+    result = run_debops("ssh", "-o", "Foo=1", "--eval", "testhost",
+                        cwd=str(project_dir), env=debops_env)
+
+    assert result.returncode == 0
+    command = shlex.split(result.stdout)
+    assert command[command.index("-o") + 1] == "Foo=1"
+    assert command[-1] == "127.0.0.1"

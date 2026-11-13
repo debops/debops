@@ -73,7 +73,7 @@ def split_destination(destination):
 
 
 def build_ssh_command(project, host, parameters=None, user=None, port=None,
-                      identity=None, ssh_args=None):
+                      identity=None, ssh_args=None, options=None):
     """Build the ssh command line for 'debops ssh <host>'.
 
     The resolved inventory parameters fill the command, with the
@@ -115,6 +115,7 @@ def build_ssh_command(project, host, parameters=None, user=None, port=None,
         if value:
             command.extend(shlex.split(value))
 
+    command.extend(options or [])
     command.append(parameters.get('destination') or host)
     command.extend(ssh_args or [])
     return command
