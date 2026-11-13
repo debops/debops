@@ -343,7 +343,8 @@ class Interpreter(object):
             command = ssh.build_sftp_command(
                 project, args.destination,
                 identity=args.identity, accept=args.accept,
-                sftp_args=args.sftp_extra_args)
+                sftp_args=args.sftp_tail_args,
+                sftp_head_args=args.sftp_head_args)
         except (ValueError, ChildProcessError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
@@ -383,7 +384,7 @@ class Interpreter(object):
         command = ssh.build_ssh_command(
             project, host, parameters,
             user=user, port=port, identity=args.identity,
-            ssh_args=args.ssh_args)
+            ssh_args=args.ssh_args, options=args.ssh_extra_args)
 
         if args.eval:
             print(shlex.join(command))

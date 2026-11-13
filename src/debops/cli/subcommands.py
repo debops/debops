@@ -16,6 +16,8 @@ except ModuleNotFoundError:
     __version__ = "0.0.0"
 
 from . import print_error
+from ..core.ssh import (SFTP_OPTIONS_WITH_VALUE, SSH_OPTIONS_WITH_VALUE,
+                        split_options_operand)
 import shutil
 
 
@@ -713,6 +715,15 @@ Commands:
                             action='store_true')
         self.args = parser.parse_args(self.args[3:])
 
+    # The value-taking options of the ssh suite parsers: the options
+    # of the parsers themselves and the ones passed through to the
+    # ssh commands. The long options take their values as the next
+    # token.
+    SSH_SUITE_VALUE_OPTIONS = SSH_OPTIONS_WITH_VALUE | {'u'}
+    SSH_SUITE_LONG_VALUE_OPTIONS = ('--project-dir', '--view', '--user',
+                                    '--port', '--identity')
+    SFTP_SUITE_VALUE_OPTIONS = SFTP_OPTIONS_WITH_VALUE | {'V'}
+
     def do_ssh(self):
         # The first token selects the subcommand; anything else -- an
         # option or a host name -- belongs to the connect invocation,
@@ -759,17 +770,22 @@ Connection of a host:""")
         parser.add_argument('--eval', default=False,
                             help='print the ssh command and exit',
                             action='store_true')
-        parser.add_argument('host',
-                            help='name of the host to connect to')
-        parser.add_argument('ssh_args', nargs=argparse.REMAINDER,
-                            help='remote command and additional ssh '
-                                 'arguments, following the host as in '
-                                 'ssh itself')
+        # The destination and the remote command are split out of the
+        # argument list by the getopt-style walk in 'do_ssh_connect'
         return parser
 
     def do_ssh_connect(self):
         parser = self._ssh_connect_parser()
-        self.args = parser.parse_args(self.args[2:])
+        head, destination, tail = split_options_operand(
+            self.args[2:], self.SSH_SUITE_VALUE_OPTIONS,
+            self.SSH_SUITE_LONG_VALUE_OPTIONS)
+        self.args, extras = parser.parse_known_args(head)
+        if destination is None:
+            parser.error('the following arguments are required: '
+                         'destination')
+        self.args.host = destination
+        self.args.ssh_args = tail
+        self.args.ssh_extra_args = extras
 
     def do_ssh_rescan(self):
         parser = _argument_parser(
@@ -844,16 +860,23 @@ Connection of a host:""")
         parser.add_argument('--eval', default=False,
                             help='print the scp command and exit',
                             action='store_true')
-        parser.add_argument('source', nargs='?',
-                            help='the source operand: '
-                                 '[[user@]host:]path or a local path')
-        parser.add_argument('destination', nargs='?',
-                            help='the destination operand: '
-                                 '[[user@]host:]path or a local path')
+        # The source and the destination operands are split out of the
+        # argument list by the getopt-style walk in 'do_scp'
         # The scp options which DebOps does not interpret are gathered
         # as unrecognized arguments and passed to scp unchanged
-        self.args, extras = parser.parse_known_args(self.args[2:])
-        self.args.scp_extra_args = extras
+        head, source, tail = split_options_operand(
+            self.args[2:], self.SSH_SUITE_VALUE_OPTIONS,
+            self.SSH_SUITE_LONG_VALUE_OPTIONS)
+        head2, destination, tail2 = split_options_operand(
+            tail, self.SSH_SUITE_VALUE_OPTIONS,
+            self.SSH_SUITE_LONG_VALUE_OPTIONS)
+        self.args, extras = parser.parse_known_args(head + head2)
+        if source is None or destination is None:
+            parser.error('the following arguments are required: '
+                         'source and destination')
+        self.args.source = source
+        self.args.destination = destination
+        self.args.scp_extra_args = extras + tail2
 
     def do_sftp(self):
         parser = _argument_parser(
@@ -874,11 +897,18 @@ Connection of a host:""")
         parser.add_argument('--eval', default=False,
                             help='print the sftp command and exit',
                             action='store_true')
-        parser.add_argument('destination',
-                            help='the [user@]host[:path] destination; '
-                                 'the path is the directory the session '
-                                 'starts in')
-        # The sftp options which DebOps does not interpret are gathered
-        # as unrecognized arguments and passed to sftp unchanged
-        self.args, extras = parser.parse_known_args(self.args[2:])
-        self.args.sftp_extra_args = extras
+        # The destination is split out of the argument list by the
+        # getopt-style walk in 'do_sftp'
+        # The sftp options which DebOps does not interpret are split
+        # into the ones before the destination and the ones after it,
+        # and passed to sftp in their places
+        head, destination, tail = split_options_operand(
+            self.args[2:], self.SFTP_SUITE_VALUE_OPTIONS,
+            self.SSH_SUITE_LONG_VALUE_OPTIONS)
+        self.args, extras = parser.parse_known_args(head)
+        if destination is None:
+            parser.error('the following arguments are required: '
+                         'destination')
+        self.args.destination = destination
+        self.args.sftp_head_args = extras
+        self.args.sftp_tail_args = tail
