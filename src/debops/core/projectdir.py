@@ -1376,17 +1376,28 @@ class ProjectDir(object):
 
         store_dir = ssh.ensure_store_dir(ssh.ssh_store_file(self.path, view))
 
-        # The trust store is runtime state: the project '.gitignore'
-        # learns to ignore the '.debops/ssh/' tree, and the operator
-        # stays in control of the entry
+        # The known_hosts files are runtime state: the project
+        # '.gitignore' learns to ignore them, and the operator stays
+        # in control of the entry
         gitignore_path = os.path.join(self.path, '.gitignore')
         if os.path.exists(gitignore_path):
+            ignore_line = '/.debops/ssh/views/*/known_hosts'
             with open(gitignore_path) as handle:
-                content = handle.read()
-            if '.debops/ssh/' not in content:
-                with open(gitignore_path, 'a') as handle:
-                    handle.write('\n#-- SSH known_hosts store of the '
-                                 'project views\n/.debops/ssh/\n')
+                lines = handle.read().splitlines()
+            if ignore_line not in lines:
+                if '/.debops/ssh/' in lines:
+                    # A broad ignore of the '.debops/ssh/' tree is
+                    # narrowed to the known_hosts files, so the tree
+                    # stays usable for other state
+                    lines = [ignore_line if line == '/.debops/ssh/'
+                             else line for line in lines]
+                    with open(gitignore_path, 'w') as handle:
+                        handle.write('\n'.join(lines) + '\n')
+                else:
+                    with open(gitignore_path, 'a') as handle:
+                        handle.write('\n#-- SSH known_hosts stores of '
+                                     'the project views\n'
+                                     + ignore_line + '\n')
         return store_dir
 
     def mkview(self, view, ssh=False):
