@@ -225,6 +225,13 @@ def test_execute_aborts_when_the_pre_hook_fails(stub_project, monkeypatch):
         runner.execute()
 
 
+def test_accept_option_composes_the_environment(stub_project):
+    runner = AnsibleRunner(stub_project(), ansible_args=["all"], accept=True)
+
+    assert runner._ansible_env["ANSIBLE_SSH_ARGS"] == \
+        "-o StrictHostKeyChecking=accept-new"
+
+
 def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch,
                                            stub_project_secrets):
     runner = AnsibleRunner(stub_project(), ansible_args=["all"])

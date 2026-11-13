@@ -13,10 +13,12 @@ logger = logging.getLogger(__name__)
 class AnsibleRunner(AnsibleProjectRunner):
     """Run the :command:`ansible` command in the project environment."""
 
-    def __init__(self, project, ansible_args, bell=False):
+    def __init__(self, project, ansible_args, bell=False, accept=False):
         super().__init__(project, bell=bell)
 
         self._ansible_env = {'ANSIBLE_CONFIG': project.ansible_cfg.path}
+        if accept:
+            self._enable_accept_new(self._ansible_env)
         self._ansible_command = [
                 project.config.raw['binaries']['ansible']
         ]
