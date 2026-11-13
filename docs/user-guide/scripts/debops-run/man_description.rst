@@ -15,3 +15,11 @@ automatically unlock and lock the encrypted secrets as needed.
 An additional benefit of using these commands is that the user does not have to
 provide a full path to the playbooks - the script will try to find the correct
 playbook in a set of different directories or even inside Ansible Collections.
+
+The commands connect to the hosts through SSH. With the ``-a|--accept``
+option, the first connection to a host accepts an unseen SSH host key and
+stores it. Without the option, :command:`ssh` refuses an unseen key and the
+connection fails.
+
+The option composes the ``ANSIBLE_SSH_ARGS`` variable. The ``ssh_args``
+options of the project configuration carry over to the connection.

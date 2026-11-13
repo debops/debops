@@ -10,3 +10,11 @@ inside of the DebOps project directory with its context - environment variables
 defined in the configuration, unlocked :file:`ansible/secret/` directory and
 with the :file:`ansible.cfg` configuration file used by the project, which
 points to the Ansible inventory.
+
+The command connects to the hosts through SSH. With the ``-a|--accept``
+option, the first connection to a host accepts an unseen SSH host key and
+stores it. Without the option, :command:`ssh` refuses an unseen key and the
+connection fails.
+
+The option composes the ``ANSIBLE_SSH_ARGS`` variable. The ``ssh_args``
+options of the project configuration carry over to the connection.
