@@ -221,6 +221,15 @@ General
   setup the command now refuses with an error, because creating a
   view cannot retrofit repository-wide encryption.
 
+- The automatic commit of the :command:`debops` runner commands and
+  of :command:`debops project unlock` refuses to run while the
+  git-crypt repository is locked and the working tree has changes on
+  the encrypted paths. Such a commit stores the secret files as
+  plaintext in the repository history, and the next unlock renders
+  them as empty files. The command now stops with an error before
+  anything runs; changes outside the encrypted paths still commit
+  automatically.
+
 Removed
 ~~~~~~~
 

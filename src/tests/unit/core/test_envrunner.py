@@ -241,3 +241,24 @@ def test_execute_handles_interrupt_without_unlocking(stub_project,
         runner.execute()
 
     stub_project_secrets.lock.assert_not_called()
+
+
+def test_execute_stops_when_the_unlock_is_refused(stub_project, monkeypatch,
+                                                  stub_project_secrets):
+    """The command does not start when the secret unlock fails.
+
+    The refusal of the automatic commit propagates out of the runner
+    before the command spawns: the operator decides about the state
+    first, the command runs afterwards."""
+    runner = EnvRunner(stub_project(), command_args=["touch marker"])
+    executor = mock.Mock(returncode=0)
+    executor.communicate.return_value = (b"", b"")
+    popen = mock.Mock(return_value=executor)
+    monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
+    monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
+    stub_project_secrets.unlock.side_effect = ChildProcessError("refused")
+
+    with pytest.raises(ChildProcessError, match="refused"):
+        runner.execute()
+
+    popen.assert_not_called()
