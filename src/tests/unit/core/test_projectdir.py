@@ -775,6 +775,27 @@ def test_create_rejects_a_venv_in_a_legacy_project(tmp_path):
         project.create(git_repo=False, venv=True)
 
 
+def test_create_points_the_environment_at_the_created_view(tmp_path):
+    """After creating a project with a custom default view, the view
+    context and the environment refer to the view which was created,
+    not to the fallback view resolved before the project existed."""
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="modern",
+                         config=make_configuration())
+    assert project.view == "system"
+
+    project.create(git_repo=False, default_view="webservers")
+
+    assert project.view == "webservers"
+    ansible_config = project.config._env_vars["ANSIBLE_CONFIG"]
+    assert "ansible/views/webservers/ansible.cfg" in ansible_config
+    assert os.path.isfile(ansible_config)
+    inventory = project.config._env_vars["DEBOPS_ANSIBLE_INVENTORY"]
+    assert "ansible/views/webservers/inventory" in inventory
+    assert project.config._env_vars["DEBOPS_PROJECT_VIEW"] == "webservers"
+    assert get_project_context() == "example:webservers"
+
+
 def test_create_validates_the_recipients_before_creating(
         tmp_path, gpg_stub):
     """An unusable GPG key aborts the initialization before anything is
@@ -812,11 +833,13 @@ def test_create_aborts_on_a_failed_git_crypt_init(tmp_path, monkeypatch,
                                                   gpg_stub):
     """A git-crypt initialization failure aborts the project creation
     instead of waiting forever for the keys to appear."""
-    project = make_project_at(tmp_path, raw=dict(
-        DEFAULT_PROJECT_RAW, git={"init_message": "Initialize"}))
-    project.encrypt = "git-crypt"
-    project.keys = "test@example.org"
-    project._commands = {"git-crypt": "git-crypt", "gpg": gpg_stub()}
+    gpg = gpg_stub()
+    raw = dict(DEFAULT_PROJECT_RAW, git={"init_message": "Initialize"},
+               binaries=dict(DEFAULT_PROJECT_RAW["binaries"], gpg=gpg))
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="modern", encrypt="git-crypt",
+                         keys="test@example.org",
+                         config=make_configuration(raw))
     monkeypatch.setattr(projectdir_module, "run_hooks",
                         mock.Mock(return_value=True))
     monkeypatch.setattr(ProjectDir, "_create_modern_project", mock.Mock())
@@ -845,11 +868,13 @@ def test_create_aborts_when_git_crypt_cannot_add_a_user(
         tmp_path, monkeypatch, gpg_stub):
     """A git-crypt failure while adding a user aborts the project
     creation with an error exit code instead of reporting success."""
-    project = make_project_at(tmp_path, raw=dict(
-        DEFAULT_PROJECT_RAW, git={"init_message": "Initialize"}))
-    project.encrypt = "git-crypt"
-    project.keys = "test@example.org"
-    project._commands = {"git-crypt": "git-crypt", "gpg": gpg_stub()}
+    gpg = gpg_stub()
+    raw = dict(DEFAULT_PROJECT_RAW, git={"init_message": "Initialize"},
+               binaries=dict(DEFAULT_PROJECT_RAW["binaries"], gpg=gpg))
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="modern", encrypt="git-crypt",
+                         keys="test@example.org",
+                         config=make_configuration(raw))
     monkeypatch.setattr(projectdir_module, "run_hooks",
                         mock.Mock(return_value=True))
     monkeypatch.setattr(ProjectDir, "_create_modern_project", mock.Mock())

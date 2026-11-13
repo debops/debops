@@ -125,6 +125,7 @@ def test_init_venv_installs_collections_in_the_project_directory(
         '    printf \'#!/bin/sh\\necho "$PWD" "$@" >> "{log}"\\n\''
         ' > "$venv_path/bin/python"\n'
         '    printf \'#!/bin/sh\\necho "$PWD" "$@" >> "{log}"\\n'
+        'echo "ANSIBLE_CONFIG=$ANSIBLE_CONFIG" >> "{log}"\\n'
         'case "$*" in *"collection list"*) echo "{{}}" ;; esac\\n'
         'exit 0\\n\' > "$venv_path/bin/ansible-galaxy"\n'
         '    chmod 0755 "$venv_path/bin/python" '
@@ -146,6 +147,13 @@ def test_init_venv_installs_collections_in_the_project_directory(
     assert "collection install -r" in invocation
     assert ("-p " + str(project_dir / "ansible" / "collections")
             in invocation)
+
+    # The environment of the installation command refers to the
+    # Ansible configuration of the view which was created, not to the
+    # fallback view resolved before the project existed
+    assert ("ANSIBLE_CONFIG="
+            + str(project_dir / "ansible" / "views" / "webservers"
+                  / "ansible.cfg") in invocation)
 
 
 def test_init_reports_a_missing_galaxy_binary(run_debops, tmp_path,
