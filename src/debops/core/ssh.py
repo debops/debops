@@ -24,9 +24,12 @@ import getpass
 import json
 import logging
 import os
+import pkgutil
 import shlex
 import socket
 import subprocess
+
+import jinja2
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +37,37 @@ USER_KNOWN_HOSTS_STORE = '~/.ssh/known_hosts'
 
 CONFIG_BLOCK_BEGIN = '# BEGIN debops ssh managed block'
 CONFIG_BLOCK_END = '# END debops ssh managed block'
+
+
+def ssh_store_dir(project_path, view):
+    """Return the directory of the view's isolated known_hosts store."""
+    return os.path.join(project_path, '.debops', 'ssh', 'views', view)
+
+
+def ssh_store_file(project_path, view):
+    """Return the known_hosts file of the view's isolated store."""
+    return os.path.join(ssh_store_dir(project_path, view), 'known_hosts')
+
+
+def render_ssh_drop_in(view):
+    """Return the content of the view's SSH known_hosts drop-in.
+
+    The drop-in is a TOML document which declares the project
+    known_hosts mode and the view's isolated store through the Ansible
+    configuration; the project directory merges it into the
+    configuration tree, and the generated 'ansible.cfg' carries the
+    store. The '${DEBOPS_PROJECT_PATH}' reference expands when the
+    configuration is loaded and when the 'ansible.cfg' is parsed.
+    """
+    template = jinja2.Template(
+            pkgutil.get_data(
+                'debops',
+                os.path.join('_data', 'templates', 'projectdir', 'modern',
+                             'view', 'ssh.toml.j2')).decode('utf-8'),
+            trim_blocks=True)
+    return template.render(view_name=view,
+                           store_path='.debops/ssh/views/' + view
+                           + '/known_hosts')
 
 
 def known_hosts_mode(project):
