@@ -218,7 +218,7 @@ class Interpreter(object):
 
         try:
             runner = AnsibleRunner(project, ansible_args=args.ansible_args,
-                                   bell=args.bell)
+                                   bell=args.bell, accept=args.accept)
         except (NoDefaultViewException, ValueError,
                 FileNotFoundError) as errmsg:
             print_error(errmsg)
@@ -246,7 +246,7 @@ class Interpreter(object):
         try:
             runner = AnsiblePlaybookRunner(
                 project, ansible_args=args.ansible_args, bell=args.bell,
-                debug=args.debug)
+                debug=args.debug, accept=args.accept)
         except (NoDefaultViewException, ValueError,
                 FileNotFoundError, ChildProcessError) as errmsg:
             print_error(errmsg)

@@ -381,14 +381,14 @@ def test_exec_runs_the_runner(monkeypatch):
     monkeypatch.setattr(cli_module, "AnsibleRunner", runner_type)
     interpreter = make_interpreter()
     args = make_args(project_dir=".", view="system", eval=False, bell=True,
-                     ansible_args=["all"])
+                     accept=False, ansible_args=["all"])
 
     with pytest.raises(SystemExit) as caught:
         interpreter.do_exec(args)
 
     assert caught.value.code == 3
     runner_type.assert_called_once_with(project, ansible_args=["all"],
-                                        bell=True)
+                                        bell=True, accept=False)
     runner.execute.assert_called_once_with()
 
 
@@ -404,6 +404,7 @@ def test_exec_eval_mode_delegates_to_the_runner(monkeypatch, capsys):
     with pytest.raises(SystemExit) as caught:
         interpreter.do_exec(make_args(project_dir=".", view="system",
                                       eval=True, bell=False,
+                                      accept=False,
                                       ansible_args=["all"]))
 
     assert caught.value.code == 0
@@ -424,6 +425,7 @@ def test_exec_reports_a_runner_failure(monkeypatch, capsys, exception):
     with pytest.raises(SystemExit) as caught:
         interpreter.do_exec(make_args(project_dir=".", view="system",
                                       eval=False, bell=False,
+                                      accept=False,
                                       ansible_args=["all"]))
 
     assert caught.value.code == 1
@@ -443,6 +445,7 @@ def test_exec_reports_an_aborted_hook(monkeypatch, capsys):
     with pytest.raises(SystemExit) as caught:
         interpreter.do_exec(make_args(project_dir=".", view="system",
                                       eval=False, bell=False,
+                                      accept=False,
                                       ansible_args=["all"]))
 
     assert caught.value.code == 1
@@ -462,7 +465,9 @@ def test_run_executes_the_playbooks(monkeypatch):
     with pytest.raises(SystemExit) as caught:
         interpreter.do_run(make_args(project_dir=".", view="system",
                                      eval=False, bell=False,
-                                     ansible_args=["site.yml"], debug=False))
+                                     accept=False,
+                                     ansible_args=["site.yml"],
+                                     debug=False))
 
     assert caught.value.code == 0
     runner.execute.assert_called_once_with()
@@ -481,7 +486,9 @@ def test_run_reports_a_child_process_failure(monkeypatch, capsys):
     with pytest.raises(SystemExit) as caught:
         interpreter.do_run(make_args(project_dir=".", view="system",
                                      eval=False, bell=False,
-                                     ansible_args=["site.yml"], debug=False))
+                                     accept=False,
+                                     ansible_args=["site.yml"],
+                                     debug=False))
 
     assert caught.value.code == 1
     assert "Error: dirty working tree" in capsys.readouterr().err
@@ -858,7 +865,8 @@ def test_exec_reports_a_project_failure(monkeypatch, capsys, exception):
 
     with pytest.raises(SystemExit) as caught:
         interpreter.do_exec(make_args(project_dir=".", view="system",
-                                      eval=False, bell=False))
+                                      eval=False, bell=False,
+                                      accept=False))
 
     assert caught.value.code == 1
     assert "Error: boom" in capsys.readouterr().err
@@ -873,7 +881,8 @@ def test_run_reports_a_project_failure(monkeypatch, capsys, exception):
 
     with pytest.raises(SystemExit) as caught:
         interpreter.do_run(make_args(project_dir=".", view="system",
-                                     eval=False, bell=False))
+                                     eval=False, bell=False,
+                                     accept=False))
 
     assert caught.value.code == 1
     assert "Error: boom" in capsys.readouterr().err
@@ -893,7 +902,9 @@ def test_run_reports_a_runner_failure(monkeypatch, capsys, exception):
     with pytest.raises(SystemExit) as caught:
         interpreter.do_run(make_args(project_dir=".", view="system",
                                      eval=False, bell=False,
-                                     ansible_args=["site.yml"], debug=False))
+                                     accept=False,
+                                     ansible_args=["site.yml"],
+                                     debug=False))
 
     assert caught.value.code == 1
     assert "Error: boom" in capsys.readouterr().err
@@ -911,6 +922,7 @@ def test_run_eval_mode_delegates_to_the_runner(monkeypatch):
     with pytest.raises(SystemExit) as caught:
         interpreter.do_run(make_args(project_dir=".", view="system",
                                      eval=True, bell=False,
+                                     accept=False,
                                      ansible_args=["site.yml"], debug=False))
 
     assert caught.value.code == 0
