@@ -91,6 +91,47 @@ class SecretStore:
             logger.debug('git-crypt is in locked state')
             return True
 
+    def _git_crypt_encrypted_changes(self):
+        """Return the working tree changes on git-crypt encrypted paths.
+
+        The change paths come from 'git status --porcelain'; the
+        'git check-attr' filter lookup marks the paths which git-crypt
+        encrypts. A commit made while the repository is locked stores
+        such paths as plaintext, because the clean filter of a locked
+        repository passes the content through unchanged.
+        """
+        status = subprocess.Popen(
+            [self._commands['git'], 'status', '--porcelain'],
+            cwd=self.project.path, stdout=subprocess.PIPE)
+        out, err = status.communicate()
+        if status.returncode != 0:
+            return []
+        paths = []
+        for line in out.decode('utf-8', 'replace').splitlines():
+            if len(line) < 4:
+                continue
+            path = line[3:].strip('"')
+            if ' -> ' in path:
+                # A rename records both sides; either may be encrypted
+                old, new = path.split(' -> ', 1)
+                paths.extend([old.strip('"'), new.strip('"')])
+            else:
+                paths.append(path)
+        if not paths:
+            return []
+        check = subprocess.Popen(
+            [self._commands['git'], 'check-attr', '--stdin', 'filter'],
+            cwd=self.project.path, stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE)
+        out, err = check.communicate('\n'.join(paths).encode('utf-8'))
+        suffix = ': filter: git-crypt'
+        encrypted = []
+        for line in out.decode('utf-8', 'replace').splitlines():
+            line = line.rstrip()
+            if line.endswith(suffix):
+                encrypted.append(line[:len(line) - len(suffix)])
+        return encrypted
+
     def _get_random_string(self):
         all_chars = string.digits + string.ascii_letters + string.punctuation
         random_string = (''.join(random.choice(all_chars)
@@ -224,11 +265,34 @@ class SecretStore:
                 logger.debug('Detected git-crypt as encryption method')
                 if self._git_crypt_locked():
                     try:
-                        if self.project.config.raw['project']['git']['auto_commit']:
-                            self.project.commit()
+                        auto_commit = (self.project.config
+                                       .raw['project']['git']['auto_commit'])
                     except KeyError:
                         # The configuration option might not exist at this time
-                        pass
+                        auto_commit = None
+                    if auto_commit:
+                        encrypted_changes = (
+                            self._git_crypt_encrypted_changes())
+                        if encrypted_changes:
+                            logger.error(
+                                'Cannot commit the working tree '
+                                'automatically: the repository is locked '
+                                'and the changes touch git-crypt encrypted '
+                                'paths ({}). A commit made while the '
+                                'repository is locked stores the encrypted '
+                                'files as plaintext. Clean the encrypted '
+                                'paths from the working tree, unlock the '
+                                'repository, and commit the changes while '
+                                'the secrets are unlocked.'.format(
+                                    ', '.join(encrypted_changes)),
+                                extra={'allow': 'syslog'})
+                            raise ChildProcessError(
+                                'Cannot commit the working tree '
+                                'automatically: the repository is locked '
+                                'and the changes touch git-crypt encrypted '
+                                'paths, which the commit would store as '
+                                'plaintext')
+                        self.project.commit()
                     logger.debug('Unlocking secrets using git-crypt')
                     gitcrypt_cmd = subprocess.Popen([self._commands['git-crypt'],
                                                      'unlock'],
