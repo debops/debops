@@ -304,26 +304,33 @@ class Interpreter(object):
             print_error(errmsg)
             sys.exit(1)
 
-        if args.source is None or args.destination is None:
-            print_error('The source and the destination operands are '
-                        'required; see \'debops scp --help\'')
-            sys.exit(2)
+        if args.handoff is not None:
+            command = ssh.build_handoff_command(
+                project, 'scp', args.handoff,
+                identity=args.identity, accept=args.accept)
+        else:
+            if args.source is None or args.destination is None:
+                print_error('The source and the destination operands '
+                            'are required; see \'debops scp --help\'')
+                sys.exit(2)
 
-        try:
-            command = ssh.build_scp_command(
-                project, args.source, args.destination,
-                identity=args.identity, accept=args.accept,
-                scp_args=args.scp_extra_args)
-        except (ValueError, ChildProcessError) as errmsg:
-            print_error(errmsg)
-            sys.exit(1)
+            try:
+                command = ssh.build_scp_command(
+                    project, args.source, args.destination,
+                    identity=args.identity, accept=args.accept,
+                    scp_args=args.scp_extra_args)
+            except (ValueError, ChildProcessError) as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
 
         if args.eval:
             print(shlex.join(command))
             sys.exit(0)
 
-        logger.debug('Copying "' + args.source + '" to "'
-                     + args.destination + '"', extra={'allow': 'stderr'})
+        if args.handoff is None:
+            logger.debug('Copying "' + args.source + '" to "'
+                         + args.destination + '"',
+                         extra={'allow': 'stderr'})
         try:
             os.execvp(command[0], command)
         except FileNotFoundError as errmsg:
@@ -339,23 +346,29 @@ class Interpreter(object):
             print_error(errmsg)
             sys.exit(1)
 
-        try:
-            command = ssh.build_sftp_command(
-                project, args.destination,
-                identity=args.identity, accept=args.accept,
-                sftp_args=args.sftp_tail_args,
-                sftp_head_args=args.sftp_head_args)
-        except (ValueError, ChildProcessError) as errmsg:
-            print_error(errmsg)
-            sys.exit(1)
+        if args.handoff is not None:
+            command = ssh.build_handoff_command(
+                project, 'sftp', args.handoff,
+                identity=args.identity, accept=args.accept)
+        else:
+            try:
+                command = ssh.build_sftp_command(
+                    project, args.destination,
+                    identity=args.identity, accept=args.accept,
+                    sftp_args=args.sftp_tail_args,
+                    sftp_head_args=args.sftp_head_args)
+            except (ValueError, ChildProcessError) as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
 
         if args.eval:
             print(shlex.join(command))
             sys.exit(0)
 
-        logger.debug('Starting the sftp session with "'
-                     + args.destination + '"',
-                     extra={'allow': 'stderr'})
+        if args.handoff is None:
+            logger.debug('Starting the sftp session with "'
+                         + args.destination + '"',
+                         extra={'allow': 'stderr'})
         try:
             os.execvp(command[0], command)
         except FileNotFoundError as errmsg:
@@ -371,27 +384,34 @@ class Interpreter(object):
             print_error(errmsg)
             sys.exit(1)
 
-        user, host, port = ssh.split_destination(args.host)
-        user = user or args.user
-        port = port or args.port
+        if args.handoff is not None:
+            command = ssh.build_handoff_command(
+                project, 'ssh', args.handoff,
+                identity=args.identity, accept=args.accept)
+        else:
+            user, host, port = ssh.split_destination(args.host)
+            user = user or args.user
+            port = port or args.port
 
-        try:
-            parameters = ssh.resolve_destination(project, host)
-        except (ValueError, ChildProcessError) as errmsg:
-            print_error(errmsg)
-            sys.exit(1)
+            try:
+                parameters = ssh.resolve_destination(project, host)
+            except (ValueError, ChildProcessError) as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
 
-        command = ssh.build_ssh_command(
-            project, host, parameters,
-            user=user, port=port, identity=args.identity,
-            ssh_args=args.ssh_args, options=args.ssh_extra_args)
+            command = ssh.build_ssh_command(
+                project, host, parameters,
+                user=user, port=port, identity=args.identity,
+                accept=args.accept, ssh_args=args.ssh_args,
+                options=args.ssh_extra_args)
 
         if args.eval:
             print(shlex.join(command))
             sys.exit(0)
 
-        logger.debug('Connecting to the host "' + host + '"',
-                     extra={'allow': 'stderr'})
+        if args.handoff is None:
+            logger.debug('Connecting to the host "' + host + '"',
+                         extra={'allow': 'stderr'})
         try:
             os.execvp(command[0], command)
         except FileNotFoundError as errmsg:
