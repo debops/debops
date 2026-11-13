@@ -25,9 +25,11 @@ jobs:
 
       - name: Prepare test environment
         run: |
-          pip3 install --user -c requirements-ci.txt \
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -c requirements-ci.txt \
             wheel setuptools reuse
-          pip3 check
+          "${RUNNER_TEMP}/venv/bin/pip" check
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
 
       - name: Check codebase with REUSE linter
         run: |
@@ -47,11 +49,11 @@ jobs:
 
       - name: Prepare test environment
         run: |
-          sudo apt-get remove --purge -yq ansible
-          sudo apt-get install python3-netaddr
-          pip3 install --user -c requirements-ci.txt \
-            wheel setuptools Jinja2 ansible ansible-lint
-          pip3 check
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -c requirements-ci.txt \
+            wheel setuptools Jinja2 netaddr ansible ansible-lint
+          "${RUNNER_TEMP}/venv/bin/pip" check
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
 
       - name: Verify playbook with ansible-lint
         run: |
@@ -71,10 +73,11 @@ jobs:
 
       - name: Prepare test environment
         run: |
-          sudo apt-get remove --purge -yq ansible
-          pip3 install --user -c requirements-ci.txt \
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -c requirements-ci.txt \
             wheel setuptools Jinja2 ansible
-          pip3 check
+          "${RUNNER_TEMP}/venv/bin/pip" check
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
 
       - name: Check playbook syntax with ansible-playbook
         run: |
@@ -98,11 +101,12 @@ jobs:
         run: |
           sudo apt-get -qq update
           sudo apt-get -yq install pandoc pandoc-data
-          sudo apt-get remove --purge -yq ansible
-          pip3 install --user -c requirements-ci.txt \
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -c requirements-ci.txt \
             wheel setuptools Jinja2 ansible ansible-lint yamllint \
             galaxy-importer reuse
-          pip3 check
+          "${RUNNER_TEMP}/venv/bin/pip" check
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
 
       - name: Build DebOps Collections for Ansible Galaxy
         env:
@@ -127,9 +131,11 @@ jobs:
 
       - name: Prepare test environment
         run: |
-          pip3 install --user -c requirements-ci.txt \
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -c requirements-ci.txt \
             wheel setuptools yamllint
-          pip3 check
+          "${RUNNER_TEMP}/venv/bin/pip" check
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
 
       - name: Check codebase with yamllint
         run: |
@@ -149,9 +155,11 @@ jobs:
 
       - name: Prepare test environment
         run: |
-          pip3 install --user -c requirements-ci.txt \
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -c requirements-ci.txt \
             wheel setuptools pycodestyle==2.15.0
-          pip3 check
+          "${RUNNER_TEMP}/venv/bin/pip" check
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
 
       - name: Check codebase with pycodestyle
         run: |
@@ -223,7 +231,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
+        python-version: ['3.11', '3.12', '3.13']
         experimental: [false]
         include:
           - python-version: '3.14'
@@ -276,11 +284,13 @@ jobs:
         run: |
           sudo apt-get -qq update
           sudo apt-get -yq install git gnupg git-crypt
-          pip3 install --user -c requirements-ci.txt \
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -c requirements-ci.txt \
             wheel setuptools pytest pytest-cov ansible-core \
             future pyyaml python-dotenv toml pyxdg jinja2 jsonschema \
             distro GitPython
-          pip3 check
+          "${RUNNER_TEMP}/venv/bin/pip" check
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
 
       - name: Run unit and integration tests
         run: |
@@ -302,14 +312,23 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up the pinned Python
+        uses: 'actions/setup-python@v7'
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: 'requirements-ci.txt'
+
       - name: Prepare test environment
         run: |
           sudo apt-get -qq update
           sudo apt-get -yq install pandoc pandoc-data graphviz
-          pip3 install --user -c requirements-ci.txt \
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -c requirements-ci.txt \
             wheel setuptools sphinx sphinx-autobuild \
-            sphinx-rtd-theme pypandoc
-          pip3 check
+            sphinx-rtd-theme pypandoc PyYAML
+          "${RUNNER_TEMP}/venv/bin/pip" check
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
 
       - name: Build DebOps Python wheel package
         run: |
@@ -332,14 +351,23 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up the pinned Python
+        uses: 'actions/setup-python@v7'
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: 'requirements-ci.txt'
+
       - name: Prepare test environment
         run: |
           sudo apt-get -qq update
           sudo apt-get -yq install pandoc pandoc-data graphviz
-          pip3 install --user -c requirements-ci.txt \
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -c requirements-ci.txt \
             wheel setuptools sphinx sphinx-autobuild \
-            sphinx-rtd-theme pypandoc
-          pip3 check
+            sphinx-rtd-theme pypandoc PyYAML
+          "${RUNNER_TEMP}/venv/bin/pip" check
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
 
       - name: Build DebOps Python sdist package
         run: |
@@ -363,9 +391,11 @@ jobs:
 
       - name: Prepare test environment
         run: |
-          pip3 install --user -c requirements-ci.txt \
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -c requirements-ci.txt \
             wheel setuptools codespell tomli
-          pip3 check
+          "${RUNNER_TEMP}/venv/bin/pip" check
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
 
       - name: Check common misspellings using codespell
         run: |
@@ -383,13 +413,22 @@ jobs:
       - name: Clone the repository
         uses: 'actions/checkout@v7'
 
+      - name: Set up the pinned Python
+        uses: 'actions/setup-python@v7'
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: 'requirements-ci.txt'
+
       - name: Prepare test environment
         run: |
           sudo apt-get -qq update
           sudo apt-get install -yq graphviz
-          pip3 install --user -c requirements-ci.txt \
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -c requirements-ci.txt \
             wheel setuptools sphinx sphinx-autobuild sphinx-rtd-theme
-          pip3 check
+          "${RUNNER_TEMP}/venv/bin/pip" check
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
 
       - name: Build documentation site
         run: |

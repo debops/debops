@@ -95,6 +95,67 @@ def test_init_installs_collections_with_a_stub_galaxy(run_debops, tmp_path,
     assert "ansible/collections/requirements.yml" in invocation
 
 
+def test_init_venv_installs_collections_in_the_project_directory(
+        run_debops, tmp_path, debops_env):
+    """Collections land in the project directory with a custom view.
+
+    Regression test: 'debops project init -t modern --venv -V <view>'
+    resolves the infrastructure view before the project exists, so the
+    Ansible configuration recorded in the environment refers to the
+    fallback view and does not exist at installation time. The
+    Collections must be installed with an explicit path pointing into
+    the project directory instead of relying on that configuration.
+    """
+    log = tmp_path / "commands.log"
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+
+    # A stub Python interpreter which pretends to create the virtual
+    # environment -- including the interpreter and 'ansible-galaxy'
+    # binaries which the project configuration expects inside it -- and
+    # pretends to install the Python packages. This keeps the test
+    # hermetic: no Python packages are downloaded or installed.
+    stub_python = bin_dir / "python3"
+    stub_python.write_text(
+        '#!/bin/sh\n'
+        'echo "$PWD" "$@" >> "{log}"\n'
+        'case "$*" in *"-m venv"*)\n'
+        '    for venv_path; do :; done\n'
+        '    mkdir -p "$venv_path/bin"\n'
+        '    printf \'#!/bin/sh\\necho "$PWD" "$@" >> "{log}"\\n\''
+        ' > "$venv_path/bin/python"\n'
+        '    printf \'#!/bin/sh\\necho "$PWD" "$@" >> "{log}"\\n'
+        'echo "ANSIBLE_CONFIG=$ANSIBLE_CONFIG" >> "{log}"\\n'
+        'case "$*" in *"collection list"*) echo "{{}}" ;; esac\\n'
+        'exit 0\\n\' > "$venv_path/bin/ansible-galaxy"\n'
+        '    chmod 0755 "$venv_path/bin/python" '
+        '"$venv_path/bin/ansible-galaxy"\n'
+        '    ;;\n'
+        'esac\n'
+        'exit 0\n'.format(log=log))
+    stub_python.chmod(0o755)
+
+    env = dict(debops_env,
+               PATH=os.pathsep.join([str(bin_dir), os.environ["PATH"]]))
+    project_dir = tmp_path / "example"
+
+    result = run_debops("project", "init", "-t", "modern", "--venv",
+                        "-V", "webservers", str(project_dir), env=env)
+
+    assert result.returncode == 0
+    invocation = log.read_text()
+    assert "collection install -r" in invocation
+    assert ("-p " + str(project_dir / "ansible" / "collections")
+            in invocation)
+
+    # The environment of the installation command refers to the
+    # Ansible configuration of the view which was created, not to the
+    # fallback view resolved before the project existed
+    assert ("ANSIBLE_CONFIG="
+            + str(project_dir / "ansible" / "views" / "webservers"
+                  / "ansible.cfg") in invocation)
+
+
 def test_init_reports_a_missing_galaxy_binary(run_debops, tmp_path,
                                               debops_env):
     bin_dir = tmp_path / "bin"

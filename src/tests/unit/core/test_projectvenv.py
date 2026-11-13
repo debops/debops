@@ -115,6 +115,36 @@ def test_run_executes_the_command_without_pythonpath(tmp_path, monkeypatch):
     assert "PYTHONPATH" not in popen.call_args.kwargs["env"]
 
 
+def test_install_collections_target_the_project_directory(
+        tmp_path, monkeypatch):
+    """Ansible Collections are installed in the project directory.
+
+    The installation path is passed explicitly to 'ansible-galaxy',
+    because the project's Ansible configuration might not be visible
+    to the command, for example when it is created after the
+    configuration path was recorded in the environment.
+    """
+    venv = make_venv(tmp_path)
+    fake_venv_python(venv)
+    os.makedirs(venv.collections_dir, exist_ok=True)
+    open(venv.collections_requirements, "w").close()
+    open(venv.collections_lock, "w").close()
+
+    monkeypatch.setattr(projectvenv_module.shutil, "which",
+                        lambda command: "/usr/bin/ansible-galaxy")
+    process = mock.Mock(returncode=0)
+    popen = mock.Mock(return_value=process)
+    monkeypatch.setattr(projectvenv_module.subprocess, "Popen", popen)
+
+    venv.install_collections()
+
+    collections_dir = os.path.join(str(tmp_path), "ansible", "collections")
+    invocations = [call.args[0] for call in popen.call_args_list]
+    assert len(invocations) == 2
+    for argv in invocations:
+        assert argv[argv.index("-p") + 1] == collections_dir
+
+
 def test_paths_come_from_the_configuration(tmp_path):
     raw = {"binaries": {},
            "project": {"venv": {"enabled": True,
@@ -415,7 +445,8 @@ def test_install_collections_uses_the_galaxy_binary(tmp_path, monkeypatch):
 
     assert run.call_args.args[0] == [
             "/venv/bin/ansible-galaxy", "collection", "install", "-r",
-            str(requirements)]
+            str(requirements), "-p",
+            str(tmp_path / "ansible" / "collections")]
 
 
 def test_install_collections_force_installs_on_upgrade(tmp_path, monkeypatch):
@@ -982,8 +1013,10 @@ def test_install_collections_uses_the_lock_file_first(tmp_path, monkeypatch,
         venv.install_collections()
 
     calls = [call.args[0] for call in run.call_args_list]
-    assert calls[0][-1] == venv.collections_lock
-    assert calls[1][-1] == venv.collections_requirements
+    assert calls[0][-3] == venv.collections_lock
+    assert calls[0][-1] == venv.collections_dir
+    assert calls[1][-3] == venv.collections_requirements
+    assert calls[1][-1] == venv.collections_dir
     assert "--force" not in calls[1]
 
     # Each processed file is announced, in order
@@ -1007,7 +1040,8 @@ def test_install_collections_skips_a_missing_lock_file(tmp_path, monkeypatch,
         venv.install_collections()
 
     assert run.call_count == 1
-    assert run.call_args.args[0][-1] == venv.collections_requirements
+    assert run.call_args.args[0][-3] == venv.collections_requirements
+    assert run.call_args.args[0][-1] == venv.collections_dir
 
     assert "from the lock file" not in caplog.text
     assert ("from " + unexpanduser(venv.collections_requirements)
