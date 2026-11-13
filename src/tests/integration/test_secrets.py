@@ -31,10 +31,62 @@ git_crypt = pytest.mark.skipif(
     reason="git-crypt is not installed")
 
 
-encfs = pytest.mark.skipif(
-    shutil.which("encfs") is None or shutil.which("fusermount") is None
-    or not os.path.exists("/dev/fuse"),
-    reason="encfs with fusermount and the /dev/fuse device are required")
+encfs = pytest.mark.encfs
+
+_encfs_probe_state = None
+
+
+def _encfs_mount_works(tmp_path_factory):
+    """Probe whether EncFS can actually mount on this host.
+
+    Binary and device presence is not the whole story: '/dev/fuse' can
+    exist while every mount fails, for example inside a container
+    whose kernel does not expose the FUSE module. The probe creates
+    one throwaway volume, mounts it and unmounts it, once per test
+    run; the result is cached for the rest of the run.
+    """
+    global _encfs_probe_state
+    if _encfs_probe_state is not None:
+        return _encfs_probe_state
+
+    base = tmp_path_factory.mktemp("encfs-capability")
+    cipher = base / "cipher"
+    plain = base / "plain"
+    cipher.mkdir()
+    plain.mkdir()
+    try:
+        created = subprocess.run(
+            ["encfs", str(cipher), str(plain), "--standard",
+             "--extpass=echo probe-passphrase"],
+            input="y\n", capture_output=True, text=True, timeout=60)
+        mounted = created.returncode == 0 and os.path.ismount(str(plain))
+        if mounted:
+            subprocess.run(["fusermount", "-u", str(plain)],
+                           capture_output=True, timeout=60)
+    except (OSError, subprocess.SubprocessError):
+        mounted = False
+    finally:
+        shutil.rmtree(base, ignore_errors=True)
+
+    _encfs_probe_state = mounted
+    return mounted
+
+
+@pytest.fixture(autouse=True)
+def encfs_capability(request, tmp_path_factory):
+    """Skip the EncFS tests unless a real mount works on this host."""
+    if request.node.get_closest_marker("encfs") is None:
+        yield
+        return
+    if shutil.which("encfs") is None:
+        pytest.skip("encfs is not installed")
+    if shutil.which("fusermount") is None:
+        pytest.skip("fusermount is not installed")
+    if not os.path.exists("/dev/fuse"):
+        pytest.skip("the FUSE device is missing")
+    if not _encfs_mount_works(tmp_path_factory):
+        pytest.skip("EncFS cannot mount on this host")
+    yield
 
 
 def test_project_unlock_and_lock_a_plain_inventory(run_debops, tmp_path,
@@ -501,12 +553,19 @@ def test_runner_commands_leave_already_unlocked_encfs_mounted(
     assert result.returncode == 0
     assert os.path.ismount(str(secrets))
 
-    result = run_debops("env", "/bin/true", cwd=str(project_dir),
-                        env=gpg_env)
+    try:
+        result = run_debops("env", "/bin/true", cwd=str(project_dir),
+                            env=gpg_env)
 
-    assert result.returncode == 0
-    assert os.path.ismount(str(secrets)), \
-        "the command unmounted a volume it did not mount"
+        assert result.returncode == 0
+        assert os.path.ismount(str(secrets)), \
+            "the command unmounted a volume it did not mount"
+    finally:
+        # The test ends with the volume mounted on purpose; unmount it
+        # so the temporary project directory can be removed
+        if os.path.ismount(str(secrets)):
+            subprocess.run(["fusermount", "-u", str(secrets)],
+                           capture_output=True, timeout=60)
 
 
 @git_crypt
