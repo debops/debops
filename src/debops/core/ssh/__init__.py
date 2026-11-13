@@ -19,3 +19,4 @@ from .ssh import (build_ssh_command, host_identifiers, rescan_hosts,
                   split_destination, write_config_snippet,
                   render_config_snippet)
 from .scp import build_scp_command
+from .sftp import build_sftp_command
