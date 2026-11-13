@@ -45,7 +45,7 @@ class AnsibleRunner(AnsibleProjectRunner):
 
         rc = 0
         try:
-            unlocked = self.secrets.unlock()
+            unlocked = self._unlock_secrets()
 
             executor = subprocess.Popen(' '.join(self._ansible_command),
                                         shell=True, cwd=self.project.path,
@@ -64,7 +64,7 @@ class AnsibleRunner(AnsibleProjectRunner):
 
         finally:
             if unlocked:
-                self.secrets.lock()
+                self._lock_secrets()
 
         run_hooks(self.project.path, 'post-exec',
                   extra_env={'DEBOPS_RETURN_CODE': rc},
