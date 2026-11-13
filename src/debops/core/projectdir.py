@@ -1374,9 +1374,7 @@ class ProjectDir(object):
                              'view-' + filename_view + '-ssh.toml'),
                 ssh.render_ssh_drop_in(view) + '\n')
 
-        store_dir = ssh.ssh_store_dir(self.path, view)
-        os.makedirs(store_dir, exist_ok=True)
-        os.chmod(store_dir, 0o700)
+        store_dir = ssh.ensure_store_dir(ssh.ssh_store_file(self.path, view))
 
         # The trust store is runtime state: the project '.gitignore'
         # learns to ignore the '.debops/ssh/' tree, and the operator
