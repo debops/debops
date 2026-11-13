@@ -4,10 +4,11 @@
 
 """The machinery shared by the ssh-family commands.
 
-The known_hosts store selection, the store layout of a project view
-and the resolution of the connection parameters of an inventory host
-are used by 'debops ssh' and 'debops scp' alike; the command-specific
-builders live in the sibling modules.
+The known_hosts store selection, the store layout of a project view,
+the resolution of the connection parameters of an inventory host and
+the splitting of ssh-style argument lists are used by 'debops ssh' and
+'debops scp' alike; the command-specific builders live in the sibling
+modules.
 """
 
 import configparser
@@ -23,6 +24,79 @@ import jinja2
 logger = logging.getLogger(__name__)
 
 USER_KNOWN_HOSTS_STORE = '~/.ssh/known_hosts'
+
+# The ssh options which take a separate value argument, per the
+# ssh(1) usage line. Used to walk argument lists where ssh options and
+# operands mix.
+SSH_OPTIONS_WITH_VALUE = set('BbcDEeFIiJLlMmOoQRSVWw')
+
+
+def split_host_path(operand):
+    """Split an scp/sftp operand into the host part and the path.
+
+    The operand grammar: '[[user@]host:]path'; the colon which
+    separates the host from the path is the first colon, or the first
+    colon after the closing bracket of a bracketed address. Returns
+    '(None, operand)' when the operand carries no colon.
+    """
+    bracket_end = operand.find(']')
+    if bracket_end != -1:
+        candidate = operand.find(':', bracket_end)
+    else:
+        candidate = operand.find(':')
+    if candidate == -1:
+        return None, operand
+    return operand[:candidate], operand[candidate + 1:]
+
+
+def translate_ssh_args(ssh_args):
+    """Translate ssh arguments into the '-o' options which the
+    file-transfer commands accept for their ssh connections.
+
+    '-J destination' becomes '-o ProxyJump=destination', '-o value'
+    pairs pass through unchanged, and the options which configure port
+    and packet forwards -- meaningless for a file transfer -- are
+    dropped and reported. Returns '(translated, dropped)'.
+    """
+    tokens = (shlex.split(ssh_args)
+              if isinstance(ssh_args, str) else list(ssh_args))
+    translated = []
+    dropped = []
+    index = 0
+    while index < len(tokens):
+        token = tokens[index]
+        letter = token[1] if len(token) > 1 else ''
+        attached = len(token) > 2
+
+        if token == '-J' or (letter == 'J' and attached):
+            value = token[2:] if attached else (
+                tokens[index + 1] if index + 1 < len(tokens) else None)
+            if value is None:
+                dropped.append(token)
+                index += 1
+                continue
+            translated.append('-o ProxyJump=' + value)
+            index += 1 if attached else 2
+        elif token == '-o' or (letter == 'o' and attached):
+            if attached:
+                translated.append(token)
+                index += 1
+            elif index + 1 < len(tokens):
+                translated.append('-o ' + tokens[index + 1])
+                index += 2
+            else:
+                dropped.append(token)
+                index += 1
+        elif letter in SSH_OPTIONS_WITH_VALUE and attached:
+            dropped.append(token)
+            index += 1
+        elif letter in SSH_OPTIONS_WITH_VALUE:
+            dropped.extend(tokens[index:index + 2])
+            index += 2
+        else:
+            dropped.append(token)
+            index += 1
+    return translated, dropped
 
 
 def ssh_store_dir(project_path, view):

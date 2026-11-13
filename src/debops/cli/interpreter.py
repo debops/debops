@@ -86,6 +86,9 @@ class Interpreter(object):
             else:
                 self.do_ssh_connect(self.parsed_args.args)
 
+        elif self.parsed_args.section == 'scp':
+            self.do_scp(self.parsed_args.args)
+
         elif self.parsed_args.section == 'config':
             if self.parsed_args.command == 'list':
                 self.do_config_list(self.parsed_args.args)
@@ -288,6 +291,41 @@ class Interpreter(object):
             for line in runner.show_env(scope=args.scope):
                 print(line)
             sys.exit(0)
+
+    def do_scp(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd, view=args.view)
+        except (IsADirectoryError, NotADirectoryError,
+                ViewNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        if args.source is None or args.destination is None:
+            print_error('The source and the destination operands are '
+                        'required; see \'debops scp --help\'')
+            sys.exit(2)
+
+        try:
+            command = ssh.build_scp_command(
+                project, args.source, args.destination,
+                identity=args.identity, accept=args.accept,
+                scp_args=args.scp_extra_args)
+        except (ValueError, ChildProcessError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        if args.eval:
+            print(shlex.join(command))
+            sys.exit(0)
+
+        logger.debug('Copying "' + args.source + '" to "'
+                     + args.destination + '"', extra={'allow': 'stderr'})
+        try:
+            os.execvp(command[0], command)
+        except FileNotFoundError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
 
     def do_ssh_connect(self, args):
         try:
