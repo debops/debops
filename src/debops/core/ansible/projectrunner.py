@@ -47,6 +47,27 @@ class AnsibleProjectRunner(Runner):
                              '    [ansible defaults]\n'
                              '    inventory = ansible/inventory')
 
+    def _enable_accept_new(self, env):
+        """Compose the 'ANSIBLE_SSH_ARGS' environment variable which
+        makes the ssh connections accept unseen host keys on first
+        contact.
+
+        The environment variable masks the 'ssh_args' of the
+        'ansible.cfg', so the composed value carries the configured
+        arguments forward and adds the accept-new option; an
+        'ANSIBLE_SSH_ARGS' variable of the operator's environment takes
+        precedence over the configured one.
+        """
+        try:
+            ssh_args = self.project.ansible_cfg.get_option(
+                'ssh_args', section='ssh_connection')
+        except (configparser.NoOptionError, configparser.NoSectionError):
+            ssh_args = None
+        base = os.environ.get('ANSIBLE_SSH_ARGS') or ssh_args
+        env['ANSIBLE_SSH_ARGS'] = ((base + ' ' if base else '')
+                                   + '-o StrictHostKeyChecking='
+                                     'accept-new')
+
     def _quote_spaces(self, string):
         if ' ' in string:
             return '"{}"'.format(string)
