@@ -14,8 +14,8 @@ shared machinery in :mod:`debops.core.ssh.utils`.
 
 from .utils import (USER_KNOWN_HOSTS_STORE, declared_known_hosts_store,
                     ensure_store_dir, known_hosts_mode, known_hosts_store,
-                    resolve_host, render_ssh_drop_in, ssh_store_dir,
-                    ssh_store_file)
+                    resolve_destination, resolve_host, resolve_patterns,
+                    render_ssh_drop_in, ssh_store_dir, ssh_store_file)
 from .ssh import (build_ssh_command, host_identifiers, rescan_hosts,
                   split_destination, write_config_snippet,
                   render_config_snippet)
