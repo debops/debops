@@ -13,6 +13,7 @@ it and the package dependencies of the debops command live there.
 
 import os
 import shlex
+import shutil
 import site
 import socket
 
@@ -255,3 +256,25 @@ def test_init_ssh_activates_the_project_mode(run_debops, tmp_path,
     assert result.returncode == 0
     assert any("-f " + str(store) in line
                for line in result.stdout.splitlines())
+
+
+def test_exec_accept_recreates_the_store(run_debops, tmp_path, debops_env,
+                                         localhost_ssh):
+    """The ansible runners ensure the declared store directory: after
+    the store tree is removed, an accepted connection persists the
+    host key again."""
+    project_dir = tmp_path / "example-recreate"
+    run_debops("project", "init", "-t", "modern", "--no-requirements",
+               "--ssh", str(project_dir), env=debops_env, check=True)
+    add_inventory_host(project_dir)
+    shutil.rmtree(project_dir / ".debops" / "ssh")
+
+    result = run_debops("exec", "-a", "testhost", "-m", "ping",
+                        cwd=str(project_dir), env=debops_env)
+
+    assert result.returncode == 0
+    store = (project_dir / ".debops" / "ssh" / "views" / "system" /
+             "known_hosts")
+    assert store.read_text().strip()
+    ssh_dir = project_dir / ".debops" / "ssh"
+    assert (os.stat(ssh_dir).st_mode & 0o777) == 0o700

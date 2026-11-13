@@ -308,3 +308,18 @@ def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch,
 
     stub_project_secrets.lock.assert_called_once_with()
     assert "interrupted by user" in caplog.text
+
+
+def test_runner_ensures_the_declared_store(stub_project, tmp_path):
+    """The runner creates the known_hosts store directory which the
+    view's 'ansible.cfg' declares, private like '~/.ssh'."""
+    store = tmp_path / "stores" / "system" / "known_hosts"
+    project = stub_project(
+        cfg_options={"inventory": "ansible/inventory",
+                     "ssh_args":
+                     "-o UserKnownHostsFile=" + str(store)})
+
+    AnsibleRunner(project, ansible_args=[])
+
+    assert store.parent.is_dir()
+    assert (os.stat(store.parent).st_mode & 0o777) == 0o700

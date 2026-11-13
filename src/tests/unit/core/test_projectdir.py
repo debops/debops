@@ -931,8 +931,11 @@ def test_create_ssh_writes_the_known_hosts_configuration(tmp_path):
 
     store_dir = (tmp_path / "example" / ".debops" / "ssh" / "views" /
                  "system")
-    assert store_dir.is_dir()
-    assert (os.stat(store_dir).st_mode & 0o777) == 0o700
+    for directory in (tmp_path / "example" / ".debops" / "ssh",
+                      tmp_path / "example" / ".debops" / "ssh" / "views",
+                      store_dir):
+        assert directory.is_dir()
+        assert (os.stat(directory).st_mode & 0o777) == 0o700
 
     gitignore = (tmp_path / "example" / ".gitignore").read_text()
     assert "/.debops/ssh/" in gitignore
