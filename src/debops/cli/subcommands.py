@@ -323,6 +323,13 @@ Commands:
                                default=False,
                                no_help="don't enable Python virtual "
                                        "environment")
+        self.add_bool_argument(parser, 'ssh',
+                               help='configure the SSH known_hosts store '
+                                    'of the default view (modern '
+                                    'projects only)',
+                               default=False,
+                               no_help="don't configure the SSH "
+                                       "known_hosts store")
         parser.add_argument('--encrypt', type=str, nargs='?',
                             choices=['encfs', 'git-crypt'],
                             help='enable encrypted secrets')
@@ -395,6 +402,12 @@ Commands:
         parser.add_argument('--keys', type=str,
                             help='list of GPG recipients with secret access, '
                                  'delimited by commas')
+        self.add_bool_argument(parser, 'ssh',
+                               help='configure the SSH known_hosts store '
+                                    'of the new view',
+                               default=False,
+                               no_help="don't configure the SSH "
+                                       "known_hosts store")
         self.add_spec_arguments(parser)
         parser.add_argument('new_view', type=str, nargs='?',
                             help='name of the new infrastructure view')

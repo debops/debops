@@ -914,6 +914,65 @@ def test_create_encfs_initializes_the_legacy_secrets(
     store_class.return_value.encrypt_encfs.assert_called_with()
 
 
+def test_create_ssh_writes_the_known_hosts_configuration(tmp_path):
+    """'init --ssh' writes the TOML drop-in of the default view, creates
+    the store directory and carries the declared store into the
+    generated 'ansible.cfg'."""
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="modern",
+                         config=make_configuration())
+    project.create(git_repo=False, ssh=True)
+
+    drop_in = (tmp_path / "example" / ".debops" / "conf.d" /
+               "view-system-ssh.toml")
+    content = drop_in.read_text()
+    assert "known_hosts = 'project'" in content
+    assert ".debops/ssh/views/system/known_hosts" in content
+
+    store_dir = (tmp_path / "example" / ".debops" / "ssh" / "views" /
+                 "system")
+    assert store_dir.is_dir()
+    assert (os.stat(store_dir).st_mode & 0o777) == 0o700
+
+    ssh_gitignore = (tmp_path / "example" / ".debops" / "ssh" /
+                     ".gitignore")
+    assert ssh_gitignore.read_text() == (
+        "#-- The SSH known_hosts stores of the project views are "
+        "runtime state\n"
+        "*\n"
+        "!.gitignore\n")
+
+    ansible_cfg = (tmp_path / "example" / "ansible" / "views" / "system" /
+                   "ansible.cfg").read_text()
+    assert "[ssh_connection]" in ansible_cfg
+    assert "UserKnownHostsFile=" in ansible_cfg
+
+
+def test_mkview_ssh_writes_the_drop_in_for_the_new_view(tmp_path):
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="modern",
+                         config=make_configuration())
+    project.create(git_repo=False)
+    project.mkview(view="other", ssh=True)
+
+    ansible_cfg = (tmp_path / "example" / "ansible" / "views" / "other" /
+                   "ansible.cfg").read_text()
+    assert "UserKnownHostsFile=" in ansible_cfg
+    assert ".debops/ssh/views/other/known_hosts" in ansible_cfg
+
+
+def test_create_refuses_ssh_for_legacy_projects(tmp_path):
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="legacy",
+                         config=make_configuration())
+
+    with pytest.raises(ValueError,
+                       match='only in "modern" DebOps project'):
+        project.create(git_repo=False, ssh=True)
+
+    assert not (tmp_path / "example").exists()
+
+
 def test_create_aborts_on_a_failed_git_crypt_init(tmp_path, monkeypatch,
                                                   gpg_stub):
     """A git-crypt initialization failure aborts the project creation

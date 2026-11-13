@@ -108,7 +108,7 @@ class Interpreter(object):
                 spec_sources=args.spec_sources,
                 allow_io=args.allow_io, dry_run=args.dry_run,
                 force=args.force, inspect_mode=_inspect_mode(args),
-                inspect_host=args.host)
+                inspect_host=args.host, ssh=args.ssh)
             if args.venv and args.requirements:
                 venv = ProjectVenv(project)
                 venv.install()
@@ -170,7 +170,7 @@ class Interpreter(object):
             project = ProjectDir(path=args.project_dir, config=self.config,
                                  cwd=self.cwd, encrypt=args.encrypt,
                                  keys=args.keys)
-            project.mkview(view=args.new_view)
+            project.mkview(view=args.new_view, ssh=args.ssh)
         except (IsADirectoryError, NotADirectoryError,
                 InventorySpecError, ChildProcessError,
                 ValueError) as errmsg:
