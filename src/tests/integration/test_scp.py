@@ -33,17 +33,6 @@ def make_project(run_debops, tmp_path, debops_env, name="example-scp"):
     return project_dir
 
 
-def ssh_batchmode_works():
-    """Whether ssh authenticates to localhost without a prompt."""
-    try:
-        result = subprocess.run(
-            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=3",
-             "127.0.0.1", "true"], capture_output=True, timeout=10)
-        return result.returncode == 0
-    except (OSError, subprocess.SubprocessError):
-        return False
-
-
 def test_scp_help_carries_the_connection_note(run_debops, tmp_path,
                                               debops_env):
     project_dir = make_project(run_debops, tmp_path, debops_env)
@@ -96,9 +85,8 @@ def test_scp_eval_translates_the_jump(run_debops, tmp_path, debops_env):
     assert "-o ProxyJump=operator@incus.example.org" in result.stdout
 
 
-def test_scp_copies_a_file_to_the_host(run_debops, tmp_path, debops_env):
-    if not ssh_batchmode_works():
-        pytest.skip("ssh does not authenticate to localhost")
+def test_scp_copies_a_file_to_the_host(run_debops, tmp_path, debops_env,
+                                       localhost_ssh):
     project_dir = make_project(run_debops, tmp_path, debops_env)
     local_file = tmp_path / "source.txt"
     local_file.write_text("copy me\n")
@@ -113,9 +101,7 @@ def test_scp_copies_a_file_to_the_host(run_debops, tmp_path, debops_env):
 
 
 def test_scp_fetches_a_file_from_the_host(run_debops, tmp_path,
-                                          debops_env):
-    if not ssh_batchmode_works():
-        pytest.skip("ssh does not authenticate to localhost")
+                                          debops_env, localhost_ssh):
     project_dir = make_project(run_debops, tmp_path, debops_env)
     local_file = tmp_path / "source.txt"
     local_file.write_text("fetch me\n")
@@ -129,11 +115,10 @@ def test_scp_fetches_a_file_from_the_host(run_debops, tmp_path,
     assert fetched.read_text() == "fetch me\n"
 
 
-def test_scp_accepts_unseen_host_keys(run_debops, tmp_path, debops_env):
+def test_scp_accepts_unseen_host_keys(run_debops, tmp_path, debops_env,
+                                      localhost_ssh):
     """The '-a/--accept' option lets the copy through on the first
     contact with a fresh known_hosts store."""
-    if not ssh_batchmode_works():
-        pytest.skip("ssh does not authenticate to localhost")
     project_dir = tmp_path / "example-accept"
     run_debops("project", "init", "-t", "modern", "--no-requirements",
                "--ssh", str(project_dir), env=debops_env, check=True)

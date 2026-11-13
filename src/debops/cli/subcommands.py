@@ -96,7 +96,8 @@ Sections:
 
 SSH connections:
     ssh      connect to hosts over ssh and manage known_hosts
-    scp      copy files to and from hosts over ssh''')
+    scp      copy files to and from hosts over ssh
+    sftp     transfer files interactively over ssh''')
 
         parser.add_argument('section', help='Section to run')
         parser.add_argument('--version', action='version',
@@ -851,3 +852,31 @@ Connection of a host:""")
         # as unrecognized arguments and passed to scp unchanged
         self.args, extras = parser.parse_known_args(self.args[2:])
         self.args.scp_extra_args = extras
+
+    def do_sftp(self):
+        parser = _argument_parser(
+                parents=[self.global_parser],
+                usage='debops sftp [<args>] [<sftp options>] '
+                      '<[user@]host[:path]>',
+                description='run an interactive file transfer session '
+                            'over ssh, using the connection parameters '
+                            'of the Ansible inventory')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view')
+        parser.add_argument('-i', '--identity', type=str, metavar='KEY',
+                            help='use this private key for the session')
+        parser.add_argument('-a', '--accept', default=False,
+                            help='accept unseen ssh host keys on first '
+                                 'contact for this session',
+                            action='store_true')
+        parser.add_argument('--eval', default=False,
+                            help='print the sftp command and exit',
+                            action='store_true')
+        parser.add_argument('destination',
+                            help='the [user@]host[:path] destination; '
+                                 'the path is the directory the session '
+                                 'starts in')
+        # The sftp options which DebOps does not interpret are gathered
+        # as unrecognized arguments and passed to sftp unchanged
+        self.args, extras = parser.parse_known_args(self.args[2:])
+        self.args.sftp_extra_args = extras

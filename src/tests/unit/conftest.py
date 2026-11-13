@@ -60,7 +60,7 @@ def fake_tools(tmp_path):
     return {
         "binaries": {"ansible-inventory": inventory, "ssh-keygen": keygen,
                      "ssh-keyscan": keyscan, "ssh": "/usr/bin/ssh",
-                     "scp": "/usr/bin/scp"},
+                     "scp": "/usr/bin/scp", "sftp": "/usr/bin/sftp"},
         "log": str(log),
     }
 
