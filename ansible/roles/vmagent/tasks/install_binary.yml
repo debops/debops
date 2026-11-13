@@ -1,0 +1,153 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Install or upgrade the vmagent binary. The release archive comes from the
+# Ansible Controller when vmagent__controller_archive_path is set, with its
+# SHA256 checksum verified on the Controller before the copy, otherwise it is
+# downloaded from vmagent__release_url and verified by get_url. The archive is
+# staged in vmagent__cache_dir, which is removed afterwards. In check mode
+# nothing is staged and the pending installation is only reported as a change.
+
+- name: Check whether a vmagent binary is already installed
+  ansible.builtin.stat:
+    path: '{{ vmagent__bin_path }}'
+  register: vmagent__register_binary
+
+- name: Get the version of the installed vmagent binary
+  ansible.builtin.command:
+    argv: [ '{{ vmagent__bin_path }}', '-version' ]
+  register: vmagent__register_version
+  changed_when: False
+  failed_when: False
+  check_mode: False
+  when: vmagent__register_binary.stat.exists | bool
+
+- name: Set installed vmagent version fact
+  ansible.builtin.set_fact:
+    vmagent__fact_current_version: '{{ vmagent__register_version.stdout | d("")
+                                       | regex_search("[0-9]+[.][0-9]+[.][0-9]+")
+                                       | d("", True) }}'
+
+- name: Refuse to replace a vmagent binary of unknown version
+  ansible.builtin.assert:
+    that:
+      - (not vmagent__register_binary.stat.exists) or
+        (vmagent__fact_current_version | length > 0)
+    quiet: True
+    fail_msg: >-
+      {{ vmagent__bin_path }} exists, but '{{ vmagent__bin_path }} -version'
+      does not report a version. Check or remove the binary by hand before
+      the role replaces it.
+
+- name: Check if the vmagent binary needs to be installed
+  ansible.builtin.set_fact:
+    vmagent__fact_install: '{{ vmagent__fact_current_version != vmagent__version }}'
+
+- name: Verify the release archive on the Ansible Controller
+  when:
+    - vmagent__fact_install | bool
+    - vmagent__controller_archive_path | length > 0
+  block:
+
+    - name: Assert that the release archive path on the Controller is absolute
+      ansible.builtin.assert:
+        that:
+          - vmagent__controller_archive_path is abs
+        quiet: True
+        fail_msg: >-
+          vmagent__controller_archive_path must be an absolute path
+          (got '{{ vmagent__controller_archive_path }}').
+
+    - name: Check the release archive on the Ansible Controller
+      ansible.builtin.stat:
+        path: '{{ vmagent__controller_archive_path }}'
+        checksum_algorithm: 'sha256'
+      register: vmagent__register_controller_archive
+      delegate_to: 'localhost'
+      become: False
+
+    - name: Assert that the release archive on the Controller is valid
+      ansible.builtin.assert:
+        that:
+          - vmagent__register_controller_archive.stat.exists | bool
+          - vmagent__register_controller_archive.stat.checksum == vmagent__archive_sha256
+        quiet: True
+        fail_msg: >-
+          SHA256 of {{ vmagent__controller_archive_path }} on the Ansible
+          Controller does not match the expected value for vmagent
+          {{ vmagent__version }} ({{ vmagent__arch }}). Got
+          '{{ vmagent__register_controller_archive.stat.checksum | d("missing") }}',
+          expected '{{ vmagent__archive_sha256 }}'.
+
+- name: Report the pending vmagent installation in check mode
+  ansible.builtin.debug:
+    msg: 'vmagent {{ vmagent__version }} would be installed'
+  changed_when: True
+  when:
+    - vmagent__fact_install | bool
+    - ansible_check_mode | bool
+
+- name: Install vmagent from the release archive
+  when:
+    - vmagent__fact_install | bool
+    - not (ansible_check_mode | bool)
+  vars:
+    vmagent__var_archive: '{{ vmagent__cache_dir + "/" + vmagent__release_archive_name }}'
+  block:
+
+    - name: Create vmagent staging directory
+      ansible.builtin.file:
+        path: '{{ vmagent__cache_dir }}'
+        state: 'directory'
+        owner: 'root'
+        group: 'root'
+        mode: '0700'
+
+    - name: Copy the release archive from the Ansible Controller
+      ansible.builtin.copy:
+        src: '{{ vmagent__controller_archive_path }}'
+        dest: '{{ vmagent__var_archive }}'
+        owner: 'root'
+        group: 'root'
+        mode: '0600'
+      when: vmagent__controller_archive_path | length > 0
+
+    - name: Download the release archive
+      ansible.builtin.get_url:
+        url: '{{ vmagent__release_url }}'
+        dest: '{{ vmagent__var_archive }}'
+        checksum: 'sha256:{{ vmagent__archive_sha256 }}'
+        owner: 'root'
+        group: 'root'
+        mode: '0600'
+      register: vmagent__register_download
+      until: vmagent__register_download is succeeded
+      when: vmagent__controller_archive_path | length == 0
+
+    - name: Extract the vmagent binary
+      ansible.builtin.unarchive:
+        src: '{{ vmagent__var_archive }}'
+        dest: '{{ vmagent__cache_dir }}'
+        remote_src: True
+        include: [ 'vmagent-prod' ]
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
+
+    - name: Install the vmagent binary
+      ansible.builtin.copy:
+        src: '{{ vmagent__cache_dir }}/vmagent-prod'
+        dest: '{{ vmagent__bin_path }}'
+        remote_src: True
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
+
+  always:
+
+    - name: Remove vmagent staging directory
+      ansible.builtin.file:
+        path: '{{ vmagent__cache_dir }}'
+        state: 'absent'
