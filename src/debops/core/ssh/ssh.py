@@ -31,6 +31,7 @@ import subprocess
 from .utils import (USER_KNOWN_HOSTS_STORE, ensure_store_dir,
                     known_hosts_mode, known_hosts_store, resolve_host,
                     ssh_executable)
+from ..utils import unexpanduser
 
 logger = logging.getLogger(__name__)
 
@@ -269,7 +270,8 @@ def render_config_snippet(project):
     if mode == 'project' and store:
         lines.append('Host *')
         lines.append('    UserKnownHostsFile '
-                     + USER_KNOWN_HOSTS_STORE + ' ' + store)
+                     + USER_KNOWN_HOSTS_STORE + ' '
+                     + unexpanduser(store))
     else:
         lines.append('# The ssh.known_hosts option is set to "'
                      + mode + '"; there is nothing to configure.')
