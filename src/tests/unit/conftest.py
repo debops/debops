@@ -44,12 +44,12 @@ class StubAnsibleConfig:
         self._options = options if options is not None else {}
         self._error = error
 
-    def get_option(self, option):
+    def get_option(self, option, section="defaults"):
         if self._error is not None:
             raise self._error
         if option in self._options:
             return self._options[option]
-        raise configparser.NoOptionError(option, "defaults")
+        raise configparser.NoOptionError(option, section)
 
 
 class StubProject:
@@ -93,7 +93,7 @@ def stub_project(tmp_path):
     """
     def _make(inventory="ansible/inventory", collections="", config=None,
               project_type="legacy", view="system", cfg_options=None,
-              cfg_error=None, env_vars=None):
+              cfg_error=None, env_vars=None, raw=None):
         if cfg_options is None:
             cfg_options = {"inventory": inventory,
                            "collections_path": collections}
@@ -102,10 +102,15 @@ def stub_project(tmp_path):
                                         error=cfg_error)
 
         if config is None:
-            config = StubConfig(raw={"binaries": dict(DEFAULT_BINARIES),
-                                     "project": {},
-                                     "views": {}},
-                                env_vars=env_vars)
+            full_raw = {"binaries": dict(DEFAULT_BINARIES),
+                        "project": {}, "views": {}}
+            if raw:
+                for key, value in raw.items():
+                    if key == "binaries":
+                        full_raw["binaries"].update(value)
+                    else:
+                        full_raw[key] = value
+            config = StubConfig(raw=full_raw, env_vars=env_vars)
         elif env_vars is not None:
             config._env_vars = env_vars
 
