@@ -829,6 +829,51 @@ def test_create_requires_recipients_for_encryption(tmp_path, gpg_stub):
     assert not (tmp_path / "example").exists()
 
 
+def test_mkview_refuses_git_crypt_on_an_unencrypted_repository(
+        tmp_path, gpg_stub):
+    """Creating a view cannot retrofit repository-wide git-crypt
+    encryption. The command refuses instead of writing an inactive
+    filter declaration, under which the secrets of the new view would
+    be stored as plaintext."""
+    gpg = gpg_stub()
+    raw = dict(DEFAULT_PROJECT_RAW, binaries=dict(
+        DEFAULT_PROJECT_RAW["binaries"], gpg=gpg))
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="modern", encrypt="git-crypt",
+                         keys="test@example.org",
+                         config=make_configuration(raw))
+    project.create(git_repo=False)
+
+    with pytest.raises(ValueError,
+                       match="repository is not set up for git-crypt"):
+        project.mkview(view="other")
+
+    assert not (tmp_path / "example" / "ansible" / "views" /
+                "other").exists()
+
+
+def test_mkview_creates_the_encfs_volume_of_the_new_view(
+        tmp_path, monkeypatch, gpg_stub):
+    """'mkview --encrypt encfs' creates the EncFS volume of the new
+    view, the way project creation does for the default view."""
+    gpg = gpg_stub()
+    raw = dict(DEFAULT_PROJECT_RAW, binaries=dict(
+        DEFAULT_PROJECT_RAW["binaries"], gpg=gpg))
+    store_class = mock.Mock()
+    monkeypatch.setattr(projectdir_module, "AnsibleSecretStore",
+                        store_class)
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="modern", encrypt="encfs",
+                         keys="test@example.org",
+                         config=make_configuration(raw))
+    project.create(git_repo=False)
+
+    project.mkview(view="other")
+
+    assert store_class.call_args.args[1] == "other"
+    store_class.return_value.encrypt_encfs.assert_called_with()
+
+
 def test_create_aborts_on_a_failed_git_crypt_init(tmp_path, monkeypatch,
                                                   gpg_stub):
     """A git-crypt initialization failure aborts the project creation
