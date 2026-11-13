@@ -29,6 +29,25 @@ from debops.core.exceptions import ViewNotFoundError
 from debops.core.projectdir import ProjectDir
 
 
+@pytest.fixture(autouse=True)
+def _hermetic_git(monkeypatch):
+    """Real git operations in these tests must not inherit the git
+    configuration of the machine running them.
+
+    A global 'commit.gpgsign = true' makes every commit demand a GPG
+    passphrase in the middle of the suite, and a missing identity
+    fails the commits outright. The environment neutralizes the
+    machine configuration; the tests which need an identity set it in
+    the repository itself."""
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", os.devnull)
+    monkeypatch.setenv("GIT_CONFIG_SYSTEM", os.devnull)
+    monkeypatch.setenv("GIT_CONFIG_NOSYSTEM", "1")
+    monkeypatch.setenv("GIT_AUTHOR_NAME", "DebOps Tests")
+    monkeypatch.setenv("GIT_AUTHOR_EMAIL", "debops-tests@example.org")
+    monkeypatch.setenv("GIT_COMMITTER_NAME", "DebOps Tests")
+    monkeypatch.setenv("GIT_COMMITTER_EMAIL", "debops-tests@example.org")
+
+
 def make_project(raw):
     project = ProjectDir.__new__(ProjectDir)
     project.config = SimpleNamespace(raw=raw, _env_vars={})
