@@ -546,3 +546,57 @@ def test_mkview_encrypts_git_crypt_view_secrets(run_debops, tmp_path,
         cwd=str(project_dir), check=True, capture_output=True).stdout
     assert blob.startswith(b"\x00GITCRYPT\x00"), \
         "the secret of the new view was stored as plaintext"
+
+
+@git_crypt
+def test_env_stops_when_the_auto_commit_is_refused(run_debops, tmp_path,
+                                                   gpg_env):
+    """A runner command stops before it starts when the automatic
+    commit refuses to store encrypted paths as plaintext.
+
+    The generated projects enable the auto-commit. A new secret file
+    in the secrets of a locked repository used to be committed as
+    plaintext, the repository unlocked, and the command executed. The
+    command must stop instead: the state needs the operator's
+    decision, not automatic data destruction."""
+    project_dir = make_git_crypt_project(run_debops, tmp_path, gpg_env,
+                                         "example-gitcrypt-refusal")
+    head_before = _head_commit(project_dir)
+    secret = (project_dir / "ansible" / "views" / "system" / "secret" /
+              "new-key.txt")
+    secret.write_text("brand-new\n")
+
+    result = run_debops("env", "touch RAN", cwd=str(project_dir),
+                        env=gpg_env)
+
+    assert result.returncode == 1
+    assert "plaintext" in result.stderr
+    assert not (project_dir / "RAN").exists(), \
+        "the command ran despite the refusal"
+    assert _git_crypt_is_locked(project_dir)
+    assert _head_commit(project_dir) == head_before, \
+        "the working tree was committed automatically"
+
+
+@git_crypt
+def test_run_stops_when_the_auto_commit_is_refused(run_debops, tmp_path,
+                                                   gpg_env):
+    """'debops run' stops before the playbook starts when the
+    automatic commit refuses to store encrypted paths as plaintext."""
+    project_dir = make_git_crypt_project(run_debops, tmp_path, gpg_env,
+                                         "example-gitcrypt-refusal-run")
+    head_before = _head_commit(project_dir)
+    secret = (project_dir / "ansible" / "views" / "system" / "secret" /
+              "new-key.txt")
+    secret.write_text("brand-new\n")
+
+    result = run_debops("run", "site.yml", cwd=str(project_dir),
+                        env=gpg_env)
+
+    assert result.returncode == 1
+    assert "plaintext" in result.stderr
+    assert "PLAY RECAP" not in result.stdout, \
+        "the playbook ran despite the refusal"
+    assert _git_crypt_is_locked(project_dir)
+    assert _head_commit(project_dir) == head_before, \
+        "the working tree was committed automatically"
