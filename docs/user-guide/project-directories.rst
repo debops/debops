@@ -193,14 +193,20 @@ something like this:
    │           ├── .gitattributes
    │           └── .gitignore
    ├── .debops/
-   │   ├── conf.d/
-   │   │   ├── project.yml
-   │   │   └── view-system.yml
-   │   │── environment
-   │   │── requirements.txt
-   │   └── venv/
+   │   ├── conf.d/
+   │   │   ├── project.yml
+   │   │   └── view-system.yml
+   │   │── environment
+   │   │── requirements.txt
+   │   ├── ssh/
+   │   │   └── views/
+   │   └── venv/
    │       └── bin/
    └── .gitignore
+
+The :file:`.debops/ssh/` directory holds the known_hosts store of the
+project views when the project mode of the :ref:`SSH suite <ssh_suite>` is
+active.
 
 You can compare this with the "legacy" directory structure above. The important
 changes with the previous layout are:
