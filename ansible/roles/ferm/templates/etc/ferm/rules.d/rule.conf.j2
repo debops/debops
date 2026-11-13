@@ -598,7 +598,7 @@
 {%     endfor %}
 {%   endif %}
 {% endif %}
-{% if rule.debug | d() | bool or (ansible_local | d() and ansible_local.tags | d() and 'debug' in ansible_local.tags) %}
+{% if rule.debug | d(False) | bool or (ansible_local | d() and ansible_local.tags | d() and 'debug' in ansible_local.tags) %}
 
 {{ ("rule_name: " + (rule_name | to_nice_yaml)) | replace('\n$','') | comment(prefix='',postfix='') -}}
 {{ ("rule: " + (rule | to_nice_yaml)) | replace('\n$','') | comment(prefix='',postfix='') -}}
