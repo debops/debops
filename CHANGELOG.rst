@@ -212,6 +212,30 @@ General
   not search the account-wide Collection path, which broke playbook
   lookup on a fresh install.
 
+- :command:`debops project mkview` with the ``--encrypt`` and
+  ``--keys`` options now applies them. The EncFS volume of the new
+  view is created, and the '.gitattributes' file of a git-crypt view
+  declares the filter as active. The options were previously accepted
+  and silently dropped, and the secrets of the new view were stored
+  in the repository as plaintext. On a repository without git-crypt
+  setup the command now refuses with an error, because creating a
+  view cannot retrofit repository-wide encryption.
+
+- The automatic commit of the :command:`debops` runner commands and
+  of :command:`debops project unlock` refuses to run while the
+  git-crypt repository is locked and the working tree has changes on
+  the encrypted paths. Such a commit stores the secret files as
+  plaintext in the repository history, and the next unlock renders
+  them as empty files. The command now stops with an error before
+  anything runs; changes outside the encrypted paths still commit
+  automatically.
+
+- :command:`debops project init --encrypt encfs` creates the EncFS
+  volume of a legacy project directory again. The volume creation was
+  lost in the refactoring of the secret store, and legacy projects
+  reported a successful creation while their secrets stayed
+  unencrypted.
+
 Removed
 ~~~~~~~
 

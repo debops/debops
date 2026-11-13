@@ -1189,6 +1189,10 @@ class ProjectDir(object):
             allow_io=allow_io, dry_run=dry_run, force=force,
             inspect_mode=inspect_mode, inspect_host=inspect_host)
 
+        if self.encrypt == 'encfs':
+            AnsibleSecretStore(self, self.view, keys=self.keys,
+                               encrypt=self.encrypt).encrypt_encfs()
+
         logger.notice('Created new DebOps project in ' + path,
                       extra={'allow': ['stderr', 'syslog']})
 
@@ -1362,11 +1366,28 @@ class ProjectDir(object):
         filename_view = view.replace('/', '-')
         if self.project_type == 'modern':
             if view:
+                if self.encrypt == 'git-crypt' and not os.path.exists(
+                        os.path.join(self.path, '.git', 'git-crypt',
+                                     'keys')):
+                    logger.error(
+                        'The repository has no git-crypt setup. Creating '
+                        'a view cannot initialize repository-wide '
+                        'encryption; use \'debops project init --encrypt '
+                        'git-crypt\' on a new project instead.',
+                        extra={'allow': 'syslog'})
+                    raise ValueError(
+                        'Cannot encrypt the view: the repository is not '
+                        'set up for git-crypt')
+
                 inventory = AnsibleInventory(self, view)
 
                 pre_existing = inventory.existing_paths()
 
                 inventory.create()
+
+                if self.encrypt == 'encfs':
+                    AnsibleSecretStore(self, view, keys=self.keys,
+                                       encrypt=self.encrypt).encrypt_encfs()
 
                 default_view_yml = jinja2.Template(
                         pkgutil.get_data('debops',

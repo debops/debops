@@ -10,6 +10,7 @@ operations and the initial encryption setup. Operations that would run
 real subcommands are isolated with mocks.
 """
 
+import logging
 import os
 import string
 from unittest import mock
@@ -18,6 +19,7 @@ import pytest
 
 import debops.core.secrets as secrets_module
 from debops.core.ansible.secrets import AnsibleSecretStore
+from debops.core.secrets import SecretManager
 
 
 def make_store(project, view="system", **kwargs):
@@ -484,3 +486,136 @@ def test_lock_git_crypt_reports_a_failure(stub_project, monkeypatch):
 
     with pytest.raises(ChildProcessError, match="Cannot lock"):
         store.lock()
+
+
+def make_manager(project, stores):
+    """A ``SecretManager`` whose registered factories return the given
+    store mocks, keyed by store name."""
+    manager = SecretManager(project)
+    manager._factories = lambda: {
+        name: (lambda project, view, store=store: store)
+        for name, store in stores.items()}
+    return manager
+
+
+def test_manager_unlock_returns_one_result_per_store(stub_project):
+    """The manager unlocks every registered store and reports one
+    result per store, in the registration order."""
+    ansible = mock.Mock()
+    ansible.unlock.return_value = True
+    other = mock.Mock()
+    other.unlock.return_value = False
+    manager = make_manager(stub_project(),
+                           {"ansible": ansible, "other": other})
+
+    assert manager.unlock() == [True, False]
+
+
+def test_manager_unlock_selects_a_named_store(stub_project):
+    ansible = mock.Mock()
+    ansible.unlock.return_value = True
+    other = mock.Mock()
+    manager = make_manager(stub_project(),
+                           {"ansible": ansible, "other": other})
+
+    assert manager.unlock("ansible") == [True]
+    other.unlock.assert_not_called()
+
+
+def test_manager_lock_returns_one_result_per_store(stub_project):
+    ansible = mock.Mock()
+    ansible.lock.return_value = True
+    other = mock.Mock()
+    other.lock.return_value = False
+    manager = make_manager(stub_project(),
+                           {"ansible": ansible, "other": other})
+
+    assert manager.lock() == [True, False]
+
+
+def test_manager_rejects_an_unknown_store_name(stub_project):
+    manager = make_manager(stub_project(), {"ansible": mock.Mock()})
+
+    with pytest.raises(KeyError):
+        manager.store("nope")
+
+
+def test_unlock_refuses_to_autocommit_encrypted_paths(stub_project,
+                                                      monkeypatch, caplog):
+    """The automatic commit refuses to run while the repository is
+    locked and the working tree changes git-crypt encrypted paths. The
+    clean filter of a locked repository passes content through, so the
+    commit would store the encrypted files as plaintext."""
+    project = stub_project()
+    project.config.raw["project"] = {"git": {"auto_commit": True}}
+    project.commit = mock.Mock()
+    os.makedirs(os.path.join(project.path, ".git", "git-crypt", "keys"))
+    monkeypatch.setattr(AnsibleSecretStore, "_git_crypt_locked",
+                        mock.Mock(return_value=True))
+    monkeypatch.setattr(AnsibleSecretStore, "_git_crypt_encrypted_changes",
+                        mock.Mock(return_value=["secret/keys.yml"]))
+    store = make_store(project)
+
+    with caplog.at_level(logging.ERROR, logger="debops.core.secrets"):
+        with pytest.raises(ChildProcessError,
+                           match="would store as plaintext"):
+            store.unlock()
+
+    project.commit.assert_not_called()
+    assert "plaintext" in caplog.text
+    assert "secret/keys.yml" in caplog.text
+
+
+def test_unlock_autocommits_changes_outside_the_encrypted_paths(
+        stub_project, monkeypatch):
+    """Changes outside the encrypted paths commit automatically while
+    the repository is locked: the tree must be clean for the unlock,
+    and non-encrypted content commits as plaintext harmlessly."""
+    project = stub_project()
+    project.config.raw["project"] = {"git": {"auto_commit": True}}
+    project.commit = mock.Mock()
+    os.makedirs(os.path.join(project.path, ".git", "git-crypt", "keys"))
+    monkeypatch.setattr(AnsibleSecretStore, "_git_crypt_locked",
+                        mock.Mock(return_value=True))
+    monkeypatch.setattr(AnsibleSecretStore, "_git_crypt_encrypted_changes",
+                        mock.Mock(return_value=[]))
+    process = mock.Mock(returncode=0)
+    process.communicate.return_value = (b"", b"")
+    monkeypatch.setattr(secrets_module.subprocess, "Popen",
+                        mock.Mock(return_value=process))
+    store = make_store(project)
+
+    assert store.unlock() is True
+    project.commit.assert_called_once_with()
+
+
+def test_git_crypt_encrypted_changes_filters_by_the_filter_attribute(
+        stub_project, monkeypatch):
+    """The helper reports only the changed paths whose filter
+    attribute names git-crypt, and runs its lookups in the project
+    directory."""
+    project = stub_project()
+    store = make_store(project)
+
+    status = mock.Mock(returncode=0)
+    status.communicate.return_value = (
+        b" M ansible/views/system/secret/keys.yml\n"
+        b" M README.md\n"
+        b"?? secret/new-file.txt\n", b"")
+    attrs = mock.Mock(returncode=0)
+    attrs.communicate.return_value = (
+        b"ansible/views/system/secret/keys.yml: filter: git-crypt\n"
+        b"README.md: filter: unspecified\n"
+        b"secret/new-file.txt: filter: git-crypt\n", b"")
+    popen = mock.Mock(side_effect=[status, attrs])
+    monkeypatch.setattr(secrets_module.subprocess, "Popen", popen)
+
+    changes = store._git_crypt_encrypted_changes()
+
+    assert sorted(changes) == ["ansible/views/system/secret/keys.yml",
+                               "secret/new-file.txt"]
+    assert [call.kwargs["cwd"] for call in popen.call_args_list] == \
+        [project.path, project.path]
+    stdin = attrs.communicate.call_args.args[0].decode()
+    assert "secret/new-file.txt" in stdin
+    assert "README.md" in stdin

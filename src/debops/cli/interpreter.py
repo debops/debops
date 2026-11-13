@@ -157,7 +157,9 @@ class Interpreter(object):
 
     def do_project_mkview(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config, cwd=self.cwd)
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd, encrypt=args.encrypt,
+                                 keys=args.keys)
             project.mkview(view=args.new_view)
         except (IsADirectoryError, NotADirectoryError,
                 InventorySpecError, ChildProcessError,

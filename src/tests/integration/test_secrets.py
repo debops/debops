@@ -31,10 +31,62 @@ git_crypt = pytest.mark.skipif(
     reason="git-crypt is not installed")
 
 
-encfs = pytest.mark.skipif(
-    shutil.which("encfs") is None or shutil.which("fusermount") is None
-    or not os.path.exists("/dev/fuse"),
-    reason="encfs with fusermount and the /dev/fuse device are required")
+encfs = pytest.mark.encfs
+
+_encfs_probe_state = None
+
+
+def _encfs_mount_works(tmp_path_factory):
+    """Probe whether EncFS can actually mount on this host.
+
+    Binary and device presence is not the whole story: '/dev/fuse' can
+    exist while every mount fails, for example inside a container
+    whose kernel does not expose the FUSE module. The probe creates
+    one throwaway volume, mounts it and unmounts it, once per test
+    run; the result is cached for the rest of the run.
+    """
+    global _encfs_probe_state
+    if _encfs_probe_state is not None:
+        return _encfs_probe_state
+
+    base = tmp_path_factory.mktemp("encfs-capability")
+    cipher = base / "cipher"
+    plain = base / "plain"
+    cipher.mkdir()
+    plain.mkdir()
+    try:
+        created = subprocess.run(
+            ["encfs", str(cipher), str(plain), "--standard",
+             "--extpass=echo probe-passphrase"],
+            input="y\n", capture_output=True, text=True, timeout=60)
+        mounted = created.returncode == 0 and os.path.ismount(str(plain))
+        if mounted:
+            subprocess.run(["fusermount", "-u", str(plain)],
+                           capture_output=True, timeout=60)
+    except (OSError, subprocess.SubprocessError):
+        mounted = False
+    finally:
+        shutil.rmtree(base, ignore_errors=True)
+
+    _encfs_probe_state = mounted
+    return mounted
+
+
+@pytest.fixture(autouse=True)
+def encfs_capability(request, tmp_path_factory):
+    """Skip the EncFS tests unless a real mount works on this host."""
+    if request.node.get_closest_marker("encfs") is None:
+        yield
+        return
+    if shutil.which("encfs") is None:
+        pytest.skip("encfs is not installed")
+    if shutil.which("fusermount") is None:
+        pytest.skip("fusermount is not installed")
+    if not os.path.exists("/dev/fuse"):
+        pytest.skip("the FUSE device is missing")
+    if not _encfs_mount_works(tmp_path_factory):
+        pytest.skip("EncFS cannot mount on this host")
+    yield
 
 
 def test_project_unlock_and_lock_a_plain_inventory(run_debops, tmp_path,
@@ -276,3 +328,334 @@ def test_project_encfs_views_have_separate_volumes(run_debops, tmp_path,
     assert result.returncode == 0
     assert not os.path.ismount(str(other_secret)), \
         "the 'other' view secrets were still mounted at the end of the test"
+
+
+def _git_crypt_is_locked(project_dir):
+    """Report whether git-crypt has locked the repository.
+
+    The check mirrors ``SecretStore._git_crypt_locked()``: git-crypt
+    implements the lock state by setting and removing the
+    ``filter.git-crypt.smudge`` git configuration, so a missing entry
+    means locked.
+    """
+    result = subprocess.run(
+        ["git", "config", "--local", "--get", "filter.git-crypt.smudge"],
+        cwd=str(project_dir), capture_output=True, text=True)
+    return result.returncode != 0
+
+
+def _head_commit(project_dir):
+    """The current commit of the project repository."""
+    return subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=str(project_dir), check=True,
+        capture_output=True, text=True).stdout.strip()
+
+
+def _commit_all(project_dir, env, message):
+    """Commit the current state of the project directory."""
+    run_env = {**os.environ, **env}
+    subprocess.run(["git", "add", "-A"], cwd=str(project_dir), env=run_env,
+                   check=True, stdout=subprocess.DEVNULL)
+    subprocess.run(["git", "commit", "-q", "-m", message],
+                   cwd=str(project_dir), env=run_env, check=True,
+                   stdout=subprocess.DEVNULL)
+
+
+def make_git_crypt_project(run_debops, tmp_path, gpg_env, name):
+    """An initialized modern project with git-crypt encrypted secrets.
+
+    The project carries one plaintext marker in the secrets of its
+    default view and a playbook which touches nothing, both committed;
+    the secrets end up locked, the way initialization leaves them.
+
+    The secret is written while the repository is unlocked and then
+    committed, so that git-crypt encrypts it on the way into the
+    commit. A secret committed while the repository is locked is stored
+    as plaintext -- the clean filter passes content through when it
+    cannot encrypt -- and the next checkout smudges it into an empty
+    file with a 'file not encrypted' warning, so the locked-commit
+    order would poison the fixture instead of testing it.
+    """
+    project_dir = tmp_path / name
+    run_debops("project", "init", "-t", "modern", "--encrypt", "git-crypt",
+               "--keys", "debops-tests@example.org", "--no-requirements",
+               str(project_dir), env=gpg_env, check=True)
+    run_debops("project", "unlock", cwd=str(project_dir),
+               env=gpg_env, check=True)
+
+    secret = (project_dir / "ansible" / "views" / "system" /
+              "secret" / "credentials.txt")
+    secret.write_text("hunter2\n")
+    playbook = (project_dir / "ansible" / "views" / "system" /
+                "playbooks" / "site.yml")
+    playbook.write_text(
+        "- hosts: localhost\n"
+        "  connection: local\n"
+        "  gather_facts: false\n"
+        "  tasks:\n"
+        "    - ansible.builtin.debug:\n"
+        "        msg: test-ok\n")
+    _commit_all(project_dir, gpg_env, "Add secrets and a playbook")
+    run_debops("project", "lock", cwd=str(project_dir),
+               env=gpg_env, check=True)
+
+    return project_dir
+
+
+def dirty_a_tracked_file(project_dir):
+    """Make the working tree dirty through a tracked, harmless file."""
+    tracked = (project_dir / "ansible" / "views" / "system" /
+               "playbooks" / "site.yml")
+    with open(str(tracked), "a") as handle:
+        handle.write("# uncommitted change\n")
+
+
+@git_crypt
+def test_run_unlocks_and_relocks_git_crypt_secrets(run_debops, tmp_path,
+                                                   gpg_env):
+    """'debops run' on a project with locked secrets unlocks them for
+    the playbook and locks them again afterwards."""
+    project_dir = make_git_crypt_project(run_debops, tmp_path, gpg_env,
+                                         "example-gitcrypt-cycle")
+    assert _git_crypt_is_locked(project_dir)
+
+    result = run_debops("run", "site.yml", cwd=str(project_dir),
+                        env=gpg_env)
+
+    assert result.returncode == 0
+    assert _git_crypt_is_locked(project_dir)
+
+
+@git_crypt
+@pytest.mark.parametrize("command", [
+    ["run", "site.yml"],
+    ["env", "/bin/true"],
+    ["exec", "localhost", "-m", "ansible.builtin.command",
+     "-a", "/bin/true"],
+], ids=["run", "env", "exec"])
+def test_runner_commands_leave_already_unlocked_secrets_unlocked(
+        run_debops, tmp_path, gpg_env, command):
+    """Secrets which were unlocked before the command stay unlocked.
+
+    The runners lock only the secrets they unlocked themselves. Every
+    command used to relock them unconditionally after the secrets were
+    split out of the inventory, because a one-result unlock list is
+    truthy even when no store changed state (PR #2819).
+    """
+    project_dir = make_git_crypt_project(run_debops, tmp_path, gpg_env,
+                                         "example-gitcrypt-unlocked")
+    run_debops("project", "unlock", cwd=str(project_dir),
+               env=gpg_env, check=True)
+
+    result = run_debops(*command, cwd=str(project_dir), env=gpg_env)
+
+    assert result.returncode == 0
+    assert not _git_crypt_is_locked(project_dir), \
+        "the command locked secrets it did not unlock"
+
+
+@git_crypt
+def test_runner_commands_do_not_relock_secrets_on_a_dirty_tree(
+        run_debops, tmp_path, gpg_env):
+    """A dirty working tree must not turn into a command failure.
+
+    Locking git-crypt secrets refuses a dirty working tree. A command
+    which leaves secrets alone because it did not unlock them cannot
+    fail with 'Cannot lock project secrets' after the command itself
+    already finished; the auto-commit is disabled so that a lock
+    attempt could not clean the tree first.
+    """
+    project_dir = make_git_crypt_project(run_debops, tmp_path, gpg_env,
+                                         "example-gitcrypt-dirty")
+    config = project_dir / ".debops" / "conf.d" / "project.yml"
+    config.write_text(config.read_text().replace(
+        "auto_commit: True", "auto_commit: False"))
+    _commit_all(project_dir, gpg_env, "Disable the auto commit")
+    run_debops("project", "unlock", cwd=str(project_dir),
+               env=gpg_env, check=True)
+
+    dirty_a_tracked_file(project_dir)
+    result = run_debops("env", "/bin/true", cwd=str(project_dir),
+                        env=gpg_env)
+
+    assert result.returncode == 0
+    assert not _git_crypt_is_locked(project_dir)
+
+
+@git_crypt
+def test_runner_commands_do_not_autocommit_a_dirty_tree(
+        run_debops, tmp_path, gpg_env):
+    """The default auto-commit must not ride along with a re-lock.
+
+    With the generated 'auto_commit: True' configuration, an
+    unconditional re-lock would commit the operator's uncommitted work
+    before locking the secrets. A command which unlocked nothing
+    commits nothing.
+    """
+    project_dir = make_git_crypt_project(run_debops, tmp_path, gpg_env,
+                                         "example-gitcrypt-autocommit")
+    run_debops("project", "unlock", cwd=str(project_dir),
+               env=gpg_env, check=True)
+    head_before = _head_commit(project_dir)
+
+    dirty_a_tracked_file(project_dir)
+    result = run_debops("env", "/bin/true", cwd=str(project_dir),
+                        env=gpg_env)
+
+    assert result.returncode == 0
+    assert not _git_crypt_is_locked(project_dir)
+    assert _head_commit(project_dir) == head_before, \
+        "the command committed the operator's uncommitted work"
+
+
+@git_crypt
+def test_runner_commands_leave_an_unlocked_multi_view_project_unlocked(
+        run_debops, tmp_path, gpg_env):
+    """A command run from a non-default view leaves the repository
+    unlocked.
+
+    git-crypt locks the whole repository at once, so the unlock state
+    is shared between the views: the runner of one view must not lock
+    the secrets that were unlocked for all of them.
+    """
+    project_dir = make_git_crypt_project(run_debops, tmp_path, gpg_env,
+                                         "example-gitcrypt-views")
+    run_debops("project", "mkview", "other", cwd=str(project_dir),
+               env=gpg_env, check=True)
+    _commit_all(project_dir, gpg_env, "Add the other view")
+    run_debops("project", "unlock", cwd=str(project_dir),
+               env=gpg_env, check=True)
+
+    result = run_debops("env", "-V", "other", "/bin/true",
+                        cwd=str(project_dir), env=gpg_env)
+
+    assert result.returncode == 0
+    assert not _git_crypt_is_locked(project_dir)
+    # The repository-wide lock state: the default view's secrets are
+    # readable too
+    assert (project_dir / "ansible" / "views" / "system" / "secret" /
+            "credentials.txt").read_text() == "hunter2\n"
+
+
+@encfs
+def test_runner_commands_leave_already_unlocked_encfs_mounted(
+        run_debops, tmp_path, gpg_env):
+    """The EncFS volume stays mounted when the command unlocked
+    nothing."""
+    project_dir = tmp_path / "example-encfs-runner"
+    run_debops("project", "init", "-t", "modern", "--encrypt", "encfs",
+               "--keys", "debops-tests@example.org", "--no-requirements",
+               str(project_dir), env=gpg_env, check=True)
+    secrets = project_dir / "ansible" / "views" / "system" / "secret"
+
+    result = run_debops("project", "unlock", cwd=str(project_dir),
+                        env=gpg_env)
+    assert result.returncode == 0
+    assert os.path.ismount(str(secrets))
+
+    try:
+        result = run_debops("env", "/bin/true", cwd=str(project_dir),
+                            env=gpg_env)
+
+        assert result.returncode == 0
+        assert os.path.ismount(str(secrets)), \
+            "the command unmounted a volume it did not mount"
+    finally:
+        # The test ends with the volume mounted on purpose; unmount it
+        # so the temporary project directory can be removed
+        if os.path.ismount(str(secrets)):
+            subprocess.run(["fusermount", "-u", str(secrets)],
+                           capture_output=True, timeout=60)
+
+
+@git_crypt
+def test_mkview_encrypts_git_crypt_view_secrets(run_debops, tmp_path,
+                                                gpg_env):
+    """A view created with '--encrypt git-crypt' encrypts its secrets.
+
+    The view's '.gitattributes' declares the git-crypt filter, and a
+    secret committed after the view creation lands in the repository
+    as git-crypt ciphertext. 'mkview' used to drop the encryption
+    options, and the secrets of the new view were stored as plaintext.
+    """
+    project_dir = make_git_crypt_project(run_debops, tmp_path, gpg_env,
+                                         "example-gitcrypt-mkview")
+    run_debops("project", "unlock", cwd=str(project_dir),
+               env=gpg_env, check=True)
+
+    result = run_debops("project", "mkview", "--encrypt", "git-crypt",
+                        "--keys", "debops-tests@example.org", "other",
+                        cwd=str(project_dir), env=gpg_env)
+    assert result.returncode == 0
+
+    attributes = (project_dir / "ansible" / "views" / "other" /
+                  ".gitattributes").read_text()
+    assert "/secret/** filter=git-crypt" in attributes
+    assert "#/secret" not in attributes, \
+        "the git-crypt filter declaration is inactive"
+
+    secret = (project_dir / "ansible" / "views" / "other" /
+              "secret" / "key.txt")
+    secret.write_text("view-secret\n")
+    _commit_all(project_dir, gpg_env, "Add a secret to the new view")
+
+    blob = subprocess.run(
+        ["git", "cat-file", "blob",
+         "HEAD:ansible/views/other/secret/key.txt"],
+        cwd=str(project_dir), check=True, capture_output=True).stdout
+    assert blob.startswith(b"\x00GITCRYPT\x00"), \
+        "the secret of the new view was stored as plaintext"
+
+
+@git_crypt
+def test_env_stops_when_the_auto_commit_is_refused(run_debops, tmp_path,
+                                                   gpg_env):
+    """A runner command stops before it starts when the automatic
+    commit refuses to store encrypted paths as plaintext.
+
+    The generated projects enable the auto-commit. A new secret file
+    in the secrets of a locked repository used to be committed as
+    plaintext, the repository unlocked, and the command executed. The
+    command must stop instead: the state needs the operator's
+    decision, not automatic data destruction."""
+    project_dir = make_git_crypt_project(run_debops, tmp_path, gpg_env,
+                                         "example-gitcrypt-refusal")
+    head_before = _head_commit(project_dir)
+    secret = (project_dir / "ansible" / "views" / "system" / "secret" /
+              "new-key.txt")
+    secret.write_text("brand-new\n")
+
+    result = run_debops("env", "touch RAN", cwd=str(project_dir),
+                        env=gpg_env)
+
+    assert result.returncode == 1
+    assert "plaintext" in result.stderr
+    assert not (project_dir / "RAN").exists(), \
+        "the command ran despite the refusal"
+    assert _git_crypt_is_locked(project_dir)
+    assert _head_commit(project_dir) == head_before, \
+        "the working tree was committed automatically"
+
+
+@git_crypt
+def test_run_stops_when_the_auto_commit_is_refused(run_debops, tmp_path,
+                                                   gpg_env):
+    """'debops run' stops before the playbook starts when the
+    automatic commit refuses to store encrypted paths as plaintext."""
+    project_dir = make_git_crypt_project(run_debops, tmp_path, gpg_env,
+                                         "example-gitcrypt-refusal-run")
+    head_before = _head_commit(project_dir)
+    secret = (project_dir / "ansible" / "views" / "system" / "secret" /
+              "new-key.txt")
+    secret.write_text("brand-new\n")
+
+    result = run_debops("run", "site.yml", cwd=str(project_dir),
+                        env=gpg_env)
+
+    assert result.returncode == 1
+    assert "plaintext" in result.stderr
+    assert "PLAY RECAP" not in result.stdout, \
+        "the playbook ran despite the refusal"
+    assert _git_crypt_is_locked(project_dir)
+    assert _head_commit(project_dir) == head_before, \
+        "the working tree was committed automatically"
