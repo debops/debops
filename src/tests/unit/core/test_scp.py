@@ -123,3 +123,88 @@ def test_build_scp_command_passes_the_operator_options(stub_project,
                                 scp_args=["-r", "-q"])
 
     assert "-r" in command and "-q" in command
+
+
+TWO_HOST_INVENTORY = (
+    "#!/bin/sh\n"
+    'if [ "$2" = "web" ]; then\n'
+    "    printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+    " \"ansible_port\": \"2222\", \"ansible_user\": \"admin\","
+    " \"ansible_ssh_private_key_file\": \"/keys/web\"}'\n"
+    "elif [ \"$2\" = \"web2\" ]; then\n"
+    "    printf '%s' '{\"ansible_host\": \"192.0.2.11\","
+    " \"ansible_port\": \"2223\", \"ansible_user\": \"admin2\","
+    " \"ansible_ssh_private_key_file\": \"/keys/web2\"}'\n"
+    "else\n"
+    "    echo 'ERROR! no such host' >&2\n"
+    "    exit 5\n"
+    "fi\n")
+
+TWO_HOST_ANSIBLE = (
+    "#!/bin/sh\n"
+    'if [ "$1" = "web" ]; then\n'
+    "    printf 'hosts (1):\\n    web\\n'\n"
+    'elif [ "$1" = "web2" ]; then\n'
+    "    printf 'hosts (1):\\n    web2\\n'\n"
+    "else\n"
+    "    exit 0\n"
+    "fi\n")
+
+
+def two_host_project(stub_project, fake_tools, fake_binary):
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "two-host-inventory", TWO_HOST_INVENTORY)
+    binaries["ansible"] = fake_binary("two-host-ansible", TWO_HOST_ANSIBLE)
+    return stub_project(raw={"binaries": binaries})
+
+
+def test_build_scp_command_reports_the_differing_ports(
+        stub_project, fake_tools, fake_binary):
+    """Two operands which resolve to different ssh ports get no port
+    option; scp applies one port to both connections."""
+    project = two_host_project(stub_project, fake_tools, fake_binary)
+
+    command = build_scp_command(project, "web:/src", "web2:/dst")
+
+    assert "-P" not in command
+
+
+def test_build_scp_command_reports_the_differing_identities(
+        stub_project, fake_tools, fake_binary):
+    """Two operands which resolve to different private keys get no
+    identity option."""
+    project = two_host_project(stub_project, fake_tools, fake_binary)
+
+    command = build_scp_command(project, "web:/src", "web2:/dst")
+
+    assert "-i" not in command
+
+
+def test_build_scp_command_uses_the_explicit_identity(
+        stub_project, fake_tools, fake_binary):
+    project = two_host_project(stub_project, fake_tools, fake_binary)
+
+    command = build_scp_command(project, "web:/src", "web2:/dst",
+                                identity="/keys/explicit")
+
+    assert command[command.index("-i") + 1] == "/keys/explicit"
+
+
+def test_build_scp_command_drops_the_forwards(stub_project, fake_tools,
+                                              fake_binary):
+    """A forward configured for a host does not transfer to the file
+    transfer connection."""
+    inventory = fake_binary(
+        "forward-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_ssh_common_args\": \"-L 1234:localhost:5678\"}'\n")
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = inventory
+    project = stub_project(raw={"binaries": binaries})
+
+    command = build_scp_command(project, "web:/src", "web:/dst")
+
+    assert "-L" not in command
+    assert "1234:localhost:5678" not in command

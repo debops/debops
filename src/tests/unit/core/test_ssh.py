@@ -27,7 +27,7 @@ from debops.core.ssh import (SFTP_OPTIONS_WITH_VALUE, SSH_OPTIONS_WITH_VALUE,
                              render_config_snippet, resolve_destination,
                              resolve_host, resolve_patterns, rescan_hosts,
                              split_destination, split_options_operand,
-                             write_config_snippet)
+                             translate_ssh_args, write_config_snippet)
 
 
 @pytest.mark.parametrize("destination,user,host,port", [
@@ -521,3 +521,116 @@ def test_build_ssh_command_adds_the_accept_option(stub_project,
 
     assert "StrictHostKeyChecking=accept-new" in command
     assert command[-1] == "192.0.2.10"
+
+
+def test_translate_ssh_args_drops_a_valueless_jump():
+    """A '-J' at the end of the list has no destination to translate."""
+    translated, dropped = translate_ssh_args(["-J"])
+
+    assert translated == []
+    assert dropped == ["-J"]
+
+
+def test_resolve_host_reports_an_unrunnable_binary(stub_project):
+    project = stub_project(raw={"binaries": {
+        "ansible-inventory": "/nonexistent/inventory"}})
+
+    with pytest.raises(ChildProcessError):
+        resolve_host(project, "web")
+
+
+def test_resolve_host_rejects_an_unusable_answer(stub_project, fake_binary):
+    binary = fake_binary(
+        "garbage-inventory", "#!/bin/sh\nprintf 'not json\\n'\n")
+    project = stub_project(raw={"binaries": {"ansible-inventory": binary}})
+
+    with pytest.raises(ValueError) as error:
+        resolve_host(project, "web")
+
+    assert "no usable host variables" in str(error.value)
+
+
+def test_resolve_patterns_reports_an_unrunnable_binary(stub_project):
+    project = stub_project(raw={"binaries": {
+        "ansible": "/nonexistent/ansible"}})
+
+    with pytest.raises(ChildProcessError):
+        resolve_patterns(project, ["all"])
+
+
+def test_resolve_patterns_skips_the_noise(stub_project, fake_tools,
+                                          fake_binary):
+    """Warning lines, blank lines and a trailing non-indented line do
+    not become host names."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible"] = fake_binary(
+        "noisy-ansible",
+        "#!/bin/sh\n"
+        "printf '[NOTE: cached]\\n'\n"
+        "printf '\\n'\n"
+        "printf 'hosts (2):\\n'\n"
+        "printf '\\n'\n"
+        "printf '    web-1\\n'\n"
+        "printf '  web-2\\n'\n"
+        "printf 'unrelated tail\\n'\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    hosts, unmatched = resolve_patterns(project, ["group"])
+
+    assert hosts == ["web-1", "web-2"]
+    assert unmatched == []
+
+
+def test_resolve_destination_rejects_the_multi_match(stub_project,
+                                                     fake_tools):
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+
+    with pytest.raises(ValueError) as error:
+        resolve_destination(project, "multi")
+
+    assert "matches 2 inventory hosts" in str(error.value)
+
+
+def test_build_handoff_command_uses_the_configured_executable(
+        stub_project, fake_tools):
+    project = stub_project(
+        cfg_options={"inventory": "ansible/inventory",
+                     "ssh_executable": "/custom/ssh"},
+        raw={"binaries": dict(fake_tools["binaries"])})
+
+    command = build_handoff_command(project, "ssh", ["--help"])
+
+    assert command == ["/custom/ssh", "--help"]
+
+
+def test_rescan_hosts_reports_the_keygen_failure(stub_project, fake_tools,
+                                                 fake_binary, tmp_path):
+    binaries = dict(fake_tools["binaries"])
+    binaries["ssh-keygen"] = fake_binary(
+        "failing-keygen", "#!/bin/sh\necho 'boom' >&2\nexit 3\n")
+    project = stub_project(raw={"binaries": binaries})
+    store = tmp_path / "store"
+    store.write_text("stale\n")
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("remove",))
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    assert "cannot remove" in message
+
+
+def test_rescan_hosts_reports_the_scan_timeout(stub_project, fake_tools,
+                                               fake_binary, tmp_path):
+    binaries = dict(fake_tools["binaries"])
+    binaries["ssh-keyscan"] = fake_binary(
+        "slow-keyscan", "#!/bin/sh\nsleep 5\n")
+    project = stub_project(raw={"binaries": binaries})
+    store = tmp_path / "store"
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           timeout=-5, phases=("scan",))
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    assert "timed out" in message
