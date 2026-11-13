@@ -26,6 +26,16 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.vmagent` role can be used to install the VictoriaMetrics
+  :command:`vmagent` metrics agent from the upstream release archive, verified
+  with a SHA256 checksum, and manage one or more instances through a systemd
+  template unit. Scrape jobs can be defined on different inventory levels and
+  by other roles, and the bearer tokens used for remote write are stored by
+  the :ref:`debops.secret` role.
+
 General
 '''''''
 
