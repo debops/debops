@@ -92,6 +92,7 @@ Sections:
     run      run Ansible playbook(s) against hosts
     check    run Ansible playbook(s) in check mode
     env      run shell commands in project environment
+    ssh      connect to hosts over ssh and manage known_hosts
     config   manage DebOps configuration options''')
 
         parser.add_argument('section', help='Section to run')
@@ -680,5 +681,110 @@ Commands:
         parser.add_argument('--strict', default=False,
                             help='report unknown configuration options '
                                  'as errors',
+                            action='store_true')
+        self.args = parser.parse_args(self.args[3:])
+
+    def do_ssh(self):
+        # The first token selects the subcommand; anything else -- an
+        # option or a host name -- belongs to the connect invocation,
+        # whose parser reports its own errors
+        token = self.args[2] if len(self.args) > 2 else ''
+        if token in ('rescan', 'config'):
+            self.command = token
+            getattr(self, 'do_ssh_' + token)()
+        elif token in ('-h', '--help') or not token:
+            # The help of the section: the commands and the full option
+            # list of the connect invocation, rendered from the connect
+            # parser itself
+            print("""debops ssh <command|host> [<args>]
+
+Commands:
+    rescan  refresh the known_hosts entries of hosts
+    config  print or write the SSH client configuration
+
+Connection of a host:""")
+            self._ssh_connect_parser().print_help()
+            sys.exit(0 if token else 2)
+        else:
+            self.command = 'connect'
+            self.do_ssh_connect()
+
+    def _ssh_connect_parser(self):
+        parser = _argument_parser(
+                parents=[self.global_parser],
+                usage='debops ssh [<args>] <host> [-- <ssh_args>]',
+                description='connect to a host over ssh, using the '
+                            'connection parameters of the Ansible '
+                            'inventory')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view')
+        parser.add_argument('-u', '--user', type=str, metavar='NAME',
+                            help='connect as this user instead of the '
+                                 'inventory value')
+        parser.add_argument('-p', '--port', type=str, metavar='PORT',
+                            help='connect to this port instead of the '
+                                 'inventory value')
+        parser.add_argument('-i', '--identity', type=str, metavar='KEY',
+                            help='use this private key instead of the '
+                                 'inventory value')
+        parser.add_argument('--eval', default=False,
+                            help='print the ssh command and exit',
+                            action='store_true')
+        parser.add_argument('host',
+                            help='name of the host to connect to')
+        parser.add_argument('ssh_args', nargs=argparse.REMAINDER,
+                            help='remote command and additional ssh '
+                                 'arguments, following the host as in '
+                                 'ssh itself')
+        return parser
+
+    def do_ssh_connect(self):
+        parser = self._ssh_connect_parser()
+        self.args = parser.parse_args(self.args[2:])
+
+    def do_ssh_rescan(self):
+        parser = _argument_parser(
+                parents=[self.global_parser],
+                usage='debops ssh rescan [<args>] <host> [<host>...]',
+                description='refresh the known_hosts entries of hosts: '
+                            'remove the stale entries and scan the '
+                            'current host keys')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view')
+        parser.add_argument('--remove', default=False,
+                            help='only remove the stale entries',
+                            action='store_true')
+        parser.add_argument('--scan', default=False,
+                            help='only scan and add the current host '
+                                 'keys',
+                            action='store_true')
+        parser.add_argument('--eval', default=False,
+                            help='print the actions and exit',
+                            action='store_true')
+        parser.add_argument('-f', '--known-hosts-file', type=str,
+                            metavar='FILE',
+                            help='known_hosts file to operate on '
+                                 '(default: the store of the active '
+                                 'mode)')
+        parser.add_argument('-T', '--timeout', type=int, default=10,
+                            metavar='SECONDS',
+                            help='timeout of each key scan (default: '
+                                 '10)')
+        parser.add_argument('hosts', nargs='+',
+                            help='hosts to refresh the known_hosts '
+                                 'entries of')
+        self.args = parser.parse_args(self.args[3:])
+
+    def do_ssh_config(self):
+        parser = _argument_parser(
+                parents=[self.global_parser],
+                usage='debops ssh config [<args>]',
+                description='print or write the SSH client configuration '
+                            'of the active known_hosts mode')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view')
+        parser.add_argument('--write', default=False,
+                            help='write the managed block into the '
+                                 '~/.ssh/config file',
                             action='store_true')
         self.args = parser.parse_args(self.args[3:])

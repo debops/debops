@@ -12,9 +12,11 @@ from ..core.projectvenv import ProjectVenv
 from ..core.ansible.ansiblerunner import AnsibleRunner
 from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
+from ..core import ssh
 from xdg.BaseDirectory import xdg_config_home
 import logging
 import getpass
+import shlex
 import sys
 import os
 
@@ -75,6 +77,14 @@ class Interpreter(object):
 
         elif self.parsed_args.section == 'env':
             self.do_env(self.parsed_args.args)
+
+        elif self.parsed_args.section == 'ssh':
+            if self.parsed_args.command == 'rescan':
+                self.do_ssh_rescan(self.parsed_args.args)
+            elif self.parsed_args.command == 'config':
+                self.do_ssh_config(self.parsed_args.args)
+            else:
+                self.do_ssh_connect(self.parsed_args.args)
 
         elif self.parsed_args.section == 'config':
             if self.parsed_args.command == 'list':
@@ -278,6 +288,122 @@ class Interpreter(object):
             for line in runner.show_env(scope=args.scope):
                 print(line)
             sys.exit(0)
+
+    def do_ssh_connect(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd, view=args.view)
+        except (IsADirectoryError, NotADirectoryError,
+                ViewNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        user, host, port = ssh.split_destination(args.host)
+        user = user or args.user
+        port = port or args.port
+
+        try:
+            parameters = ssh.resolve_host(project, host)
+        except (ValueError, ChildProcessError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        command = ssh.build_ssh_command(
+            project, host, parameters,
+            user=user, port=port, identity=args.identity,
+            ssh_args=args.ssh_args)
+
+        if args.eval:
+            print(shlex.join(command))
+            sys.exit(0)
+
+        logger.debug('Connecting to the host "' + host + '"',
+                     extra={'allow': 'stderr'})
+        try:
+            os.execvp(command[0], command)
+        except FileNotFoundError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+    def do_ssh_rescan(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd, view=args.view)
+        except (IsADirectoryError, NotADirectoryError,
+                ViewNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        phases = ('remove', 'scan')
+        if args.remove and not args.scan:
+            phases = ('remove',)
+        elif args.scan and not args.remove:
+            phases = ('scan',)
+
+        if args.eval:
+            store = args.known_hosts_file or ssh.known_hosts_store(project)
+            if not store:
+                print_error('The project known_hosts mode is active, but '
+                            'the view does not declare a known_hosts '
+                            'store')
+                sys.exit(1)
+            keygen = project.config.raw['binaries']['ssh-keygen']
+            keyscan = project.config.raw['binaries']['ssh-keyscan']
+            for host in args.hosts:
+                for identifier, resolvable in ssh.host_identifiers(
+                        project, host):
+                    if 'remove' in phases:
+                        print(' '.join([keygen, '-R', identifier,
+                                        '-f', store]))
+                    if 'scan' in phases and resolvable:
+                        print(' '.join([keyscan, '-H', '-T',
+                                        str(args.timeout), identifier]))
+            sys.exit(0)
+
+        try:
+            results = ssh.rescan_hosts(project, args.hosts,
+                                       store=args.known_hosts_file,
+                                       phases=phases,
+                                       timeout=args.timeout)
+        except ValueError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        failed = [(host, message) for host, ok, message in results
+                  if not ok]
+        for host, message in failed:
+            print_error('Cannot refresh the known_hosts entries of the '
+                        'host "' + host + '": ' + message)
+        sys.exit(1 if failed else 0)
+
+    def do_ssh_config(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd, view=args.view)
+        except (IsADirectoryError, NotADirectoryError,
+                ViewNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        if args.write:
+            config_path = os.path.expanduser('~/.ssh/config')
+            try:
+                changed = ssh.write_config_snippet(project, config_path)
+            except OSError as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
+            if changed:
+                logger.notice('Wrote the managed debops ssh block into '
+                              + config_path,
+                              extra={'allow': ['stderr', 'syslog']})
+            else:
+                logger.notice('The managed debops ssh block in '
+                              + config_path + ' is up to date',
+                              extra={'allow': ['stderr', 'syslog']})
+            sys.exit(0)
+
+        for line in ssh.render_config_snippet(project):
+            print(line)
 
     def do_config_list(self, args):
         try:

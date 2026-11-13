@@ -95,10 +95,13 @@ def run_debops(debops_source_dir):
     """
     def _run(*args, cwd=None, env=None, check=False):
         run_env = os.environ.copy()
-        run_env["PYTHONPATH"] = os.pathsep.join(
-            [debops_source_dir, run_env.get("PYTHONPATH", "")]).rstrip(os.pathsep)
         if env:
             run_env.update(env)
+        # The source directory comes first; the environment of the test
+        # can carry additional entries and must not lose them
+        run_env["PYTHONPATH"] = os.pathsep.join(
+            [debops_source_dir,
+             run_env.get("PYTHONPATH", "")]).rstrip(os.pathsep)
 
         return subprocess.run(
             [sys.executable, "-m", "debops", *args],
