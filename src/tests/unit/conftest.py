@@ -31,6 +31,14 @@ def write_fake_binary(path, body):
 
 
 @pytest.fixture
+def fake_binary(tmp_path):
+    """Write a fake executable into the temporary directory."""
+    def _make(name, body):
+        return write_fake_binary(tmp_path / name, body)
+    return _make
+
+
+@pytest.fixture
 def fake_tools(tmp_path):
     """Fake external tools: an inventory which knows the 'web' host and
     rejects everything else, an 'ansible' which answers the
