@@ -507,3 +507,42 @@ def test_runner_commands_leave_already_unlocked_encfs_mounted(
     assert result.returncode == 0
     assert os.path.ismount(str(secrets)), \
         "the command unmounted a volume it did not mount"
+
+
+@git_crypt
+def test_mkview_encrypts_git_crypt_view_secrets(run_debops, tmp_path,
+                                                gpg_env):
+    """A view created with '--encrypt git-crypt' encrypts its secrets.
+
+    The view's '.gitattributes' declares the git-crypt filter, and a
+    secret committed after the view creation lands in the repository
+    as git-crypt ciphertext. 'mkview' used to drop the encryption
+    options, and the secrets of the new view were stored as plaintext.
+    """
+    project_dir = make_git_crypt_project(run_debops, tmp_path, gpg_env,
+                                         "example-gitcrypt-mkview")
+    run_debops("project", "unlock", cwd=str(project_dir),
+               env=gpg_env, check=True)
+
+    result = run_debops("project", "mkview", "--encrypt", "git-crypt",
+                        "--keys", "debops-tests@example.org", "other",
+                        cwd=str(project_dir), env=gpg_env)
+    assert result.returncode == 0
+
+    attributes = (project_dir / "ansible" / "views" / "other" /
+                  ".gitattributes").read_text()
+    assert "/secret/** filter=git-crypt" in attributes
+    assert "#/secret" not in attributes, \
+        "the git-crypt filter declaration is inactive"
+
+    secret = (project_dir / "ansible" / "views" / "other" /
+              "secret" / "key.txt")
+    secret.write_text("view-secret\n")
+    _commit_all(project_dir, gpg_env, "Add a secret to the new view")
+
+    blob = subprocess.run(
+        ["git", "cat-file", "blob",
+         "HEAD:ansible/views/other/secret/key.txt"],
+        cwd=str(project_dir), check=True, capture_output=True).stdout
+    assert blob.startswith(b"\x00GITCRYPT\x00"), \
+        "the secret of the new view was stored as plaintext"
