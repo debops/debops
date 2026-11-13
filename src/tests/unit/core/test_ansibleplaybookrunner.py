@@ -10,16 +10,32 @@ from unittest import mock
 
 import pytest
 
-import debops.core.ansible.projectrunner as projectrunner_module
 import debops.core.runner as runner_base_module
 import debops.core.ansible.ansibleplaybookrunner as runner_module
 from debops.core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
+from debops.core.secrets import SecretManager
 
 
 @pytest.fixture(autouse=True)
 def stub_project_secrets(monkeypatch):
-    monkeypatch.setattr(runner_base_module, "SecretManager",
-                        mock.Mock())
+    """A real SecretManager over stub stores.
+
+    The manager's list-shaped unlock and lock results stay live in
+    these tests, so a change of the manager's return shape fails here
+    instead of hiding behind a mock configured with the shape of an
+    older interface; only the store mechanics are stubbed. The store
+    mock is handed to the tests which configure or inspect it.
+    """
+    store = mock.Mock()
+    store.unlock.return_value = False
+    store.lock.return_value = False
+
+    class StubStores(SecretManager):
+        def _factories(self):
+            return {"ansible": lambda project, view: store}
+
+    monkeypatch.setattr(runner_base_module, "SecretManager", StubStores)
+    return store
 
 
 @pytest.fixture(autouse=True)
@@ -195,14 +211,15 @@ def test_execute_without_playbooks_aborts(stub_project):
 
 
 def test_execute_returns_the_command_return_code(stub_project, monkeypatch,
-                                                 tmp_path):
+                                                 tmp_path,
+                                                 stub_project_secrets):
     runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"])
     executor = mock.Mock(returncode=0)
     executor.communicate.return_value = (b"", b"")
     popen = mock.Mock(return_value=executor)
     monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
-    runner.secrets.store.return_value.unlock.return_value = False
+    stub_project_secrets.unlock.return_value = False
 
     assert runner.execute() == 0
     assert popen.call_args.kwargs["shell"] is True
@@ -210,7 +227,8 @@ def test_execute_returns_the_command_return_code(stub_project, monkeypatch,
     assert popen.call_args.kwargs["cwd"] == str(tmp_path)
 
 
-def test_execute_uses_the_run_hooks(stub_project, monkeypatch):
+def test_execute_uses_the_run_hooks(stub_project, monkeypatch,
+                                    stub_project_secrets):
     runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"])
     executor = mock.Mock(returncode=0)
     executor.communicate.return_value = (b"", b"")
@@ -218,7 +236,7 @@ def test_execute_uses_the_run_hooks(stub_project, monkeypatch):
                         mock.Mock(return_value=executor))
     hooks = mock.Mock(return_value=True)
     monkeypatch.setattr(runner_module, "run_hooks", hooks)
-    runner.secrets.store.return_value.unlock.return_value = False
+    stub_project_secrets.unlock.return_value = False
 
     runner.execute()
 
@@ -227,7 +245,8 @@ def test_execute_uses_the_run_hooks(stub_project, monkeypatch):
     assert hooks.call_args.kwargs["extra_env"] == {"DEBOPS_RETURN_CODE": 0}
 
 
-def test_execute_uses_the_check_hooks_in_check_mode(stub_project, monkeypatch):
+def test_execute_uses_the_check_hooks_in_check_mode(stub_project, monkeypatch,
+                                                    stub_project_secrets):
     runner = AnsiblePlaybookRunner(stub_project(),
                                    ansible_args=["--check", "site.yml"])
     executor = mock.Mock(returncode=0)
@@ -236,7 +255,7 @@ def test_execute_uses_the_check_hooks_in_check_mode(stub_project, monkeypatch):
                         mock.Mock(return_value=executor))
     hooks = mock.Mock(return_value=True)
     monkeypatch.setattr(runner_module, "run_hooks", hooks)
-    runner.secrets.store.return_value.unlock.return_value = False
+    stub_project_secrets.unlock.return_value = False
 
     runner.execute()
 
@@ -244,7 +263,8 @@ def test_execute_uses_the_check_hooks_in_check_mode(stub_project, monkeypatch):
                                                                "post-check"]
 
 
-def test_execute_sets_the_environment(stub_project, monkeypatch):
+def test_execute_sets_the_environment(stub_project, monkeypatch,
+                                      stub_project_secrets):
     """The runner exports its environment for the spawned Ansible process.
 
     The export writes the process environment directly, which would leak
@@ -259,7 +279,7 @@ def test_execute_sets_the_environment(stub_project, monkeypatch):
     popen = mock.Mock(return_value=executor)
     monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
-    runner.secrets.store.return_value.unlock.return_value = False
+    stub_project_secrets.unlock.return_value = False
 
     with mock.patch.dict(os.environ, clear=True):
         runner.execute()
@@ -277,53 +297,53 @@ def test_execute_aborts_when_the_pre_hook_fails(stub_project, monkeypatch):
 
 
 def test_execute_locks_the_inventory_when_it_was_unlocked(stub_project,
-                                                          monkeypatch):
+                                                          monkeypatch,
+                                                          stub_project_secrets):
     runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"])
     executor = mock.Mock(returncode=0)
     executor.communicate.return_value = (b"", b"")
     monkeypatch.setattr(runner_module.subprocess, "Popen",
                         mock.Mock(return_value=executor))
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
-    runner.secrets.store.return_value.unlock.return_value = True
+    stub_project_secrets.unlock.return_value = True
 
     runner.execute()
 
-    runner.secrets.store.assert_called_with("ansible")
-    runner.secrets.store.return_value.lock.assert_called_once_with()
+    stub_project_secrets.lock.assert_called_once_with()
 
 
 def test_execute_leaves_already_unlocked_secrets_alone(stub_project,
-                                                       monkeypatch):
+                                                       monkeypatch,
+                                                       stub_project_secrets):
     runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"])
     executor = mock.Mock(returncode=0)
     executor.communicate.return_value = (b"", b"")
     monkeypatch.setattr(runner_module.subprocess, "Popen",
                         mock.Mock(return_value=executor))
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
-    runner.secrets.store.return_value.unlock.return_value = False
+    stub_project_secrets.unlock.return_value = False
 
     runner.execute()
 
-    runner.secrets.lock.assert_not_called()
-    runner.secrets.store.return_value.lock.assert_not_called()
+    stub_project_secrets.lock.assert_not_called()
 
 
 def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch,
-                                            caplog):
+                                            caplog, stub_project_secrets):
     runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"])
     executor = mock.Mock()
     executor.communicate.side_effect = KeyboardInterrupt
     monkeypatch.setattr(runner_module.subprocess, "Popen",
                         mock.Mock(return_value=executor))
     monkeypatch.setattr(runner_module, "run_hooks", mock.Mock(return_value=True))
-    runner.secrets.store.return_value.unlock.return_value = True
+    stub_project_secrets.unlock.return_value = True
 
     with caplog.at_level(
             logging.NOTICE, logger="debops.core.ansible.ansibleplaybookrunner"):
         with pytest.raises(SystemExit):
             runner.execute()
 
-    runner.secrets.store.return_value.lock.assert_called_once_with()
+    stub_project_secrets.lock.assert_called_once_with()
     assert "interrupted by user" in caplog.text
 
 
@@ -472,7 +492,8 @@ def test_collections_path_relative_to_the_view(stub_project, tmp_path,
     assert seen == [str(view_collections)]
 
 
-def test_execute_returns_a_nonzero_code(stub_project, monkeypatch):
+def test_execute_returns_a_nonzero_code(stub_project, monkeypatch,
+                                        stub_project_secrets):
     runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"])
     executor = mock.Mock(returncode=3)
     executor.communicate.return_value = (b"", b"")
@@ -480,12 +501,13 @@ def test_execute_returns_a_nonzero_code(stub_project, monkeypatch):
                         mock.Mock(return_value=executor))
     monkeypatch.setattr(runner_module, "run_hooks",
                         mock.Mock(return_value=True))
-    runner.secrets.store.return_value.unlock.return_value = False
+    stub_project_secrets.unlock.return_value = False
 
     assert runner.execute() == 3
 
 
-def test_execute_rings_the_bell(stub_project, monkeypatch, capsys):
+def test_execute_rings_the_bell(stub_project, monkeypatch, capsys,
+                                stub_project_secrets):
     runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"],
                                    bell=True)
     executor = mock.Mock(returncode=0)
@@ -494,7 +516,7 @@ def test_execute_rings_the_bell(stub_project, monkeypatch, capsys):
                         mock.Mock(return_value=executor))
     monkeypatch.setattr(runner_module, "run_hooks",
                         mock.Mock(return_value=True))
-    runner.secrets.store.return_value.unlock.return_value = False
+    stub_project_secrets.unlock.return_value = False
 
     runner.execute()
 
@@ -503,10 +525,10 @@ def test_execute_rings_the_bell(stub_project, monkeypatch, capsys):
     assert capsys.readouterr().err == "\a"
 
 
-def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch):
+def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch,
+                                           stub_project_secrets):
     runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"])
-    store = runner.secrets.store.return_value
-    store.unlock.side_effect = ChildProcessError("dirty tree")
+    stub_project_secrets.unlock.side_effect = ChildProcessError("dirty tree")
     monkeypatch.setattr(runner_module, "run_hooks",
                         mock.Mock(return_value=True))
 
@@ -517,7 +539,6 @@ def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch):
 def test_debug_mode_adds_verbosity_and_env(stub_project):
     runner = AnsiblePlaybookRunner(stub_project(), debug=True,
                                    ansible_args=[])
-    runner.secrets = mock.Mock()
 
     assert "-vv" in runner._ansible_command
     assert runner._ansible_env["ANSIBLE_DEBUG"] == "true"
