@@ -325,3 +325,31 @@ def test_ssh_eval_carries_the_options_before_the_host(run_debops, tmp_path,
     command = shlex.split(result.stdout)
     assert command[command.index("-o") + 1] == "Foo=1"
     assert command[-1] == "127.0.0.1"
+
+
+def test_ssh_handoff_passes_the_arguments_to_ssh(run_debops, tmp_path,
+                                                 debops_env):
+    """The '--' marker hands the rest of the arguments to ssh
+    verbatim; the inventory is not consulted."""
+    project_dir = make_project(run_debops, tmp_path, debops_env)
+
+    result = run_debops("ssh", "--eval", "--", "--help",
+                        cwd=str(project_dir), env=debops_env)
+
+    assert result.returncode == 0
+    assert result.stdout.strip() == "ssh --help"
+
+
+def test_ssh_eval_drops_the_marker_before_the_remote_command(
+        run_debops, tmp_path, debops_env):
+    """The '--' marker before the remote command separates the
+    arguments; the command itself does not carry it."""
+    project_dir = make_project(run_debops, tmp_path, debops_env)
+
+    result = run_debops("ssh", "--eval", "testhost", "--", "ls", "-l",
+                        "/", cwd=str(project_dir), env=debops_env)
+
+    assert result.returncode == 0
+    command = shlex.split(result.stdout)
+    assert command[command.index("127.0.0.1"):] == \
+        ["127.0.0.1", "ls", "-l", "/"]

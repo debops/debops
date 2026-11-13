@@ -13,11 +13,12 @@ shared machinery in :mod:`debops.core.ssh.utils`.
 """
 
 from .utils import (SFTP_OPTIONS_WITH_VALUE, SSH_OPTIONS_WITH_VALUE,
-                    USER_KNOWN_HOSTS_STORE, declared_known_hosts_store,
-                    ensure_store_dir, known_hosts_mode, known_hosts_store,
+                    USER_KNOWN_HOSTS_STORE, build_handoff_command,
+                    declared_known_hosts_store, ensure_store_dir,
+                    known_hosts_mode, known_hosts_store,
                     resolve_destination, resolve_host, resolve_patterns,
                     render_ssh_drop_in, split_options_operand,
-                    ssh_store_dir, ssh_store_file)
+                    ssh_executable, ssh_store_dir, ssh_store_file)
 from .ssh import (build_ssh_command, host_identifiers, rescan_hosts,
                   split_destination, write_config_snippet,
                   render_config_snippet)

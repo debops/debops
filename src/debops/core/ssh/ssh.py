@@ -29,7 +29,8 @@ import socket
 import subprocess
 
 from .utils import (USER_KNOWN_HOSTS_STORE, ensure_store_dir,
-                    known_hosts_mode, known_hosts_store, resolve_host)
+                    known_hosts_mode, known_hosts_store, resolve_host,
+                    ssh_executable)
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +74,8 @@ def split_destination(destination):
 
 
 def build_ssh_command(project, host, parameters=None, user=None, port=None,
-                      identity=None, ssh_args=None, options=None):
+                      identity=None, accept=False, ssh_args=None,
+                      options=None):
     """Build the ssh command line for 'debops ssh <host>'.
 
     The resolved inventory parameters fill the command, with the
@@ -87,12 +89,8 @@ def build_ssh_command(project, host, parameters=None, user=None, port=None,
     """
     if parameters is None:
         parameters = {}
-    try:
-        executable = project.ansible_cfg.get_option(
-            'ssh_executable', section='ssh_connection')
-    except (configparser.NoOptionError, configparser.NoSectionError):
-        executable = None
-    command = [executable or project.config.raw['binaries']['ssh']]
+    command = [ssh_executable(project)
+               or project.config.raw['binaries']['ssh']]
 
     effective_user = user or parameters.get('user') or getpass.getuser()
     command.extend(['-l', effective_user])
@@ -116,6 +114,8 @@ def build_ssh_command(project, host, parameters=None, user=None, port=None,
             command.extend(shlex.split(value))
 
     command.extend(options or [])
+    if accept:
+        command.extend(['-o', 'StrictHostKeyChecking=accept-new'])
     command.append(parameters.get('destination') or host)
     command.extend(ssh_args or [])
     return command

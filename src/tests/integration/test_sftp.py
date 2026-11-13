@@ -123,3 +123,16 @@ def test_sftp_accepts_unseen_host_keys(run_debops, tmp_path, debops_env,
     store = (project_dir / ".debops" / "ssh" / "views" / "system" /
              "known_hosts")
     assert store.read_text().strip()
+
+
+def test_sftp_handoff_passes_the_arguments_to_sftp(run_debops, tmp_path,
+                                                   debops_env):
+    """The '--' marker hands the rest of the arguments to sftp
+    verbatim; the inventory is not consulted."""
+    project_dir = make_project(run_debops, tmp_path, debops_env)
+
+    result = run_debops("sftp", "--eval", "--", "-b", "batch", "host",
+                        cwd=str(project_dir), env=debops_env)
+
+    assert result.returncode == 0
+    assert result.stdout.strip() == "sftp -b batch host"
