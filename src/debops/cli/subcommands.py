@@ -92,9 +92,11 @@ Sections:
     run      run Ansible playbook(s) against hosts
     check    run Ansible playbook(s) in check mode
     env      run shell commands in project environment
+    config   manage DebOps configuration options
+
+SSH connections:
     ssh      connect to hosts over ssh and manage known_hosts
-    scp      copy files to and from hosts over ssh
-    config   manage DebOps configuration options''')
+    scp      copy files to and from hosts over ssh''')
 
         parser.add_argument('section', help='Section to run')
         parser.add_argument('--version', action='version',
