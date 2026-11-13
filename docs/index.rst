@@ -95,6 +95,7 @@ infrastructure environments.
    user-guide/universal-configuration
    user-guide/inventory-spec
    user-guide/dns-configuration
+   user-guide/ssh-suite
    ansible/role-index
    ansible/roles/index
 

@@ -41,6 +41,20 @@ split into sections.
   shell commands in DebOps environment, which is a handy shortcut for using
   Ansible ecosystem with DebOps project directories.
 
+:command:`debops ssh`
+  This command connects to a host of the Ansible inventory over SSH, with
+  the connection parameters which the inventory defines. The ``rescan``
+  subcommand refreshes the SSH host keys of the hosts which match the
+  inventory patterns. The ``config`` subcommand writes an SSH client
+  configuration for the hosts of the project;
+
+:command:`debops scp`
+  This command copies files to and from the hosts of the inventory over SSH;
+
+:command:`debops sftp`
+  This command runs an interactive file transfer session with a host of the
+  inventory;
+
 :command:`debops config`
   This command allows the user to inspect and manipulate the DebOps
   configuration options in various formats;
