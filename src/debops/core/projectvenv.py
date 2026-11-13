@@ -562,7 +562,8 @@ class ProjectVenv(object):
                           'file, ' + unexpanduser(self.collections_lock)
                           + ':', extra={'allow': ['stderr', 'syslog']})
             rc = self._run([galaxy, 'collection', 'install', '-r',
-                            self.collections_lock])
+                            self.collections_lock,
+                            '-p', self.collections_dir])
             if rc != 0:
                 raise ChildProcessError(
                         'Cannot install the Ansible Collections from '
@@ -573,7 +574,8 @@ class ProjectVenv(object):
                       + unexpanduser(self.collections_requirements) + ':',
                       extra={'allow': ['stderr', 'syslog']})
         argv = [galaxy, 'collection', 'install', '-r',
-                self.collections_requirements]
+                self.collections_requirements,
+                '-p', self.collections_dir]
         if upgrade:
             argv.append('--force')
         rc = self._run(argv)
