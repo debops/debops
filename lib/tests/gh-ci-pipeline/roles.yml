@@ -26,6 +26,21 @@
   playbook: 'service/apt_listchanges'
   idempotency: 'advisory'
 
+- name: 'vmagent'
+  playbook: 'service/vmagent'
+  groups: [ 'debops_service_vmagent' ]
+  idempotency: 'advisory'
+  inventoryspec:
+    files:
+      group_vars/all/vmagent.yml: |
+        ---
+        vmagent__remote_write_urls:
+          - 'http://127.0.0.1:8428/api/v1/write'
+  post_script: |
+    vmagent -version
+    systemctl is-active vmagent@default.service
+    curl -fsS http://127.0.0.1:8429/metrics | grep -q '^vm_app_version'
+
 - name: 'mariadb_server'
   playbook: 'service/mariadb_server'
   groups: [ 'debops_service_mariadb_server' ]
