@@ -91,6 +91,10 @@ Changed
 General
 '''''''
 
+- Drop support for the end-of-life Python releases 3.8, 3.9 and 3.10;
+  Python 3.11 or newer is required to run the :command:`debops`
+  command and its development environment.
+
 - The :command:`debops` command line no longer prints informational
   messages on the terminal by default: the terminal stays quiet
   unless something needs attention or the verbosity is increased.
