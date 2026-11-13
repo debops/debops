@@ -199,6 +199,14 @@ General
 - Every configuration file was loaded and validated twice per
   :command:`debops` invocation, reporting each problem twice.
 
+- :command:`debops project init` with a custom infrastructure view
+  selected by the ``-V`` option now installs the Ansible Collections
+  into the project directory. The Collections were previously
+  installed in ``~/.ansible/collections``, because the installation
+  command could not see the Ansible configuration of a view which did
+  not exist yet, and projects with a Python virtual environment do
+  not search the account-wide Collection path, which broke playbook
+  lookup on a fresh install.
 
 Removed
 ~~~~~~~
