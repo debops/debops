@@ -543,3 +543,44 @@ def test_debug_mode_adds_verbosity_and_env(stub_project):
     assert "-vv" in runner._ansible_command
     assert runner._ansible_env["ANSIBLE_DEBUG"] == "true"
     assert runner._ansible_env["ANSIBLE_KEEP_REMOTE_FILES"] == "1"
+
+
+def test_accept_option_composes_the_ssh_arguments(stub_project):
+    runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"],
+                                   accept=True)
+
+    assert runner._ansible_env["ANSIBLE_SSH_ARGS"] == \
+        "-o StrictHostKeyChecking=accept-new"
+
+
+def test_accept_option_carries_the_configured_ssh_args(stub_project):
+    project = stub_project(cfg_options={
+        "inventory": "ansible/inventory",
+        "collections_path": "",
+        "ssh_args": "-o ControlMaster=auto"})
+    runner = AnsiblePlaybookRunner(project, ansible_args=["site.yml"],
+                                   accept=True)
+
+    assert runner._ansible_env["ANSIBLE_SSH_ARGS"] == \
+        "-o ControlMaster=auto -o StrictHostKeyChecking=accept-new"
+
+
+def test_accept_option_prefers_the_ambient_ssh_args(stub_project,
+                                                    monkeypatch):
+    project = stub_project(cfg_options={
+        "inventory": "ansible/inventory",
+        "collections_path": "",
+        "ssh_args": "-o ControlMaster=auto"})
+    monkeypatch.setenv("ANSIBLE_SSH_ARGS", "-o Ambient=1")
+    runner = AnsiblePlaybookRunner(project, ansible_args=["site.yml"],
+                                   accept=True)
+
+    value = runner._ansible_env["ANSIBLE_SSH_ARGS"]
+    assert value == "-o Ambient=1 -o StrictHostKeyChecking=accept-new"
+    assert "ControlMaster" not in value
+
+
+def test_without_accept_option_the_ssh_args_env_is_untouched(stub_project):
+    runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"])
+
+    assert "ANSIBLE_SSH_ARGS" not in runner._ansible_env
