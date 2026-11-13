@@ -277,18 +277,19 @@ def test_render_config_snippet_in_the_user_mode(stub_project):
     assert not any(line.startswith("Host ") for line in lines)
 
 
-def test_render_config_snippet_in_the_project_mode(stub_project, tmp_path):
-    declared = str(tmp_path / ".debops" / "ssh" / "views" / "system" /
-                   "known_hosts")
+def test_render_config_snippet_in_the_project_mode(stub_project):
+    """The store path of the block is written the way the Ansible
+    configuration and the ssh suite write it: unexpanded."""
     project = stub_project(
-        cfg_options={"ssh_args": "-o UserKnownHostsFile=" + declared},
+        cfg_options={"ssh_args":
+                     "-o UserKnownHostsFile=~/.ssh/project_store"},
         raw={"ssh": {"known_hosts": "project"}})
 
     lines = render_config_snippet(project)
 
     assert "Host *" in lines
     assert ('    UserKnownHostsFile ~/.ssh/known_hosts '
-            + declared) in lines
+            '~/.ssh/project_store') in lines
 
 
 def test_write_config_snippet_appends_and_replaces(stub_project, tmp_path):
