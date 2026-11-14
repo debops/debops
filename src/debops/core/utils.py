@@ -97,6 +97,17 @@ def strtobool(value):
     raise ValueError
 
 
+def path_inside_project(path, project):
+    """Report whether the path resolves inside the project directory.
+
+    The comparison uses real paths, so symbolic links cannot be used to
+    escape the project.
+    """
+    root = os.path.realpath(project)
+    target = os.path.realpath(path)
+    return target.startswith(root + os.sep)
+
+
 def write_file(path, content, overwrite=False, project=None):
     """Write text to path, creating missing parent directories.
 
@@ -110,12 +121,9 @@ def write_file(path, content, overwrite=False, project=None):
     Returns True if the file was written, False if it already existed and
     overwriting was not requested.
     """
-    if project is not None:
-        root = os.path.realpath(project)
-        target = os.path.realpath(path)
-        if not target.startswith(root + os.sep):
-            raise ValueError('Refusing to write outside of the project '
-                             'directory: ' + path)
+    if project is not None and not path_inside_project(path, project):
+        raise ValueError('Refusing to write outside of the project '
+                         'directory: ' + path)
 
     if os.path.exists(path) and not overwrite:
         return False
