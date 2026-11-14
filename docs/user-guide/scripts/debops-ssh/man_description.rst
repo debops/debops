@@ -34,11 +34,22 @@ A key which changes later is refused either way.
 
 The ``rescan`` subcommand refreshes the known_hosts entries of the hosts
 which match the Ansible inventory patterns: ``all``, the group names, the
-wildcards and the unions. For each host, the stale entries of all of its
-identifiers are removed from the store and the current host keys are
-scanned and written. A host which fails a phase is reported; the remaining
-hosts continue. The ``--remove`` and ``--scan`` options limit the run to
-one phase.
+wildcards and the unions. For each host, the current host keys are
+scanned first and held in memory. With the ``--dns`` mode (the
+default), keys whose fingerprints match the SSHFP records of the host
+are accepted automatically, keys which contradict the published records
+are refused with a report, and hosts without usable records fall back
+to the confirmation prompt or the plain store operation. The
+``--dns-verify`` option requires a DNSSEC-validating resolver to
+authenticate the DNS answer before a match is trusted. The
+``--no-dns`` option skips the DNS check entirely. After the keys are
+accepted, the stale entries of all of the host's identifiers are
+removed from the store and the accepted keys are appended. A host
+which fails a phase is reported; the remaining hosts continue. The
+``--remove`` and ``--scan`` options limit the run to one phase. The
+``-c|--confirm`` option shows the scanned fingerprints in the form
+which :command:`ssh-keygen -l` prints and asks for each host before
+storing them.
 
 The ``config`` subcommand prints the managed SSH client configuration block
 of the project. With the ``--write`` option, the block is written into the

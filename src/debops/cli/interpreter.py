@@ -467,14 +467,28 @@ class Interpreter(object):
                                         str(args.timeout), identifier]))
             sys.exit(0)
 
+        def confirm_host(host, offered):
+            """Show the scanned fingerprints and ask for the host."""
+            print('The SSH host keys of "' + host + '" were scanned:')
+            for fingerprint, key_type in offered:
+                print('  ' + fingerprint + '  ' + key_type)
+            answer = input('  Accept these keys and store them? '
+                           '[Enter=yes, n=no, Ctrl-C=abort] ')
+            return answer.strip().lower() != 'n'
+
         try:
-            results = ssh.rescan_hosts(project, hosts,
-                                       store=args.known_hosts_file,
-                                       phases=phases,
-                                       timeout=args.timeout)
+            results = ssh.rescan_hosts(
+                project, hosts, store=args.known_hosts_file,
+                phases=phases, timeout=args.timeout,
+                dns_mode=args.dns_mode,
+                confirm=confirm_host if args.confirm else None)
         except ValueError as errmsg:
             print_error(errmsg)
             sys.exit(1)
+        except KeyboardInterrupt:
+            print('Rescan aborted; the hosts processed so far keep '
+                  'their state')
+            sys.exit(130)
 
         failed = [(host, message) for host, ok, message in results
                   if not ok]

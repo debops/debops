@@ -28,6 +28,8 @@ import shlex
 import socket
 import subprocess
 
+from .dns import is_ip_address, key_fingerprint, lookup_sshfp, \
+    ssh_fingerprint
 from .utils import (USER_KNOWN_HOSTS_STORE, ensure_store_dir,
                     known_hosts_mode, known_hosts_store, resolve_host,
                     ssh_executable)
@@ -164,15 +166,135 @@ def host_identifiers(project, host, parameters=None):
     return identifiers
 
 
+def _confirmed_keys(host, fingerprints, confirm, details):
+    """Return the keys to store after the confirmation callback.
+
+    Without a callback the keys are stored as scanned; with one, the
+    fingerprints are offered in the form ssh prints and the operator
+    decides per host. The details list receives a note when the
+    operator declined.
+    """
+    if confirm is None:
+        return [key for algorithm, fingerprint, key in fingerprints]
+    offered = [(ssh_fingerprint(fingerprint), key.split()[1])
+               for algorithm, fingerprint, key in fingerprints]
+    if confirm(host, offered):
+        return [key for algorithm, fingerprint, key in fingerprints]
+    details.append('the scanned keys of the host were rejected by the '
+                   'operator')
+    return None
+
+
+def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
+                           details):
+    """Decide which of the scanned keys of a host may be stored.
+
+    With the 'dns' mode (the default), keys whose SSHFP fingerprints
+    match the DNS records of the host are accepted automatically and
+    keys which contradict the records refuse the whole host. Hosts
+    without usable DNS records fall back to the 'confirm' callback,
+    when one is given, or to the plain store operation. The
+    'dns-verify' mode requires a DNSSEC-validating resolver to mark the
+    answer as authenticated before a DNS match is trusted.
+
+    Returns the list of keys to store, or None when the host must not
+    be stored. The details list receives the report lines for the
+    result.
+    """
+    fingerprints = []
+    for key in keys:
+        fields = key.split()
+        if len(fields) < 3:
+            continue
+        algorithm, fingerprint = key_fingerprint(fields[1], fields[2])
+        if algorithm is not None:
+            fingerprints.append((algorithm, fingerprint, key))
+
+    if dns_mode == 'no-dns':
+        return keys, details
+    if not fingerprints:
+        details.append('the scanned keys could not be fingerprinted')
+        return _confirmed_keys(host, fingerprints, confirm, details), \
+            details
+
+    candidates = [identifier for identifier in resolvable
+                  if not is_ip_address(identifier)]
+    records = None
+    authenticated = False
+    hostname = None
+    for identifier in candidates:
+        try:
+            authenticated, records = lookup_sshfp(identifier)
+        except Exception:
+            continue
+        if not records:
+            continue
+        if dns_mode == 'dns-verify' and not authenticated:
+            continue
+        hostname = identifier
+        break
+    if hostname is None:
+        # No candidate produced usable SSHFP records.
+        records = None
+
+    if records is None:
+        if dns_mode == 'dns-verify':
+            details.append('the SSHFP records of the host could not be '
+                           'verified through DNS; the host was not '
+                           'stored')
+            return None, details
+        details.append('no SSHFP records found for the host')
+        return _confirmed_keys(host, fingerprints, confirm, details), \
+            details
+
+    record_algorithms = {algorithm for algorithm, fingerprint in records}
+    matched = [key for algorithm, fingerprint, key in fingerprints
+               if (algorithm, fingerprint) in records]
+    contradicted = [key for algorithm, fingerprint, key in fingerprints
+                    if algorithm in record_algorithms
+                    and (algorithm, fingerprint) not in records]
+    unverified = [key for algorithm, fingerprint, key in fingerprints
+                  if algorithm not in record_algorithms]
+    if contradicted:
+        details.append('the host keys do not match the SSHFP records of '
+                       + hostname + '; the host was not stored')
+        return None, details
+    if not matched:
+        details.append('none of the scanned keys matches the SSHFP '
+                       'records of ' + hostname + '; the host was not '
+                       'stored')
+        return None, details
+    if unverified:
+        details.append(str(len(unverified)) + ' of the scanned keys have '
+                       'no SSHFP records and were not stored')
+    tier = 'DNSSEC-validated' if authenticated else 'DNS match'
+    details.append('the host keys match the SSHFP records of '
+                   + hostname + ' (' + tier + ')')
+    return matched, details
+
+
 def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
-                 timeout=10):
+                 timeout=10, dns_mode='dns', confirm=None):
     """Cycle the known_hosts entries of the given hosts.
 
-    For each host, the stale entries of all of its identifiers are
-    removed from the store and its current host keys are scanned and
+    For each host, its current host keys are scanned first and held in
+    memory. With the 'dns' mode (the default), keys whose fingerprints
+    match the SSHFP records of the host are accepted automatically,
+    keys which contradict the published records are refused with a
+    report, and hosts without usable DNS records fall back to the
+    'confirm' callback, when one is given, or to the plain store
+    operation. The 'dns-verify' mode additionally requires that a
+    DNSSEC-validating resolver marked the DNS answer as authenticated.
+
+    After the keys are accepted, the stale entries of all of the host's
+    identifiers are removed from the store and the accepted keys are
     appended. A host which fails a phase is reported and the remaining
     hosts continue, so one host without a running sshd does not mask
     the results of the others.
+
+    The 'confirm' callback, when given, is called with the host name
+    and the list of '(fingerprint, key_type)' pairs of the keys which
+    are about to be stored, and returns whether they should be stored.
 
     Returns a list of '(host, succeeded, message)' tuples, one per
     host; the message is empty when the host completed the requested
@@ -197,22 +319,8 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                       if can_scan]
         succeeded = True
         details = []
-
-        if 'remove' in phases:
-            if os.path.exists(store):
-                for identifier in names:
-                    process = subprocess.run(
-                        [binaries['ssh-keygen'], '-R', identifier,
-                         '-f', store],
-                        capture_output=True, text=True)
-                    if process.returncode != 0:
-                        succeeded = False
-                        detail = (process.stderr.strip().splitlines()
-                                  or [''])[-1]
-                        details.append('cannot remove the entries of '
-                                       + identifier + ': ' + detail)
-            # A store which does not exist yet has no stale entries to
-            # remove; the scan phase creates it
+        store_keys = None
+        scan_ok = None
 
         if 'scan' in phases:
             keys = []
@@ -229,12 +337,14 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                                    + ' timed out')
                     continue
                 keys.extend(line for line in process.stdout.splitlines()
-                            if line and not line.startswith('#'))
+                            if line and not line.startswith('#')
+                            and line not in keys)
+            scan_ok = bool(keys)
             if keys:
-                ensure_store_dir(store, store_project)
-                with open(store, 'a') as handle:
-                    handle.write('\n'.join(keys) + '\n')
-                os.chmod(store, 0o600)
+                store_keys, scan_details = _classify_scanned_keys(
+                    host, keys, resolvable, dns_mode, confirm, details)
+                if store_keys is None:
+                    succeeded = False
             elif resolvable:
                 succeeded = False
                 details.append('no host keys received from ' + host)
@@ -242,6 +352,32 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                 succeeded = False
                 details.append('no resolvable identifiers to scan for '
                                + host)
+
+        # The stored entries of a host are only removed when the scan
+        # produced keys to store, or when removal was requested
+        # explicitly without a scan phase. A failed scan keeps the old
+        # trust intact.
+        remove_entries = (('remove' in phases
+                           and (scan_ok is None or scan_ok))
+                          or (scan_ok and store_keys is not None))
+        if remove_entries and os.path.exists(store):
+            for identifier in names:
+                process = subprocess.run(
+                    [binaries['ssh-keygen'], '-R', identifier,
+                     '-f', store],
+                    capture_output=True, text=True)
+                if process.returncode != 0:
+                    succeeded = False
+                    detail = (process.stderr.strip().splitlines()
+                              or [''])[-1]
+                    details.append('cannot remove the entries of '
+                                   + identifier + ': ' + detail)
+
+        if store_keys is not None:
+            ensure_store_dir(store, store_project)
+            with open(store, 'a') as handle:
+                handle.write('\n'.join(store_keys) + '\n')
+            os.chmod(store, 0o600)
 
         message = '; '.join(details)
         results.append((host, succeeded, message))

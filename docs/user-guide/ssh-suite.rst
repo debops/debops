@@ -232,6 +232,27 @@ without a running SSH daemon is reported; the remaining hosts continue.
    first playbook run, so that the scanned keys match the host you meant to
    reach.
 
+When the DNS zone of the hosts publishes SSHFP records, rescan verifies
+the scanned keys against them. Keys which match the published records
+are stored without confirmation; keys which contradict the records are
+refused with a report, because a mismatch means the host on the network
+is not the host the DNS describes. Hosts without SSHFP records are
+handled as before. The ``--no-dns`` option skips the DNS check
+entirely, and ``--dns-verify`` requires a DNSSEC-validating resolver to
+authenticate the records before a match is trusted.
+
+.. note::
+
+   SSHFP verification is as strong as the DNS answer. On a
+   DNSSEC-signed zone the records are authenticated and the match is a
+   genuine third-party verification; on an unsigned zone the match is
+   trust in DNS.
+
+With the ``-c|--confirm`` option, rescan shows the fingerprints of the
+scanned keys in the form which ``ssh-keygen -l`` prints and asks for
+each host before storing them - press Enter to accept, Ctrl-C to abort
+the whole run.
+
 Run ``rescan`` when a host was provisioned or recreated, before the first
 connection to it.
 
