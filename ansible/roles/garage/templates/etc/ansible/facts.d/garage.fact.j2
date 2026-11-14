@@ -1,0 +1,70 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps
+import os
+import re
+import subprocess
+
+BIN_PATH = '{{ garage__bin_path }}'
+CONFIG_FILE = '{{ garage__config_file }}'
+
+
+def run_cmd(args):
+    try:
+        stdout = subprocess.check_output(
+            args,
+            stderr=subprocess.STDOUT,
+            timeout=10
+        )
+    except Exception:
+        return None
+    return stdout.decode("utf-8", errors="replace").strip()
+
+
+def read_version():
+    stdout = run_cmd([BIN_PATH, "--version"])
+    if not stdout:
+        return None
+    match = re.search(r"v?(\d+\.\d+\.\d+)", stdout)
+    return match.group(1) if match else None
+
+
+def read_layout_version():
+    stdout = run_cmd([BIN_PATH, "-c", CONFIG_FILE, "layout", "show"])
+    if not stdout:
+        return None
+    match = re.search(r"layout version:\s*(\d+)", stdout, re.I)
+    if match:
+        return int(match.group(1))
+    match = re.search(r"^Version:\s*(\d+)", stdout, re.I | re.M)
+    if match:
+        return int(match.group(1))
+    return None
+
+
+def main():
+    installed = os.access(BIN_PATH, os.X_OK)
+    output = {
+        "installed": installed,
+        "bin_path": BIN_PATH,
+    }
+    if installed:
+        version = read_version()
+        if version is not None:
+            output["version"] = version
+        layout_version = read_layout_version()
+        if layout_version is not None:
+            output["layout_version"] = layout_version
+    print(dumps(output, sort_keys=True, indent=4))
+
+
+if __name__ == "__main__":
+    main()

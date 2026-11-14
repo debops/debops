@@ -1,0 +1,721 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# .. Copyright (C) 2026 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _garage__ref_defaults:
+
+# debops.garage default variables
+# ===============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Role state and deployment [[[
+# -----------------------------
+
+# .. envvar:: garage__deploy_state [[[
+#
+# If ``present``, the :command:`garage` binary and its configuration will be
+# installed. If ``absent``, the binary, systemd unit and configuration files
+# will be removed. Data directories under :file:`/var/lib/garage/` are kept so
+# that a later reinstall can reuse the existing cluster metadata.
+garage__deploy_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# Binary version and source [[[
+# -----------------------------
+
+# .. envvar:: garage__version [[[
+#
+# The version of the :command:`garage` binary to install, without the leading
+# ``v``. Pinned by default. Bumping is a conscious operation: update the
+# version and the matching SHA256 sums in :envvar:`garage__binary_sha256_map`.
+# See :ref:`garage__ref_guide_upgrades` for the distinction between minor and
+# major upgrades.
+garage__version: '2.5.0'
+
+                                                                   # ]]]
+# .. envvar:: garage__arch_map [[[
+#
+# Mapping between architectures reported by Ansible in
+# ``ansible_architecture`` and the musl target triple used in official Garage
+# release URLs. ``armv7l`` reuses the ``armv6l`` musl artifact, which is the
+# only official ARM 32-bit build.
+garage__arch_map:
+  'x86_64': 'x86_64-unknown-linux-musl'
+  'aarch64': 'aarch64-unknown-linux-musl'
+  'i386': 'i686-unknown-linux-musl'
+  'i686': 'i686-unknown-linux-musl'
+  'armv6l': 'armv6l-unknown-linux-musleabihf'
+  'armv7l': 'armv6l-unknown-linux-musleabihf'
+
+                                                                   # ]]]
+# .. envvar:: garage__arch [[[
+#
+# musl target triple used in the release URL for the current host. The role
+# fails when ``ansible_architecture`` is not a key in
+# :envvar:`garage__arch_map` instead of silently selecting ``x86_64``.
+garage__arch: '{{ garage__arch_map[ansible_architecture] }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__binary_sha256_map [[[
+#
+# Mapping between the musl target triple and the expected SHA256 checksum of
+# the raw ``garage`` binary published at
+# https://garagehq.deuxfleurs.fr/_releases/ . Upstream does not publish
+# checksums, so this map is computed locally when the pinned version is
+# bumped: download each target and run :command:`sha256sum` on it.
+garage__binary_sha256_map:
+  'x86_64-unknown-linux-musl': '2ff667286217cd73ebcb1c03af993822365000441dfe31a80cb64c5189a9dea8'
+  'aarch64-unknown-linux-musl': '69b6040cef428b993500c17dd0d0c1240acf2f3f667b9b05ceba4b9660db4e8c'
+  'i686-unknown-linux-musl': 'ef60457706cf6fcdeba77e566b7ed05d3d686f92bc36396b54098b1c8cd7fc5d'
+  'armv6l-unknown-linux-musleabihf': '2967ddf0924402558cbc1474832e4c6f1ca3b09c4458be918b1669fb4df362c3'
+
+                                                                   # ]]]
+# .. envvar:: garage__binary_sha256 [[[
+#
+# Expected SHA256 checksum of the release binary for the current host's
+# architecture.
+garage__binary_sha256: '{{ garage__binary_sha256_map[garage__arch] }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__release_base_url [[[
+#
+# Base URL used to build :envvar:`garage__release_url`. The default points to
+# the official Garage release endpoint. In environments without direct
+# Internet access, override to point at an internal mirror using the same
+# URL layout (``<base>/v<version>/<target>/garage``).
+garage__release_base_url: 'https://garagehq.deuxfleurs.fr/_releases'
+
+                                                                   # ]]]
+# .. envvar:: garage__release_url [[[
+#
+# Full URL the role will download the release binary from when
+# :envvar:`garage__controller_binary_path` is empty. A ``file://`` URL can be
+# used for a binary that is already present on the remote host, for example
+# in an image built with Packer. A proxy configured through the
+# ``inventory__environment`` variables applies to the download.
+garage__release_url: '{{ garage__release_base_url }}/v{{ garage__version }}/{{ garage__arch }}/garage'
+
+                                                                   # ]]]
+# .. envvar:: garage__controller_binary_path [[[
+#
+# Absolute path on the *Ansible Controller* to a Garage binary that should be
+# copied to the remote host instead of downloading it. Use for deployments
+# where neither the host nor an internal mirror can reach the release URL.
+# The checksum of the file is verified on the Controller before the copy.
+garage__controller_binary_path: ''
+
+                                                                   # ]]]
+# .. envvar:: garage__skip_install [[[
+#
+# When set to ``True``, the role does not manage the :command:`garage`
+# binary at all. Configuration and systemd unit management still run. Use
+# this when the binary is provided by a different mechanism (Packer-built
+# image, custom package, manual install, etc.).
+garage__skip_install: False
+
+                                                                   # ]]]
+# .. envvar:: garage__bin_path [[[
+#
+# Absolute path to the installed :command:`garage` binary.
+garage__bin_path: '/usr/local/bin/garage'
+                                                                   # ]]]
+                                                                   # ]]]
+# Upgrade policy [[[
+# ------------------
+
+# .. envvar:: garage__upgrade [[[
+#
+# Controls whether the role is allowed to replace an already-installed
+# binary with a different :envvar:`garage__version`. A series is the major
+# version number. Recognized values:
+#
+# ``none``
+#   Never replace an installed binary. The role fails if the installed
+#   version differs from :envvar:`garage__version`.
+#
+# ``minor``
+#   Allow upgrades that stay in the same series (for example ``2.4.1`` to
+#   ``2.5.0``). This is the default and matches the upstream rolling-upgrade
+#   story.
+#
+# ``major``
+#   Allow an upgrade to the next series (for example ``1.x`` to ``2.0``).
+#   Skipping a series is always refused. Read
+#   :ref:`garage__ref_guide_upgrades` before setting this.
+garage__upgrade: 'minor'
+
+                                                                   # ]]]
+# .. envvar:: garage__upgrade_snapshot [[[
+#
+# When ``True``, the role runs :command:`garage meta snapshot` against the
+# running daemon before it replaces the binary with a different version.
+garage__upgrade_snapshot: True
+                                                                   # ]]]
+                                                                   # ]]]
+# System user, group and directories [[[
+# --------------------------------------
+
+# The role uses an explicit UNIX account instead of the upstream
+# ``DynamicUser=true`` unit. DebOps needs a stable UID for data directories
+# on separate mounts, ACLs and backups; ``DynamicUser`` remaps state under
+# :file:`/var/lib/private/garage` and breaks when :file:`/var/lib/garage`
+# already exists.
+
+# .. envvar:: garage__user [[[
+#
+# Name of the UNIX system account used by Garage. The underscore prefix
+# marks the account as system-managed and avoids collisions with a possible
+# ``garage`` account created by other tools.
+garage__user: '_garage'
+
+                                                                   # ]]]
+# .. envvar:: garage__group [[[
+#
+# Name of the UNIX system group used by Garage.
+garage__group: '_garage'
+
+                                                                   # ]]]
+# .. envvar:: garage__home [[[
+#
+# Home directory of the Garage system user. Also the parent of the default
+# metadata and data directories.
+garage__home: '/var/lib/garage'
+
+                                                                   # ]]]
+# .. envvar:: garage__shell [[[
+#
+# Default shell of the Garage system user.
+garage__shell: '/usr/sbin/nologin'
+
+                                                                   # ]]]
+# .. envvar:: garage__config_file [[[
+#
+# Absolute path of the Garage configuration file. The default is the path
+# the :command:`garage` CLI searches without ``-c``, so interactive
+# administration does not need extra flags. The role passes this path with
+# ``-c`` to the daemon and to its own CLI calls; with a different path, add
+# ``-c`` to manual :command:`garage` commands as well.
+garage__config_file: '/etc/garage.toml'
+
+                                                                   # ]]]
+# .. envvar:: garage__secret_dir [[[
+#
+# Directory that holds secret files referenced from
+# :envvar:`garage__config_file` via ``*_file`` keys. Files are deployed
+# mode ``0600``, owned by ``{{ garage__user }}:{{ garage__group }}``.
+# Garage refuses to start if secret files are group- or
+# world-readable (mode ``0640`` is already too open).
+garage__secret_dir: '/etc/garage'
+                                                                   # ]]]
+                                                                   # ]]]
+# Cluster identity [[[
+# --------------------
+
+# .. envvar:: garage__cluster_hosts [[[
+#
+# List of inventory hosts which form one Garage cluster together with the
+# current host. By default all hosts in the ``[debops_service_garage]``
+# inventory group form a single cluster. To manage independent clusters in
+# one inventory, define this list on every Garage host, together with
+# a separate :envvar:`garage__cluster_name` for each cluster. A standalone
+# instance uses ``[ '{{ inventory_hostname }}' ]``.
+garage__cluster_hosts: '{{ groups["debops_service_garage"]
+                           if (inventory_hostname in (groups["debops_service_garage"] | d([])))
+                           else [inventory_hostname] }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__cluster_name [[[
+#
+# Logical name of the Garage cluster used as the last path component of
+# cluster-wide secrets under :file:`secret/garage/clusters/<name>/`. Every
+# host in :envvar:`garage__cluster_hosts` must use the same value, and
+# independent clusters must use different values. The path deliberately
+# does not include ``inventory_hostname``.
+garage__cluster_name: 'default'
+
+                                                                   # ]]]
+# .. envvar:: garage__domain [[[
+#
+# DNS domain used to build S3 and website hostnames. Falls back to the
+# host FQDN when ``ansible_domain`` is empty.
+garage__domain: '{{ ansible_domain if (ansible_domain | d()) else ansible_fqdn }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# garage.toml parameters [[[
+# --------------------------
+
+# .. envvar:: garage__replication_factor [[[
+#
+# Number of copies Garage keeps for each data block. Must be identical on
+# every host in :envvar:`garage__cluster_hosts`; the role asserts this.
+# Default ``1`` is required for the ``--single-node`` bootstrap used by a
+# one-host install. Do not use ``1`` for anything other than a single-node
+# or test deployment.
+garage__replication_factor: 1
+
+                                                                   # ]]]
+# .. envvar:: garage__consistency_mode [[[
+#
+# Read/write quorum behaviour. ``consistent`` is the upstream default and
+# preserves read-after-write semantics. See the Garage configuration
+# reference for ``degraded`` and ``dangerous``.
+garage__consistency_mode: 'consistent'
+
+                                                                   # ]]]
+# .. envvar:: garage__db_engine [[[
+#
+# Metadata database engine. ``lmdb`` is the upstream default and the
+# recommended choice.
+garage__db_engine: 'lmdb'
+
+                                                                   # ]]]
+# .. envvar:: garage__metadata_dir [[[
+#
+# Directory for Garage metadata (node id, layout, bucket and object
+# index). Prefer a fast SSD.
+garage__metadata_dir: '{{ garage__home }}/meta'
+
+                                                                   # ]]]
+# .. envvar:: garage__data_dir [[[
+#
+# Directory for object data blocks. Can live on HDD.
+garage__data_dir: '{{ garage__home }}/data'
+
+                                                                   # ]]]
+# .. envvar:: garage__metadata_snapshots_dir [[[
+#
+# Directory for metadata snapshots created by
+# :command:`garage meta snapshot` and by
+# :envvar:`garage__metadata_auto_snapshot_interval`. Empty string leaves
+# the upstream default (``snapshots/`` under
+# :envvar:`garage__metadata_dir`).
+garage__metadata_snapshots_dir: ''
+
+                                                                   # ]]]
+# .. envvar:: garage__metadata_auto_snapshot_interval [[[
+#
+# How often Garage snapshots the metadata database. Upstream recommends a
+# non-empty value with LMDB because an unclean shutdown can corrupt the
+# database. Set to an empty string to disable automatic snapshots.
+garage__metadata_auto_snapshot_interval: '6h'
+
+                                                                   # ]]]
+# .. envvar:: garage__s3_region [[[
+#
+# S3 region name advertised by the API. Clients must send the same value.
+garage__s3_region: 'garage'
+
+                                                                   # ]]]
+# .. envvar:: garage__s3_root_domain [[[
+#
+# Suffix used for virtual-hosted S3 bucket URLs
+# (``<bucket><s3_root_domain>``). The leading dot is required by Garage.
+garage__s3_root_domain: '.s3.{{ garage__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__web_root_domain [[[
+#
+# Suffix used for website hosting hostnames. The leading dot is required
+# by Garage.
+garage__web_root_domain: '.web.{{ garage__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__s3_port [[[
+#
+# TCP port of the S3 API.
+garage__s3_port: 3900
+
+                                                                   # ]]]
+# .. envvar:: garage__rpc_port [[[
+#
+# TCP port of the Garage RPC / clustering endpoint. This is the only port
+# that must be reachable between cluster members.
+garage__rpc_port: 3901
+
+                                                                   # ]]]
+# .. envvar:: garage__web_port [[[
+#
+# TCP port of the S3 website endpoint.
+garage__web_port: 3902
+
+                                                                   # ]]]
+# .. envvar:: garage__admin_port [[[
+#
+# TCP port of the admin API (``/health``, ``/metrics``, layout). Bound to
+# loopback by default.
+garage__admin_port: 3903
+
+                                                                   # ]]]
+# .. envvar:: garage__s3_bind_addr [[[
+#
+# Listen address of the S3 API. Loopback when nginx is enabled so that
+# TLS terminates on the reverse proxy; the dual-stack any-address ``[::]``
+# otherwise, or when :envvar:`garage__s3_allow` grants direct access. On
+# a host without IPv6, set an IPv4 address here and in
+# :envvar:`garage__rpc_bind_addr`.
+garage__s3_bind_addr: '{{ "127.0.0.1"
+                          if ((garage__nginx_enabled | bool) and (garage__s3_allow | length == 0))
+                          else "[::]" }}:{{ garage__s3_port }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__rpc_bind_addr [[[
+#
+# Listen address of the RPC endpoint. Dual-stack any-address so that other
+# nodes can connect.
+garage__rpc_bind_addr: '[::]:{{ garage__rpc_port }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__rpc_public_addr [[[
+#
+# Address this node advertises to the rest of the cluster. Defaults to the
+# host's primary IPv4 address.
+garage__rpc_public_addr: '{{ ansible_default_ipv4.address | d("127.0.0.1") }}:{{ garage__rpc_port }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__web_bind_addr [[[
+#
+# Listen address of the website endpoint. Loopback, where nginx connects
+# to it, until :envvar:`garage__web_allow` grants direct access; then the
+# dual-stack any-address ``[::]``.
+garage__web_bind_addr: '{{ "127.0.0.1"
+                           if (garage__web_allow | length == 0)
+                           else "[::]" }}:{{ garage__web_port }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__admin_bind_addr [[[
+#
+# Listen address of the admin API. Loopback only; ``/metrics`` can be
+# scraped by a metrics agent running on the same host, using the token from
+# :envvar:`garage__metrics_token`.
+garage__admin_bind_addr: '127.0.0.1:{{ garage__admin_port }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__bootstrap_peers [[[
+#
+# List of ``nodeid@host:port`` strings written to ``bootstrap_peers``.
+# Empty by default; a single-node install does not need any. Multi-node
+# clusters currently connect peers by hand, see
+# :ref:`garage__ref_getting_started`.
+garage__bootstrap_peers: []
+
+                                                                   # ]]]
+# .. envvar:: garage__configuration_extra [[[
+#
+# Optional extra TOML added to :file:`/etc/garage.toml` before the first
+# table, so that top-level keys work. Use this for rarely needed keys
+# (``compression_level``, ``lmdb_map_size``, Consul discovery, ...)
+# without forking the template. Tables added here must come after the
+# top-level keys.
+garage__configuration_extra: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Single-node bootstrap [[[
+# -------------------------
+
+# A freshly started Garage daemon is not usable until a cluster layout
+# exists. Rather than orchestrating :command:`garage layout assign` from
+# Ansible (that CLI is not idempotent), the role uses the daemon's own
+# ``--single-node`` / ``--default-bucket`` flags, available since Garage
+# v2.3.0.
+
+# .. envvar:: garage__single_node [[[
+#
+# When ``True``, the systemd unit starts Garage with ``--single-node``.
+# The flag creates a one-node layout at version 1 on first start and is a
+# no-op at layout version 1. It requires
+# :envvar:`garage__replication_factor` ``1`` and a cluster of exactly one
+# host; the default expression encodes both conditions. Set to ``False``
+# before adding a second node or the daemon will refuse to start.
+garage__single_node: '{{ (garage__replication_factor | int == 1) and
+                         (garage__cluster_hosts | length == 1) }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__default_bucket [[[
+#
+# Name of a bucket created automatically on startup via
+# ``--default-bucket``. Empty string leaves the flag off. When set, the
+# role also deploys an ``EnvironmentFile`` with
+# ``GARAGE_DEFAULT_ACCESS_KEY``, ``GARAGE_DEFAULT_SECRET_KEY`` and
+# ``GARAGE_DEFAULT_BUCKET`` so the first play produces a working S3
+# endpoint, a bucket and a key pair. Garage accepts this flag only with
+# ``--single-node``, so it requires :envvar:`garage__single_node`.
+garage__default_bucket: ''
+
+                                                                   # ]]]
+# .. envvar:: garage__default_access_key_id [[[
+#
+# Access key identifier used by ``--default-bucket``. Generated in the
+# native Garage form (``GK`` plus 24 hex characters) and stored under
+# :file:`secret/garage/clusters/<name>/` so it stays stable across runs.
+# A different value makes the daemon create an additional key; the previous
+# key is kept in Garage until it is removed by hand.
+garage__default_access_key_id: '{{ "GK" + lookup("password",
+                                   secret + "/garage/clusters/"
+                                   + garage__cluster_name
+                                   + "/default_access_key_id chars=hexdigits length=24")
+                                   | lower }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__default_secret_key [[[
+#
+# Secret key used by ``--default-bucket``. 64 lowercase hex characters,
+# stored next to the access key id. Changing the secret of an existing
+# access key id makes the daemon refuse to start.
+garage__default_secret_key: '{{ lookup("password",
+                                 secret + "/garage/clusters/"
+                                 + garage__cluster_name
+                                 + "/default_secret_key chars=hexdigits length=64")
+                                 | lower }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Secrets [[[
+# -----------
+
+# .. envvar:: garage__rpc_secret [[[
+#
+# 64-character hex RPC secret shared by every node. Looked up from
+# :file:`secret/garage/clusters/{{ garage__cluster_name }}/rpc_secret`
+# so that every host in the same cluster receives the same value.
+garage__rpc_secret: '{{ lookup("password",
+                         secret + "/garage/clusters/"
+                         + garage__cluster_name
+                         + "/rpc_secret chars=hexdigits length=64")
+                         | lower }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__admin_token [[[
+#
+# Bearer token for the admin API. Cluster-wide, same path convention as
+# :envvar:`garage__rpc_secret`.
+garage__admin_token: '{{ lookup("password",
+                          secret + "/garage/clusters/"
+                          + garage__cluster_name
+                          + "/admin_token length=32") }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__metrics_token [[[
+#
+# Bearer token for ``/metrics``. Cluster-wide. On the host it is stored in
+# the :file:`metrics_token` file in :envvar:`garage__secret_dir`.
+garage__metrics_token: '{{ lookup("password",
+                            secret + "/garage/clusters/"
+                            + garage__cluster_name
+                            + "/metrics_token length=32") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# nginx frontends [[[
+# -------------------
+
+# Garage has no native TLS on any endpoint. TLS always terminates on
+# nginx (or another reverse proxy).
+
+# .. envvar:: garage__nginx_enabled [[[
+#
+# When ``True``, the role configures :ref:`debops.nginx` as a TLS reverse
+# proxy for the S3 API and binds the S3 listener to loopback.
+garage__nginx_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: garage__nginx_web_enabled [[[
+#
+# When ``True``, an additional nginx server is created for S3 website
+# hosting (``*.web.<domain>``). Disabled by default.
+garage__nginx_web_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: garage__nginx_s3_fqdn [[[
+#
+# Canonical hostname of the S3 API virtual host. The wildcard
+# ``*<garage__s3_root_domain>`` is added automatically for virtual-hosted
+# bucket URLs, so the X.509 certificate used by nginx must cover it as well.
+garage__nginx_s3_fqdn: 's3.{{ garage__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__nginx_web_fqdn [[[
+#
+# Canonical hostname of the website virtual host. The wildcard
+# ``*<garage__web_root_domain>`` is added automatically.
+garage__nginx_web_fqdn: 'web.{{ garage__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__s3_allow [[[
+#
+# Optional list of IP addresses or CIDR subnets allowed to reach the S3
+# port directly (bypassing nginx). Empty by default. Used by
+# :ref:`debops.ferm` when :envvar:`garage__nginx_enabled` is ``False``
+# or when this list is non-empty. A non-empty list also makes the S3 API
+# listen on all interfaces next to nginx.
+garage__s3_allow: []
+
+                                                                   # ]]]
+# .. envvar:: garage__web_allow [[[
+#
+# Optional list of IP addresses or CIDR subnets allowed to reach the website
+# port directly. Empty by default. Unlike the S3 port, the website port is
+# opened only by this list, also when :envvar:`garage__nginx_enabled` is
+# ``False``. To serve websites without nginx, list the clients here
+# (``0.0.0.0/0`` and ``::/0`` for everyone).
+garage__web_allow: []
+
+                                                                   # ]]]
+# .. envvar:: garage__rpc_allow [[[
+#
+# List of IP addresses or CIDR subnets allowed to reach the RPC port. Empty
+# by default, which is enough for a single-node install. In a cluster, list
+# the addresses of the other nodes here. Direct access from everywhere is
+# refused.
+garage__rpc_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# systemd configuration [[[
+# -------------------------
+
+# The restart policy (``Restart=on-failure``), the ``LimitNOFILE`` value
+# from the upstream example unit and the sandboxing options are hardcoded in
+# the :file:`garage.service` unit template. Local changes can be applied with
+# a drop-in file managed by the :ref:`debops.systemd` role.
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: garage__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+garage__etc_services__dependent_list:
+
+  - name: 'garage-s3'
+    port: '{{ garage__s3_port }}'
+    protocols: [ 'tcp' ]
+    comment: 'Garage S3 API'
+    state: '{{ garage__deploy_state }}'
+
+  - name: 'garage-rpc'
+    port: '{{ garage__rpc_port }}'
+    protocols: [ 'tcp' ]
+    comment: 'Garage RPC'
+    state: '{{ garage__deploy_state }}'
+
+  - name: 'garage-web'
+    port: '{{ garage__web_port }}'
+    protocols: [ 'tcp' ]
+    comment: 'Garage S3 website'
+    state: '{{ garage__deploy_state }}'
+
+  - name: 'garage-admin'
+    port: '{{ garage__admin_port }}'
+    protocols: [ 'tcp' ]
+    comment: 'Garage admin API'
+    state: '{{ garage__deploy_state }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role. The S3 port is
+# opened when nginx is disabled or :envvar:`garage__s3_allow` is set; the
+# website port only for the addresses in :envvar:`garage__web_allow`.
+garage__ferm__dependent_rules:
+
+  - name: 'garage-rpc'
+    type: 'accept'
+    dport: [ '{{ garage__rpc_port | string }}' ]
+    saddr: '{{ garage__rpc_allow }}'
+    accept_any: False
+    weight: '50'
+    by_role: 'debops.garage'
+    rule_state: '{{ garage__deploy_state }}'
+
+  - name: 'garage-s3'
+    type: 'accept'
+    dport: [ '{{ garage__s3_port | string }}' ]
+    saddr: '{{ garage__s3_allow }}'
+    accept_any: '{{ not (garage__nginx_enabled | bool) }}'
+    weight: '50'
+    by_role: 'debops.garage'
+    rule_state: '{{ "present"
+                    if (garage__deploy_state == "present" and
+                        (not (garage__nginx_enabled | bool) or
+                         garage__s3_allow | length > 0))
+                    else "absent" }}'
+
+  - name: 'garage-web'
+    type: 'accept'
+    dport: [ '{{ garage__web_port | string }}' ]
+    saddr: '{{ garage__web_allow }}'
+    accept_any: False
+    weight: '50'
+    by_role: 'debops.garage'
+    rule_state: '{{ "present"
+                    if (garage__deploy_state == "present" and
+                        garage__web_allow | length > 0)
+                    else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+garage__nginx__dependent_upstreams:
+
+  - name: 'garage-s3'
+    server: '{{ "127.0.0.1:" + garage__s3_port | string }}'
+    state: '{{ "present"
+               if (garage__deploy_state == "present" and
+                   garage__nginx_enabled | bool)
+               else "absent" }}'
+
+  - name: 'garage-web'
+    server: '{{ "127.0.0.1:" + garage__web_port | string }}'
+    state: '{{ "present"
+               if (garage__deploy_state == "present" and
+                   garage__nginx_enabled | bool and
+                   garage__nginx_web_enabled | bool)
+               else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+garage__nginx__dependent_servers:
+
+  - name: [ '{{ garage__nginx_s3_fqdn }}', '{{ "*" + garage__s3_root_domain }}' ]
+    filename: 'garage-s3'
+    state: '{{ "present"
+               if (garage__deploy_state == "present" and
+                   garage__nginx_enabled | bool)
+               else "absent" }}'
+    type: 'proxy'
+    options: |-
+      client_max_body_size 0;
+      proxy_buffering off;
+      ignore_invalid_headers off;
+    proxy_pass: 'http://garage-s3'
+    proxy_options: |-
+      proxy_http_version 1.1;
+      proxy_read_timeout 15m;
+      proxy_send_timeout 15m;
+      proxy_request_buffering off;
+      proxy_max_temp_file_size 0;
+    proxy_headers: |-
+      proxy_set_header Host              $http_host;
+      proxy_set_header X-Real-IP         $remote_addr;
+      proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+
+  - name: [ '{{ garage__nginx_web_fqdn }}', '{{ "*" + garage__web_root_domain }}' ]
+    filename: 'garage-web'
+    state: '{{ "present"
+               if (garage__deploy_state == "present" and
+                   garage__nginx_enabled | bool and
+                   garage__nginx_web_enabled | bool)
+               else "absent" }}'
+    type: 'proxy'
+    proxy_pass: 'http://garage-web'
+# ]]]
+# ]]]
