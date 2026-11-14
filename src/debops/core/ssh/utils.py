@@ -21,6 +21,8 @@ import subprocess
 
 import jinja2
 
+from ..utils import path_inside_project
+
 logger = logging.getLogger(__name__)
 
 USER_KNOWN_HOSTS_STORE = '~/.ssh/known_hosts'
@@ -150,20 +152,26 @@ def ssh_store_file(project_path, view):
     return os.path.join(ssh_store_dir(project_path, view), 'known_hosts')
 
 
-def ensure_store_dir(store_file):
+def ensure_store_dir(store_file, project=None):
     """Create the directory chain of a view's known_hosts store.
 
     The directories from the '.debops/ssh' root of the project down
     to the store directory are created with the 0700 mode of the
     real '~/.ssh'; existing directories which are open to the group
     or the others are tightened to the same mode. A store outside of
-    the project layout gets only its own directory ensured. Returns
-    the store directory.
+    the project layout gets only its own directory ensured, without
+    permission changes. When the project directory is given, the store
+    path is refused when it resolves outside of it. Returns the store
+    directory.
     """
     store_file = os.path.expanduser(store_file)
+    if project is not None and not path_inside_project(store_file, project):
+        raise ValueError('Refusing to create a known_hosts store outside '
+                         'of the project directory: ' + store_file)
     store_dir = os.path.dirname(os.path.abspath(store_file))
     views_dir = os.path.dirname(store_dir)
     ssh_dir = os.path.dirname(views_dir)
+    in_project = False
     if (os.path.basename(views_dir) == 'views'
             and os.path.basename(ssh_dir) == 'ssh'
             and os.path.basename(os.path.dirname(ssh_dir)) == '.debops'):
@@ -171,13 +179,16 @@ def ensure_store_dir(store_file):
         # the 'ssh' tree becomes private
         os.makedirs(os.path.dirname(ssh_dir), exist_ok=True)
         chain = [ssh_dir, views_dir, store_dir]
+        in_project = True
     else:
         chain = [store_dir]
     for directory in chain:
+        existed = os.path.isdir(directory)
         os.makedirs(directory, mode=0o700, exist_ok=True)
-        mode = os.stat(directory).st_mode & 0o777
-        if mode & 0o077:
-            os.chmod(directory, 0o700)
+        if existed and in_project:
+            mode = os.stat(directory).st_mode & 0o777
+            if mode & 0o077:
+                os.chmod(directory, 0o700)
     return store_dir
 
 
