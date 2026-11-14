@@ -48,10 +48,11 @@ Options
 ``-v, --verbose``
   Increase output verbosity. More letters means higher verbosity.
 
-``<source>``, ``<destination>``
-  The file operands, in the ``[[user@]host:]path`` form. A local path copies
-  from or to the controller; a host name in an operand resolves through the
-  inventory of the active view. The composed SSH options apply to both
+``<source> ...``, ``<destination>``
+  The file operands, in the ``[[user@]host:]path`` form. The last operand
+  is the destination, the ones before it are the sources, as in
+  :command:`scp`. A local path copies from or to the controller; a host
+  name in an operand resolves through the inventory of the active view. The composed SSH options apply to both
   connections: when the operands resolve to different jump hosts, different
   ports or different private keys, the command reports the difference and
   applies none of the conflicting values.

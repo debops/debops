@@ -875,23 +875,35 @@ Connection of a host:""")
         tokens = self.args[2:]
         marker = tokens.index('--') if '--' in tokens else len(tokens)
         handoff = tokens[marker + 1:] if marker < len(tokens) else None
-        head, source, tail = split_options_operand(
-            tokens[:marker], self.SSH_SUITE_VALUE_OPTIONS,
-            self.SSH_SUITE_LONG_VALUE_OPTIONS)
-        if source is not None:
-            head2, destination, tail2 = split_options_operand(
-                tail + (handoff or []), self.SSH_SUITE_VALUE_OPTIONS,
-                self.SSH_SUITE_LONG_VALUE_OPTIONS)
-        else:
-            head2, destination, tail2 = [], None, []
-        self.args, extras = parser.parse_known_args(head + head2)
-        if handoff is None and (source is None or destination is None):
-            parser.error('the following arguments are required: '
-                         'source and destination')
-        self.args.handoff = handoff if source is None else None
-        self.args.source = source
-        self.args.destination = destination
-        self.args.scp_extra_args = extras + tail2
+        operands = []
+        options = []
+        index = 0
+        while index < marker:
+            token = tokens[index]
+            if token == '--':
+                operands.extend(tokens[index + 1:marker])
+                break
+            if not token.startswith('-') or token == '-':
+                operands.append(token)
+                index += 1
+                continue
+            options.append(token)
+            letter = token[1] if len(token) > 1 else ''
+            takes_value = ((letter in self.SSH_SUITE_VALUE_OPTIONS
+                            and len(token) == 2)
+                           or token in self.SSH_SUITE_LONG_VALUE_OPTIONS)
+            if takes_value and index + 1 < len(tokens):
+                index += 1
+                options.append(tokens[index])
+            index += 1
+        self.args, extras = parser.parse_known_args(options)
+        if handoff is None and len(operands) < 2:
+            parser.error('at least two operands are required: one or '
+                         'more sources and a destination')
+        self.args.handoff = handoff if len(operands) < 2 else None
+        self.args.sources = operands[:-1]
+        self.args.destination = operands[-1]
+        self.args.scp_extra_args = extras
 
     def do_sftp(self):
         parser = _argument_parser(

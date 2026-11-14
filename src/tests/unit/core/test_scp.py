@@ -61,7 +61,7 @@ def make_project(stub_project, fake_tools, ssh_mode="user"):
 def test_build_scp_command_resolves_both_sides(stub_project, fake_tools):
     project = make_project(stub_project, fake_tools)
 
-    command = build_scp_command(project, "web:/tmp/source",
+    command = build_scp_command(project, ["web:/tmp/source"],
                                 "web:/tmp/destination")
 
     assert command[0] == "/usr/bin/scp"
@@ -75,7 +75,7 @@ def test_build_scp_command_with_a_local_destination(stub_project,
                                                     fake_tools):
     project = make_project(stub_project, fake_tools)
 
-    command = build_scp_command(project, "web:/tmp/source",
+    command = build_scp_command(project, ["web:/tmp/source"],
                                 "/tmp/local-copy")
 
     assert command[-2:] == ["admin@192.0.2.10:/tmp/source", "/tmp/local-copy"]
@@ -84,7 +84,7 @@ def test_build_scp_command_with_a_local_destination(stub_project,
 def test_build_scp_command_translates_the_jump(stub_project, fake_tools):
     project = make_project(stub_project, fake_tools)
 
-    command = build_scp_command(project, "web:/tmp/source",
+    command = build_scp_command(project, ["web:/tmp/source"],
                                 "/tmp/local-copy")
 
     assert "ProxyJump=jump@bastion" in command
@@ -94,7 +94,7 @@ def test_build_scp_command_adds_the_accept_option(stub_project,
                                                   fake_tools):
     project = make_project(stub_project, fake_tools)
 
-    command = build_scp_command(project, "web:/tmp/source",
+    command = build_scp_command(project, ["web:/tmp/source"],
                                 "/tmp/local-copy", accept=True)
 
     assert "StrictHostKeyChecking=accept-new" in command
@@ -107,7 +107,7 @@ def test_build_scp_command_declares_the_project_store(stub_project,
         raw={"binaries": dict(fake_tools["binaries"]),
              "ssh": {"known_hosts": "project"}})
 
-    command = build_scp_command(project, "web:/tmp/source",
+    command = build_scp_command(project, ["web:/tmp/source"],
                                 "/tmp/local-copy")
 
     assert "-o" in command
@@ -118,7 +118,7 @@ def test_build_scp_command_passes_the_operator_options(stub_project,
                                                        fake_tools):
     project = make_project(stub_project, fake_tools)
 
-    command = build_scp_command(project, "web:/tmp/source",
+    command = build_scp_command(project, ["web:/tmp/source"],
                                 "/tmp/local-copy",
                                 scp_args=["-r", "-q"])
 
@@ -165,7 +165,7 @@ def test_build_scp_command_reports_the_differing_ports(
     option; scp applies one port to both connections."""
     project = two_host_project(stub_project, fake_tools, fake_binary)
 
-    command = build_scp_command(project, "web:/src", "web2:/dst")
+    command = build_scp_command(project, ["web:/src"], "web2:/dst")
 
     assert "-P" not in command
 
@@ -176,7 +176,7 @@ def test_build_scp_command_reports_the_differing_identities(
     identity option."""
     project = two_host_project(stub_project, fake_tools, fake_binary)
 
-    command = build_scp_command(project, "web:/src", "web2:/dst")
+    command = build_scp_command(project, ["web:/src"], "web2:/dst")
 
     assert "-i" not in command
 
@@ -185,7 +185,7 @@ def test_build_scp_command_uses_the_explicit_identity(
         stub_project, fake_tools, fake_binary):
     project = two_host_project(stub_project, fake_tools, fake_binary)
 
-    command = build_scp_command(project, "web:/src", "web2:/dst",
+    command = build_scp_command(project, ["web:/src"], "web2:/dst",
                                 identity="/keys/explicit")
 
     assert command[command.index("-i") + 1] == "/keys/explicit"
@@ -204,7 +204,19 @@ def test_build_scp_command_drops_the_forwards(stub_project, fake_tools,
     binaries["ansible-inventory"] = inventory
     project = stub_project(raw={"binaries": binaries})
 
-    command = build_scp_command(project, "web:/src", "web:/dst")
+    command = build_scp_command(project, ["web:/src"], "web:/dst")
 
     assert "-L" not in command
     assert "1234:localhost:5678" not in command
+
+
+def test_build_scp_command_copies_multiple_sources(stub_project, fake_tools):
+    """Several sources compose in their written order, with the
+    destination last, matching real scp."""
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+
+    command = build_scp_command(project, ["web:/tmp/a", "web:/tmp/b"],
+                                "local")
+
+    assert command[-3:] == ["admin@192.0.2.10:/tmp/a",
+                            "admin@192.0.2.10:/tmp/b", "local"]

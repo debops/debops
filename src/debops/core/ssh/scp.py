@@ -38,9 +38,9 @@ def split_operand(operand):
     return user, host, path
 
 
-def build_scp_command(project, source_operand, destination_operand,
+def build_scp_command(project, sources, destination_operand,
                       identity=None, accept=False, scp_args=None):
-    """Build the scp command line for 'debops scp <source>
+    """Build the scp command line for 'debops scp <source>...
     <destination>'.
 
     The operands follow the scp grammar, '[[user@]host:]path'; a host
@@ -58,7 +58,7 @@ def build_scp_command(project, source_operand, destination_operand,
     ports = []
     identities = []
 
-    for operand in (source_operand, destination_operand):
+    for operand in (*sources, destination_operand):
         user, host, path = split_operand(operand)
         if host is None:
             operands.append(operand)
