@@ -113,6 +113,24 @@ Options
 ``-T <seconds>, --timeout <seconds>``
   Timeout of each key scan (default: ``10``).
 
+``--dns``
+  Verify the scanned host keys against the SSHFP records of the DNS
+  (the default). Keys which match the published records are stored
+  without confirmation; keys which contradict the records are refused
+  with a report.
+
+``--no-dns``
+  Do not check the SSH host keys against DNS.
+
+``--dns-verify``
+  Store keys automatically only when a DNSSEC-validating resolver
+  authenticated the SSHFP records of the DNS.
+
+``-c, --confirm``
+  Show the scanned fingerprints in the form which
+  :command:`ssh-keygen -l` prints and ask for each host before storing
+  them.
+
 ``<pattern> ...``
   One or more Ansible inventory patterns: ``all``, the group names, the
   wildcards and the unions. A pattern which matches no host is reported;

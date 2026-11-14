@@ -71,7 +71,8 @@ def sftp_args(**kwargs):
 def rescan_args(**kwargs):
     defaults = dict(project_dir=None, view="system", remove=False,
                     scan=False, eval=True, known_hosts_file=None,
-                    timeout=10, hosts=["web"])
+                    timeout=10, hosts=["web"], dns_mode="dns",
+                    confirm=None)
     defaults.update(kwargs)
     return SimpleNamespace(**defaults)
 
@@ -333,9 +334,15 @@ def test_do_ssh_rescan_eval_requires_a_store(monkeypatch, stub_project,
 
 
 def test_do_ssh_rescan_refreshes_the_hosts(monkeypatch, stub_project,
-                                           fake_tools, tmp_path):
-    stub_the_project(monkeypatch, stub_project(
-        raw={"binaries": dict(fake_tools["binaries"])}))
+                                           fake_tools, fake_binary,
+                                           tmp_path):
+    import base64
+    binaries = dict(fake_tools["binaries"])
+    binaries["ssh-keyscan"] = fake_binary(
+        "valid-keyscan",
+        "#!/bin/sh\nprintf '%s\\n' '192.0.2.10 ssh-ed25519 "
+        + base64.b64encode(b'\x21' * 32).decode('ascii') + "'\n")
+    stub_the_project(monkeypatch, stub_project(raw={"binaries": binaries}))
     store = tmp_path / "store"
 
     with pytest.raises(SystemExit) as exit_info:
