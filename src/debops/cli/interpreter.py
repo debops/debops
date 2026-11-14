@@ -447,6 +447,24 @@ class Interpreter(object):
                         + ' '.join(args.hosts))
             sys.exit(1)
 
+        # A scan of a few hosts is fast enough for interactive
+        # operation; the estimate is only shown when the worst case
+        # takes three minutes or longer.
+        # A reachable host scans in about two seconds including the
+        # startup of the command; hosts which do not respond wait for
+        # the full key scan timeout, so the real time can be longer.
+        estimate = len(hosts) * 2
+        if estimate >= 180:
+            if estimate >= 3600:
+                estimate_text = '{:.1f} hours'.format(estimate / 3600.0)
+            elif estimate >= 90:
+                estimate_text = '{} minutes'.format(estimate // 60)
+            else:
+                estimate_text = '{} seconds'.format(estimate)
+            print('Scanning {} hosts, estimated time: {} (hosts which '
+                  'do not respond take longer).'.format(len(hosts),
+                                                        estimate_text))
+
         if args.eval:
             store = args.known_hosts_file or ssh.known_hosts_store(project)
             if not store:

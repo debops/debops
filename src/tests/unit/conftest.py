@@ -88,6 +88,15 @@ def fake_tools(tmp_path):
                                 "    printf 'hosts (1):\\n    web\\n'\n"
                                 "    exit 0\n"
                                 "fi\n"
+                                'if [ "$1" = "many" ]; then\n'
+                                "    printf 'hosts (100):\\n'\n"
+                                "    i=1\n"
+                                "    while [ $i -le 100 ]; do\n"
+                                "        printf '    many-host-%s\\n' \"$i\"\n"
+                                "        i=$((i+1))\n"
+                                "    done\n"
+                                "    exit 0\n"
+                                "fi\n"
                                 "exit 0\n")
     return {
         "binaries": {"ansible": ansible, "ansible-inventory": inventory,
