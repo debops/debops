@@ -495,7 +495,7 @@ class Interpreter(object):
             config_path = os.path.expanduser('~/.ssh/config')
             try:
                 changed = ssh.write_config_snippet(project, config_path)
-            except OSError as errmsg:
+            except (OSError, ValueError) as errmsg:
                 print_error(errmsg)
                 sys.exit(1)
             if changed:
@@ -508,8 +508,12 @@ class Interpreter(object):
                               extra={'allow': ['stderr', 'syslog']})
             sys.exit(0)
 
-        for line in ssh.render_config_snippet(project):
-            print(line)
+        try:
+            for line in ssh.render_config_snippet(project):
+                print(line)
+        except ValueError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
 
     def do_config_list(self, args):
         try:
