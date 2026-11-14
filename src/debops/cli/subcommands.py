@@ -824,6 +824,24 @@ Connection of a host:""")
                             metavar='SECONDS',
                             help='timeout of each key scan (default: '
                                  '10)')
+        group = parser.add_mutually_exclusive_group()
+        group.add_argument('--dns', dest='dns_mode', action='store_const',
+                           const='dns', default='dns',
+                           help='verify the scanned host keys against '
+                                'the SSHFP records of the DNS (default)')
+        group.add_argument('--no-dns', dest='dns_mode',
+                           action='store_const', const='no-dns',
+                           help='do not check the SSH host keys against '
+                                'DNS')
+        group.add_argument('--dns-verify', dest='dns_mode',
+                           action='store_const', const='dns-verify',
+                           help='store keys automatically only when a '
+                                'DNSSEC-validating resolver '
+                                'authenticated the SSHFP records')
+        parser.add_argument('-c', '--confirm', default=False,
+                            help='show the scanned fingerprints and ask '
+                                 'for each host before storing them',
+                            action='store_true')
         parser.add_argument('hosts', nargs='+', metavar='pattern',
                             help='hosts, groups or the other Ansible '
                                  'inventory patterns to refresh the '
