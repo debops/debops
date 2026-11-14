@@ -695,7 +695,8 @@ def fqdn_project(stub_project, fake_tools, fake_binary):
         " \"ansible_ssh_private_key_file\": \"/keys/web\"}'\n")
     binaries["ssh-keyscan"] = fake_binary(
         "fqdn-keyscan",
-        "#!/bin/sh\nprintf '%s\\n' '" + FQDN_KEY_LINE + "'\n")
+        "#!/bin/sh\nprintf '%s\\n' \"$4 ssh-ed25519 "
+        + FQDN_KEY_BLOB + "\"\n")
     return stub_project(raw={"binaries": binaries})
 
 
@@ -827,3 +828,24 @@ def test_rescan_hosts_dns_verify_stores_authenticated_keys(
 
     assert results[0][1]
     assert FQDN_KEY_LINE in store.read_text()
+
+
+def test_rescan_hosts_stores_into_the_user_store(monkeypatch,
+                                                 stub_project, fake_tools,
+                                                 fake_binary, tmp_path):
+    """In the user mode the store is '~/.ssh/known_hosts', outside of
+    the project directory by design; the containment must not refuse
+    it."""
+    monkeypatch.setenv('HOME', str(tmp_path))
+    binaries = dict(fake_tools["binaries"])
+    binaries["ssh-keyscan"] = fake_binary(
+        "user-keyscan",
+        "#!/bin/sh\nprintf '%s\\n' '192.0.2.10 ssh-ed25519 "
+        + FQDN_KEY_BLOB + "'\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    results = rescan_hosts(project, ["web"], phases=("scan",),
+                           dns_mode='no-dns')
+
+    assert results[0][1]
+    assert (tmp_path / ".ssh" / "known_hosts").read_text().strip()
