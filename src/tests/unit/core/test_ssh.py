@@ -660,3 +660,17 @@ def test_ensure_store_dir_leaves_a_foreign_directory_alone(tmp_path):
     ensure_store_dir(str(foreign / "known_hosts"))
 
     assert (os.stat(foreign).st_mode & 0o777) == 0o755
+
+
+def test_render_config_snippet_rejects_a_multiline_store(stub_project):
+    """The store value is written into '~/.ssh/config'; a value with
+    embedded newlines could inject SSH directives into the operator's
+    configuration."""
+    project = stub_project(
+        cfg_options={"ssh_args":
+                     "-o 'UserKnownHostsFile=~/.ssh/store\n"
+                     "ProxyCommand=evil'"},
+        raw={"ssh": {"known_hosts": "project"}})
+
+    with pytest.raises(ValueError):
+        render_config_snippet(project)
