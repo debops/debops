@@ -271,6 +271,10 @@ def render_config_snippet(project):
     store = known_hosts_store(project)
     lines = [CONFIG_BLOCK_BEGIN]
     if mode == 'project' and store:
+        if '\n' in store or '\r' in store:
+            raise ValueError('The known_hosts store path contains newline '
+                             'characters and cannot be written into an '
+                             'SSH client configuration: ' + store)
         lines.append('Host *')
         lines.append('    UserKnownHostsFile '
                      + USER_KNOWN_HOSTS_STORE + ' '
