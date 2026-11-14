@@ -12,7 +12,9 @@ fixed key line. The ssh command builder only composes arguments, so
 its binary is a plain path in the configuration.
 """
 
+import base64
 import getpass
+import hashlib
 import os
 import socket
 from unittest import mock
@@ -234,7 +236,7 @@ def test_rescan_hosts_removes_and_scans_the_identifiers(
         handle.write("# stale entries live here\n")
 
     results = rescan_hosts(stub_project(raw={"binaries": dict(fake_tools["binaries"])}),
-                           ["web"], store=store)
+                           ["web"], store=store, dns_mode='no-dns')
 
     assert results == [("web", True, "")]
     assert os.path.exists(store)
@@ -252,7 +254,7 @@ def test_rescan_hosts_reports_a_host_without_keys(stub_project, fake_tools,
     store = str(tmp_path / "known_hosts")
 
     results = rescan_hosts(stub_project(raw={"binaries": dict(fake_tools["binaries"])}),
-                           ["web", "dark"], store=store)
+                           ["web", "dark"], store=store, dns_mode='no-dns')
 
     assert results[0] == ("web", True, "")
     assert results[1][:2] == ("dark", False)
@@ -674,3 +676,154 @@ def test_render_config_snippet_rejects_a_multiline_store(stub_project):
 
     with pytest.raises(ValueError):
         render_config_snippet(project)
+
+
+FQDN = 'web.example.org'
+FQDN_KEY_BLOB = base64.b64encode(b'\x21' * 32).decode('ascii')
+FQDN_KEY_LINE = FQDN + ' ssh-ed25519 ' + FQDN_KEY_BLOB
+FQDN_FINGERPRINT = hashlib.sha256(b'\x21' * 32).hexdigest()
+
+
+def fqdn_project(stub_project, fake_tools, fake_binary):
+    """A project whose inventory host has an FQDN address, so the DNS
+    verification tier has a name to look up."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "fqdn-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"" + FQDN + "\","
+        " \"ansible_ssh_private_key_file\": \"/keys/web\"}'\n")
+    binaries["ssh-keyscan"] = fake_binary(
+        "fqdn-keyscan",
+        "#!/bin/sh\nprintf '%s\\n' '" + FQDN_KEY_LINE + "'\n")
+    return stub_project(raw={"binaries": binaries})
+
+
+def stub_dns(monkeypatch, records, authenticated=True):
+    """Make the rescan DNS lookups answer with the given records."""
+    monkeypatch.setattr('socket.getaddrinfo',
+                        lambda host, *args, **kwargs: [
+                            (2, 1, 6, '', ('192.0.2.10', 0))])
+    monkeypatch.setattr(ssh_module.ssh, 'lookup_sshfp',
+                        lambda hostname: (authenticated, records))
+
+
+def test_rescan_hosts_stores_keys_matching_sshfp(monkeypatch,
+                                                 stub_project, fake_tools,
+                                                 fake_binary, tmp_path):
+    """Keys whose fingerprints match the SSHFP records are stored
+    without confirmation."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    stub_dns(monkeypatch, {(4, FQDN_FINGERPRINT)}, authenticated=True)
+    store = tmp_path / "store"
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",))
+
+    host, succeeded, message = results[0]
+    assert succeeded
+    assert "SSHFP" in message
+    assert FQDN_KEY_LINE in store.read_text()
+
+
+def test_rescan_hosts_refuses_keys_contradicting_sshfp(monkeypatch,
+                                                       stub_project,
+                                                       fake_tools,
+                                                       fake_binary,
+                                                       tmp_path):
+    """Keys which contradict the DNS answer are not stored, and the
+    stored entries of the host stay untouched."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    stub_dns(monkeypatch, {(4, 'ff' * 32)}, authenticated=True)
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",))
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    assert "do not match the SSHFP records" in message
+    assert store.read_text() == "old\n"
+
+
+def test_rescan_hosts_falls_back_without_dns_records(monkeypatch,
+                                                     stub_project,
+                                                     fake_tools,
+                                                     fake_binary,
+                                                     tmp_path):
+    """Without SSHFP records the keys are stored as scanned."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    stub_dns(monkeypatch, set(), authenticated=True)
+    store = tmp_path / "store"
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",))
+
+    host, succeeded, message = results[0]
+    assert succeeded
+    assert "no SSHFP records" in message
+    assert FQDN_KEY_LINE in store.read_text()
+
+
+def test_rescan_hosts_asks_for_confirmation_when_configured(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """The confirm callback sees the fingerprints in the ssh display
+    form and decides whether the keys are stored."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    stub_dns(monkeypatch, set(), authenticated=True)
+    store = tmp_path / "store"
+    calls = []
+
+    def confirm(host, offered):
+        calls.append((host, offered))
+        return True
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",), confirm=confirm)
+
+    assert results[0][1]
+    assert calls == [("web", [("SHA256:" + base64.b64encode(
+        bytes.fromhex(FQDN_FINGERPRINT)).decode('ascii').rstrip('='),
+        'ssh-ed25519')])]
+    assert FQDN_KEY_LINE in store.read_text()
+
+    decline = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",),
+                           confirm=lambda host, offered: False)
+    assert not decline[0][1]
+    assert FQDN_KEY_LINE in store.read_text()
+
+
+def test_rescan_hosts_dns_verify_requires_authentication(monkeypatch,
+                                                         stub_project,
+                                                         fake_tools,
+                                                         fake_binary,
+                                                         tmp_path):
+    """The strict mode does not store keys from DNS answers which a
+    DNSSEC-validating resolver did not authenticate."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    stub_dns(monkeypatch, {(4, FQDN_FINGERPRINT)}, authenticated=False)
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",), dns_mode='dns-verify')
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    assert "could not be verified through DNS" in message
+    assert store.read_text() == "old\n"
+
+
+def test_rescan_hosts_dns_verify_stores_authenticated_keys(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    stub_dns(monkeypatch, {(4, FQDN_FINGERPRINT)}, authenticated=True)
+    store = tmp_path / "store"
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",), dns_mode='dns-verify')
+
+    assert results[0][1]
+    assert FQDN_KEY_LINE in store.read_text()
