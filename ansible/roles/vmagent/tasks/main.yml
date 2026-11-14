@@ -1,0 +1,197 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  ansible.builtin.import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps secret role
+  ansible.builtin.import_role:
+    name: 'secret'
+
+- name: Pre hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "vmagent/pre_main.yml") }}'
+
+- name: Make sure that Ansible local fact directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Create vmagent system group
+  ansible.builtin.group:
+    name: '{{ vmagent__group }}'
+    state: 'present'
+    system: True
+  when: vmagent__deploy_state != 'absent'
+
+- name: Create vmagent system user
+  ansible.builtin.user:
+    name: '{{ vmagent__user }}'
+    group: '{{ vmagent__group }}'
+    home: '{{ vmagent__home }}'
+    shell: '{{ vmagent__shell }}'
+    system: True
+    create_home: True
+    state: 'present'
+  when: vmagent__deploy_state != 'absent'
+
+- name: Create vmagent directories
+  ansible.builtin.file:
+    path: '{{ item.path }}'
+    state: 'directory'
+    owner: '{{ item.owner }}'
+    group: '{{ vmagent__group }}'
+    mode: '0750'
+  loop:
+    - path: '{{ vmagent__config_dir }}'
+      owner: 'root'
+    - path: '{{ vmagent__home }}'
+      owner: '{{ vmagent__user }}'
+  loop_control:
+    label: '{{ item.path }}'
+  when: vmagent__deploy_state != 'absent'
+
+- name: Assert host architecture is supported by vmagent
+  ansible.builtin.assert:
+    that:
+      - ansible_architecture in vmagent__arch_map
+    quiet: True
+    fail_msg: >-
+      vmagent has no release archive for architecture
+      '{{ ansible_architecture }}'. Supported architectures:
+      {{ vmagent__arch_map.keys() | list | sort }}.
+  when:
+    - vmagent__deploy_state != 'absent'
+    - not (vmagent__skip_install | bool)
+
+- name: Install vmagent binary
+  ansible.builtin.include_tasks: 'install_binary.yml'
+  when:
+    - vmagent__deploy_state != 'absent'
+    - not (vmagent__skip_install | bool)
+
+# In check mode the template unit is not created. On a host where the role was
+# not applied yet, the instance tasks would fail without it, therefore the
+# systemd operations on instances are skipped in check mode until the template
+# unit is installed.
+- name: Check whether the vmagent systemd template unit is installed
+  ansible.builtin.stat:
+    path: '/etc/systemd/system/vmagent@.service'
+  register: vmagent__register_unit_stat
+  when: vmagent__deploy_state != 'absent'
+
+- name: Install vmagent systemd template unit
+  ansible.builtin.template:
+    src: 'etc/systemd/system/vmagent@.service.j2'
+    dest: '/etc/systemd/system/vmagent@.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: vmagent__register_unit
+  notify: [ 'Reload service manager' ]
+  when: vmagent__deploy_state != 'absent'
+
+- name: Remove vmagent installation
+  when: vmagent__deploy_state == 'absent'
+  block:
+
+    # Instances are found both in the inventory and in the local facts, which
+    # list configuration files and systemd instances present on the host.
+    # Only a missing unit is tolerated here; any other error stops the play
+    # before the configuration and queues are removed.
+    - name: Stop and disable vmagent instances
+      ansible.builtin.systemd:
+        name: 'vmagent@{{ item }}.service'
+        enabled: False
+        state: 'stopped'
+      register: vmagent__register_leftover_stop
+      failed_when:
+        - vmagent__register_leftover_stop is failed
+        - "'Could not find the requested service' not in (vmagent__register_leftover_stop.msg | d(''))"
+        - (vmagent__register_leftover_stop.status.LoadState | d('')) != 'not-found'
+      loop: '{{ (ansible_local.vmagent.instances | d([]) | map(attribute="name") | list)
+                | union(vmagent__combined_instances | debops.debops.parse_kv_items
+                        | map(attribute="name") | list) }}'
+
+    - name: Remove vmagent directories
+      ansible.builtin.file:
+        path: '{{ item }}'
+        state: 'absent'
+      loop:
+        - '{{ vmagent__config_dir }}'
+        - '{{ vmagent__home }}'
+        - '{{ vmagent__cache_dir }}'
+
+    - name: Remove vmagent systemd template unit
+      ansible.builtin.file:
+        path: '/etc/systemd/system/vmagent@.service'
+        state: 'absent'
+      notify: [ 'Reload service manager' ]
+
+    - name: Remove vmagent binary
+      ansible.builtin.file:
+        path: '{{ vmagent__bin_path }}'
+        state: 'absent'
+      when: not (vmagent__skip_install | bool)
+
+- name: Flush handlers before managing instances
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Check that vmagent instances listen on separate addresses
+  ansible.builtin.assert:
+    that:
+      - vmagent__var_duplicate_addrs | trim | length == 0
+    fail_msg: 'More than one vmagent instance uses the
+               {{ vmagent__var_duplicate_addrs | trim }} HTTP listen address,
+               set a separate "httpListenAddr" flag for each instance.'
+    quiet: True
+  vars:
+    vmagent__var_duplicate_addrs: |-
+      {% set seen = [] %}
+      {% set duplicates = [] %}
+      {% for element in (vmagent__combined_instances | debops.debops.parse_kv_items) %}
+      {%   if element.state == 'present' %}
+      {%     set addr = (vmagent__default_flags
+                         | combine(vmagent__flags, element.flags | d({}))).httpListenAddr | d(':8429') %}
+      {%     if addr in seen %}
+      {%       set _ = duplicates.append(addr) %}
+      {%     endif %}
+      {%     set _ = seen.append(addr) %}
+      {%   endif %}
+      {% endfor %}
+      {{ duplicates | unique | join(', ') }}
+  when: vmagent__deploy_state != 'absent'
+
+- name: Manage vmagent instances
+  ansible.builtin.include_tasks: 'manage_instance.yml'
+  loop: '{{ vmagent__combined_instances | debops.debops.parse_kv_items }}'
+  loop_control:
+    loop_var: 'instance'
+    label: '{{ instance.name }}'
+  vars:
+    vmagent__instance_flags: '{{ vmagent__default_flags
+                                 | combine(vmagent__flags, instance.flags | d({})) }}'
+    vmagent__instance_token_src: '{{ secret + "/" + vmagent__secret_base_path
+                                     + "/" + (instance.name | string) + "/bearer_token" }}'
+    vmagent__instance_token_file: '{{ vmagent__config_dir + "/"
+                                      + (instance.name | string) + ".token" }}'
+  when:
+    - vmagent__deploy_state != 'absent'
+    - instance.state in [ 'present', 'absent' ]
+
+- name: Save vmagent local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/vmagent.fact.j2'
+    dest: '/etc/ansible/facts.d/vmagent.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Reload Ansible local facts
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Post hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "vmagent/post_main.yml") }}'

@@ -1,0 +1,346 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# .. Copyright (C) 2026 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _vmagent__ref_defaults:
+
+# debops.vmagent default variables
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Role state and deployment [[[
+# -----------------------------
+
+# .. envvar:: vmagent__deploy_state [[[
+#
+# If ``present``, the :command:`vmagent` binary, its configuration and the
+# instances will be managed. If ``absent``, the instances will be stopped and
+# the binary, configuration and persistent queues will be removed.
+vmagent__deploy_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# Binary version and source [[[
+# -----------------------------
+
+# .. envvar:: vmagent__version [[[
+#
+# The version of the :command:`vmagent` binary to install, without the leading
+# ``v``. When you change it, update the checksums in
+# :envvar:`vmagent__archive_sha256_map` as well.
+vmagent__version: '1.156.0'
+
+                                                                   # ]]]
+# .. envvar:: vmagent__arch_map [[[
+#
+# Mapping between the host architecture reported by the
+# ``ansible_architecture`` fact and the architecture name used in the
+# VictoriaMetrics release archive names. The role stops with an error on hosts
+# with an architecture not listed here.
+vmagent__arch_map:
+  'x86_64': 'amd64'
+  'aarch64': 'arm64'
+
+                                                                   # ]]]
+# .. envvar:: vmagent__arch [[[
+#
+# Architecture name used in the release archive name for the current host.
+vmagent__arch: '{{ vmagent__arch_map[ansible_architecture] }}'
+
+                                                                   # ]]]
+# .. envvar:: vmagent__archive_sha256_map [[[
+#
+# SHA256 checksums of the ``vmutils-linux-<arch>-v<version>.tar.gz`` release
+# archives for :envvar:`vmagent__version`, by architecture name. The checksums
+# are published as the ``digest`` field of the release assets in the GitHub
+# Releases API, see :ref:`vmagent__ref_guide_airgapped` for an example.
+vmagent__archive_sha256_map:
+  'amd64': 'd71f7f00e07782531000620ec6c2a9d7ec83324f364dd1f36095ab378b5fb43b'
+  'arm64': '1a8e4ed55df2a59d5cd03056213f50d293d4fab029e38dd960597362d92cf176'
+
+                                                                   # ]]]
+# .. envvar:: vmagent__archive_sha256 [[[
+#
+# Expected SHA256 checksum of the release archive for the current host.
+vmagent__archive_sha256: '{{ vmagent__archive_sha256_map[vmagent__arch] }}'
+
+                                                                   # ]]]
+# .. envvar:: vmagent__release_base_url [[[
+#
+# Base URL used to build :envvar:`vmagent__release_url`. The default points to
+# the GitHub Releases of the VictoriaMetrics project. Change it to use an
+# internal mirror with the same ``<base>/v<version>/<archive>`` layout.
+vmagent__release_base_url: 'https://github.com/VictoriaMetrics/VictoriaMetrics/releases/download'
+
+                                                                   # ]]]
+# .. envvar:: vmagent__release_archive_name [[[
+#
+# Name of the release archive which contains the :command:`vmagent` binary.
+vmagent__release_archive_name: 'vmutils-linux-{{ vmagent__arch }}-v{{ vmagent__version }}.tar.gz'
+
+                                                                   # ]]]
+# .. envvar:: vmagent__release_url [[[
+#
+# URL of the release archive, used when
+# :envvar:`vmagent__controller_archive_path` is empty. A ``file://`` URL can be
+# used to point to an archive which is already present on the host. A proxy
+# configured through the ``inventory__environment`` variables applies to the
+# download.
+vmagent__release_url: '{{ vmagent__release_base_url }}/v{{ vmagent__version }}/{{ vmagent__release_archive_name }}'
+
+                                                                   # ]]]
+# .. envvar:: vmagent__controller_archive_path [[[
+#
+# Absolute path on the *Ansible Controller* to the release archive. If it's
+# set, the archive is copied to the host instead of being downloaded from
+# :envvar:`vmagent__release_url`, which allows installation on hosts without
+# Internet access. The checksum of the file is verified on the Controller
+# before the copy.
+vmagent__controller_archive_path: ''
+
+                                                                   # ]]]
+# .. envvar:: vmagent__skip_install [[[
+#
+# If ``True``, the role does not install the :command:`vmagent` binary, for
+# example when it's included in the host image. The configuration and the
+# instances are still managed.
+vmagent__skip_install: False
+
+                                                                   # ]]]
+# .. envvar:: vmagent__cache_dir [[[
+#
+# Temporary directory on the host where the release archive is stored and
+# unpacked during installation. The directory is removed afterwards.
+vmagent__cache_dir: '/var/cache/vmagent'
+
+                                                                   # ]]]
+# .. envvar:: vmagent__bin_path [[[
+#
+# Absolute path of the installed :command:`vmagent` binary.
+vmagent__bin_path: '/usr/local/bin/vmagent'
+                                                                   # ]]]
+                                                                   # ]]]
+# System user, group and directories [[[
+# --------------------------------------
+
+# .. envvar:: vmagent__user [[[
+#
+# Name of the UNIX system account used by the :command:`vmagent` instances.
+vmagent__user: '_vmagent'
+
+                                                                   # ]]]
+# .. envvar:: vmagent__group [[[
+#
+# Name of the UNIX system group used by the :command:`vmagent` instances.
+vmagent__group: '_vmagent'
+
+                                                                   # ]]]
+# .. envvar:: vmagent__home [[[
+#
+# Home directory of the system account. Each instance keeps its persistent
+# queue in a subdirectory named after the instance.
+vmagent__home: '/var/lib/vmagent'
+
+                                                                   # ]]]
+# .. envvar:: vmagent__shell [[[
+#
+# Login shell of the system account.
+vmagent__shell: '/usr/sbin/nologin'
+
+                                                                   # ]]]
+# .. envvar:: vmagent__config_dir [[[
+#
+# Directory with the scrape configuration (``<name>.yml``), the command line
+# flags (``<name>.env``) and the optional bearer token (``<name>.token``) of
+# each instance.
+vmagent__config_dir: '/etc/vmagent'
+                                                                   # ]]]
+                                                                   # ]]]
+# Remote write and scrape configuration [[[
+# -----------------------------------------
+
+# The variables below configure the ``default`` instance, which is created when
+# :envvar:`vmagent__remote_write_urls` is not empty. The scrape configuration
+# lists are concatenated in order, see :ref:`vmagent__ref_scrape_configs` for
+# details.
+
+# .. envvar:: vmagent__remote_write_urls [[[
+#
+# List of URLs passed to the ``default`` instance as the ``-remoteWrite.url``
+# flags. If the list is empty, the ``default`` instance is not created.
+vmagent__remote_write_urls: []
+
+                                                                   # ]]]
+# .. envvar:: vmagent__default_scrape_configs [[[
+#
+# List of Prometheus scrape jobs of the ``default`` instance defined by the
+# role.
+vmagent__default_scrape_configs: []
+
+                                                                   # ]]]
+# .. envvar:: vmagent__scrape_configs [[[
+#
+# List of Prometheus scrape jobs of the ``default`` instance defined on all
+# hosts in the Ansible inventory.
+vmagent__scrape_configs: []
+
+                                                                   # ]]]
+# .. envvar:: vmagent__group_scrape_configs [[[
+#
+# List of Prometheus scrape jobs of the ``default`` instance defined on hosts
+# in a specific Ansible inventory group.
+vmagent__group_scrape_configs: []
+
+                                                                   # ]]]
+# .. envvar:: vmagent__host_scrape_configs [[[
+#
+# List of Prometheus scrape jobs of the ``default`` instance defined on
+# specific hosts in the Ansible inventory.
+vmagent__host_scrape_configs: []
+
+                                                                   # ]]]
+# .. envvar:: vmagent__dependent_scrape_configs [[[
+#
+# List of Prometheus scrape jobs of the ``default`` instance defined by other
+# Ansible roles through the playbook.
+vmagent__dependent_scrape_configs: []
+
+                                                                   # ]]]
+# .. envvar:: vmagent__combined_scrape_configs [[[
+#
+# Variable which combines all scrape job lists and is used as the scrape
+# configuration of the ``default`` instance.
+vmagent__combined_scrape_configs: '{{ (vmagent__default_scrape_configs
+                                       + vmagent__scrape_configs
+                                       + vmagent__group_scrape_configs
+                                       + vmagent__host_scrape_configs
+                                       + vmagent__dependent_scrape_configs)
+                                      | flatten }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Instance definitions [[[
+# ------------------------
+
+# The lists below define the :command:`vmagent` instances. Each element is
+# a dictionary describing an instance, see :ref:`vmagent__ref_instances` for
+# details about supported parameters.
+
+# .. envvar:: vmagent__default_instances [[[
+#
+# List of instances defined by the role. It contains the ``default`` instance,
+# enabled when :envvar:`vmagent__remote_write_urls` is not empty.
+vmagent__default_instances:
+
+  - name: 'default'
+    remote_write_urls: '{{ vmagent__remote_write_urls }}'
+    scrape_configs: '{{ vmagent__combined_scrape_configs }}'
+    state: '{{ "present"
+               if (vmagent__remote_write_urls | length > 0)
+               else "init" }}'
+
+                                                                   # ]]]
+# .. envvar:: vmagent__instances [[[
+#
+# List of instances defined on all hosts in the Ansible inventory.
+vmagent__instances: []
+
+                                                                   # ]]]
+# .. envvar:: vmagent__group_instances [[[
+#
+# List of instances defined on hosts in a specific Ansible inventory group.
+vmagent__group_instances: []
+
+                                                                   # ]]]
+# .. envvar:: vmagent__host_instances [[[
+#
+# List of instances defined on specific hosts in the Ansible inventory.
+vmagent__host_instances: []
+
+                                                                   # ]]]
+# .. envvar:: vmagent__combined_instances [[[
+#
+# Variable which combines all instance lists and is used in role tasks and
+# templates. Entries with the same ``name`` are merged together by the
+# ``debops.debops.parse_kv_items`` filter, so a later list can change or
+# remove an instance defined in an earlier one.
+vmagent__combined_instances: '{{ vmagent__default_instances
+                                 + vmagent__instances
+                                 + vmagent__group_instances
+                                 + vmagent__host_instances }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Command line flags [[[
+# ----------------------
+
+# The :command:`vmagent` command line flags of each instance are combined from
+# :envvar:`vmagent__default_flags`, :envvar:`vmagent__flags` and the ``flags``
+# parameter of the instance, in that order. See :ref:`vmagent__ref_instances`
+# for the rules used to render the flags.
+
+# .. envvar:: vmagent__default_flags [[[
+#
+# Dictionary with :command:`vmagent` command line flags defined by the role
+# for all instances. By default :command:`vmagent` listens on all network
+# interfaces and does not limit the size of the persistent queue; the role
+# binds the HTTP endpoint to the loopback address and limits the queue size.
+# Each instance on a host needs its own ``httpListenAddr`` value.
+vmagent__default_flags:
+  httpListenAddr: '127.0.0.1:8429'
+  remoteWrite.maxDiskUsagePerURL: '1GB'
+
+                                                                   # ]]]
+# .. envvar:: vmagent__flags [[[
+#
+# Dictionary with :command:`vmagent` command line flags for all instances,
+# defined in the Ansible inventory.
+vmagent__flags: {}
+                                                                   # ]]]
+                                                                   # ]]]
+# systemd configuration [[[
+# -------------------------
+
+# The ``vmagent@.service`` template unit hardcodes
+# ``After=network-online.target`` / ``Wants=network-online.target``,
+# ``Restart=on-failure``, ``RestartSec=5``, ``TimeoutStopSec=30`` and
+# ``LimitNOFILE=65536``, and restricts the access of the daemon to the system;
+# only the queue directory of the instance is writable. To change these
+# settings for all instances or for a specific instance, use the
+# :ref:`debops.systemd` role to create a drop-in file for the
+# ``vmagent@.service`` unit or for the ``vmagent@<name>.service`` instance.
+                                                                   # ]]]
+# Secret management [[[
+# ---------------------
+
+# .. envvar:: vmagent__secret_base_path [[[
+#
+# Path in the :file:`secret/` directory on the Ansible Controller, relative to
+# the directory root, where the role looks for the
+# :file:`<name>/bearer_token` files of the instances.
+vmagent__secret_base_path: 'vmagent/instances'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: vmagent__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role. Registers the
+# default port of the :command:`vmagent` HTTP endpoint in
+# :file:`/etc/services`.
+vmagent__etc_services__dependent_list:
+
+  - name: 'vmagent'
+    port: '8429'
+    comment: 'VictoriaMetrics vmagent HTTP API and metrics'
+    state: '{{ "present"
+               if (vmagent__deploy_state != "absent")
+               else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]

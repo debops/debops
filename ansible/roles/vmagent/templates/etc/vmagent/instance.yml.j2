@@ -1,0 +1,12 @@
+{# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+#
+# vmagent scrape configuration for instance: {{ instance.name }}
+# Reference: https://docs.victoriametrics.com/victoriametrics/sd_configs/
+
+{{ ({'global': instance.global} if (instance.global | d({})) else {})
+   | combine({'scrape_configs': instance.scrape_configs | d([])})
+   | to_nice_yaml(indent=2, width=120) }}
