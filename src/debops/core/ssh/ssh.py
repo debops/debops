@@ -176,8 +176,13 @@ def _confirmed_keys(host, fingerprints, confirm, details):
     """
     if confirm is None:
         return [key for algorithm, fingerprint, key in fingerprints]
-    offered = [(ssh_fingerprint(fingerprint), key.split()[1])
-               for algorithm, fingerprint, key in fingerprints]
+    offered = []
+    seen = set()
+    for algorithm, fingerprint, key in fingerprints:
+        if fingerprint in seen:
+            continue
+        seen.add(fingerprint)
+        offered.append((ssh_fingerprint(fingerprint), key.split()[1]))
     if confirm(host, offered):
         return [key for algorithm, fingerprint, key in fingerprints]
     details.append('the scanned keys of the host were rejected by the '
@@ -302,7 +307,13 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
     """
     if store is None:
         store = known_hosts_store(project)
-        store_project = project.path
+        # The user mode stores the keys in '~/.ssh/known_hosts', which
+        # lies outside of the project by design; only the project mode
+        # derives the store from configuration, so only that store is
+        # contained.
+        store_project = (project.path
+                         if known_hosts_mode(project) == 'project'
+                         else None)
     else:
         store_project = None
     if not store:
