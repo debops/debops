@@ -180,6 +180,9 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
     """
     if store is None:
         store = known_hosts_store(project)
+        store_project = project.path
+    else:
+        store_project = None
     if not store:
         raise ValueError(
             'Cannot rescan the hosts: the project known_hosts mode is '
@@ -228,7 +231,7 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                 keys.extend(line for line in process.stdout.splitlines()
                             if line and not line.startswith('#'))
             if keys:
-                ensure_store_dir(store)
+                ensure_store_dir(store, store_project)
                 with open(store, 'a') as handle:
                     handle.write('\n'.join(keys) + '\n')
                 os.chmod(store, 0o600)

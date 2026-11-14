@@ -634,3 +634,29 @@ def test_rescan_hosts_reports_the_scan_timeout(stub_project, fake_tools,
     host, succeeded, message = results[0]
     assert not succeeded
     assert "timed out" in message
+
+
+def test_ensure_store_dir_refuses_to_escape_the_project(tmp_path):
+    project = tmp_path / "project"
+    project.mkdir()
+    store = (project / ".debops" / "ssh" / "views" / "system"
+             / ".." / ".." / ".." / ".." / ".." / ".." / "evil"
+             / "known_hosts")
+
+    with pytest.raises(ValueError) as error:
+        ensure_store_dir(str(store), str(project))
+
+    assert "outside of the project" in str(error.value)
+    assert not (tmp_path / "evil").exists()
+
+
+def test_ensure_store_dir_leaves_a_foreign_directory_alone(tmp_path):
+    """A store outside of the project layout gets created if missing,
+    but an existing directory keeps the permissions its owner set."""
+    foreign = tmp_path / "elsewhere"
+    foreign.mkdir()
+    os.chmod(foreign, 0o755)
+
+    ensure_store_dir(str(foreign / "known_hosts"))
+
+    assert (os.stat(foreign).st_mode & 0o777) == 0o755
