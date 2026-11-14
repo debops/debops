@@ -12,6 +12,7 @@ compositions and the '--' handoffs are covered at the Python level.
 
 import os
 import shlex
+import socket
 from types import SimpleNamespace
 from unittest import mock
 
@@ -471,3 +472,57 @@ def test_scp_parses_multiple_sources(capsys):
 
     assert cli.args.sources == ["f1", "f2"]
     assert cli.args.destination == "web:/dst"
+
+
+def test_do_ssh_rescan_prints_the_host_count_and_estimate(
+        monkeypatch, stub_project, fake_tools, capsys, tmp_path):
+    """The estimate is not shown for scans below the threshold; the
+    composed actions are."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+    monkeypatch.setattr('socket.getaddrinfo',
+                        mock.Mock(side_effect=socket.gaierror('no dns')))
+    store = tmp_path / "store"
+
+    with pytest.raises(SystemExit):
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(eval=True, known_hosts_file=str(store),
+                        hosts=["multi", "solo"]))
+
+    out = capsys.readouterr().out
+    assert "ssh-keygen" in out
+    assert "Scanning 3 hosts" not in out
+
+
+def test_do_ssh_rescan_skips_the_estimate_for_short_scans(
+        monkeypatch, stub_project, fake_tools, capsys):
+    """A scan of a few hosts is fast enough for interactive
+    operation; no estimate is printed for it."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit):
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(eval=True, hosts=["multi", "solo"]))
+
+    assert "estimated time" not in capsys.readouterr().out
+
+
+def test_do_ssh_rescan_prints_the_estimate_for_long_scans(
+        monkeypatch, stub_project, fake_tools, capsys):
+    """A scan of a hundred hosts crosses the three minute threshold
+    and the estimate is shown."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+    monkeypatch.setattr('socket.getaddrinfo',
+                        mock.Mock(side_effect=socket.gaierror('no dns')))
+
+    with pytest.raises(SystemExit):
+        Interpreter.do_ssh_rescan(
+            make_interpreter(), rescan_args(eval=True, hosts=["many"]))
+
+    out = capsys.readouterr().out
+    assert "Scanning 100 hosts" in out
+    assert "estimated time: 3 minutes" in out
