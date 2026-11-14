@@ -1374,7 +1374,8 @@ class ProjectDir(object):
                              'view-' + filename_view + '-ssh.toml'),
                 ssh.render_ssh_drop_in(view) + '\n')
 
-        store_dir = ssh.ensure_store_dir(ssh.ssh_store_file(self.path, view))
+        store_dir = ssh.ensure_store_dir(ssh.ssh_store_file(self.path, view),
+                                         self.path)
 
         # The known_hosts files are runtime state: the project
         # '.gitignore' learns to ignore them, and the operator stays

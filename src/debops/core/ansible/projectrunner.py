@@ -62,7 +62,7 @@ class AnsibleProjectRunner(Runner):
         store = declared_known_hosts_store(self.project)
         if store:
             try:
-                ensure_store_dir(store)
+                ensure_store_dir(store, self.project.path)
             except OSError as error:
                 logger.notice('Cannot ensure the known_hosts store of '
                               'the view: ' + str(error),
