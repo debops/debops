@@ -52,9 +52,10 @@ def ssh_args(**kwargs):
 
 
 def scp_args(**kwargs):
-    defaults = dict(project_dir=None, view="system", source="web:/src",
-                    destination="web:/dst", identity=None, accept=False,
-                    eval=True, handoff=None, scp_extra_args=[])
+    defaults = dict(project_dir=None, view="system",
+                    sources=["web:/src"], destination="web:/dst",
+                    identity=None, accept=False, eval=True, handoff=None,
+                    scp_extra_args=[])
     defaults.update(kwargs)
     return SimpleNamespace(**defaults)
 
@@ -112,7 +113,7 @@ def test_do_scp_reports_the_missing_operands(monkeypatch, stub_project,
         raw={"binaries": dict(fake_tools["binaries"])}))
 
     with pytest.raises(SystemExit) as exit_info:
-        Interpreter.do_scp(make_interpreter(), scp_args(source=None))
+        Interpreter.do_scp(make_interpreter(), scp_args(sources=[]))
 
     assert exit_info.value.code == 2
     assert "required" in capsys.readouterr().err
@@ -437,7 +438,7 @@ def test_scp_requires_the_operands(capsys):
         Subcommands(["debops", "scp"])
 
     assert exit_info.value.code == 2
-    assert "source and destination" in capsys.readouterr().err
+    assert "at least two operands" in capsys.readouterr().err
 
 
 def test_sftp_requires_a_destination(capsys):
@@ -455,3 +456,11 @@ def test_scp_help_parses_without_the_operands(capsys):
 
     assert exit_info.value.code == 0
     assert "copy files" in capsys.readouterr().out
+
+
+def test_scp_parses_multiple_sources(capsys):
+    cli = Subcommands(["debops", "scp", "-V", "system", "f1", "f2",
+                       "web:/dst"])
+
+    assert cli.args.sources == ["f1", "f2"]
+    assert cli.args.destination == "web:/dst"

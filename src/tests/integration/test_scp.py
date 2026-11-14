@@ -134,3 +134,25 @@ def test_scp_accepts_unseen_host_keys(run_debops, tmp_path, debops_env,
     store = (project_dir / ".debops" / "ssh" / "views" / "system" /
              "known_hosts")
     assert store.read_text().strip()
+
+
+def test_scp_copies_multiple_files_to_the_host(run_debops, tmp_path,
+                                               debops_env, localhost_ssh):
+    """Several local sources copy to the host in one command."""
+    project_dir = make_project(run_debops, tmp_path, debops_env)
+    first = tmp_path / "scp-multi-first.txt"
+    first.write_text("one\n")
+    second = tmp_path / "scp-multi-second.txt"
+    second.write_text("two\n")
+
+    result = run_debops("scp", str(first), str(second), "testhost:/tmp/",
+                        cwd=str(project_dir), env=debops_env)
+
+    assert result.returncode == 0
+
+    back = run_debops("ssh", "testhost", "cat", "/tmp/scp-multi-first.txt",
+                      cwd=str(project_dir), env=debops_env)
+    assert back.stdout == "one\n"
+    back = run_debops("ssh", "testhost", "cat", "/tmp/scp-multi-second.txt",
+                      cwd=str(project_dir), env=debops_env)
+    assert back.stdout == "two\n"
