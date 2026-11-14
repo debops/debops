@@ -5,4 +5,4 @@
 Synopsis
 ========
 
-``debops scp`` [-h|--help] [--project-dir <project_dir>] [-V|--view <view>] [-i|--identity <key>] [-a|--accept] [--eval] [-v|--verbose] [<scp_options>] <source> <destination>
+``debops scp`` [-h|--help] [--project-dir <project_dir>] [-V|--view <view>] [-i|--identity <key>] [-a|--accept] [--eval] [-v|--verbose] [<scp_options>] <source> [<source> ...] <destination>

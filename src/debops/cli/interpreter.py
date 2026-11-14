@@ -309,14 +309,15 @@ class Interpreter(object):
                 project, 'scp', args.handoff,
                 identity=args.identity, accept=args.accept)
         else:
-            if args.source is None or args.destination is None:
-                print_error('The source and the destination operands '
-                            'are required; see \'debops scp --help\'')
+            if not args.sources or args.destination is None:
+                print_error('At least two operands are required: one or '
+                            'more sources and a destination; see '
+                            '\'debops scp --help\'')
                 sys.exit(2)
 
             try:
                 command = ssh.build_scp_command(
-                    project, args.source, args.destination,
+                    project, args.sources, args.destination,
                     identity=args.identity, accept=args.accept,
                     scp_args=args.scp_extra_args)
             except (ValueError, ChildProcessError) as errmsg:
@@ -328,7 +329,7 @@ class Interpreter(object):
             sys.exit(0)
 
         if args.handoff is None:
-            logger.debug('Copying "' + args.source + '" to "'
+            logger.debug('Copying "' + '", "'.join(args.sources) + '" to "'
                          + args.destination + '"',
                          extra={'allow': 'stderr'})
         try:
