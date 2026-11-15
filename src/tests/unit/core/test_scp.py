@@ -105,7 +105,7 @@ def test_build_scp_command_declares_the_project_store(stub_project,
     project = stub_project(
         cfg_options={"ssh_args": "-o UserKnownHostsFile=/store"},
         raw={"binaries": dict(fake_tools["binaries"]),
-             "ssh": {"known_hosts": "project"}})
+             "views": {"system": {"ssh": {"known_hosts": "project"}}}})
 
     command = build_scp_command(project, ["web:/tmp/source"],
                                 "/tmp/local-copy")
@@ -231,7 +231,7 @@ def test_build_scp_command_keeps_option_values_with_spaces(
     project = stub_project(
         cfg_options={"ssh_args": "-o UserKnownHostsFile=" + store},
         raw={"binaries": dict(fake_tools["binaries"]),
-             "ssh": {"known_hosts": "project"}})
+             "views": {"system": {"ssh": {"known_hosts": "project"}}}})
 
     command = build_scp_command(project, ["web:/src"], "local",
                                 identity=identity)
@@ -248,3 +248,17 @@ def test_translate_ssh_args_keeps_option_values_with_spaces():
 
     assert translated == [("-o", "ProxyCommand=/bin/nc --option %h %p")]
     assert dropped == []
+
+
+def test_build_scp_command_refuses_an_undeclared_store(stub_project, fake_tools):
+    """In project mode the transfers refuse to run when the view does
+    not declare a store, the same way rescan does - silently falling
+    back to the user's known_hosts would defeat the mode."""
+    project = stub_project(raw={
+        "binaries": dict(fake_tools["binaries"]),
+        "views": {"system": {"ssh": {"known_hosts": "project"}}}})
+
+    with pytest.raises(ValueError) as error:
+        build_scp_command(project, ["web:/src"], "local")
+
+    assert "does not declare a known_hosts store" in str(error.value)

@@ -246,8 +246,11 @@ def render_ssh_drop_in(view):
 
 
 def known_hosts_mode(project):
-    """Return the configured known_hosts mode: 'user' or 'project'."""
-    return project.config.raw.get('ssh', {}).get('known_hosts', 'user')
+    """Return the known_hosts mode of the project's active view:
+    'user' or 'project'."""
+    views = project.config.raw.get('views', {})
+    view_config = views.get(project.view, {})
+    return view_config.get('ssh', {}).get('known_hosts', 'user')
 
 
 def declared_known_hosts_store(project):

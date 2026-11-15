@@ -73,7 +73,8 @@ def test_known_hosts_store_reads_the_declared_project_store(
                    "known_hosts")
     project = stub_project(
         cfg_options={"ssh_args": "-o UserKnownHostsFile=" + declared},
-        raw={"ssh": {"known_hosts": "project"}})
+        raw={"views": {"system": {"ssh": {"known_hosts":
+                                          "project"}}}})
 
     assert known_hosts_store(project) == declared
 
@@ -84,13 +85,15 @@ def test_known_hosts_store_expands_the_tilde_of_the_declared_store(
     project = stub_project(
         cfg_options={
             "ssh_args": "-o UserKnownHostsFile=~/.ssh/project_store"},
-        raw={"ssh": {"known_hosts": "project"}})
+        raw={"views": {"system": {"ssh": {"known_hosts":
+                                          "project"}}}})
 
     assert known_hosts_store(project) == "/home/operator/.ssh/project_store"
 
 
 def test_known_hosts_store_is_dormant_without_the_declaration(stub_project):
-    project = stub_project(raw={"ssh": {"known_hosts": "project"}})
+    project = stub_project(raw={"views": {"system": {"ssh": {
+        "known_hosts": "project"}}}})
 
     assert known_hosts_store(project) is None
 
@@ -264,8 +267,9 @@ def test_rescan_hosts_reports_a_host_without_keys(stub_project, fake_tools,
 
 def test_rescan_hosts_requires_a_store_in_the_project_mode(stub_project,
                                                            fake_tools):
-    project = stub_project(raw={"binaries": dict(fake_tools["binaries"]),
-                                "ssh": {"known_hosts": "project"}})
+    project = stub_project(raw={
+        "binaries": dict(fake_tools["binaries"]),
+        "views": {"system": {"ssh": {"known_hosts": "project"}}}})
 
     with pytest.raises(ValueError, match="does not declare"):
         rescan_hosts(project, ["web"])
@@ -285,7 +289,8 @@ def test_render_config_snippet_in_the_project_mode(stub_project):
     project = stub_project(
         cfg_options={"ssh_args":
                      "-o UserKnownHostsFile=~/.ssh/project_store"},
-        raw={"ssh": {"known_hosts": "project"}})
+        raw={"views": {"system": {"ssh": {"known_hosts":
+                                          "project"}}}})
 
     lines = render_config_snippet(project)
 
@@ -672,7 +677,8 @@ def test_render_config_snippet_rejects_a_multiline_store(stub_project):
         cfg_options={"ssh_args":
                      "-o 'UserKnownHostsFile=~/.ssh/store\n"
                      "ProxyCommand=evil'"},
-        raw={"ssh": {"known_hosts": "project"}})
+        raw={"views": {"system": {"ssh": {"known_hosts":
+                                          "project"}}}})
 
     with pytest.raises(ValueError):
         render_config_snippet(project)

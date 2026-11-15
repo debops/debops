@@ -168,7 +168,7 @@ option moves the trust into the project:
 
   .. code-block:: toml
 
-     [ssh]
+     [views.system.ssh]
      known_hosts = "project"
 
 In the ``project`` mode, each view of the project carries its own store:
