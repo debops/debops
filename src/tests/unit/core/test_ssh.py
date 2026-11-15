@@ -2053,3 +2053,26 @@ def test_rescan_hosts_normalizes_the_last_store_line(
     lines = store.read_text().splitlines()
     assert "old entry without newline" in lines
     assert any("ssh-ed25519" in line for line in lines)
+
+
+def test_handoff_command_uses_the_configured_transfer_binary(
+        stub_project):
+    """The sftp handoff honors the executable the configuration names,
+    like the sftp builder does."""
+    project = stub_project(cfg_options={"sftp_executable": "/bin/sftp-x"})
+
+    command = build_handoff_command(project, 'sftp', ["host"])
+
+    assert command[0] == "/bin/sftp-x"
+
+
+def test_handoff_command_applies_the_ssh_flags_to_ssh_only(stub_project):
+    """The login user and the port are flags of ssh; sftp carries them
+    in its destination, and its '-p' means something else."""
+    project = stub_project(cfg_options={"sftp_executable": "/bin/sftp-x"})
+
+    command = build_handoff_command(project, 'sftp', ["host"],
+                                    user="alice", port=2222)
+
+    assert "-l" not in command
+    assert "2222" not in command
