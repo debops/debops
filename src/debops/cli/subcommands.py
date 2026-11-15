@@ -17,7 +17,7 @@ except ModuleNotFoundError:
 
 from . import print_error
 from ..core.ssh import (SFTP_OPTIONS_WITH_VALUE, SSH_OPTIONS_WITH_VALUE,
-                        split_options_operand)
+                        split_options_operand, value_options_of)
 import shutil
 
 
@@ -715,15 +715,6 @@ Commands:
                             action='store_true')
         self.args = parser.parse_args(self.args[3:])
 
-    # The value-taking options of the ssh suite parsers: the options
-    # of the parsers themselves and the ones passed through to the
-    # ssh commands. The long options take their values as the next
-    # token.
-    SSH_SUITE_VALUE_OPTIONS = SSH_OPTIONS_WITH_VALUE | {'u'}
-    SSH_SUITE_LONG_VALUE_OPTIONS = ('--project-dir', '--view', '--user',
-                                    '--port', '--identity')
-    SFTP_SUITE_VALUE_OPTIONS = SFTP_OPTIONS_WITH_VALUE | {'V'}
-
     def do_ssh(self):
         # The first token selects the subcommand; anything else -- an
         # option or a host name -- belongs to the connect invocation,
@@ -783,9 +774,10 @@ Connection of a host:""")
         tokens = self.args[2:]
         marker = tokens.index('--') if '--' in tokens else len(tokens)
         handoff = tokens[marker + 1:] if marker < len(tokens) else None
+        value_options, long_value_options = value_options_of(
+            parser, passthrough=SSH_OPTIONS_WITH_VALUE)
         head, destination, tail = split_options_operand(
-            tokens[:marker], self.SSH_SUITE_VALUE_OPTIONS,
-            self.SSH_SUITE_LONG_VALUE_OPTIONS)
+            tokens[:marker], value_options, long_value_options)
         self.args, extras = parser.parse_known_args(head)
         if destination is None and handoff is None:
             parser.error('the following arguments are required: '
@@ -893,6 +885,8 @@ Connection of a host:""")
         tokens = self.args[2:]
         marker = tokens.index('--') if '--' in tokens else len(tokens)
         handoff = tokens[marker + 1:] if marker < len(tokens) else None
+        value_options, long_value_options = value_options_of(
+            parser, passthrough=SSH_OPTIONS_WITH_VALUE)
         operands = []
         options = []
         index = 0
@@ -907,9 +901,9 @@ Connection of a host:""")
                 continue
             options.append(token)
             letter = token[1] if len(token) > 1 else ''
-            takes_value = ((letter in self.SSH_SUITE_VALUE_OPTIONS
+            takes_value = ((letter in value_options
                             and len(token) == 2)
-                           or token in self.SSH_SUITE_LONG_VALUE_OPTIONS)
+                           or token in long_value_options)
             if takes_value and index + 1 < len(tokens):
                 index += 1
                 options.append(tokens[index])
@@ -950,9 +944,10 @@ Connection of a host:""")
         tokens = self.args[2:]
         marker = tokens.index('--') if '--' in tokens else len(tokens)
         handoff = tokens[marker + 1:] if marker < len(tokens) else None
+        value_options, long_value_options = value_options_of(
+            parser, passthrough=SFTP_OPTIONS_WITH_VALUE)
         head, destination, tail = split_options_operand(
-            tokens[:marker], self.SFTP_SUITE_VALUE_OPTIONS,
-            self.SSH_SUITE_LONG_VALUE_OPTIONS)
+            tokens[:marker], value_options, long_value_options)
         self.args, extras = parser.parse_known_args(head)
         if destination is None and handoff is None:
             parser.error('the following arguments are required: '
