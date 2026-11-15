@@ -25,12 +25,14 @@ from debops.core.ssh import (SCP_OPTIONS_WITH_VALUE, SFTP_OPTIONS_WITH_VALUE,
                              SSH_OPTIONS_WITH_VALUE,
                              build_handoff_command, build_ssh_command,
                              ensure_store_dir, host_identifiers,
-                             known_hosts_mode, known_hosts_store,
-                             remove_command, render_config_snippet,
+                             known_hosts_mode, known_hosts_option,
+                             known_hosts_store,
+                             parse_config_stores, remove_command,
+                             render_config_snippet,
                              rescan_actions, resolve_destination,
                              resolve_host, resolve_patterns, rescan_hosts,
                              scan_command, split_destination,
-                             without_known_hosts_options,
+                             split_operand, without_known_hosts_options,
                              split_options_operands, translate_ssh_args,
                              value_options_of, write_config_snippet)
 
@@ -1460,3 +1462,48 @@ def test_build_ssh_command_uses_the_resolved_executable_and_yields(
     assert command[0] == "/bin/ssh-ini"
     assert "ConnectTimeout=60" in command
     assert "ConnectTimeout=30" not in command
+
+
+def test_known_hosts_option_quotes_the_spaced_paths():
+    """A store path which carries whitespace would be split into
+    fragment paths by the option parsing of ssh; the double-quoted
+    form survives it."""
+    assert known_hosts_option('/plain/store') == \
+        'UserKnownHostsFile=/plain/store'
+    assert known_hosts_option('/a b/store') == \
+        'UserKnownHostsFile="/a b/store"'
+
+
+def test_known_hosts_option_refuses_the_unrepresentable_paths():
+    for store in ('/q"uote', '/back\\slash', '/new\nline', '/carriage\r'):
+        with pytest.raises(ValueError):
+            known_hosts_option(store)
+
+
+def test_render_config_snippet_quotes_the_spaced_store(stub_project,
+                                                       tmp_path):
+    """The managed block quotes a store path which carries whitespace,
+    and the parse reads it back as one token."""
+    store = str(tmp_path / "a b" / ".debops" / "ssh" / "views" /
+                "system" / "known_hosts")
+    project = stub_project(
+        cfg_options={"ssh_args":
+                     "-o 'UserKnownHostsFile=\"" + store + "\"'"},
+        raw={"views": {"system": {"ssh": {"known_hosts": "project"}}}})
+
+    lines = render_config_snippet(project)
+    store_line = [line for line in lines
+                  if line.strip().startswith('UserKnownHostsFile')][0]
+    assert '"' + store + '"' in store_line
+    assert parse_config_stores('\n'.join(lines) + '\n') == [store]
+
+
+def test_split_destination_splits_the_user_at_the_last_at():
+    """ssh parses 'a@b@c' as the user 'a@b' and the host 'c', the way
+    'ssh -G' reports it."""
+    assert split_destination('a@b@c') == ('a@b', 'c', None)
+    assert split_destination('ssh://a@b@c:22') == ('a@b', 'c', '22')
+
+
+def test_split_operand_splits_the_user_at_the_last_at():
+    assert split_operand('a@b@c:/path') == ('a@b', 'c', '/path')

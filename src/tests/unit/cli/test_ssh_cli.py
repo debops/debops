@@ -612,3 +612,40 @@ def test_do_ssh_rescan_prints_the_estimate_for_long_scans(
     out = capsys.readouterr().out
     assert "Scanning 100 hosts" in out
     assert "estimated time: 3 minutes" in out
+
+
+def test_ssh_handoff_forwards_the_collected_options(monkeypatch,
+                                                    stub_project,
+                                                    fake_tools, capsys):
+    """The options the walk collected before the '--' marker reach the
+    composed handoff command; the tunnel of an option-only invocation
+    is not lost."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_connect(
+            make_interpreter(),
+            ssh_args(eval=True, handoff=["web01"],
+                     ssh_extra_args=["-L", "8080:localhost:80"]))
+
+    assert exit_info.value.code == 0
+    command = shlex.split(capsys.readouterr().out)
+    assert command[command.index("web01") - 2:command.index("web01")] == \
+        ["-L", "8080:localhost:80"]
+
+
+def test_sftp_handoff_forwards_the_collected_options(monkeypatch,
+                                                     stub_project,
+                                                     fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_sftp(
+            make_interpreter(),
+            sftp_args(eval=True, handoff=["host"],
+                      sftp_head_args=["-q"]))
+
+    assert exit_info.value.code == 0
+    assert capsys.readouterr().out.strip() == "/usr/bin/sftp -q host"
