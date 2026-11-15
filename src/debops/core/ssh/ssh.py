@@ -29,7 +29,8 @@ import subprocess
 from .dns import (is_ip_address, is_link_local, key_fingerprint,
                   lookup_sshfp, ssh_fingerprint)
 from .utils import (USER_KNOWN_HOSTS_STORE, ensure_store_dir,
-                    known_hosts_mode, known_hosts_store, resolve_host,
+                    known_hosts_mode, known_hosts_option,
+                    known_hosts_store, quote_store_path, resolve_host,
                     ssh_executable)
 from ..utils import unexpanduser
 
@@ -57,7 +58,8 @@ def split_destination(destination):
         remainder = destination[len('ssh://'):]
         user = None
         if '@' in remainder:
-            user, _, remainder = remainder.partition('@')
+            # ssh splits the user at the last '@' of the destination
+            user, _, remainder = remainder.rpartition('@')
         port = None
         if ':' in remainder:
             hostname, _, port = remainder.rpartition(':')
@@ -70,7 +72,7 @@ def split_destination(destination):
     user = None
     host = destination
     if '@' in host:
-        user, _, host = host.partition('@')
+        user, _, host = host.rpartition('@')
     return user, host, None
 
 
@@ -138,7 +140,7 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
             raise ValueError(
                 'The project known_hosts mode is active for the view, '
                 'but the view does not declare a known_hosts store')
-        command.extend(['-o', 'UserKnownHostsFile=' + store])
+        command.extend(['-o', known_hosts_option(store)])
 
     effective_user = user or parameters.get('user')
     if effective_user:
@@ -563,7 +565,10 @@ def parse_config_stores(existing):
     for line in block.splitlines():
         stripped = line.strip()
         if stripped.startswith('UserKnownHostsFile'):
-            stores = stripped.split()[1:]
+            # The store paths which carry whitespace are double-quoted
+            # in the line; the shell grammar reads them back as single
+            # tokens
+            stores = shlex.split(stripped)[1:]
             return stores[1:]
     return []
 
@@ -585,16 +590,15 @@ def render_config_snippet(project, project_stores=None):
     store = known_hosts_store(project)
     lines = [CONFIG_BLOCK_BEGIN]
     if mode == 'project' and store:
-        if '\n' in store or '\r' in store:
-            raise ValueError('The known_hosts store path contains newline '
-                             'characters and cannot be written into an '
-                             'SSH client configuration: ' + store)
         stores = sorted(set((project_stores or [])
                             + [unexpanduser(store)]))
+        # The store paths which carry whitespace are quoted; unquoted,
+        # the option parsing of ssh would split them into fragment
+        # paths
+        tokens = [USER_KNOWN_HOSTS_STORE] + [
+            quote_store_path(store) for store in stores]
         lines.append('Host *')
-        lines.append('    UserKnownHostsFile '
-                     + USER_KNOWN_HOSTS_STORE + ' '
-                     + ' '.join(stores))
+        lines.append('    UserKnownHostsFile ' + ' '.join(tokens))
     else:
         lines.append('# The known_hosts mode of the view is set to "'
                      + mode + '"; there is nothing to configure.')
