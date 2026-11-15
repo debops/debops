@@ -384,7 +384,8 @@ class Interpreter(object):
             command = ssh.build_handoff_command(
                 project, 'ssh', args.handoff,
                 identity=args.identity, accept=args.accept,
-                passthrough=args.ssh_extra_args)
+                passthrough=args.ssh_extra_args,
+                user=args.user, port=args.port)
         else:
             user, host, port = ssh.split_destination(args.host)
             user = user or args.user

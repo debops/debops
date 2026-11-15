@@ -652,16 +652,17 @@ def test_build_handoff_command_passes_the_arguments(stub_project,
 
 def test_build_handoff_command_applies_the_own_options(stub_project,
                                                        fake_tools):
-    """The identity and the accept-new option are the only options
-    DebOps applies to the handoff invocation."""
+    """The identity and the accept-new option are options DebOps
+    applies to the handoff invocation."""
     project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
 
     command = build_handoff_command(project, "sftp",
                                     ["-b", "batch", "host"],
                                     identity="/keys/id", accept=True)
 
-    assert command == ["/usr/bin/sftp", "-i", "/keys/id",
+    assert command == ["/usr/bin/sftp",
                        "-o", "StrictHostKeyChecking=accept-new",
+                       "-i", "/keys/id",
                        "-b", "batch", "host"]
 
 
@@ -1712,3 +1713,43 @@ def test_scp_and_sftp_bracket_the_ipv6_destinations(
 
     assert any(token.endswith("[2001:db8::1]:/srv")
                for token in command)
+
+
+def test_handoff_command_applies_the_interpreted_options(stub_project,
+                                                         fake_tools):
+    """The user, the port and the identity which the walk collected
+    before the '--' marker reach the composed handoff command."""
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+
+    command = build_handoff_command(
+        project, 'ssh', ["web-1"], identity="/keys/x", user="alice",
+        port=2222, passthrough=["-L", "8080:localhost:80"])
+
+    assert in_sequence(command, ["-i", "/keys/x"])
+    assert in_sequence(command, ["-l", "alice"])
+    assert in_sequence(command, ["-p", "2222"])
+    assert command[-3:] == ["-L", "8080:localhost:80", "web-1"]
+
+
+def test_handoff_command_injects_the_store_with_accept(stub_project,
+                                                       fake_tools):
+    """The '--accept' option stores unseen host keys; in the project
+    mode the store of the view is injected with it, so the keys land
+    in the store of the view. Without '--accept' no store is
+    applied."""
+    binaries = dict(fake_tools["binaries"])
+    project = stub_project(
+        raw={"binaries": binaries,
+             "views": {"system": {"ssh": {"known_hosts": "project"}}}},
+        cfg_options={"ssh_args": "-o UserKnownHostsFile=/store"})
+
+    command = build_handoff_command(project, 'ssh', ["web-1"],
+                                    accept=True)
+
+    assert in_sequence(command, ["-o", "UserKnownHostsFile=/store"])
+    assert in_sequence(command, ["-o",
+                                 "StrictHostKeyChecking=accept-new"])
+
+    command = build_handoff_command(project, 'ssh', ["web-1"])
+
+    assert "UserKnownHostsFile" not in command
