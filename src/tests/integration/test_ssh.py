@@ -272,7 +272,7 @@ def test_exec_accept_recreates_the_store(run_debops, tmp_path, debops_env,
     add_inventory_host(project_dir)
     shutil.rmtree(project_dir / ".debops" / "ssh")
 
-    result = run_debops("exec", "-a", "testhost", "-m", "ping",
+    result = run_debops("exec", "--accept", "testhost", "-m", "ping",
                         cwd=str(project_dir), env=debops_env)
 
     assert result.returncode == 0

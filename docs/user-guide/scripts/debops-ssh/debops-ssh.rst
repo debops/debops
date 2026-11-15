@@ -70,16 +70,19 @@ Options
 
 ``--``
   Before the destination, the marker hands the rest of the arguments to
-  :command:`ssh` verbatim: the inventory is not consulted and the
-  known_hosts store of the project is not applied. After the destination,
+  :command:`ssh` verbatim: the inventory is not consulted. The options of
+  DebOps still apply in front of the marker, ``--accept`` among them --
+  with it, the known_hosts store of the project is applied to the handoff
+  as well. After the destination,
   the marker separates the remote command from the options.
 
 The ``rescan`` subcommand
 -------------------------
 
 The ``rescan`` subcommand refreshes the known_hosts entries of the hosts
-which match the Ansible inventory patterns. It removes the stale entries of
-every identifier of a host and scans the current host keys:
+which match the Ansible inventory patterns. It scans the current host keys
+of a host and replaces the stored entries of the identifiers which
+answered the scan:
 
 .. code-block:: console
 
@@ -110,16 +113,19 @@ Options
   performed, as the commands which perform them.
 
 ``-f <file>, --known-hosts-file <file>``
-  Operate on this known_hosts file instead of the store of the active mode.
+  Operate on this known_hosts file instead of the store of the active
+  mode. The file name expands the ``~`` prefix.
 
 ``-T <seconds>, --timeout <seconds>``
   Timeout of each key scan (default: ``10``).
 
 ``--dns``
   Verify the scanned host keys against the SSHFP records of the DNS
-  (the default). Keys which match the published records are stored
-  without confirmation; keys which contradict the records are refused
-  with a report.
+  (the default). Keys which match records that a DNSSEC-validating
+  resolver authenticated are stored without confirmation; keys which
+  contradict the records are refused with a report. Matches which the
+  resolver did not authenticate follow the
+  ``ssh.rescan.trust_unsigned_records`` option.
 
 ``--no-dns``
   Do not check the SSH host keys against DNS.

@@ -9,6 +9,6 @@ Synopsis
 
 ``debops ssh`` [<options>] ``--`` <ssh_arguments>
 
-``debops ssh rescan`` [-h|--help] [--project-dir <project_dir>] [-V|--view <view>] [--remove] [--scan] [--eval] [-f|--known-hosts-file <file>] [-T|--timeout <seconds>] [-v|--verbose] <pattern> [<pattern> ...]
+``debops ssh rescan`` [-h|--help] [--project-dir <project_dir>] [-V|--view <view>] [--remove] [--scan] [--eval] [-f|--known-hosts-file <file>] [-T|--timeout <seconds>] [--dns|--no-dns|--dns-verify] [-c|--confirm] [-v|--verbose] <pattern> [<pattern> ...]
 
 ``debops ssh config`` [-h|--help] [--project-dir <project_dir>] [-V|--view <view>] [--write] [-v|--verbose]
