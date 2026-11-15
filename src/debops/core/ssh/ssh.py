@@ -111,8 +111,9 @@ def build_ssh_command(project, host, parameters=None, user=None, port=None,
         command.extend(['-i', effective_identity])
 
     try:
-        configured_args = project.ansible_cfg.get_option(
-            'ssh_args', section='ssh_connection')
+        configured_args = (parameters.get('ssh_args')
+                           or project.ansible_cfg.get_option(
+                               'ssh_args', section='ssh_connection'))
     except (configparser.NoOptionError, configparser.NoSectionError):
         configured_args = None
     if configured_args:
