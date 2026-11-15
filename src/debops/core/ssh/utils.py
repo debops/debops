@@ -65,6 +65,8 @@ def value_options_of(parser, passthrough=()):
     """
     shorts = set(passthrough)
     longs = []
+    # The '_actions' attribute is private argparse API; there is no
+    # public per-parser action list to inspect instead
     for action in parser._actions:
         if action.nargs == 0:
             continue
@@ -498,6 +500,13 @@ def resolve_host(project, host):
             'The ansible_host of the host "' + host + '" looks like an '
             'SSH option instead of a host name or address: ' + destination)
     parameters['destination'] = destination
+    for key in ('port', 'timeout'):
+        value = parameters[key]
+        if value is not None and not isinstance(value, (str, int)):
+            # A list or a mapping would compose into garbage argv
+            raise ValueError(
+                'The "' + key + '" of the host "' + host + '" is not '
+                'a usable value: ' + repr(value))
     return parameters
 
 
@@ -506,11 +515,14 @@ def resolve_patterns(project, patterns):
 
     The patterns are expanded by the 'ansible' binary with
     '--list-hosts', the same pattern engine the runners use, so
-    'all', the group names, the wildcards and the unions work. Returns
-    '(hosts, unmatched)': the deduplicated host names in the order of
-    the patterns, and the patterns which matched no host. Raises
-    ValueError when the expansion fails, ChildProcessError when it
-    cannot run.
+    'all', the group names, the wildcards and the unions work. The
+    parsed output is the human-oriented listing of the 'ansible' tool
+    and not a versioned interface -- a format change of ansible-core
+    surfaces here, and the raw output is logged at the debug level for
+    such a case. Returns '(hosts, unmatched)': the deduplicated host
+    names in the order of the patterns, and the patterns which matched
+    no host. Raises ValueError when the expansion fails,
+    ChildProcessError when it cannot run.
     """
     binary = project.config.raw['binaries']['ansible']
     hosts = []
@@ -527,6 +539,8 @@ def resolve_patterns(project, patterns):
             detail = (process.stderr.strip().splitlines() or [''])[-1]
             raise ValueError('Cannot expand the pattern "' + pattern
                              + '": ' + detail)
+        logger.debug('The pattern expansion of "' + pattern + '" wrote: '
+                     + process.stdout.strip().replace('\n', ' | '))
         matched = []
         in_list = False
         for line in process.stdout.splitlines():

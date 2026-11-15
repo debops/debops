@@ -328,7 +328,7 @@ class Interpreter(object):
                      extra={'allow': 'stderr'})
         try:
             os.execvp(command[0], command)
-        except FileNotFoundError as errmsg:
+        except (FileNotFoundError, PermissionError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
 
@@ -367,7 +367,7 @@ class Interpreter(object):
                          extra={'allow': 'stderr'})
         try:
             os.execvp(command[0], command)
-        except FileNotFoundError as errmsg:
+        except (FileNotFoundError, PermissionError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
 
@@ -396,11 +396,15 @@ class Interpreter(object):
                 print_error(errmsg)
                 sys.exit(1)
 
-            command = ssh.build_ssh_command(
-                project, host, parameters,
-                user=user, port=port, identity=args.identity,
-                accept=args.accept, ssh_args=args.ssh_args,
-                options=args.ssh_extra_args)
+            try:
+                command = ssh.build_ssh_command(
+                    project, host, parameters,
+                    user=user, port=port, identity=args.identity,
+                    accept=args.accept, ssh_args=args.ssh_args,
+                    options=args.ssh_extra_args)
+            except ValueError as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
 
         if args.eval:
             print(shlex.join(command))
@@ -411,7 +415,7 @@ class Interpreter(object):
                          extra={'allow': 'stderr'})
         try:
             os.execvp(command[0], command)
-        except FileNotFoundError as errmsg:
+        except (FileNotFoundError, PermissionError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
 
@@ -453,10 +457,8 @@ class Interpreter(object):
         if estimate >= 180:
             if estimate >= 3600:
                 estimate_text = '{:.1f} hours'.format(estimate / 3600.0)
-            elif estimate >= 90:
-                estimate_text = '{} minutes'.format(estimate // 60)
             else:
-                estimate_text = '{} seconds'.format(estimate)
+                estimate_text = '{} minutes'.format(estimate // 60)
             print('Scanning {} hosts, estimated time: {} (hosts which '
                   'do not respond take longer).'.format(len(hosts),
                                                         estimate_text))
@@ -480,8 +482,14 @@ class Interpreter(object):
             print('The SSH host keys of "' + host + '" were scanned:')
             for fingerprint, key_type in offered:
                 print('  ' + fingerprint + '  ' + key_type)
-            answer = input('  Accept these keys and store them? '
-                           '[Enter=yes, n=no, Ctrl-C=abort] ')
+            try:
+                answer = input('  Accept these keys and store them? '
+                               '[Enter=yes, n=no, Ctrl-C=abort] ')
+            except EOFError:
+                # The input ended; without an answer the keys are not
+                # stored
+                print('  The input ended; the keys were not stored')
+                return False
             return answer.strip().lower() != 'n'
 
         try:
@@ -490,7 +498,7 @@ class Interpreter(object):
                 phases=phases, timeout=args.timeout,
                 dns_mode=args.dns_mode,
                 confirm=confirm_host if args.confirm else None)
-        except ValueError as errmsg:
+        except (ValueError, OSError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
         except KeyboardInterrupt:
