@@ -1589,3 +1589,79 @@ def test_require_store_resolves_the_mode_and_the_injection(stub_project):
         "known_hosts": "project"}}}})
     with pytest.raises(ValueError, match="does not declare a known_hosts"):
         require_store(dormant)
+
+
+def test_rescan_hosts_stores_unsigned_matches_by_default(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """An SSHFP match which the resolver did not authenticate grants
+    no trust: the keys are handled like the keys of a host without
+    SSHFP records, and the report says so."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    stub_dns(monkeypatch, {(4, 2, FQDN_FINGERPRINT)}, authenticated=False)
+    store = tmp_path / "store"
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",))
+
+    host, succeeded, message = results[0]
+    assert succeeded
+    assert "not DNSSEC-validated" in message
+    assert FQDN_KEY_LINE in store.read_text()
+
+
+def test_rescan_hosts_asks_for_confirmation_on_unsigned_matches(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """With '--confirm', the unsigned match is offered like the hosts
+    without records; a decline keeps the old trust."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    stub_dns(monkeypatch, {(4, 2, FQDN_FINGERPRINT)}, authenticated=False)
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           confirm=lambda host, offered: False)
+
+    assert not results[0][1]
+    assert store.read_text() == "old\n"
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           confirm=lambda host, offered: True)
+
+    assert results[0][1]
+    assert FQDN_KEY_LINE in store.read_text()
+
+
+def test_rescan_hosts_refuses_unsigned_matches_when_configured(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """The 'ssh.rescan.trust_unsigned_records' option set to 'false'
+    refuses the hosts whose SSHFP match the resolver did not
+    authenticate; '--confirm' accepts them after the check."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "fqdn-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"" + FQDN + "\"}'\n")
+    binaries["ssh-keyscan"] = fake_binary(
+        "fqdn-keyscan",
+        "#!/bin/sh\nprintf '%s\\n' \"$4 ssh-ed25519 "
+        + FQDN_KEY_BLOB + "\"\n")
+    project = stub_project(raw={
+        "binaries": binaries,
+        "ssh": {"rescan": {"trust_unsigned_records": False}}})
+    stub_dns(monkeypatch, {(4, 2, FQDN_FINGERPRINT)}, authenticated=False)
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",))
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    assert "not DNSSEC-validated" in message
+    assert store.read_text() == "old\n"
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           confirm=lambda host, offered: True)
+
+    assert results[0][1]
+    assert FQDN_KEY_LINE in store.read_text()

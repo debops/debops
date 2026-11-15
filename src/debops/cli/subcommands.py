@@ -825,7 +825,12 @@ Connection of a host:""")
         group.add_argument('--dns', dest='dns_mode', action='store_const',
                            const='dns', default='dns',
                            help='verify the scanned host keys against '
-                                'the SSHFP records of the DNS (default)')
+                                'the SSHFP records of the DNS; '
+                                'DNSSEC-validated records are stored '
+                                'automatically, unsigned matches follow '
+                                'the ssh.rescan.'
+                                'trust_unsigned_records option '
+                                '(default)')
         group.add_argument('--no-dns', dest='dns_mode',
                            action='store_const', const='no-dns',
                            help='do not check the SSH host keys against '

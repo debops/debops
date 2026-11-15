@@ -10,8 +10,10 @@ SSHFP resource records (RFC 4255). Scanned keys whose fingerprints
 match such records can be stored without human confirmation; keys
 which contradict the DNS answer are refused. On a DNSSEC-signed zone
 the records themselves are authenticated, which makes the match a
-genuine third-party verification; on an unsigned zone it is trust
-transferred to DNS, and callers should say so in their reports.
+genuine third-party verification. On an unsigned zone the match
+grants no trust of its own -- RFC 4255 forbids trusting
+unauthenticated SSHFP records -- and the callers decide what the keys
+fall back to.
 """
 
 import base64
