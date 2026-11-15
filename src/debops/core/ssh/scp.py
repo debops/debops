@@ -38,6 +38,7 @@ def build_scp_command(project, sources, destination_operand,
     operands = []
     translated = []
     dropped = []
+    store, inject = require_store(project)
     ports = []
     identities = []
     executables = []
@@ -69,7 +70,13 @@ def build_scp_command(project, sources, destination_operand,
                       parameters.get('common_args'),
                       parameters.get('extra_args')):
             if value:
-                tokens = without_known_hosts_options(shlex.split(value))
+                tokens = shlex.split(value)
+                if inject:
+                    # The store of the view is injected; a declaration
+                    # in the resolved arguments would be dead weight.
+                    # In the user mode the declaration of the operator
+                    # passes through
+                    tokens = without_known_hosts_options(tokens)
                 translated_side, dropped_side = translate_ssh_args(tokens)
                 translated.extend(translated_side)
                 dropped.extend(dropped_side)
@@ -100,7 +107,6 @@ def build_scp_command(project, sources, destination_operand,
     # identity -- must not be defeated by a value in the resolved
     # arguments of the hosts
     ssh_options = []
-    store, inject = require_store(project)
     if inject:
         ssh_options.append(('-o', known_hosts_option(store)))
     if accept:

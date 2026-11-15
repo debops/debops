@@ -83,7 +83,13 @@ def build_sftp_command(project, destination, identity=None, accept=False,
                   parameters.get('common_args'),
                   parameters.get('extra_args')):
         if value:
-            tokens = without_known_hosts_options(shlex.split(value))
+            tokens = shlex.split(value)
+            if inject:
+                # The store of the view is injected; a declaration in
+                # the resolved arguments would be dead weight. In the
+                # user mode the declaration of the operator passes
+                # through
+                tokens = without_known_hosts_options(tokens)
             translated_side, dropped_side = translate_ssh_args(tokens)
             translated.extend(translated_side)
             dropped.extend(dropped_side)

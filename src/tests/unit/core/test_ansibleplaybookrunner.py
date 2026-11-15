@@ -651,3 +651,50 @@ def test_accept_option_respects_an_env_declared_store(stub_project,
     assert value == ("-o StrictHostKeyChecking=accept-new"
                      " -o \"UserKnownHostsFile /tmp/env_store\"")
     assert "known_hosts'" not in value
+
+
+def test_accept_option_respects_the_attached_store_spelling(
+        stub_project, monkeypatch, tmp_path):
+    """An 'ANSIBLE_SSH_ARGS' which declares a known_hosts file in the
+    attached spelling is respected: no store of the view is appended
+    after it."""
+    monkeypatch.setenv("ANSIBLE_SSH_ARGS",
+                       "-oUserKnownHostsFile=/env_store")
+    store = str(tmp_path / ".debops" / "ssh" / "views" / "system" /
+                "known_hosts")
+    project = stub_project(
+        cfg_options={"inventory": "ansible/inventory",
+                     "collections_path": "",
+                     "ssh_args": "-o UserKnownHostsFile=" + store},
+        raw={"views": {"system": {"ssh": {"known_hosts": "project"}}}})
+    runner = AnsiblePlaybookRunner(project, ansible_args=["site.yml"],
+                                   accept=True)
+
+    value = runner._ansible_env["ANSIBLE_SSH_ARGS"]
+
+    assert value == ("-o StrictHostKeyChecking=accept-new"
+                     " -oUserKnownHostsFile=/env_store")
+    assert store not in value
+
+
+def test_accept_option_survives_an_unparseable_environment(
+        stub_project, monkeypatch, tmp_path):
+    """An 'ANSIBLE_SSH_ARGS' whose quotes do not balance cannot be
+    inspected; the store of the view is carried anyway, as it was
+    before the inspection existed."""
+    monkeypatch.setenv("ANSIBLE_SSH_ARGS", "-o 'Unclosed")
+    store = str(tmp_path / ".debops" / "ssh" / "views" / "system" /
+                "known_hosts")
+    project = stub_project(
+        cfg_options={"inventory": "ansible/inventory",
+                     "collections_path": "",
+                     "ssh_args": "-o UserKnownHostsFile=" + store},
+        raw={"views": {"system": {"ssh": {"known_hosts": "project"}}}})
+    runner = AnsiblePlaybookRunner(project, ansible_args=["site.yml"],
+                                   accept=True)
+
+    value = runner._ansible_env["ANSIBLE_SSH_ARGS"]
+
+    assert value == ("-o StrictHostKeyChecking=accept-new"
+                     " -o 'Unclosed"
+                     " -o 'UserKnownHostsFile=" + store + "'")

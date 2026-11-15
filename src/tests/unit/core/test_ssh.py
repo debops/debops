@@ -1877,20 +1877,19 @@ def test_rescan_reports_the_unsigned_keys_of_the_fallback(
     assert "ssh-rsa" in content
 
 
-def test_write_config_snippet_warns_about_a_corrupted_block(
-        stub_project, tmp_path, caplog):
-    """A managed block without its end marker is outside content for
-    the shadow warning: its directives would win over the fresh
-    block."""
+def test_write_config_snippet_refuses_a_corrupted_block(
+        stub_project, tmp_path):
+    """A managed block without its end marker is refused: its content
+    would win over the fresh block, and the next write would treat
+    the span between the markers as its own and drop it."""
     config = tmp_path / "ssh_config"
     config.write_text("# BEGIN debops ssh managed block\n"
                       "Host *\n"
                       "    UserKnownHostsFile /stale/store\n")
 
-    with caplog.at_level(logging.NOTICE):
+    with pytest.raises(ValueError, match="without its end marker"):
         write_config_snippet(stub_project(), str(config))
-
-    assert "may not apply" in caplog.text
+    assert "UserKnownHostsFile /stale/store" in config.read_text()
 
 
 def test_build_ssh_command_lets_the_operator_options_win(
@@ -2076,3 +2075,29 @@ def test_handoff_command_applies_the_ssh_flags_to_ssh_only(stub_project):
 
     assert "-l" not in command
     assert "2222" not in command
+
+
+def test_without_known_hosts_options_covers_the_config_form():
+    """The known_hosts declaration of the configuration grammar --
+    the option word with a space instead of the equals sign -- is
+    dropped like the option forms are."""
+    tokens = without_known_hosts_options(
+        ["-o", "ControlMaster=auto", "-o", "UserKnownHostsFile /own",
+         "UserKnownHostsFile /bare", "-o", "BatchMode=yes"])
+
+    assert tokens == ["-o", "ControlMaster=auto", "-o", "BatchMode=yes"]
+
+
+def test_build_scp_command_keeps_the_operator_store_declaration(
+        stub_project, fake_tools):
+    """In the user mode nothing is injected, and the known_hosts file
+    the operator declared in the ssh_args passes through, like it
+    does for 'debops ssh'."""
+    project = stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])},
+        cfg_options={"ssh_args": "-o UserKnownHostsFile=/operator/store"})
+
+    command = build_scp_command(project, ["/etc/hostname"], "web:/tmp/x")
+
+    assert sum("UserKnownHostsFile=" in token
+               for token in command) == 1
