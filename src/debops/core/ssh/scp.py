@@ -14,8 +14,8 @@ import logging
 import os
 import shlex
 
-from .utils import (compose_options, known_hosts_mode, known_hosts_option,
-                    known_hosts_store, resolve_destination, split_operand,
+from .store import known_hosts_option, require_store
+from .utils import (compose_options, resolve_destination, split_operand,
                     translate_ssh_args)
 
 logger = logging.getLogger(__name__)
@@ -112,12 +112,8 @@ def build_scp_command(project, sources, destination_operand,
 
     if accept:
         ssh_options.append(('-o', 'StrictHostKeyChecking=accept-new'))
-    if known_hosts_mode(project) == 'project':
-        store = known_hosts_store(project)
-        if not store:
-            raise ValueError(
-                'The project known_hosts mode is active for the view, '
-                'but the view does not declare a known_hosts store')
+    store, inject = require_store(project)
+    if inject:
         ssh_options.insert(0, ('-o', known_hosts_option(store)))
 
     command = [binary or project.config.raw['binaries']['scp']]

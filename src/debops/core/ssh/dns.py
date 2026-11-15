@@ -18,8 +18,10 @@ import base64
 import hashlib
 import ipaddress
 
-import dns.flags
-import dns.resolver
+# The dnspython import lives inside the lookup function: the rest of
+# the ssh suite imports this module for the key fingerprinting and
+# the address helpers, and the project machinery imports the suite;
+# none of that needs the DNS resolver
 
 # The SSHFP algorithm numbers of the key types ssh-keyscan reports,
 # per RFC 4255 and its updates.
@@ -99,6 +101,9 @@ def lookup_sshfp(hostname):
     SHA-256 digests the comparison knows. Lookup failures raise the
     dnspython exceptions.
     """
+    import dns.flags
+    import dns.resolver
+
     answer = dns.resolver.resolve(hostname, 'SSHFP', want_dnssec=True)
     authenticated = bool(answer.response.flags & dns.flags.AD)
     records = set()

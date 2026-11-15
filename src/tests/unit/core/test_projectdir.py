@@ -1811,3 +1811,23 @@ def test_ssh_updates_the_gitignore_pattern_of_the_store(tmp_path):
     assert "/.debops/ssh/views/*/known_hosts\n" not in \
         (project_dir / ".gitignore").read_text()
     assert "#-- operator content" in lines
+
+
+def test_the_project_machinery_imports_without_dnspython():
+    """The runners and the project directory import the ssh store
+    substrate; the DNS resolver of the SSHFP verification stays out
+    of the import graph."""
+    code = ('import sys\n'
+            'import debops.core.projectdir\n'
+            'import debops.core.ansible.projectrunner\n'
+            'sys.exit(1 if "dns.resolver" in sys.modules else 0)\n')
+    env = dict(os.environ)
+    env["PYTHONPATH"] = os.pathsep.join(
+        [os.path.dirname(os.path.dirname(os.path.dirname(
+            os.path.abspath(projectdir_module.__file__)))),
+         env.get("PYTHONPATH", "")]).rstrip(os.pathsep)
+
+    result = subprocess.run([sys.executable, "-c", code], env=env,
+                            capture_output=True, text=True)
+
+    assert result.returncode == 0, result.stderr
