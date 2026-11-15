@@ -50,9 +50,10 @@ way as in :command:`ssh`:
    alice@controller:~$ debops ssh web-1 uname -r
 
 The ``--`` marker before the destination hands the rest of the arguments to
-:command:`ssh` verbatim. The inventory is not consulted and the command
-behaves like the plain :command:`ssh` binary. This is the way to use the
-options of :command:`ssh` itself:
+:command:`ssh` verbatim. The inventory is not consulted; the options of
+DebOps still apply in front of the marker, ``--accept`` among them -- with
+it, the known_hosts store of the project is applied to the handoff as
+well. This is the way to use the options of :command:`ssh` itself:
 
 .. code-block:: console
 
@@ -81,9 +82,10 @@ which the inventory defines.
 .. warning::
 
    The composed SSH options apply to both connections of the command. When
-   the two operands resolve to hosts with different jump hosts, different
-   ports or different private keys, the command reports the difference and
-   applies none of the conflicting values. Copy between such hosts with two
+   the two operands resolve to hosts with different ports or different
+   private keys, the command reports the difference and applies none of the
+   conflicting values. The jump hosts are not resolved per connection: one
+   jump chain serves both connections. Copy between such hosts with two
    :command:`debops scp` runs through a temporary file, or configure the
    connections in the :file:`~/.ssh/config` file.
 
@@ -144,11 +146,14 @@ connect again.
 
 The option exists on all of the commands which connect: :command:`debops
 ssh`, :command:`debops scp`, :command:`debops sftp`, as well as
-:command:`debops exec` and :command:`debops run`. On the commands which
-compose an ssh command line the option is the long ``--accept`` form: the
-short ``-a`` belongs to the underlying commands, which disable the
-authentication agent forwarding (:command:`ssh`) or resume interrupted
-transfers (:command:`sftp`) with it, and passes through unchanged.
+:command:`debops exec`, :command:`debops run` and :command:`debops check`.
+On the commands which compose an ssh command line the option is the long
+``--accept`` form: the short ``-a`` belongs to the underlying commands,
+which disable the authentication agent forwarding (:command:`ssh`) or
+resume interrupted transfers (:command:`sftp`) with it, and passes through
+unchanged. On the commands which run Ansible the option is the long form
+as well, so that it cannot be confused with the ``-a`` option of the
+ansible ad-hoc command.
 
 Two other short options belong to DebOps itself: ``-v`` increases the
 DebOps verbosity and ``-V`` selects the infrastructure view. The
@@ -181,6 +186,9 @@ configuration option moves the trust into the project:
      [views.system.ssh]
      known_hosts = "project"
 
+The option selects the mode. The store itself is declared in the
+``ssh_args`` of the view, by the drop-in described below.
+
 In the ``project`` mode, each view of the project carries its own store:
 
 .. code-block:: none
@@ -205,12 +213,14 @@ Three properties of the store matter:
   :file:`.debops/ssh/` tree stays available for other uses.
 
 The ``user`` mode and the ``project`` mode can be active at the same time
-in different views. A view which does not declare a store stays on the
-operator's own known_hosts file, even when the ``project`` mode is
-selected.
+in different views. The ssh suite commands refuse a view whose ``project``
+mode is active but which declares no store: the store must exist before
+the commands connect.
 
 The store is declared by the ``view-<view>-ssh.toml`` drop-in of the
-project configuration, which DebOps writes when the project is created.
+project configuration, which DebOps writes when the project or the view
+is created with the ``--ssh`` option: ``debops project init --ssh`` and
+``debops project mkview --ssh``.
 The drop-in carries the connection arguments of the view: the defaults of
 the Ansible ``ssh_args`` option next to the store declaration, so that
 the store does not replace them and the connections of Ansible keep
@@ -239,10 +249,15 @@ group or the whole inventory can be refreshed at once:
    alice@controller:~$ debops ssh rescan all
    alice@controller:~$ debops ssh rescan webservers
 
-For each host, the entries of all of its identifiers are removed: the
-inventory name, the connection address and the addresses the names resolve
-to. Then the current host keys of the host are scanned and written. A host
-without a running SSH daemon is reported; the remaining hosts continue.
+For each host, the current host keys of all of its identifiers are
+scanned first: the inventory name, the connection address and the
+addresses the names resolve to. When the scan produced keys to store,
+the stored entries of the identifiers which answered are replaced:
+their stale entries are removed and the scanned keys are written. The
+entries of the identifiers which did not answer stay until they do.
+When the verification refuses the keys of a host, its stored entries
+stay as they are. A host without a running SSH daemon is reported; the
+remaining hosts continue.
 
 .. note::
 
@@ -306,9 +321,12 @@ hosts of the project:
    alice@controller:~$ debops ssh config
 
 With the ``--write`` option, the block is written into your
-:file:`~/.ssh/config` file. The block adds the known_hosts store of the
-project as an additional host key source next to your own, so both sources
-are trusted and the new keys of foreign hosts still land in your own file.
+:file:`~/.ssh/config` file. The write replaces the content between the
+managed block markers and leaves the rest of the file alone. The block
+adds the known_hosts store of the project as an additional host key source
+next to your own, so both sources are trusted and the new keys of foreign
+hosts still land in your own file. In the ``user`` mode there is nothing
+to configure and the command prints a note instead.
 
 
 See also
