@@ -15,8 +15,8 @@ import os
 import shlex
 
 from .store import known_hosts_option, require_store
-from .utils import (compose_options, resolve_destination, split_host_path,
-                    translate_ssh_args)
+from .utils import (bracket_ipv6, compose_options, resolve_destination,
+                    split_host_path, translate_ssh_args)
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +48,15 @@ def build_sftp_command(project, destination, identity=None, accept=False,
               or project.config.raw['binaries']['sftp'])
     effective_user = user or parameters.get('user')
     destination_token = (effective_user + '@' if effective_user else '') \
-        + parameters.get('destination') \
+        + bracket_ipv6(parameters.get('destination')) \
         + (':' + start_path if start_path else '')
+    if destination_token.startswith('-'):
+        # A user which carries an option would be parsed as one by
+        # sftp, and its value executed through the user's shell by ssh
+        raise ValueError(
+            'The sftp destination of the host "' + host + '" looks '
+            'like an SSH option instead of a destination: '
+            + destination_token)
 
     command = [binary]
     sftp_args = (sftp_args or []) + shlex.split(
