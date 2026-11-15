@@ -92,14 +92,46 @@ def split_host_path(operand):
     return operand[:candidate], operand[candidate + 1:]
 
 
+def split_operand(operand):
+    """Split an scp operand into the user, the host and the path.
+
+    The scp operand grammar: '[[user@]host:]path'; the host part may
+    carry a 'user@' prefix and a bracketed IPv6 address. Returns
+    '(None, None, operand)' when the operand is a local path.
+    """
+    host_part, path = split_host_path(operand)
+    if host_part is None:
+        return None, None, operand
+    user = None
+    if '@' in host_part:
+        user, _, host_part = host_part.partition('@')
+    host = host_part.strip('[]')
+    return user, host, path
+
+
+def compose_options(pairs):
+    """Return the argv list for ssh option pairs, without duplicates.
+
+    The pairs are '(option, value)' tuples. The first occurrence of a
+    pair wins, matching the way ssh treats its configuration; the
+    result is the flat argv list the options compose into.
+    """
+    argv = []
+    for pair in dict.fromkeys(pairs):
+        argv.extend(pair)
+    return argv
+
+
 def translate_ssh_args(ssh_args):
-    """Translate ssh arguments into the '-o' options which the
+    """Translate ssh arguments into the '-o' option pairs which the
     file-transfer commands accept for their ssh connections.
 
-    '-J destination' becomes '-o ProxyJump=destination', '-o value'
-    pairs pass through unchanged, and the options which configure port
-    and packet forwards -- meaningless for a file transfer -- are
-    dropped and reported. Returns '(translated, dropped)'.
+    '-J destination' becomes the ('-o', 'ProxyJump=destination') pair,
+    '-o value' pairs pass through unchanged, and the options which
+    configure port and packet forwards -- meaningless for a file
+    transfer -- are dropped and reported. Returns the list of
+    '(option, value)' pairs to add to the command, and the list of the
+    dropped arguments as display strings.
     """
     tokens = (shlex.split(ssh_args)
               if isinstance(ssh_args, str) else list(ssh_args))
@@ -118,14 +150,14 @@ def translate_ssh_args(ssh_args):
                 dropped.append(token)
                 index += 1
                 continue
-            translated.append('-o ProxyJump=' + value)
+            translated.append(('-o', 'ProxyJump=' + value))
             index += 1 if attached else 2
         elif token == '-o' or (letter == 'o' and attached):
             if attached:
-                translated.append(token)
+                translated.append(('-o', token[2:]))
                 index += 1
             elif index + 1 < len(tokens):
-                translated.append('-o ' + tokens[index + 1])
+                translated.append(('-o', tokens[index + 1]))
                 index += 2
             else:
                 dropped.append(token)
@@ -134,7 +166,7 @@ def translate_ssh_args(ssh_args):
             dropped.append(token)
             index += 1
         elif letter in SSH_OPTIONS_WITH_VALUE:
-            dropped.extend(tokens[index:index + 2])
+            dropped.append(token + ' ' + tokens[index + 1])
             index += 2
         else:
             dropped.append(token)

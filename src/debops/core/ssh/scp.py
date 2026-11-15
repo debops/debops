@@ -12,30 +12,12 @@ parameters, the jump arguments and the known_hosts store of
 
 import logging
 import os
-import shlex
 
-from .utils import (known_hosts_mode, known_hosts_store,
-                    resolve_destination,
-                    split_host_path, translate_ssh_args)
+from .utils import (compose_options, known_hosts_mode, known_hosts_store,
+                    resolve_destination, split_operand,
+                    translate_ssh_args)
 
 logger = logging.getLogger(__name__)
-
-
-def split_operand(operand):
-    """Split an scp operand into the user, the host and the path.
-
-    The scp operand grammar: '[[user@]host:]path'; the host part may
-    carry a 'user@' prefix and a bracketed IPv6 address. Returns
-    '(None, None, operand)' when the operand is a local path.
-    """
-    host_part, path = split_host_path(operand)
-    if host_part is None:
-        return None, None, operand
-    user = None
-    if '@' in host_part:
-        user, _, host_part = host_part.partition('@')
-    host = host_part.strip('[]')
-    return user, host, path
 
 
 def build_scp_command(project, sources, destination_operand,
@@ -90,7 +72,7 @@ def build_scp_command(project, sources, destination_operand,
 
     unique_ports = set(ports)
     if len(unique_ports) == 1:
-        ssh_options.append('-P ' + unique_ports.pop())
+        ssh_options.append(('-P', unique_ports.pop()))
     elif len(unique_ports) > 1:
         logger.notice(
             'The operands resolve to hosts with different ssh ports; '
@@ -99,9 +81,9 @@ def build_scp_command(project, sources, destination_operand,
 
     unique_identities = set(identities)
     if identity:
-        ssh_options.append('-i ' + identity)
+        ssh_options.append(('-i', identity))
     elif len(unique_identities) == 1:
-        ssh_options.append('-i ' + unique_identities.pop())
+        ssh_options.append(('-i', unique_identities.pop()))
     elif len(unique_identities) > 1:
         logger.notice(
             'The operands resolve to hosts with different private key '
@@ -109,15 +91,14 @@ def build_scp_command(project, sources, destination_operand,
             'none was added', extra={'allow': 'stderr'})
 
     if accept:
-        ssh_options.append('-o StrictHostKeyChecking=accept-new')
+        ssh_options.append(('-o', 'StrictHostKeyChecking=accept-new'))
     if known_hosts_mode(project) == 'project':
         store = known_hosts_store(project)
         if store:
-            ssh_options.insert(0, '-o UserKnownHostsFile=' + store)
+            ssh_options.insert(0, ('-o', 'UserKnownHostsFile=' + store))
 
     command = [binary]
-    for option in dict.fromkeys(ssh_options):
-        command.extend(shlex.split(option))
+    command.extend(compose_options(ssh_options))
     command.extend(scp_args or [])
     command.extend(operands)
     return command
