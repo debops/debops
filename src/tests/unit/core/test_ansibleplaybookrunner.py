@@ -562,7 +562,7 @@ def test_accept_option_carries_the_configured_ssh_args(stub_project):
                                    accept=True)
 
     assert runner._ansible_env["ANSIBLE_SSH_ARGS"] == \
-        "-o ControlMaster=auto -o StrictHostKeyChecking=accept-new"
+        "-o StrictHostKeyChecking=accept-new -o ControlMaster=auto"
 
 
 def test_accept_option_prefers_the_ambient_ssh_args(stub_project,
@@ -576,7 +576,7 @@ def test_accept_option_prefers_the_ambient_ssh_args(stub_project,
                                    accept=True)
 
     value = runner._ansible_env["ANSIBLE_SSH_ARGS"]
-    assert value == "-o Ambient=1 -o StrictHostKeyChecking=accept-new"
+    assert value == "-o StrictHostKeyChecking=accept-new -o Ambient=1"
     assert "ControlMaster" not in value
 
 
@@ -604,8 +604,8 @@ def test_accept_option_carries_the_project_store(stub_project,
                                    accept=True)
 
     assert runner._ansible_env["ANSIBLE_SSH_ARGS"] == \
-        ("-o Ambient=1 -o StrictHostKeyChecking=accept-new"
-         " -o UserKnownHostsFile=" + store)
+        ("-o StrictHostKeyChecking=accept-new -o Ambient=1"
+         " -o 'UserKnownHostsFile=" + store + "'")
 
 
 def test_accept_option_keeps_a_declared_store(stub_project,
@@ -623,5 +623,31 @@ def test_accept_option_keeps_a_declared_store(stub_project,
                                    accept=True)
 
     assert runner._ansible_env["ANSIBLE_SSH_ARGS"] == \
-        ("-o UserKnownHostsFile=" + store
-         + " -o StrictHostKeyChecking=accept-new")
+        ("-o StrictHostKeyChecking=accept-new"
+         " -o UserKnownHostsFile=" + store)
+
+
+def test_accept_option_respects_an_env_declared_store(stub_project,
+                                                      monkeypatch,
+                                                      tmp_path):
+    """An 'ANSIBLE_SSH_ARGS' of the operator which declares its own
+    known_hosts file is respected: no store of the view is appended
+    after it, and the first obtained value keeps the operator's
+    choice."""
+    monkeypatch.setenv("ANSIBLE_SSH_ARGS",
+                       '-o "UserKnownHostsFile /tmp/env_store"')
+    store = str(tmp_path / ".debops" / "ssh" / "views" / "system" /
+                "known_hosts")
+    project = stub_project(
+        cfg_options={"inventory": "ansible/inventory",
+                     "collections_path": "",
+                     "ssh_args": "-o UserKnownHostsFile=" + store},
+        raw={"views": {"system": {"ssh": {"known_hosts": "project"}}}})
+    runner = AnsiblePlaybookRunner(project, ansible_args=["site.yml"],
+                                   accept=True)
+
+    value = runner._ansible_env["ANSIBLE_SSH_ARGS"]
+
+    assert value == ("-o StrictHostKeyChecking=accept-new"
+                     " -o \"UserKnownHostsFile /tmp/env_store\"")
+    assert "known_hosts'" not in value
