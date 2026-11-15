@@ -16,7 +16,7 @@ import shlex
 
 from .store import known_hosts_option, require_store
 from .utils import (bracket_ipv6, compose_options, resolve_destination,
-                    split_host_path, translate_ssh_args)
+                    split_host_path, translate_ssh_args, without_known_hosts_options)
 
 logger = logging.getLogger(__name__)
 
@@ -73,10 +73,12 @@ def build_sftp_command(project, destination, identity=None, accept=False,
     if inject:
         ssh_options.append(('-o', known_hosts_option(store)))
     translated, dropped = [], []
-    for value in (parameters.get('common_args'),
+    for value in (parameters.get('ssh_args'),
+                  parameters.get('common_args'),
                   parameters.get('extra_args')):
         if value:
-            translated_side, dropped_side = translate_ssh_args(value)
+            tokens = without_known_hosts_options(shlex.split(value))
+            translated_side, dropped_side = translate_ssh_args(tokens)
             translated.extend(translated_side)
             dropped.extend(dropped_side)
     if dropped:
