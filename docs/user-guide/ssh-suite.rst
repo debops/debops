@@ -155,10 +155,10 @@ The known_hosts store of the project
 ------------------------------------
 
 By default, DebOps leaves the SSH host keys to the operator's own
-:file:`~/.ssh/known_hosts` file. The ``ssh.known_hosts`` configuration
-option moves the trust into the project:
+:file:`~/.ssh/known_hosts` file. The ``views.<view>.ssh.known_hosts``
+configuration option moves the trust into the project:
 
-``ssh.known_hosts``
+``views.<view>.ssh.known_hosts``
   Type: string, ``user`` or ``project``.
   Purpose: selects where the SSH host keys of the inventory hosts are
   stored. The ``project`` mode gives each infrastructure view its own

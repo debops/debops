@@ -927,3 +927,17 @@ def test_resolve_host_rejects_option_like_destinations(
         resolve_host(project, "web")
 
     assert "looks like an SSH option" in str(error.value)
+
+
+def test_build_ssh_command_refuses_an_undeclared_store(stub_project):
+    """In project mode the connect command refuses to run when the
+    view does not declare a store, like the transfers and rescan."""
+    project = stub_project(raw={
+        "binaries": {"ssh": "/usr/bin/ssh"},
+        "views": {"system": {"ssh": {"known_hosts": "project"}}}})
+    parameters = {"destination": "192.0.2.10"}
+
+    with pytest.raises(ValueError) as error:
+        build_ssh_command(project, "web", parameters)
+
+    assert "does not declare a known_hosts store" in str(error.value)
