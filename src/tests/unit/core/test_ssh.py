@@ -288,6 +288,38 @@ def test_rescan_actions_qualify_the_ported_identifiers(
     assert resolvable == ["192.0.2.10"]
 
 
+def test_host_identifiers_exclude_link_local_addresses_from_the_scan(
+        stub_project, fake_tools, monkeypatch):
+    """A link-local address without the interface scope cannot be
+    scanned; it stays a removal identifier. An address with the scope
+    stays scannable."""
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+    parameters = {"destination": "metronom"}
+
+    def fake_getaddrinfo(name, *args, **kwargs):
+        if name == "metronom":
+            return [(2, 1, 6, "", ("fe80::e079:c1ff:fee5:fd61", 0)),
+                    (2, 1, 6, "", ("2001:db8::1", 0))]
+        raise AssertionError("unexpected name " + name)
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_getaddrinfo)
+
+    assert host_identifiers(project, "metronom", parameters) == \
+        [("fe80::e079:c1ff:fee5:fd61", False), ("2001:db8::1", True),
+         ("metronom", True)]
+
+    def fake_getaddrinfo_link_local_only(name, *args, **kwargs):
+        if name == "metronom":
+            return [(2, 1, 6, "", ("fe80::e079:c1ff:fee5:fd61", 0))]
+        raise AssertionError("unexpected name " + name)
+
+    monkeypatch.setattr(socket, "getaddrinfo",
+                        fake_getaddrinfo_link_local_only)
+
+    assert host_identifiers(project, "metronom", parameters) == \
+        [("fe80::e079:c1ff:fee5:fd61", False), ("metronom", False)]
+
+
 def test_rescan_hosts_removes_and_scans_the_identifiers(
         stub_project, fake_tools, tmp_path):
     store = str(tmp_path / "store" / "known_hosts")

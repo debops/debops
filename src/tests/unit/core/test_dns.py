@@ -16,8 +16,9 @@ from unittest import mock
 import dns.flags
 
 import debops.core.ssh.dns as dns_module
-from debops.core.ssh.dns import is_ip_address, key_fingerprint, \
-    lookup_sshfp, ssh_fingerprint
+from debops.core.ssh.dns import (is_ip_address, is_link_local,
+                                 key_fingerprint, lookup_sshfp,
+                                 ssh_fingerprint)
 
 KEY_BLOB = b'\x21' * 32
 KEY_B64 = base64.b64encode(KEY_BLOB).decode('ascii')
@@ -52,6 +53,14 @@ def test_is_ip_address_recognizes_literals():
     assert is_ip_address('2001:db8::1')
     assert not is_ip_address('web.example.org')
     assert not is_ip_address('not an address')
+
+
+def test_is_link_local_recognizes_the_unreachable_addresses():
+    assert is_link_local('fe80::e079:c1ff:fee5:fd61')
+    assert is_link_local('169.254.1.1')
+    assert not is_link_local('fe80::1%eth0')
+    assert not is_link_local('2001:db8::1')
+    assert not is_link_local('web.example.org')
 
 
 def test_lookup_sshfp_parses_records_and_the_authenticated_flag():
