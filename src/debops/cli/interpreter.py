@@ -501,7 +501,10 @@ class Interpreter(object):
                 # stored
                 print('  The input ended; the keys were not stored')
                 return False
-            return answer.strip().lower() != 'n'
+            # Only an affirmative answer stores the keys: a typo or
+            # an unknown word declines, the way a trust prompt should
+            # behave
+            return answer.strip().lower() in ('', 'y', 'yes')
 
         try:
             results = ssh.rescan_hosts(
