@@ -11,4 +11,8 @@
 known_hosts = 'project'
 
 [views.{{ view_name }}.ansible.ssh_connection]
-ssh_args = ["-o 'UserKnownHostsFile=${DEBOPS_PROJECT_PATH}/{{ store_path }}'"]
+# The first element restates the default of the 'ssh_args' option of
+# the Ansible ssh connection plugin, which the store declaration
+# would otherwise replace
+ssh_args = ["-C -o ControlMaster=auto -o ControlPersist=60s",
+            "-o 'UserKnownHostsFile=${DEBOPS_PROJECT_PATH}/{{ store_path }}'"]

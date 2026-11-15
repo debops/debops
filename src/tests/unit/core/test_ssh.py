@@ -13,7 +13,6 @@ its binary is a plain path in the configuration.
 """
 
 import base64
-import getpass
 import hashlib
 import os
 import socket
@@ -31,6 +30,7 @@ from debops.core.ssh import (SCP_OPTIONS_WITH_VALUE, SFTP_OPTIONS_WITH_VALUE,
                              rescan_actions, resolve_destination,
                              resolve_host, resolve_patterns, rescan_hosts,
                              scan_command, split_destination,
+                             without_known_hosts_options,
                              split_options_operands, translate_ssh_args,
                              value_options_of, write_config_snippet)
 
@@ -141,6 +141,7 @@ def test_build_ssh_command_prefers_the_explicit_options(
         "-i", "/other/key",
         "-J", "jump@bastion",
         "-o", "Foo=1",
+        "-o", "ConnectTimeout=10",
         "192.0.2.10",
     ]
 
@@ -165,11 +166,11 @@ def test_build_ssh_command_falls_back_to_the_explicit_options(stub_project,
                                                               fake_tools):
     project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
 
-    command = build_ssh_command(project, "plain", user="operator",
-                                port=2200)
+    command = build_ssh_command(project, "plain", parameters={},
+                                user="operator", port=2200)
 
     assert command == ["/usr/bin/ssh", "-l", "operator", "-p", "2200",
-                       "plain"]
+                       "-o", "ConnectTimeout=10", "plain"]
 
 
 def test_build_ssh_command_passes_the_connection_extras_through(
@@ -192,13 +193,15 @@ def test_build_ssh_command_passes_the_connection_extras_through(
 def test_build_ssh_command_places_the_caller_arguments_like_ssh(
         stub_project, fake_tools):
     """The arguments after the host follow the destination, the way
-    ssh itself places the remote command and its arguments."""
+    ssh itself places the remote command and its arguments. Without a
+    user from the options or the inventory, no '-l' is composed: ssh
+    picks the user from the operator's SSH client configuration."""
     project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
 
-    command = build_ssh_command(project, "web",
+    command = build_ssh_command(project, "web", parameters={},
                                 ssh_args=["uptime"])
 
-    assert command == ["/usr/bin/ssh", "-l", getpass.getuser(),
+    assert command == ["/usr/bin/ssh", "-o", "ConnectTimeout=10",
                        "web", "uptime"]
 
 
@@ -1318,3 +1321,142 @@ def test_resolve_host_reads_the_per_host_ssh_args(
     parameters = resolve_host(project, "web")
 
     assert parameters["ssh_args"] == "-o BatchMode=yes"
+
+
+def test_without_known_hosts_options_drops_the_declarations():
+    """The store options appear as an '-o' pair, attached to '-o', or
+    bare; the rest of the arguments keep their order."""
+    tokens = without_known_hosts_options(
+        ["-o", "ControlMaster=auto", "-o", "UserKnownHostsFile=/store",
+         "-oUserKnownHostsFile=/other", "UserKnownHostsFile=/third",
+         "-o", "BatchMode=yes"])
+
+    assert tokens == ["-o", "ControlMaster=auto", "-o", "BatchMode=yes"]
+
+
+def test_build_ssh_command_injects_the_store_first(stub_project,
+                                                   fake_tools,
+                                                   fake_binary):
+    """In the project mode the store of the view leads the command and
+    the resolved arguments cannot bypass it: the 'UserKnownHostsFile'
+    options of the host and of the configuration are dropped, the rest
+    of the arguments stay."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "store-bypass-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_ssh_args\": \"-o UserKnownHostsFile=/tmp/evil"
+        " -o BatchMode=yes\"}'\n")
+    project = stub_project(
+        raw={"binaries": binaries,
+             "views": {"system": {"ssh": {"known_hosts": "project"}}}},
+        cfg_options={"ssh_args": "-o UserKnownHostsFile=/cfg-store"
+                                 " -o ControlMaster=auto"})
+    parameters = resolve_host(project, "web")
+
+    command = build_ssh_command(project, "web", parameters)
+
+    assert command[1:3] == ["-o", "UserKnownHostsFile=/cfg-store"]
+    assert "UserKnownHostsFile=/tmp/evil" not in command
+    assert command.count("UserKnownHostsFile=/cfg-store") == 1
+    assert "BatchMode=yes" in command
+
+
+def test_resolve_host_follows_the_connection_chains(
+        stub_project, fake_tools, fake_binary, monkeypatch):
+    """Each connection option follows the resolution of the ssh
+    connection plugin: the inventory variables over the environment
+    over the configuration option. The tiers do not merge: a host
+    variable replaces the lower tiers entirely."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "chain-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_private_key_file\": \"/keys/modern\"}'\n")
+    project = stub_project(
+        raw={"binaries": binaries},
+        cfg_options={"private_key_file": "/keys/ini",
+                     "ssh_common_args": "-o Common=ini",
+                     "timeout": "30"})
+    monkeypatch.setenv("ANSIBLE_PRIVATE_KEY_FILE", "/keys/env")
+    monkeypatch.delenv("ANSIBLE_TIMEOUT", raising=False)
+
+    parameters = resolve_host(project, "web")
+
+    assert parameters["identity"] == "/keys/modern"
+    assert parameters["common_args"] == "-o Common=ini"
+    assert parameters["timeout"] == "30"
+
+    monkeypatch.setenv("ANSIBLE_TIMEOUT", "45")
+    binaries["ansible-inventory"] = fake_binary(
+        "keyless-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\"}'\n")
+    project = stub_project(raw={"binaries": binaries},
+                           cfg_options={"private_key_file": "/keys/ini"})
+    parameters = resolve_host(project, "web")
+
+    assert parameters["identity"] == "/keys/env"
+    assert parameters["timeout"] == "45"
+
+    monkeypatch.delenv("ANSIBLE_PRIVATE_KEY_FILE", raising=False)
+    parameters = resolve_host(project, "web")
+
+    assert parameters["identity"] == "/keys/ini"
+
+    binaries["ansible-inventory"] = fake_binary(
+        "legacy-key-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_ssh_private_key_file\": \"/keys/legacy\"}'\n")
+    project = stub_project(raw={"binaries": binaries},
+                           cfg_options={"private_key_file": "/keys/ini"})
+    parameters = resolve_host(project, "web")
+
+    assert parameters["identity"] == "/keys/legacy"
+
+
+def test_resolve_host_resolves_the_executables_through_the_chains(
+        stub_project, fake_tools, monkeypatch):
+    for name in ("ANSIBLE_SSH_EXECUTABLE", "ANSIBLE_SCP_EXECUTABLE",
+                 "ANSIBLE_SFTP_EXECUTABLE"):
+        monkeypatch.delenv(name, raising=False)
+    project = stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])},
+        cfg_options={"ssh_executable": "/bin/ssh-ini",
+                     "scp_executable": "/bin/scp-ini",
+                     "sftp_executable": "/bin/sftp-ini"})
+
+    parameters = resolve_host(project, "web")
+
+    assert parameters["ssh_executable"] == "/bin/ssh-ini"
+    assert parameters["scp_executable"] == "/bin/scp-ini"
+    assert parameters["sftp_executable"] == "/bin/sftp-ini"
+
+    monkeypatch.setenv("ANSIBLE_SCP_EXECUTABLE", "/bin/scp-env")
+    parameters = resolve_host(project, "web")
+
+    assert parameters["scp_executable"] == "/bin/scp-env"
+
+
+def test_build_ssh_command_uses_the_resolved_executable_and_yields(
+        stub_project, fake_tools, monkeypatch):
+    """The resolved ssh executable builds the command, and an explicit
+    '-o ConnectTimeout' of the options wins over the resolved
+    timeout."""
+    for name in ("ANSIBLE_SSH_EXECUTABLE", "ANSIBLE_TIMEOUT"):
+        monkeypatch.delenv(name, raising=False)
+    project = stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])},
+        cfg_options={"ssh_executable": "/bin/ssh-ini",
+                     "timeout": "30"})
+    parameters = resolve_host(project, "web")
+
+    command = build_ssh_command(project, "web", parameters,
+                                options=["-o", "ConnectTimeout=60"])
+
+    assert command[0] == "/bin/ssh-ini"
+    assert "ConnectTimeout=60" in command
+    assert "ConnectTimeout=30" not in command
