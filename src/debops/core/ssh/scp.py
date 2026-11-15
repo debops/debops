@@ -15,8 +15,8 @@ import os
 import shlex
 
 from .store import known_hosts_option, require_store
-from .utils import (compose_options, resolve_destination, split_operand,
-                    translate_ssh_args)
+from .utils import (bracket_ipv6, compose_options, resolve_destination,
+                    split_operand, translate_ssh_args)
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ def build_scp_command(project, sources, destination_operand,
         side_user = user or parameters.get('user')
         destination_host = parameters.get('destination')
         operands.append((side_user + '@' if side_user else '')
-                        + destination_host + ':' + path)
+                        + bracket_ipv6(destination_host) + ':' + path)
         port = parameters.get('port')
         if port:
             ports.append(str(port))

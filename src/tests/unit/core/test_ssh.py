@@ -31,6 +31,7 @@ from debops.core.ssh import (SCP_OPTIONS_WITH_VALUE, SFTP_OPTIONS_WITH_VALUE,
                              parse_config_stores, remove_command,
                              render_config_snippet,
                              rescan_actions, resolve_destination,
+                             build_scp_command, build_sftp_command,
                              require_store, resolve_host, resolve_patterns,
                              rescan_hosts, scan_command, split_destination,
                              split_operand, without_known_hosts_options,
@@ -1665,3 +1666,49 @@ def test_rescan_hosts_refuses_unsigned_matches_when_configured(
 
     assert results[0][1]
     assert FQDN_KEY_LINE in store.read_text()
+
+
+def test_resolve_host_refuses_a_dash_leading_user(
+        stub_project, fake_tools, fake_binary):
+    """A user which carries an ssh option would be parsed as one by
+    sftp, and its value executed through the user's shell."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "option-user-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_user\": \"-oProxyCommand=evil\"}'\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    with pytest.raises(ValueError, match="looks like an SSH option"):
+        resolve_host(project, "web")
+
+
+def test_sftp_command_refuses_the_option_shaped_destination(
+        stub_project, fake_tools):
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+
+    with pytest.raises(ValueError, match="looks like an SSH option"):
+        build_sftp_command(project, "-oProxyCommand=evil@web:/tmp")
+
+
+def test_scp_and_sftp_bracket_the_ipv6_destinations(
+        stub_project, fake_tools, fake_binary):
+    """The transfer grammars read the colons of an IPv6 literal as the
+    host and path separator; the bracketed form survives them."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "ipv6-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"2001:db8::1\"}'\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    command = build_scp_command(project, ["/etc/hostname"],
+                                "web:/tmp/x")
+
+    assert "[2001:db8::1]:/tmp/x" in command
+
+    command = build_sftp_command(project, "web:/srv")
+
+    assert any(token.endswith("[2001:db8::1]:/srv")
+               for token in command)
