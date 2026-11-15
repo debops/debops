@@ -12,11 +12,10 @@ known_hosts store of 'debops ssh'.
 
 import logging
 import os
-import shlex
 
-from .utils import (known_hosts_mode, known_hosts_store,
-                    resolve_destination,
-                    split_host_path, translate_ssh_args)
+from .utils import (compose_options, known_hosts_mode, known_hosts_store,
+                    resolve_destination, split_host_path,
+                    translate_ssh_args)
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +60,7 @@ def build_sftp_command(project, destination, identity=None, accept=False,
     if known_hosts_mode(project) == 'project':
         store = known_hosts_store(project)
         if store:
-            ssh_options.append('-o UserKnownHostsFile=' + store)
+            ssh_options.append(('-o', 'UserKnownHostsFile=' + store))
     translated, dropped = [], []
     for value in (parameters.get('common_args'),
                   parameters.get('extra_args')):
@@ -77,9 +76,8 @@ def build_sftp_command(project, destination, identity=None, accept=False,
             extra={'allow': 'stderr'})
     ssh_options.extend(translated)
     if accept:
-        ssh_options.append('-o StrictHostKeyChecking=accept-new')
-    for option in dict.fromkeys(ssh_options):
-        command.extend(shlex.split(option))
+        ssh_options.append(('-o', 'StrictHostKeyChecking=accept-new'))
+    command.extend(compose_options(ssh_options))
 
     command.extend(sftp_head_args or [])
     command.append(destination_token)
