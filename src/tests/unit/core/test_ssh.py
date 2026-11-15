@@ -14,6 +14,7 @@ its binary is a plain path in the configuration.
 
 import base64
 import hashlib
+import logging
 import os
 import socket
 from unittest import mock
@@ -1507,3 +1508,67 @@ def test_split_destination_splits_the_user_at_the_last_at():
 
 def test_split_operand_splits_the_user_at_the_last_at():
     assert split_operand('a@b@c:/path') == ('a@b', 'c', '/path')
+
+
+def test_write_config_snippet_warns_about_a_shadowing_directive(
+        stub_project, tmp_path, caplog):
+    """A 'UserKnownHostsFile' directive outside of the managed block
+    shadows it: ssh applies the first obtained value of an option."""
+    config = tmp_path / "ssh_config"
+    config.write_text("Host *\n    UserKnownHostsFile /own/store\n")
+
+    with caplog.at_level(logging.NOTICE):
+        write_config_snippet(stub_project(), str(config))
+
+    assert "may not apply" in caplog.text
+
+
+def test_write_config_snippet_does_not_warn_about_its_own_block(
+        stub_project, tmp_path, caplog):
+    config = tmp_path / "ssh_config"
+
+    with caplog.at_level(logging.NOTICE):
+        write_config_snippet(stub_project(), str(config))
+        write_config_snippet(stub_project(), str(config))
+
+    assert "may not apply" not in caplog.text
+
+
+def test_rescan_creates_the_store_with_the_private_mode(
+        stub_project, fake_tools, tmp_path):
+    """The store is created with the '0600' permissions from the
+    start, without the world-readable window of an afterwards chmod;
+    an existing store is tightened as before."""
+    store = tmp_path / "fresh" / "known_hosts"
+    os.makedirs(os.path.dirname(store))
+    os.chmod(os.path.dirname(store), 0o755)
+
+    rescan_hosts(stub_project(raw={"binaries":
+                                   dict(fake_tools["binaries"])}),
+                 ["web"], store=str(store), dns_mode='no-dns')
+
+    assert (os.stat(store).st_mode & 0o777) == 0o600
+
+    existing = tmp_path / "existing"
+    existing.write_text("old\n")
+    os.chmod(existing, 0o644)
+    rescan_hosts(stub_project(raw={"binaries":
+                                   dict(fake_tools["binaries"])}),
+                 ["web"], store=str(existing), dns_mode='no-dns')
+
+    assert (os.stat(existing).st_mode & 0o777) == 0o600
+
+
+def test_resolve_host_refuses_non_scalar_numeric_options(
+        stub_project, fake_tools, fake_binary):
+    """A list-valued port would compose into garbage argv."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "list-port-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_port\": [\"22\"]}'\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    with pytest.raises(ValueError, match="not a usable value"):
+        resolve_host(project, "web")

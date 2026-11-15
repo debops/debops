@@ -649,3 +649,42 @@ def test_sftp_handoff_forwards_the_collected_options(monkeypatch,
 
     assert exit_info.value.code == 0
     assert capsys.readouterr().out.strip() == "/usr/bin/sftp -q host"
+
+
+def test_do_ssh_connect_reports_the_builder_errors(monkeypatch,
+                                                   stub_project,
+                                                   fake_tools, capsys):
+    """The builder refusals -- the project mode without a declared
+    store among them -- are reported, not raised as tracebacks."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"]),
+             "views": {"system": {"ssh": {"known_hosts": "project"}}}}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_connect(
+            make_interpreter(), ssh_args(eval=True))
+
+    assert exit_info.value.code == 1
+    assert "does not declare a known_hosts store" in \
+        capsys.readouterr().err
+
+
+def test_do_ssh_rescan_declines_when_the_input_ends(monkeypatch,
+                                                    stub_project,
+                                                    fake_tools, tmp_path):
+    """A closed standard input declines the confirmation; the rescan
+    completes and the old trust of the host is kept."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+    monkeypatch.setattr("builtins.input",
+                        mock.Mock(side_effect=EOFError))
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(confirm=True, known_hosts_file=str(store)))
+
+    assert exit_info.value.code == 0
+    assert store.read_text() == "old\n"
