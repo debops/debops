@@ -12,8 +12,8 @@ file-transfer composition in :mod:`debops.core.ssh.scp`, and the
 shared machinery in :mod:`debops.core.ssh.utils`.
 """
 
-from .utils import (SCP_OPTIONS_WITH_VALUE, SFTP_OPTIONS_WITH_VALUE,
-                    SSH_OPTIONS_WITH_VALUE,
+from .utils import (CONNECTION_OPTIONS, SCP_OPTIONS_WITH_VALUE,
+                    SFTP_OPTIONS_WITH_VALUE, SSH_OPTIONS_WITH_VALUE,
                     SSH_OPTIONS_WITH_OPTIONAL_VALUE, USER_KNOWN_HOSTS_STORE,
                     build_handoff_command, declared_known_hosts_store,
                     ensure_store_dir, known_hosts_mode, known_hosts_store,
@@ -23,6 +23,7 @@ from .utils import (SCP_OPTIONS_WITH_VALUE, SFTP_OPTIONS_WITH_VALUE,
                     translate_ssh_args, value_options_of)
 from .ssh import (build_ssh_command, host_identifiers, remove_command,
                   render_config_snippet, rescan_actions, rescan_hosts,
-                  scan_command, split_destination, write_config_snippet)
+                  scan_command, split_destination, write_config_snippet,
+                  without_known_hosts_options)
 from .scp import build_scp_command
 from .sftp import build_sftp_command

@@ -11,7 +11,6 @@ directory is re-added through PYTHONPATH, because a changed HOME hides
 it and the package dependencies of the debops command live there.
 """
 
-import getpass
 import os
 import shlex
 import shutil
@@ -87,7 +86,10 @@ def test_ssh_eval_prints_the_resolved_command(run_debops, tmp_path,
     command = shlex.split(result.stdout)
     assert command[0] == "ssh"
     assert command[-1] == "127.0.0.1"
-    assert command[command.index("-l") + 1] == getpass.getuser()
+    # The inventory defines no user; ssh picks one from the operator's
+    # SSH client configuration, the way plain ssh does
+    assert "-l" not in command
+    assert "ConnectTimeout=10" in command
 
 
 def test_ssh_eval_places_the_remote_command_like_ssh(run_debops, tmp_path,

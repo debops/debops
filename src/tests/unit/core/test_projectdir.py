@@ -929,6 +929,7 @@ def test_create_ssh_writes_the_known_hosts_configuration(tmp_path):
     assert "known_hosts = 'project'" in content
     assert ".debops/ssh/views/system/known_hosts" in content
     assert "-o 'UserKnownHostsFile=" in content
+    assert "ControlMaster=auto" in content
 
     store_dir = (tmp_path / "example" / ".debops" / "ssh" / "views" /
                  "system")
