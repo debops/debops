@@ -5,7 +5,7 @@
 Synopsis
 ========
 
-``debops ssh`` [-h|--help] [--project-dir <project_dir>] [-V|--view <view>] [-u|--user <name>] [-p|--port <port>] [-i|--identity <key>] [-a|--accept] [--eval] [-v|--verbose] <[user@]destination> [<remote_command> ...]
+``debops ssh`` [-h|--help] [--project-dir <project_dir>] [-V|--view <view>] [-u|--user <name>] [-p|--port <port>] [-i|--identity <key>] [--accept] [--eval] [-v|--verbose] <[user@]destination> [<remote_command> ...]
 
 ``debops ssh`` [<options>] ``--`` <ssh_arguments>
 
