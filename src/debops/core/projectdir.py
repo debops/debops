@@ -1382,10 +1382,20 @@ class ProjectDir(object):
         # in control of the entry
         gitignore_path = os.path.join(self.path, '.gitignore')
         if os.path.exists(gitignore_path):
-            ignore_line = '/.debops/ssh/views/*/known_hosts'
+            # The 'known_hosts*' pattern covers the 'known_hosts.old'
+            # backups which 'ssh-keygen -R' leaves next to the store
+            ignore_line = '/.debops/ssh/views/*/known_hosts*'
+            previous_line = '/.debops/ssh/views/*/known_hosts'
             with open(gitignore_path) as handle:
                 lines = handle.read().splitlines()
-            if ignore_line not in lines:
+            if previous_line in lines and ignore_line not in lines:
+                # The pattern of the earlier revision ignored only the
+                # store itself
+                lines = [ignore_line if line == previous_line
+                         else line for line in lines]
+                with open(gitignore_path, 'w') as handle:
+                    handle.write('\n'.join(lines) + '\n')
+            elif ignore_line not in lines:
                 if '/.debops/ssh/' in lines:
                     # A broad ignore of the '.debops/ssh/' tree is
                     # narrowed to the known_hosts files, so the tree
