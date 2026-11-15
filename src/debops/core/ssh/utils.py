@@ -263,8 +263,14 @@ def translate_ssh_args(ssh_args):
             dropped.append(token)
             index += 1
         elif letter in SSH_OPTIONS_WITH_VALUE:
-            dropped.append(token + ' ' + tokens[index + 1])
-            index += 2
+            if index + 1 < len(tokens):
+                dropped.append(token + ' ' + tokens[index + 1])
+                index += 2
+            else:
+                # A value option without its value is meaningless for
+                # a transfer; it is dropped like the other leftovers
+                dropped.append(token)
+                index += 1
         else:
             dropped.append(token)
             index += 1
