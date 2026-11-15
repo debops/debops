@@ -61,6 +61,18 @@ def scp_args(**kwargs):
     return SimpleNamespace(**defaults)
 
 
+def in_sequence_list(command, sequences):
+    """Whether each run of arguments appears, in order, in the
+    command."""
+    position = 0
+    for sequence in sequences:
+        index = command.index(sequence[-1], position)
+        if command[index - len(sequence) + 1:index + 1] != sequence:
+            return False
+        position = index + 1
+    return True
+
+
 def sftp_args(**kwargs):
     defaults = dict(project_dir=None, view="system", destination="web",
                     identity=None, accept=False, eval=True, handoff=None,
@@ -634,6 +646,29 @@ def test_ssh_handoff_forwards_the_collected_options(monkeypatch,
     command = shlex.split(capsys.readouterr().out)
     assert command[command.index("web01") - 2:command.index("web01")] == \
         ["-L", "8080:localhost:80"]
+
+
+def test_ssh_handoff_applies_the_collected_user_and_port(monkeypatch,
+                                                         stub_project,
+                                                         fake_tools,
+                                                         capsys):
+    """The '-p' and '-u' options the walk collected before the '--'
+    marker reach the composed handoff command; the connection reaches
+    the port the operator named."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_connect(
+            make_interpreter(),
+            ssh_args(eval=True, handoff=["web01"], user="alice",
+                     port=2222))
+
+    assert exit_info.value.code == 0
+    command = shlex.split(capsys.readouterr().out)
+    assert in_sequence_list(command, [["-l", "alice"],
+                                      ["-p", "2222"],
+                                      ["web01"]])
 
 
 def test_sftp_handoff_forwards_the_collected_options(monkeypatch,

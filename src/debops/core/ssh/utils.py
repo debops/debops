@@ -471,27 +471,3 @@ def ssh_executable(project):
             'ssh_executable', section='ssh_connection')
     except (configparser.NoOptionError, configparser.NoSectionError):
         return None
-
-
-def build_handoff_command(project, command, arguments, identity=None,
-                          accept=False, passthrough=()):
-    """Build the command line of the '--' handoff invocation.
-
-    The arguments which follow the '--' marker go to the command
-    unchanged: the inventory is not consulted and the known_hosts
-    store is not injected, so the command behaves like the plain
-    binary. The options which DebOps itself interprets apply: the
-    identity and the accept-new option. The 'passthrough' options are
-    the ones the argument walk collected before the marker -- options
-    of the command which DebOps does not interpret; they keep their
-    places in front of the arguments, so nothing the operator wrote
-    before the marker is lost.
-    """
-    binary = ssh_executable(project) if command == 'ssh' else None
-    options = []
-    if identity:
-        options.extend(['-i', identity])
-    if accept:
-        options.extend(['-o', 'StrictHostKeyChecking=accept-new'])
-    return [binary or project.config.raw['binaries'][command]] \
-        + options + list(passthrough) + list(arguments)
