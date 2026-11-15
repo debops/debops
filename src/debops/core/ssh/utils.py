@@ -344,7 +344,8 @@ def resolve_host(project, host):
         raise ValueError('Cannot resolve the host "' + host + '": the '
                          'inventory returned no usable host variables')
 
-    user = variables.get('ansible_user')
+    user = (variables.get('ansible_user')
+            or variables.get('ansible_ssh_user'))
     if user is None:
         # Ansible semantics: the inventory connection variable wins over
         # the configuration, and the ANSIBLE_REMOTE_USER environment
@@ -355,7 +356,8 @@ def resolve_host(project, host):
         except (configparser.NoOptionError, configparser.NoSectionError):
             remote_user = None
         user = (os.environ.get('ANSIBLE_REMOTE_USER') or remote_user)
-    destination = variables.get('ansible_host') or host
+    destination = (variables.get('ansible_host')
+                   or variables.get('ansible_ssh_host') or host)
     if destination.startswith('-'):
         raise ValueError(
             'The ansible_host of the host "' + host + '" looks like an '
@@ -363,10 +365,16 @@ def resolve_host(project, host):
     return {
         'destination': destination,
         'user': user,
-        'port': variables.get('ansible_port'),
+        'port': (variables.get('ansible_port')
+                 or variables.get('ansible_ssh_port')),
+        'ssh_args': variables.get('ansible_ssh_args'),
         'identity': variables.get('ansible_ssh_private_key_file'),
         'common_args': variables.get('ansible_ssh_common_args'),
         'extra_args': variables.get('ansible_ssh_extra_args'),
+        'ansible_scp_executable': variables.get('ansible_scp_executable'),
+        'ansible_scp_extra_args': variables.get('ansible_scp_extra_args'),
+        'ansible_sftp_executable': variables.get('ansible_sftp_executable'),
+        'ansible_sftp_extra_args': variables.get('ansible_sftp_extra_args'),
     }
 
 
