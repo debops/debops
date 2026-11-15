@@ -904,3 +904,20 @@ def test_resolve_host_prefers_the_inventory_user(monkeypatch,
     parameters = resolve_host(project, "web")
 
     assert parameters["user"] == "admin"
+
+
+def test_resolve_host_rejects_option_like_destinations(
+        monkeypatch, stub_project, fake_tools, fake_binary):
+    """An ansible_host which begins with a dash would be parsed by ssh
+    as an option instead of a host; the resolution refuses it."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "option-host-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"-oProxyCommand=evil\"}'\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    with pytest.raises(ValueError) as error:
+        resolve_host(project, "web")
+
+    assert "looks like an SSH option" in str(error.value)
