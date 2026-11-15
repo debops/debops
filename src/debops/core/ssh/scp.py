@@ -12,6 +12,7 @@ parameters, the jump arguments and the known_hosts store of
 
 import logging
 import os
+import shlex
 
 from .utils import (compose_options, known_hosts_mode, known_hosts_store,
                     resolve_destination, split_operand,
@@ -33,12 +34,14 @@ def build_scp_command(project, sources, destination_operand,
     which is the behavior of modern scp. Raises ValueError when a host
     part is not defined in the inventory.
     """
-    binary = project.config.raw['binaries']['scp']
+    binary = None
     operands = []
     ssh_options = []
     dropped = []
     ports = []
     identities = []
+    executables = []
+    transfer_args = []
 
     for operand in (*sources, destination_operand):
         user, host, path = split_operand(operand)
@@ -56,6 +59,12 @@ def build_scp_command(project, sources, destination_operand,
         side_identity = parameters.get('identity')
         if side_identity:
             identities.append(side_identity)
+        executable = parameters.get('ansible_scp_executable')
+        if executable:
+            executables.append(executable)
+        extra = parameters.get('ansible_scp_extra_args')
+        if extra:
+            transfer_args.extend(shlex.split(extra))
         for value in (parameters.get('common_args'),
                       parameters.get('extra_args')):
             if value:
@@ -79,6 +88,15 @@ def build_scp_command(project, sources, destination_operand,
             'scp applies one port to both connections and none was '
             'added', extra={'allow': 'stderr'})
 
+    unique_executables = set(executables)
+    if len(unique_executables) == 1:
+        binary = unique_executables.pop()
+    elif len(unique_executables) > 1:
+        logger.notice(
+            'The operands resolve to hosts with different scp '
+            'executables; the configured scp binary is used',
+            extra={'allow': 'stderr'})
+
     unique_identities = set(identities)
     if identity:
         ssh_options.append(('-i', identity))
@@ -100,8 +118,9 @@ def build_scp_command(project, sources, destination_operand,
                 'but the view does not declare a known_hosts store')
         ssh_options.insert(0, ('-o', 'UserKnownHostsFile=' + store))
 
-    command = [binary]
+    command = [binary or project.config.raw['binaries']['scp']]
     command.extend(compose_options(ssh_options))
     command.extend(scp_args or [])
+    command.extend(transfer_args)
     command.extend(operands)
     return command

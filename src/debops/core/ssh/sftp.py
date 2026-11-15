@@ -12,6 +12,7 @@ known_hosts store of 'debops ssh'.
 
 import logging
 import os
+import shlex
 
 from .utils import (compose_options, known_hosts_mode, known_hosts_store,
                     resolve_destination, split_host_path,
@@ -29,7 +30,6 @@ def build_sftp_command(project, destination, identity=None, accept=False,
     path, when given, is the directory the session starts in. Raises
     ValueError when the host part is not defined in the inventory.
     """
-    binary = project.config.raw['binaries']['sftp']
     host_part, start_path = split_host_path(destination)
     user = None
     if host_part is None:
@@ -43,12 +43,16 @@ def build_sftp_command(project, destination, identity=None, accept=False,
         host = host_part.strip('[]')
 
     parameters = resolve_destination(project, host)
+    binary = (parameters.get('ansible_sftp_executable')
+              or project.config.raw['binaries']['sftp'])
     effective_user = user or parameters.get('user')
     destination_token = (effective_user + '@' if effective_user else '') \
         + parameters.get('destination') \
         + (':' + start_path if start_path else '')
 
     command = [binary]
+    sftp_args = (sftp_args or []) + shlex.split(
+        parameters.get('ansible_sftp_extra_args') or '')
     port = parameters.get('port')
     if port:
         command.extend(['-P', str(port)])
