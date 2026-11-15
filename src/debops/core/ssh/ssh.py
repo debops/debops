@@ -718,6 +718,15 @@ def write_config_snippet(project, path):
     if existed:
         with open(path) as handle:
             existing = handle.read()
+    if CONFIG_BLOCK_BEGIN in existing \
+            and CONFIG_BLOCK_END not in existing:
+        # A block without its end marker would leave its content in
+        # place, where it would win over the fresh block, and the
+        # next write would treat the span as its own
+        raise ValueError(
+            'The SSH client configuration carries a managed block '
+            'without its end marker; complete or remove the markers '
+            'of ' + path + ' manually before writing it again')
     existing_stores = parse_config_stores(existing)
 
     outside = existing
