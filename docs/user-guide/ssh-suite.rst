@@ -252,20 +252,37 @@ without a running SSH daemon is reported; the remaining hosts continue.
    reach.
 
 When the DNS zone of the hosts publishes SSHFP records, rescan verifies
-the scanned keys against them. Keys which match the published records
-are stored without confirmation; keys which contradict the records are
-refused with a report, because a mismatch means the host on the network
-is not the host the DNS describes. Hosts without SSHFP records are
-handled as before. The ``--no-dns`` option skips the DNS check
-entirely, and ``--dns-verify`` requires a DNSSEC-validating resolver to
-authenticate the records before a match is trusted.
+the scanned keys against them. Keys which match records that a
+DNSSEC-validating resolver authenticated are stored without
+confirmation; keys which contradict the records are refused with a
+report, because a mismatch means the host on the network is not the
+host the DNS describes. Hosts without SSHFP records are handled as
+before. The ``--no-dns`` option skips the DNS check entirely, and
+``--dns-verify`` refuses hosts whose records the resolver did not
+authenticate, even with ``--confirm``.
+
+A match against records which the resolver did not authenticate
+grants no trust: RFC 4255, which defines the SSHFP record, forbids
+trusting unauthenticated SSHFP records. What happens to such keys is
+a matter of policy:
+
+``ssh.rescan.trust_unsigned_records``
+  Type: boolean.
+  Purpose: selects the handling of an SSHFP match which the resolver
+  did not authenticate. With ``true``, the default, the match grants
+  no trust and the keys are handled like the keys of hosts without
+  SSHFP records: stored as scanned, or confirmed by the operator with
+  the ``--confirm`` option. With ``false``, such hosts are not stored;
+  run the rescan with ``--confirm`` to accept the keys after checking
+  the fingerprints.
 
 .. note::
 
    SSHFP verification is as strong as the DNS answer. On a
    DNSSEC-signed zone the records are authenticated and the match is a
    genuine third-party verification; on an unsigned zone the match is
-   trust in DNS.
+   trust in DNS, and the option above decides whether it may confirm
+   anything.
 
 With the ``-c|--confirm`` option, rescan shows the fingerprints of the
 scanned keys in the form which ``ssh-keygen -l`` prints and asks for
