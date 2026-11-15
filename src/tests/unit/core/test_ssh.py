@@ -849,3 +849,58 @@ def test_rescan_hosts_stores_into_the_user_store(monkeypatch,
 
     assert results[0][1]
     assert (tmp_path / ".ssh" / "known_hosts").read_text().strip()
+
+
+def test_resolve_host_falls_back_to_the_remote_user_config(
+        monkeypatch, stub_project, fake_tools, fake_binary):
+    """With no user in the inventory, the remote_user option of the
+    project configuration applies, matching Ansible's precedence."""
+    monkeypatch.delenv('ANSIBLE_REMOTE_USER', raising=False)
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "userless-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\"}'\n")
+    project = stub_project(
+        cfg_options={"inventory": "ansible/inventory",
+                     "remote_user": "configuser"},
+        raw={"binaries": binaries})
+
+    parameters = resolve_host(project, "web")
+
+    assert parameters["user"] == "configuser"
+
+
+def test_resolve_host_prefers_the_remote_user_environment(
+        monkeypatch, stub_project, fake_tools, fake_binary):
+    """ANSIBLE_REMOTE_USER overrides the remote_user configuration, as
+    it does for Ansible itself."""
+    monkeypatch.setenv('ANSIBLE_REMOTE_USER', 'envuser')
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "userless-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\"}'\n")
+    project = stub_project(
+        cfg_options={"inventory": "ansible/inventory",
+                     "remote_user": "configuser"},
+        raw={"binaries": binaries})
+
+    parameters = resolve_host(project, "web")
+
+    assert parameters["user"] == "envuser"
+
+
+def test_resolve_host_prefers_the_inventory_user(monkeypatch,
+                                                 stub_project, fake_tools):
+    """The inventory's ansible_user wins over the configuration, the
+    same way Ansible resolves it."""
+    monkeypatch.setenv('ANSIBLE_REMOTE_USER', 'envuser')
+    project = stub_project(
+        cfg_options={"inventory": "ansible/inventory",
+                     "remote_user": "configuser"},
+        raw={"binaries": dict(fake_tools["binaries"])})
+
+    parameters = resolve_host(project, "web")
+
+    assert parameters["user"] == "admin"

@@ -313,9 +313,21 @@ def resolve_host(project, host):
     except ValueError:
         raise ValueError('Cannot resolve the host "' + host + '": the '
                          'inventory returned no usable host variables')
+
+    user = variables.get('ansible_user')
+    if user is None:
+        # Ansible semantics: the inventory connection variable wins over
+        # the configuration, and the ANSIBLE_REMOTE_USER environment
+        # overrides the 'remote_user' option of the configuration.
+        try:
+            remote_user = project.ansible_cfg.get_option(
+                'remote_user', section='defaults')
+        except (configparser.NoOptionError, configparser.NoSectionError):
+            remote_user = None
+        user = (os.environ.get('ANSIBLE_REMOTE_USER') or remote_user)
     return {
         'destination': variables.get('ansible_host') or host,
-        'user': variables.get('ansible_user'),
+        'user': user,
         'port': variables.get('ansible_port'),
         'identity': variables.get('ansible_ssh_private_key_file'),
         'common_args': variables.get('ansible_ssh_common_args'),
