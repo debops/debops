@@ -388,4 +388,31 @@ def test_build_scp_command_leads_the_derived_options(stub_project,
     assert "StrictHostKeyChecking=yes" in command
     assert accept_position < command.index("StrictHostKeyChecking=yes")
     assert in_sequence(command, ["-P", "2222"])
-    assert command.index("Port=9999") > command.index("-P")
+    # scp re-emits its own port after the forwarded options, so a
+    # 'Port=' in the resolved arguments would win at connection time
+    # regardless of the composed order; the resolved ports are
+    # stripped and the inventory port is the port the transfer uses
+    assert "Port=9999" not in command
+
+
+def test_build_scp_command_strips_the_resolved_ports(stub_project,
+                                                     fake_tools,
+                                                     fake_binary):
+    """scp re-emits its own port after the options it forwards, so a
+    'Port=' in the resolved arguments would win over the '-P' of the
+    inventory regardless of the composed order; the resolved ports
+    are stripped and the inventory port is the port the transfer
+    uses."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "ported-args-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_port\": 2222,"
+        " \"ansible_ssh_args\": \"-o Port=9999\"}'\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    command = build_scp_command(project, ["/etc/hostname"], "web:/tmp/x")
+
+    assert in_sequence(command, ["-P", "2222"])
+    assert "Port=9999" not in command
