@@ -228,6 +228,23 @@ def bracket_ipv6(host):
     return host
 
 
+def transfer_executable(project, command):
+    """Return the transfer binary which the configuration names.
+
+    The 'scp_executable' and 'sftp_executable' options of the view's
+    'ansible.cfg' and their environment variables select the binary;
+    the inventory variables need a host, which the handoff invocation
+    does not resolve.
+    """
+    try:
+        return (os.environ.get('ANSIBLE_' + command.upper()
+                               + '_EXECUTABLE')
+                or project.ansible_cfg.get_option(
+                    command + '_executable', section='ssh_connection'))
+    except (configparser.NoOptionError, configparser.NoSectionError):
+        return None
+
+
 def without_known_hosts_options(tokens):
     """Drop the 'UserKnownHostsFile' options from the resolved ssh
     arguments.

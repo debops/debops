@@ -485,7 +485,7 @@ Actions:
                             help='notify the user at the end '
                                  'of Ansible execution',
                             action='store_true')
-        parser.add_argument('-a', '--accept', default=False,
+        parser.add_argument('--accept', default=False,
                             help='accept unseen ssh host keys on first '
                                  'contact for this invocation',
                             action='store_true')
@@ -533,7 +533,7 @@ Actions:
                                  'ANSIBLE_DEBUG, the remote module '
                                  'files kept on the hosts',
                             action='store_true')
-        parser.add_argument('-a', '--accept', default=False,
+        parser.add_argument('--accept', default=False,
                             help='accept unseen ssh host keys on first '
                                  'contact for this invocation',
                             action='store_true')
@@ -578,7 +578,7 @@ Actions:
                                  'ANSIBLE_DEBUG, the remote module '
                                  'files kept on the hosts',
                             action='store_true')
-        parser.add_argument('-a', '--accept', default=False,
+        parser.add_argument('--accept', default=False,
                             help='accept unseen ssh host keys on first '
                                  'contact for this invocation',
                             action='store_true')
