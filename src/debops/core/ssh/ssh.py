@@ -127,6 +127,12 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
     effective_identity = identity or parameters.get('identity')
     if effective_identity:
         command.extend(['-i', effective_identity])
+    if options:
+        # The options the operator typed directly precede the resolved
+        # arguments: ssh applies the first obtained value of an
+        # option, and the operator's own '-o' must not be defeated by
+        # a value of the view
+        command.extend(options)
 
     configured_args = parameters.get('ssh_args')
     configured_tokens = shlex.split(configured_args) \
@@ -139,7 +145,6 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
         if value:
             command.extend(shlex.split(value))
 
-    command.extend(options or [])
     timeout = parameters.get('timeout')
     if timeout is None:
         timeout = 10

@@ -72,6 +72,12 @@ def build_sftp_command(project, destination, identity=None, accept=False,
     store, inject = require_store(project)
     if inject:
         ssh_options.append(('-o', known_hosts_option(store)))
+    if accept:
+        # Before the translated arguments: ssh applies the first
+        # obtained value of an option, and an explicit '--accept' must
+        # not be defeated by a StrictHostKeyChecking in the resolved
+        # arguments
+        ssh_options.append(('-o', 'StrictHostKeyChecking=accept-new'))
     translated, dropped = [], []
     for value in (parameters.get('ssh_args'),
                   parameters.get('common_args'),
@@ -88,8 +94,6 @@ def build_sftp_command(project, destination, identity=None, accept=False,
             + ' '.join(dropped),
             extra={'allow': 'stderr'})
     ssh_options.extend(translated)
-    if accept:
-        ssh_options.append(('-o', 'StrictHostKeyChecking=accept-new'))
     command.extend(compose_options(ssh_options))
 
     command.extend(sftp_head_args or [])
