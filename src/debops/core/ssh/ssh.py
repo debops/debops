@@ -20,8 +20,6 @@ configuration drop-in writes. A view which does not declare a store
 stays on the user store while the 'project' mode is active.
 """
 
-import configparser
-import getpass
 import logging
 import os
 import shlex
@@ -76,7 +74,34 @@ def split_destination(destination):
     return user, host, None
 
 
-def build_ssh_command(project, host, parameters=None, user=None, port=None,
+def without_known_hosts_options(tokens):
+    """Drop the 'UserKnownHostsFile' options from the resolved ssh
+    arguments.
+
+    The options appear as an '-o' option with its value, as the
+    attached '-oUserKnownHostsFile=...' form, or as the bare value
+    token; the rest of the arguments keep their order.
+    """
+    kept = []
+    index = 0
+    while index < len(tokens):
+        token = tokens[index]
+        if token.startswith('-oUserKnownHostsFile='):
+            index += 1
+            continue
+        if token == '-o' and index + 1 < len(tokens) \
+                and tokens[index + 1].startswith('UserKnownHostsFile='):
+            index += 2
+            continue
+        if token.startswith('UserKnownHostsFile='):
+            index += 1
+            continue
+        kept.append(token)
+        index += 1
+    return kept
+
+
+def build_ssh_command(project, host, parameters, user=None, port=None,
                       identity=None, accept=False, ssh_args=None,
                       options=None):
     """Build the ssh command line for 'debops ssh <host>'.
@@ -84,25 +109,40 @@ def build_ssh_command(project, host, parameters=None, user=None, port=None,
     The resolved inventory parameters fill the command, with the
     explicit options and the destination's own 'user@host' or URI parts
     taking precedence over the inventory values, the way ssh precedence
-    works. The '[ssh_connection] ssh_args' of the
-    view's ansible.cfg and the connection extras of the host are
-    composed before the destination; the caller's 'ssh_args' follow
-    the destination, exactly where ssh itself places them -- the
-    remote command and its arguments.
+    works. The resolved 'ssh_args' and the connection extras of the
+    host are composed before the destination; the caller's 'ssh_args'
+    follow the destination, exactly where ssh itself places them -- the
+    remote command and its arguments. The flags DebOps composes come
+    before the resolved arguments, so an explicit '-p' beats a port
+    inside 'ssh_args' -- the opposite order of the ssh connection
+    plugin, which places its '-o' options after 'ssh_args'.
+
+    In the project known_hosts mode the store of the view is injected
+    as the first ssh option: ssh applies the first obtained value of
+    an option, so no resolved argument can bypass the store of the
+    view. The 'UserKnownHostsFile' options of the resolved arguments
+    are dropped, so the command carries the store declaration once.
+
+    Without a user from the options or the inventory, no '-l' is
+    composed: ssh picks the user from the operator's SSH client
+    configuration, the way plain ssh does. The connection timeout of
+    the resolution applies like it does for the Ansible connections;
+    an earlier '-o ConnectTimeout' of the composed command wins.
     """
-    if parameters is None:
-        parameters = {}
+    command = [(parameters.get('ssh_executable') or ssh_executable(project)
+                or project.config.raw['binaries']['ssh'])]
+    store = None
     if known_hosts_mode(project) == 'project':
         store = known_hosts_store(project)
         if not store:
             raise ValueError(
                 'The project known_hosts mode is active for the view, '
                 'but the view does not declare a known_hosts store')
-    command = [ssh_executable(project)
-               or project.config.raw['binaries']['ssh']]
+        command.extend(['-o', 'UserKnownHostsFile=' + store])
 
-    effective_user = user or parameters.get('user') or getpass.getuser()
-    command.extend(['-l', effective_user])
+    effective_user = user or parameters.get('user')
+    if effective_user:
+        command.extend(['-l', effective_user])
     effective_port = port or parameters.get('port')
     if effective_port:
         command.extend(['-p', str(effective_port)])
@@ -110,14 +150,12 @@ def build_ssh_command(project, host, parameters=None, user=None, port=None,
     if effective_identity:
         command.extend(['-i', effective_identity])
 
-    try:
-        configured_args = (parameters.get('ssh_args')
-                           or project.ansible_cfg.get_option(
-                               'ssh_args', section='ssh_connection'))
-    except (configparser.NoOptionError, configparser.NoSectionError):
-        configured_args = None
-    if configured_args:
-        command.extend(shlex.split(configured_args))
+    configured_args = parameters.get('ssh_args')
+    configured_tokens = shlex.split(configured_args) \
+        if configured_args else []
+    if store:
+        configured_tokens = without_known_hosts_options(configured_tokens)
+    command.extend(configured_tokens)
     for key in ('common_args', 'extra_args'):
         value = parameters.get(key)
         if value:
@@ -126,6 +164,12 @@ def build_ssh_command(project, host, parameters=None, user=None, port=None,
     command.extend(options or [])
     if accept:
         command.extend(['-o', 'StrictHostKeyChecking=accept-new'])
+    timeout = parameters.get('timeout')
+    if timeout is None:
+        timeout = 10
+    if not any(token.startswith('ConnectTimeout=')
+               for token in command):
+        command.extend(['-o', 'ConnectTimeout=' + str(timeout)])
     command.append(parameters.get('destination') or host)
     command.extend(ssh_args or [])
     return command

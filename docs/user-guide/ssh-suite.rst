@@ -199,6 +199,15 @@ in different views. A view which does not declare a store stays on the
 operator's own known_hosts file, even when the ``project`` mode is
 selected.
 
+The store is declared by the ``view-<view>-ssh.toml`` drop-in of the
+project configuration, which DebOps writes when the project is created.
+The drop-in carries the connection arguments of the view: the defaults of
+the Ansible ``ssh_args`` option next to the store declaration, so that
+the store does not replace them and the connections of Ansible keep
+their multiplexing. The file belongs to the project once created;
+``debops project refresh`` rewrites the generated ``ansible.cfg`` from
+it but does not rewrite the drop-in itself.
+
 
 Keeping the trust current
 -------------------------
