@@ -39,7 +39,7 @@ Options
   identity is specified, the command reports the difference and uses none of
   them.
 
-``-a, --accept``
+``--accept``
   Accept an unseen SSH host key on the first contact, for both connections.
 
 ``--eval``
@@ -52,15 +52,21 @@ Options
   The file operands, in the ``[[user@]host:]path`` form. The last operand
   is the destination, the ones before it are the sources, as in
   :command:`scp`. A local path copies from or to the controller; a host
-  name in an operand resolves through the inventory of the active view. The composed SSH options apply to both
-  connections: when the operands resolve to different jump hosts, different
-  ports or different private keys, the command reports the difference and
-  applies none of the conflicting values.
+  name in an operand resolves through the inventory of the active view.
+  The composed SSH options apply to both connections: when the operands
+  resolve to different ports or different private keys, the command
+  reports the difference and applies none of the conflicting values. The
+  jump hosts are not resolved per connection: one jump chain serves both
+  connections.
 
 The forwards and the stream options which the inventory defines for a host
 do not apply to a file transfer. The command drops them and reports the
 drop.
 
+``--``
+  Ends the option parsing of the command; the tokens after the marker are
+  the operands, as in :command:`scp`.
+
 ``<scp_options>``
-  Any other options are passed to :command:`scp` unchanged, after the
-  operands.
+  Any other options are passed to :command:`scp` unchanged, in front of
+  the operands.

@@ -11,7 +11,7 @@ defined in the configuration, unlocked :file:`ansible/secret/` directory and
 with the :file:`ansible.cfg` configuration file used by the project, which
 points to the Ansible inventory.
 
-The command connects to the hosts through SSH. With the ``-a|--accept``
+The command connects to the hosts through SSH. With the ``--accept``
 option, the first connection to a host accepts an unseen SSH host key and
 stores it. Without the option, :command:`ssh` refuses an unseen key and the
 connection fails.
