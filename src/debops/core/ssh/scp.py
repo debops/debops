@@ -78,6 +78,13 @@ def build_scp_command(project, sources, destination_operand,
                     # passes through
                     tokens = without_known_hosts_options(tokens)
                 translated_side, dropped_side = translate_ssh_args(tokens)
+                # scp re-emits its own port as '-o Port=' after the
+                # options it forwards, so a 'Port=' in the resolved
+                # arguments would win over the '-P' of the inventory
+                # regardless of the composed order
+                translated_side = [pair for pair in translated_side
+                                   if not (isinstance(pair, tuple)
+                                           and pair[1].startswith('Port='))]
                 translated.extend(translated_side)
                 dropped.extend(dropped_side)
 

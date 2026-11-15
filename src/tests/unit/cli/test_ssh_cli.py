@@ -746,3 +746,23 @@ def test_ssh_handoff_reports_the_store_refusal(monkeypatch, stub_project,
     assert exit_info.value.code == 1
     assert "does not declare a known_hosts store" in \
         capsys.readouterr().err
+
+
+def test_do_ssh_rescan_declines_the_word_no(monkeypatch, stub_project,
+                                            fake_tools, tmp_path):
+    """Only an affirmative answer stores the keys: 'no' declines, the
+    way the prompt reads, and the old trust of the host is kept."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+    monkeypatch.setattr("builtins.input",
+                        mock.Mock(return_value="no"))
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(confirm=True, known_hosts_file=str(store)))
+
+    assert exit_info.value.code == 0
+    assert store.read_text() == "old\n"
