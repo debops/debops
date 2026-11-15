@@ -28,8 +28,8 @@ import shlex
 import socket
 import subprocess
 
-from .dns import is_ip_address, key_fingerprint, lookup_sshfp, \
-    ssh_fingerprint
+from .dns import (is_ip_address, is_link_local, key_fingerprint,
+                  lookup_sshfp, ssh_fingerprint)
 from .utils import (USER_KNOWN_HOSTS_STORE, ensure_store_dir,
                     known_hosts_mode, known_hosts_store, resolve_host,
                     ssh_executable)
@@ -140,6 +140,8 @@ def host_identifiers(project, host, parameters=None):
     which resolves can be scanned for host keys; a name which does not
     resolve contributes itself with 'resolvable' set to False -- its
     stale entries can still be removed, but there is nothing to scan.
+    Link-local addresses without the interface scope are not scannable
+    and contribute removal-only identifiers as well.
     """
     if parameters is None:
         try:
@@ -167,6 +169,12 @@ def host_identifiers(project, host, parameters=None):
         except socket.gaierror:
             addresses = []
         for address in addresses:
+            if is_link_local(address):
+                # A link-local address without the interface scope
+                # cannot be scanned; its stale entries can still be
+                # removed
+                add(address, False)
+                continue
             add(address, True)
             resolvable = True
         add(name, resolvable)
@@ -206,12 +214,16 @@ def rescan_actions(project, host, store, phases=('remove', 'scan'),
     """Return the rescan actions of a host: '(actions, resolvable)'.
 
     'actions' is the list of '(phase, argv)' tuples -- the ssh-keygen
-    removals and the ssh-keyscan scans of the host's identifiers, in
-    the order the phases name them. 'resolvable' carries the
-    identifiers the scan covers, which the classification uses for the
-    SSHFP lookup. The connection port of the host comes from the same
-    resolution the ssh command uses, so the scan hits the port the
-    connections use.
+    removals and the ssh-keyscan scans of the host's identifiers, the
+    removals first: the scanned keys are appended after the removals,
+    by the rescan itself from memory and by an external consumer of
+    the actions from the scan output -- in the opposite order the
+    removal would take down the freshly appended entries too, since
+    it removes every entry of the identifier. 'resolvable' carries
+    the identifiers the scan covers, for the SSHFP lookup of the
+    classification. The connection port of the host comes from the
+    same resolution the ssh command uses, so the scan hits the port
+    the connections use.
     """
     try:
         parameters = resolve_host(project, host)

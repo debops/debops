@@ -74,6 +74,21 @@ def is_ip_address(text):
     return True
 
 
+def is_link_local(address):
+    """Report whether the address is an unreachable link-local one.
+
+    A link-local address without the interface scope identifier
+    cannot be reached: the connection has no interface to go through.
+    An address which carries the scope ('fe80::1%eth0') is reachable
+    and does not count.
+    """
+    try:
+        parsed = ipaddress.ip_address(address)
+    except ValueError:
+        return False
+    return parsed.is_link_local and '%' not in address
+
+
 def lookup_sshfp(hostname):
     """Look up the SSHFP records of a host name.
 
