@@ -103,3 +103,19 @@ def test_build_sftp_command_drops_the_forwards(stub_project, fake_tools,
 
     assert "-L" not in command
     assert "1234:localhost:5678" not in command
+
+
+def test_build_sftp_command_keeps_option_values_with_spaces(
+        stub_project, fake_tools, tmp_path):
+    """A store path with spaces stays a single argv element; no
+    quoting round-trip splits it."""
+    store = str(tmp_path / "known hosts")
+    project = stub_project(
+        cfg_options={"ssh_args":
+                     "-o 'UserKnownHostsFile=" + store + "'"},
+        raw={"binaries": dict(fake_tools["binaries"]),
+             "ssh": {"known_hosts": "project"}})
+
+    command = build_sftp_command(project, "web")
+
+    assert any(store in token for token in command)

@@ -28,11 +28,11 @@ def test_split_operand_covers_the_scp_grammar(operand, user, host, path):
 
 
 @pytest.mark.parametrize("ssh_args,translated,dropped", [
-    (["-J", "jump@bastion"], ["-o ProxyJump=jump@bastion"], []),
-    (["-Jjump@bastion"], ["-o ProxyJump=jump@bastion"], []),
-    (["-o", "ControlMaster=auto"], ["-o ControlMaster=auto"], []),
-    (["-oControlMaster=auto"], ["-oControlMaster=auto"], []),
-    (["-L", "8080:localhost:80"], [], ["-L", "8080:localhost:80"]),
+    (["-J", "jump@bastion"], [("-o", "ProxyJump=jump@bastion")], []),
+    (["-Jjump@bastion"], [("-o", "ProxyJump=jump@bastion")], []),
+    (["-o", "ControlMaster=auto"], [("-o", "ControlMaster=auto")], []),
+    (["-oControlMaster=auto"], [("-o", "ControlMaster=auto")], []),
+    (["-L", "8080:localhost:80"], [], ["-L 8080:localhost:80"]),
     (["-N"], [], ["-N"]),
     (["-J"], [], ["-J"]),
     (["-o"], [], ["-o"]),
@@ -46,8 +46,8 @@ def test_translate_ssh_args_passes_strings_through_shlex():
     translated, dropped = translate_ssh_args(
         "-o ControlMaster=auto -J jump@bastion")
 
-    assert translated == ["-o ControlMaster=auto",
-                          "-o ProxyJump=jump@bastion"]
+    assert translated == [("-o", "ControlMaster=auto"),
+                          ("-o", "ProxyJump=jump@bastion")]
     assert dropped == []
 
 
@@ -220,3 +220,31 @@ def test_build_scp_command_copies_multiple_sources(stub_project, fake_tools):
 
     assert command[-3:] == ["admin@192.0.2.10:/tmp/a",
                             "admin@192.0.2.10:/tmp/b", "local"]
+
+
+def test_build_scp_command_keeps_option_values_with_spaces(
+        stub_project, fake_tools, tmp_path):
+    """Identity paths and store paths with spaces stay single argv
+    elements; no quoting round-trip splits them."""
+    identity = "/keys/with space/id"
+    store = str(tmp_path / "known_hosts")
+    project = stub_project(
+        cfg_options={"ssh_args": "-o UserKnownHostsFile=" + store},
+        raw={"binaries": dict(fake_tools["binaries"]),
+             "ssh": {"known_hosts": "project"}})
+
+    command = build_scp_command(project, ["web:/src"], "local",
+                                identity=identity)
+
+    assert command[command.index("-i") + 1] == identity
+    assert any(store in token for token in command)
+
+
+def test_translate_ssh_args_keeps_option_values_with_spaces():
+    """A '-o' value with spaces (a ProxyCommand, for example) stays
+    one argv element after the translation."""
+    translated, dropped = translate_ssh_args(
+        ["-o", "ProxyCommand=/bin/nc --option %h %p"])
+
+    assert translated == [("-o", "ProxyCommand=/bin/nc --option %h %p")]
+    assert dropped == []
