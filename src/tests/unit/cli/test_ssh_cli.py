@@ -324,7 +324,7 @@ def test_do_ssh_rescan_eval_requires_a_store(monkeypatch, stub_project,
                                              fake_tools, capsys):
     stub_the_project(monkeypatch, stub_project(
         raw={"binaries": dict(fake_tools["binaries"]),
-             "ssh": {"known_hosts": "project"}}))
+             "views": {"system": {"ssh": {"known_hosts": "project"}}}}))
 
     with pytest.raises(SystemExit) as exit_info:
         Interpreter.do_ssh_rescan(make_interpreter(), rescan_args())
@@ -377,7 +377,7 @@ def test_do_ssh_rescan_reports_the_store_error(monkeypatch, stub_project,
                                                fake_tools, capsys):
     stub_the_project(monkeypatch, stub_project(
         raw={"binaries": dict(fake_tools["binaries"]),
-             "ssh": {"known_hosts": "project"}}))
+             "views": {"system": {"ssh": {"known_hosts": "project"}}}}))
 
     with pytest.raises(SystemExit) as exit_info:
         Interpreter.do_ssh_rescan(

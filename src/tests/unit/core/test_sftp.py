@@ -9,6 +9,8 @@ sftp command builder only composes arguments, so its binary is a plain
 path in the configuration.
 """
 
+import pytest
+
 from debops.core.ssh.sftp import build_sftp_command
 
 
@@ -69,7 +71,7 @@ def test_build_sftp_command_declares_the_project_store(stub_project,
     project = stub_project(
         cfg_options={"ssh_args": "-o UserKnownHostsFile=/store"},
         raw={"binaries": dict(fake_tools["binaries"]),
-             "ssh": {"known_hosts": "project"}})
+             "views": {"system": {"ssh": {"known_hosts": "project"}}}})
 
     command = build_sftp_command(project, "web")
 
@@ -114,8 +116,19 @@ def test_build_sftp_command_keeps_option_values_with_spaces(
         cfg_options={"ssh_args":
                      "-o 'UserKnownHostsFile=" + store + "'"},
         raw={"binaries": dict(fake_tools["binaries"]),
-             "ssh": {"known_hosts": "project"}})
+             "views": {"system": {"ssh": {"known_hosts": "project"}}}})
 
     command = build_sftp_command(project, "web")
 
     assert any(store in token for token in command)
+
+
+def test_build_sftp_command_refuses_an_undeclared_store(stub_project, fake_tools):
+    project = stub_project(raw={
+        "binaries": dict(fake_tools["binaries"]),
+        "views": {"system": {"ssh": {"known_hosts": "project"}}}})
+
+    with pytest.raises(ValueError) as error:
+        build_sftp_command(project, "web")
+
+    assert "does not declare a known_hosts store" in str(error.value)
