@@ -66,10 +66,13 @@ def in_sequence_list(command, sequences):
     command."""
     position = 0
     for sequence in sequences:
-        index = command.index(sequence[-1], position)
-        if command[index - len(sequence) + 1:index + 1] != sequence:
+        length = len(sequence)
+        found = next((index for index in range(position, len(command))
+                      if command[index:index + length] == sequence),
+                     None)
+        if found is None:
             return False
-        position = index + 1
+        position = found + length
     return True
 
 
@@ -724,3 +727,22 @@ def test_do_ssh_rescan_declines_when_the_input_ends(monkeypatch,
 
     assert exit_info.value.code == 0
     assert store.read_text() == "old\n"
+
+
+def test_ssh_handoff_reports_the_store_refusal(monkeypatch, stub_project,
+                                               fake_tools, capsys):
+    """The handoff with '--accept' in a project-mode view without a
+    declared store is refused with the clean error the other paths
+    produce."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"]),
+             "views": {"system": {"ssh": {"known_hosts": "project"}}}}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_connect(
+            make_interpreter(),
+            ssh_args(eval=True, handoff=["web01"], accept=True))
+
+    assert exit_info.value.code == 1
+    assert "does not declare a known_hosts store" in \
+        capsys.readouterr().err
