@@ -59,8 +59,11 @@ def build_sftp_command(project, destination, identity=None, accept=False,
     ssh_options = []
     if known_hosts_mode(project) == 'project':
         store = known_hosts_store(project)
-        if store:
-            ssh_options.append(('-o', 'UserKnownHostsFile=' + store))
+        if not store:
+            raise ValueError(
+                'The project known_hosts mode is active for the view, '
+                'but the view does not declare a known_hosts store')
+        ssh_options.append(('-o', 'UserKnownHostsFile=' + store))
     translated, dropped = [], []
     for value in (parameters.get('common_args'),
                   parameters.get('extra_args')):
