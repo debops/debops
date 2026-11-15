@@ -342,10 +342,14 @@ class Interpreter(object):
             sys.exit(1)
 
         if args.handoff is not None:
-            command = ssh.build_handoff_command(
-                project, 'sftp', args.handoff,
-                identity=args.identity, accept=args.accept,
-                passthrough=args.sftp_head_args)
+            try:
+                command = ssh.build_handoff_command(
+                    project, 'sftp', args.handoff,
+                    identity=args.identity, accept=args.accept,
+                    passthrough=args.sftp_head_args)
+            except (ValueError, ChildProcessError) as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
         else:
             try:
                 command = ssh.build_sftp_command(
@@ -381,11 +385,15 @@ class Interpreter(object):
             sys.exit(1)
 
         if args.handoff is not None:
-            command = ssh.build_handoff_command(
-                project, 'ssh', args.handoff,
-                identity=args.identity, accept=args.accept,
-                passthrough=args.ssh_extra_args,
-                user=args.user, port=args.port)
+            try:
+                command = ssh.build_handoff_command(
+                    project, 'ssh', args.handoff,
+                    identity=args.identity, accept=args.accept,
+                    passthrough=args.ssh_extra_args,
+                    user=args.user, port=args.port)
+            except (ValueError, ChildProcessError) as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
         else:
             user, host, port = ssh.split_destination(args.host)
             user = user or args.user

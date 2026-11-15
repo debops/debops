@@ -32,7 +32,7 @@ from .dns import (is_ip_address, is_link_local, key_fingerprint,
 from .store import (USER_KNOWN_HOSTS_STORE, ensure_store_dir,
                     known_hosts_mode, known_hosts_option,
                     known_hosts_store, quote_store_path, require_store)
-from .utils import (resolve_host, ssh_executable,
+from .utils import (resolve_host, ssh_executable, transfer_executable,
                     without_known_hosts_options)
 from ..utils import unexpanduser
 
@@ -789,7 +789,8 @@ def build_handoff_command(project, command, arguments, identity=None,
     not in the operator's own file. Without '--accept' no store is
     applied.
     """
-    binary = ssh_executable(project) if command == 'ssh' else None
+    binary = (ssh_executable(project) if command == 'ssh'
+              else transfer_executable(project, command))
     options = []
     if accept:
         store, inject = require_store(project)
@@ -798,9 +799,12 @@ def build_handoff_command(project, command, arguments, identity=None,
         options.extend(['-o', 'StrictHostKeyChecking=accept-new'])
     if identity:
         options.extend(['-i', identity])
-    if user:
+    if user and command == 'ssh':
+        # The login user and the port are flags of ssh; sftp carries
+        # them in its destination and has no preserve flag to collide
+        # with
         options.extend(['-l', user])
-    if port:
+    if port and command == 'ssh':
         options.extend(['-p', str(port)])
     return [binary or project.config.raw['binaries'][command]] \
         + options + list(passthrough) + list(arguments)
