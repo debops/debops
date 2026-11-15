@@ -25,11 +25,12 @@ from .utils import (CONNECTION_OPTIONS, SCP_OPTIONS_WITH_VALUE,
                     bracket_ipv6, resolve_destination,
                     resolve_host, resolve_patterns,
                     split_operand, split_options_operands, ssh_executable,
-                    translate_ssh_args, value_options_of)
+                    translate_ssh_args, value_options_of,
+                    without_known_hosts_options)
 from .ssh import (build_handoff_command, build_ssh_command,
                   host_identifiers, parse_config_stores,
                   remove_command, render_config_snippet, rescan_actions,
                   rescan_hosts, scan_command, split_destination,
-                  write_config_snippet, without_known_hosts_options)
+                  write_config_snippet)
 from .scp import build_scp_command
 from .sftp import build_sftp_command
