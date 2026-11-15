@@ -699,3 +699,41 @@ def write_config_snippet(project, path):
             os.unlink(temp_path)
             raise
     return changed
+
+
+def build_handoff_command(project, command, arguments, identity=None,
+                          accept=False, passthrough=(), user=None,
+                          port=None):
+    """Build the command line of the '--' handoff invocation.
+
+    The arguments which follow the '--' marker go to the command
+    unchanged: the inventory is not consulted, so the command behaves
+    like the plain binary. The options which DebOps itself interprets
+    apply: the identity, the user and the port, and the accept-new
+    option. The 'passthrough' options are the ones the argument walk
+    collected before the marker -- options of the command which DebOps
+    does not interpret; they keep their places in front of the
+    arguments, so nothing the operator wrote before the marker is
+    lost.
+
+    The '--accept' option makes the command store unseen host keys; in
+    the project known_hosts mode the store of the view is injected
+    with it, so the accepted keys land in the store of the view and
+    not in the operator's own file. Without '--accept' no store is
+    applied.
+    """
+    binary = ssh_executable(project) if command == 'ssh' else None
+    options = []
+    if accept:
+        store, inject = require_store(project)
+        if inject:
+            options.extend(['-o', known_hosts_option(store)])
+        options.extend(['-o', 'StrictHostKeyChecking=accept-new'])
+    if identity:
+        options.extend(['-i', identity])
+    if user:
+        options.extend(['-l', user])
+    if port:
+        options.extend(['-p', str(port)])
+    return [binary or project.config.raw['binaries'][command]] \
+        + options + list(passthrough) + list(arguments)
