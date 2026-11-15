@@ -325,8 +325,13 @@ def resolve_host(project, host):
         except (configparser.NoOptionError, configparser.NoSectionError):
             remote_user = None
         user = (os.environ.get('ANSIBLE_REMOTE_USER') or remote_user)
+    destination = variables.get('ansible_host') or host
+    if destination.startswith('-'):
+        raise ValueError(
+            'The ansible_host of the host "' + host + '" looks like an '
+            'SSH option instead of a host name or address: ' + destination)
     return {
-        'destination': variables.get('ansible_host') or host,
+        'destination': destination,
         'user': user,
         'port': variables.get('ansible_port'),
         'identity': variables.get('ansible_ssh_private_key_file'),
