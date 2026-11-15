@@ -472,17 +472,11 @@ class Interpreter(object):
                             'the view does not declare a known_hosts '
                             'store')
                 sys.exit(1)
-            keygen = project.config.raw['binaries']['ssh-keygen']
-            keyscan = project.config.raw['binaries']['ssh-keyscan']
             for host in hosts:
-                for identifier, resolvable in ssh.host_identifiers(
-                        project, host):
-                    if 'remove' in phases:
-                        print(' '.join([keygen, '-R', identifier,
-                                        '-f', store]))
-                    if 'scan' in phases and resolvable:
-                        print(' '.join([keyscan, '-H', '-T',
-                                        str(args.timeout), identifier]))
+                actions, _ = ssh.rescan_actions(
+                    project, host, store, phases, args.timeout)
+                for phase, argv in actions:
+                    print(shlex.join(argv))
             sys.exit(0)
 
         def confirm_host(host, offered):

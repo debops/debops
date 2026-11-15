@@ -62,10 +62,13 @@ def fake_tools(tmp_path):
                                + shlex.quote(str(log)) + "\n")
     keyscan = write_fake_binary(tmp_path / "fake-ssh-keyscan",
                                 "#!/bin/sh\n"
-                                'if [ "$4" = "web" ] || '
-                                '[ "$4" = "192.0.2.10" ]; then\n'
-                                "    printf '%s\\n' '" + FAKE_KEY + "'\n"
-                                "fi\n")
+                                'for name in "$@"; do\n'
+                                '    if [ "$name" = "web" ] || '
+                                '[ "$name" = "192.0.2.10" ]; then\n'
+                                "        printf '%s\\n' '" + FAKE_KEY
+                                + "'\n"
+                                "    fi\n"
+                                "done\n")
     ansible = write_fake_binary(tmp_path / "fake-ansible",
                                 "#!/bin/sh\n"
                                 'if [ "$1" = "none" ]; then\n'
