@@ -1890,3 +1890,24 @@ def test_write_config_snippet_warns_about_a_corrupted_block(
         write_config_snippet(stub_project(), str(config))
 
     assert "may not apply" in caplog.text
+
+
+def test_build_ssh_command_lets_the_operator_options_win(
+        stub_project, fake_tools, fake_binary):
+    """The options the operator typed directly precede the resolved
+    arguments: ssh applies the first obtained value, and the
+    operator's own '-o' must not be defeated by the view's."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "master-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_ssh_args\": \"-o ControlMaster=auto\"}'\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    command = build_ssh_command(
+        project, "web", resolve_host(project, "web"),
+        options=["-o", "ControlMaster=no"])
+
+    assert command.index("ControlMaster=no") \
+        < command.index("ControlMaster=auto")

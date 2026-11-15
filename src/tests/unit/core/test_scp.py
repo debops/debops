@@ -359,3 +359,33 @@ def test_build_scp_command_carries_the_store_once(stub_project,
                           for index, token in enumerate(command)
                           if "UserKnownHostsFile=" in token)
     assert command.index("ControlMaster=auto") > store_position
+
+
+def test_build_scp_command_leads_the_derived_options(stub_project,
+                                                     fake_tools,
+                                                     fake_binary):
+    """The store, the accept-new instruction and the port of the
+    inventory precede the translated arguments: ssh applies the first
+    obtained value, and the derived values must not be defeated by
+    the view's ssh_args."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "hardened-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_port\": 2222,"
+        " \"ansible_ssh_args\": \"-o StrictHostKeyChecking=yes"
+        " -o Port=9999\"}'\n")
+    project = stub_project(
+        raw={"binaries": binaries,
+             "views": {"system": {"ssh": {"known_hosts": "project"}}}},
+        cfg_options={"ssh_args": "-o UserKnownHostsFile=/store"})
+
+    command = build_scp_command(project, ["/etc/hostname"],
+                                "web:/tmp/x", accept=True)
+
+    accept_position = command.index("StrictHostKeyChecking=accept-new")
+    assert "StrictHostKeyChecking=yes" in command
+    assert accept_position < command.index("StrictHostKeyChecking=yes")
+    assert in_sequence(command, ["-P", "2222"])
+    assert command.index("Port=9999") > command.index("-P")

@@ -36,7 +36,7 @@ def build_scp_command(project, sources, destination_operand,
     """
     binary = None
     operands = []
-    ssh_options = []
+    translated = []
     dropped = []
     ports = []
     identities = []
@@ -70,8 +70,8 @@ def build_scp_command(project, sources, destination_operand,
                       parameters.get('extra_args')):
             if value:
                 tokens = without_known_hosts_options(shlex.split(value))
-                translated, dropped_side = translate_ssh_args(tokens)
-                ssh_options.extend(translated)
+                translated_side, dropped_side = translate_ssh_args(tokens)
+                translated.extend(translated_side)
                 dropped.extend(dropped_side)
 
     if dropped:
@@ -82,15 +82,6 @@ def build_scp_command(project, sources, destination_operand,
             extra={'allow': 'stderr'})
 
     unique_ports = set(ports)
-    if len(unique_ports) == 1 and not (scp_args and '-P' in scp_args):
-        # An explicit '-P' of the operator wins over the inventory
-        # ports; scp applies the last obtained value
-        ssh_options.append(('-P', unique_ports.pop()))
-    elif len(unique_ports) > 1:
-        logger.notice(
-            'The operands resolve to hosts with different ssh ports; '
-            'scp applies one port to both connections and none was '
-            'added', extra={'allow': 'stderr'})
 
     unique_executables = set(executables)
     if len(unique_executables) == 1:
@@ -102,6 +93,27 @@ def build_scp_command(project, sources, destination_operand,
             extra={'allow': 'stderr'})
 
     unique_identities = set(identities)
+
+    # The options DebOps derives lead the command: ssh applies the
+    # first obtained value of an option, and the derived values -- the
+    # store of the view, the accept-new instruction, the port and the
+    # identity -- must not be defeated by a value in the resolved
+    # arguments of the hosts
+    ssh_options = []
+    store, inject = require_store(project)
+    if inject:
+        ssh_options.append(('-o', known_hosts_option(store)))
+    if accept:
+        ssh_options.append(('-o', 'StrictHostKeyChecking=accept-new'))
+    if len(unique_ports) == 1 and not (scp_args and '-P' in scp_args):
+        # An explicit '-P' of the operator wins over the inventory
+        # ports; scp applies the last obtained value
+        ssh_options.append(('-P', unique_ports.pop()))
+    elif len(unique_ports) > 1:
+        logger.notice(
+            'The operands resolve to hosts with different ssh ports; '
+            'scp applies one port to both connections and none was '
+            'added', extra={'allow': 'stderr'})
     if identity:
         ssh_options.append(('-i', identity))
     elif len(unique_identities) == 1:
@@ -112,11 +124,7 @@ def build_scp_command(project, sources, destination_operand,
             'files; scp applies one identity to both connections and '
             'none was added', extra={'allow': 'stderr'})
 
-    if accept:
-        ssh_options.append(('-o', 'StrictHostKeyChecking=accept-new'))
-    store, inject = require_store(project)
-    if inject:
-        ssh_options.insert(0, ('-o', known_hosts_option(store)))
+    ssh_options.extend(translated)
 
     command = [binary or project.config.raw['binaries']['scp']]
     command.extend(compose_options(ssh_options))
