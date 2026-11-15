@@ -168,19 +168,6 @@
         }
       }
     },
-    "ssh": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "known_hosts": {
-          "type": "string",
-          "enum": [
-            "user",
-            "project"
-          ]
-        }
-      }
-    },
     "syslog": {
       "type": "object",
       "additionalProperties": false,
@@ -288,6 +275,21 @@
               },
               "type": {
                 "type": "string"
+              }
+            }
+          },
+          "ssh": {
+            "type": "object",
+            "description": "SSH connection handling of the view.",
+            "properties": {
+              "known_hosts": {
+                "type": "string",
+                "enum": [
+                  "user",
+                  "project"
+                ],
+                "default": "user",
+                "description": "Where the SSH host keys of the view are stored: in the user's own known_hosts file ('user') or in the project's per-view store ('project')."
               }
             }
           }
