@@ -137,6 +137,12 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
     store, inject = require_store(project)
     if inject:
         command.extend(['-o', known_hosts_option(store)])
+    if accept:
+        # Before the resolved arguments: ssh applies the first
+        # obtained value of an option, and an explicit '--accept' must
+        # not be defeated by a StrictHostKeyChecking in the resolved
+        # arguments
+        command.extend(['-o', 'StrictHostKeyChecking=accept-new'])
 
     effective_user = user or parameters.get('user')
     if effective_user:
@@ -160,12 +166,11 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
             command.extend(shlex.split(value))
 
     command.extend(options or [])
-    if accept:
-        command.extend(['-o', 'StrictHostKeyChecking=accept-new'])
     timeout = parameters.get('timeout')
     if timeout is None:
         timeout = 10
     if not any(token.startswith('ConnectTimeout=')
+               or token.startswith('-oConnectTimeout=')
                for token in command):
         command.extend(['-o', 'ConnectTimeout=' + str(timeout)])
     command.append(parameters.get('destination') or host)
@@ -405,10 +410,10 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
                        'records of ' + hostname + '; the host was not '
                        'stored')
         return None, details
-    if unverified:
-        details.append(str(len(unverified)) + ' of the scanned keys have '
-                       'no SSHFP records and were not stored')
     if not authenticated and not trust_unsigned:
+        if unverified:
+            details.append(str(len(unverified)) + ' of the scanned keys'
+                           ' have no SSHFP records and were not stored')
         # The policy refuses the unsigned match; the confirmation
         # callback is the operator's explicit override of it
         if confirm is None:
@@ -423,6 +428,9 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
         return _confirmed_keys(host, fingerprints, confirm, details), \
             details
     if authenticated:
+        if unverified:
+            details.append(str(len(unverified)) + ' of the scanned keys'
+                           ' have no SSHFP records and were not stored')
         details.append('the host keys match the SSHFP records of '
                        + hostname + ' (DNSSEC-validated)')
         return matched, details
@@ -474,6 +482,8 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
     phases. Raises ValueError when no store can be determined.
     """
     store_project = None
+    if store:
+        store = os.path.expanduser(store)
     if store is None:
         store, inject = require_store(project)
         # The user mode stores the keys in '~/.ssh/known_hosts', which
@@ -494,6 +504,7 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
 
         if 'scan' in phases:
             keys = []
+            scanned = set()
             for phase, argv in actions:
                 if phase != 'scan':
                     continue
@@ -506,9 +517,12 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                     details.append('the key scan of ' + argv[-1]
                                    + ' timed out')
                     continue
-                keys.extend(line for line in process.stdout.splitlines()
-                            if line and not line.startswith('#')
-                            and line not in keys)
+                fresh = [line for line in process.stdout.splitlines()
+                         if line and not line.startswith('#')]
+                if fresh:
+                    scanned.add(argv[-1])
+                keys.extend(line for line in fresh
+                            if line not in keys)
             scan_ok = bool(keys)
             if keys:
                 trust_unsigned = project.config.raw.get('ssh', {}).get(
@@ -539,6 +553,16 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
             for phase, argv in actions:
                 if phase != 'remove':
                     continue
+                if 'scan' in phases:
+                    # Only the identifiers which answered the scan
+                    # have their entries replaced; the entries of the
+                    # identifiers which did not respond stay until
+                    # they do
+                    bare = argv[2]
+                    if bare.startswith('[') and ']' in bare:
+                        bare = bare[1:bare.index(']')]
+                    if bare not in scanned:
+                        continue
                 process = subprocess.run(
                     argv, capture_output=True, text=True)
                 if process.returncode != 0:
@@ -645,6 +669,10 @@ def write_config_snippet(project, path):
     block. Returns True when the file changed.
     """
     path = os.path.expanduser(path)
+    if os.path.islink(path):
+        # The block is written through the symlink, so the target the
+        # operator's dotfiles manage keeps receiving it
+        path = os.path.realpath(path)
     existed = os.path.exists(path)
     existing = ''
     if existed:
@@ -653,10 +681,9 @@ def write_config_snippet(project, path):
     existing_stores = parse_config_stores(existing)
 
     outside = existing
-    if CONFIG_BLOCK_BEGIN in existing:
-        outside = existing.split(CONFIG_BLOCK_BEGIN, 1)[0]
-        if CONFIG_BLOCK_END in existing:
-            outside += existing.split(CONFIG_BLOCK_END, 1)[1]
+    if CONFIG_BLOCK_BEGIN in existing and CONFIG_BLOCK_END in existing:
+        outside = existing.split(CONFIG_BLOCK_BEGIN, 1)[0] \
+            + existing.split(CONFIG_BLOCK_END, 1)[1]
     for line in outside.splitlines():
         if line.strip().startswith('UserKnownHostsFile'):
             logger.notice(

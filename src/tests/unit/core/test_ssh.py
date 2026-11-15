@@ -329,11 +329,18 @@ def test_host_identifiers_exclude_link_local_addresses_from_the_scan(
 
 
 def test_rescan_hosts_removes_and_scans_the_identifiers(
-        stub_project, fake_tools, tmp_path):
+        stub_project, fake_tools, monkeypatch, tmp_path):
     store = str(tmp_path / "store" / "known_hosts")
     os.makedirs(os.path.dirname(store))
     with open(store, "w") as handle:
         handle.write("# stale entries live here\n")
+
+    def fake_getaddrinfo(name, *args, **kwargs):
+        if name in ("web", "192.0.2.10"):
+            return [(2, 1, 6, "", ("192.0.2.10", 0))]
+        raise socket.gaierror("no DNS")
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_getaddrinfo)
 
     results = rescan_hosts(stub_project(raw={"binaries": dict(fake_tools["binaries"])}),
                            ["web"], store=store, dns_mode='no-dns')
@@ -1753,3 +1760,133 @@ def test_handoff_command_injects_the_store_with_accept(stub_project,
     command = build_handoff_command(project, 'ssh', ["web-1"])
 
     assert "UserKnownHostsFile" not in command
+
+
+def test_rescan_hosts_keeps_the_entries_of_the_silent_identifiers(
+        stub_project, fake_tools, monkeypatch, tmp_path):
+    """An identifier which does not answer the scan keeps its stored
+    entries: only the identifiers which contributed keys have their
+    trust replaced."""
+    store = str(tmp_path / "store" / "known_hosts")
+    os.makedirs(os.path.dirname(store))
+    with open(store, "w") as handle:
+        handle.write("# the entries of both identifiers\n")
+
+    def fake_getaddrinfo(name, *args, **kwargs):
+        if name == "192.0.2.10":
+            return [(2, 1, 6, "", ("192.0.2.10", 0))]
+        raise socket.gaierror("no DNS")
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_getaddrinfo)
+
+    results = rescan_hosts(stub_project(raw={
+        "binaries": dict(fake_tools["binaries"])}),
+        ["web"], store=store, dns_mode='no-dns')
+
+    # The scan of the address succeeded; the host is refreshed through
+    # it, while the silent name keeps its stored entries
+    assert results[0][1]
+    with open(fake_tools["log"]) as handle:
+        removals = handle.read().splitlines()
+    assert any("-R [192.0.2.10]:2222" in line for line in removals)
+    assert not any("-R [web]:2222" in line for line in removals)
+
+
+def test_translate_ssh_args_drops_a_trailing_value_option():
+    """A value option without its value is dropped, not crashed on."""
+    translated, dropped = translate_ssh_args("-J 1234:localhost:22 -F")
+
+    assert translated == [("-o", "ProxyJump=1234:localhost:22")]
+    assert dropped == ["-F"]
+
+
+def test_write_config_snippet_writes_through_a_symlink(stub_project,
+                                                       tmp_path):
+    """A dotfile-managed configuration is a symlink; the managed block
+    is written through it, so the target keeps receiving it."""
+    target = tmp_path / "dotfiles" / "ssh_config"
+    target.parent.mkdir()
+    target.write_text("Host bastion\n    ForwardAgent yes\n")
+    config = tmp_path / ".ssh" / "config"
+    config.parent.mkdir()
+    config.symlink_to(target)
+
+    write_config_snippet(stub_project(), str(config))
+
+    assert config.is_symlink()
+    assert "BEGIN debops ssh managed block" in target.read_text()
+    assert "ForwardAgent yes" in target.read_text()
+
+
+def test_build_ssh_command_yields_to_the_attached_timeout_form(
+        stub_project, fake_tools):
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+    parameters = resolve_host(project, "web")
+
+    command = build_ssh_command(project, "web", parameters,
+                                options=["-oConnectTimeout=5"])
+
+    assert "ConnectTimeout=5" not in command
+    assert "-oConnectTimeout=5" in command
+
+
+def test_rescan_expands_the_tilde_of_the_explicit_store(
+        stub_project, fake_tools, monkeypatch, tmp_path):
+    """The '--known-hosts-file' value is tilde-expanded, like the store
+    paths of the configuration are."""
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    os.makedirs(str(tmp_path / "home"))
+
+    results = rescan_hosts(stub_project(raw={
+        "binaries": dict(fake_tools["binaries"])}),
+        ["web"], store="~/known_hosts", dns_mode='no-dns')
+
+    assert results == [("web", True, "")]
+    assert (tmp_path / "home" / "known_hosts").exists()
+
+
+def test_rescan_reports_the_unsigned_keys_of_the_fallback(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """The unsigned-match fallback stores every fingerprintable key;
+    the report does not claim the keys without records were
+    skipped."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "fqdn-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"" + FQDN + "\"}'\n")
+    binaries["ssh-keyscan"] = fake_binary(
+        "two-key-keyscan",
+        "#!/bin/sh\n"
+        "printf '%s\n' \"$4 ssh-ed25519 " + FQDN_KEY_BLOB + "\"\n"
+        "printf '%s\n' \"$4 ssh-rsa AAAArfakekey\"\n")
+    project = stub_project(raw={"binaries": binaries})
+    stub_dns(monkeypatch, {(4, 2, FQDN_FINGERPRINT)}, authenticated=False)
+    store = tmp_path / "store"
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",))
+
+    host, succeeded, message = results[0]
+    assert succeeded
+    assert "were not stored" not in message
+    assert "stored as scanned" in message
+    content = store.read_text()
+    assert "ssh-ed25519" in content
+    assert "ssh-rsa" in content
+
+
+def test_write_config_snippet_warns_about_a_corrupted_block(
+        stub_project, tmp_path, caplog):
+    """A managed block without its end marker is outside content for
+    the shadow warning: its directives would win over the fresh
+    block."""
+    config = tmp_path / "ssh_config"
+    config.write_text("# BEGIN debops ssh managed block\n"
+                      "Host *\n"
+                      "    UserKnownHostsFile /stale/store\n")
+
+    with caplog.at_level(logging.NOTICE):
+        write_config_snippet(stub_project(), str(config))
+
+    assert "may not apply" in caplog.text

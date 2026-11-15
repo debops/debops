@@ -14,9 +14,11 @@ from ..runner import Runner
 import configparser
 import logging
 import os
+import shlex
 import textwrap
 
-from ..ssh.store import declared_known_hosts_store, ensure_store_dir
+from ..ssh.store import (declared_known_hosts_store, ensure_store_dir,
+                         quote_store_path)
 
 logger = logging.getLogger(__name__)
 
@@ -88,13 +90,22 @@ class AnsibleProjectRunner(Runner):
         except (configparser.NoOptionError, configparser.NoSectionError):
             ssh_args = None
         base = os.environ.get('ANSIBLE_SSH_ARGS') or ssh_args
-        composed = ((base + ' ' if base else '')
-                    + '-o StrictHostKeyChecking='
-                      'accept-new')
+        # The accept-new option leads the composed value: ssh applies
+        # the first obtained value of an option, and an explicit
+        # '--accept' must not be defeated by a StrictHostKeyChecking
+        # in the base arguments
+        composed = '-o StrictHostKeyChecking=accept-new'
+        if base:
+            composed += ' ' + base
         store = declared_known_hosts_store(self.project)
-        if store and 'UserKnownHostsFile=' not in composed:
-            composed += (' -o UserKnownHostsFile='
-                         + self._quote_spaces(store))
+        if store and not any(
+                token.startswith('UserKnownHostsFile')
+                for token in shlex.split(composed)):
+            # The single-quoted form survives the argument splitting
+            # of the ssh connection plugin, which would consume the
+            # double quotes of the store path directly
+            composed += (' -o \'UserKnownHostsFile='
+                         + quote_store_path(store) + '\'')
         env['ANSIBLE_SSH_ARGS'] = composed
 
     def _quote_spaces(self, string):
