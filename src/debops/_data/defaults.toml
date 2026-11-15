@@ -74,6 +74,18 @@ sftp = "{{ env['DEBOPS_CMD_SFTP'] | d('sftp') }}"
 # The default commit message used for new git repositories.
 init_message = "Initialize new DebOps project directory"
 
+[ssh.rescan]
+
+# What to do when the scanned keys of a host match the SSHFP records
+# of the DNS, but the DNS answer was not authenticated by DNSSEC.
+# RFC 4255 forbids trusting unauthenticated SSHFP records; with
+# 'true', such a match grants no trust and the keys are handled like
+# the keys of hosts without SSHFP records: stored as scanned, or
+# confirmed by the operator with the '--confirm' option. With
+# 'false', such hosts are not stored at all; run the rescan with
+# '--confirm' to accept the keys after checking the fingerprints.
+trust_unsigned_records = true
+
 [project.venv]
 
 # Enable an encapsulated Python virtual environment in the project directory,

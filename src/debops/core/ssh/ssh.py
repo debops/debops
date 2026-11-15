@@ -315,14 +315,16 @@ def _confirmed_keys(host, fingerprints, confirm, details):
 
 
 def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
-                           details):
+                           details, trust_unsigned=True):
     """Decide which of the scanned keys of a host may be stored.
 
     With the 'dns' mode (the default), keys whose SSHFP fingerprints
-    match the DNS records of the host are accepted automatically and
-    keys which contradict the records refuse the whole host. Hosts
-    without usable DNS records fall back to the 'confirm' callback,
-    when one is given, or to the plain store operation. The
+    match DNSSEC-validated records of the host are accepted
+    automatically and keys which contradict the records refuse the
+    whole host. A match against records which the resolver did not
+    authenticate grants no trust: with 'trust_unsigned' the keys fall
+    back to the 'confirm' callback, when one is given, or to the plain
+    store operation, and without it the host is not stored. The
     'dns-verify' mode requires a DNSSEC-validating resolver to mark the
     answer as authenticated before a DNS match is trusted.
 
@@ -406,10 +408,30 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
     if unverified:
         details.append(str(len(unverified)) + ' of the scanned keys have '
                        'no SSHFP records and were not stored')
-    tier = 'DNSSEC-validated' if authenticated else 'DNS match'
-    details.append('the host keys match the SSHFP records of '
-                   + hostname + ' (' + tier + ')')
-    return matched, details
+    if not authenticated and not trust_unsigned:
+        # The policy refuses the unsigned match; the confirmation
+        # callback is the operator's explicit override of it
+        if confirm is None:
+            details.append('the SSHFP records of ' + hostname + ' are '
+                           'not DNSSEC-validated; the host was not '
+                           'stored (rerun with \'--confirm\' to accept '
+                           'the keys after checking the fingerprints)')
+            return None, details
+        details.append('the SSHFP records of ' + hostname + ' are not '
+                       'DNSSEC-validated; the keys need the operator '
+                       'confirmation')
+        return _confirmed_keys(host, fingerprints, confirm, details), \
+            details
+    if authenticated:
+        details.append('the host keys match the SSHFP records of '
+                       + hostname + ' (DNSSEC-validated)')
+        return matched, details
+    # The unsigned match grants no trust of its own: the keys are
+    # handled like the keys of a host without SSHFP records
+    details.append('the SSHFP match of ' + hostname + ' is not '
+                   'DNSSEC-validated; the keys are stored as scanned')
+    return _confirmed_keys(host, fingerprints, confirm, details), \
+        details
 
 
 def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
@@ -418,12 +440,17 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
 
     For each host, its current host keys are scanned first and held in
     memory. With the 'dns' mode (the default), keys whose fingerprints
-    match the SSHFP records of the host are accepted automatically,
-    keys which contradict the published records are refused with a
-    report, and hosts without usable DNS records fall back to the
-    'confirm' callback, when one is given, or to the plain store
-    operation. The 'dns-verify' mode additionally requires that a
-    DNSSEC-validating resolver marked the DNS answer as authenticated.
+    match the DNSSEC-validated SSHFP records of the host are accepted
+    automatically, keys which contradict the published records are
+    refused with a report, and hosts without usable DNS records fall
+    back to the 'confirm' callback, when one is given, or to the plain
+    store operation. A match which the resolver did not authenticate
+    grants no trust: the keys follow the
+    'ssh.rescan.trust_unsigned_records' option of the configuration,
+    handled like the hosts without DNS records ('true', the default)
+    or refused ('false'). The 'dns-verify' mode additionally requires
+    that a DNSSEC-validating resolver marked the DNS answer as
+    authenticated.
 
     After the keys are accepted, the stale entries of all of the
     host's identifiers are removed from the store and the accepted
@@ -484,8 +511,11 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                             and line not in keys)
             scan_ok = bool(keys)
             if keys:
+                trust_unsigned = project.config.raw.get('ssh', {}).get(
+                    'rescan', {}).get('trust_unsigned_records', True)
                 store_keys, scan_details = _classify_scanned_keys(
-                    host, keys, resolvable, dns_mode, confirm, details)
+                    host, keys, resolvable, dns_mode, confirm, details,
+                    trust_unsigned)
                 if store_keys is None:
                     succeeded = False
             elif resolvable:
