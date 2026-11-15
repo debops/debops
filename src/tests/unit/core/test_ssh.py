@@ -26,11 +26,12 @@ from debops.core.ssh import (SFTP_OPTIONS_WITH_VALUE, SSH_OPTIONS_WITH_VALUE,
                              build_handoff_command, build_ssh_command,
                              ensure_store_dir, host_identifiers,
                              known_hosts_mode, known_hosts_store,
-                             render_config_snippet, resolve_destination,
+                             remove_command, render_config_snippet,
+                             rescan_actions, resolve_destination,
                              resolve_host, resolve_patterns, rescan_hosts,
-                             split_destination, split_options_operand,
-                             translate_ssh_args, value_options_of,
-                             write_config_snippet)
+                             scan_command, split_destination,
+                             split_options_operand, translate_ssh_args,
+                             value_options_of, write_config_snippet)
 
 
 @pytest.mark.parametrize("destination,user,host,port", [
@@ -232,6 +233,61 @@ def test_host_identifiers_keep_an_unresolvable_name(stub_project,
     assert host_identifiers(project, "lonely") == [("lonely", False)]
 
 
+def test_scan_command_passes_the_port_of_the_host():
+    """The scanner connects on the port the resolution defines."""
+    command = scan_command({"ssh-keyscan": "keyscan"}, "web", port=2222,
+                           timeout=10)
+
+    assert command == ["keyscan", "-H", "-T", "10", "-p", "2222", "web"]
+
+
+def test_scan_command_omits_the_port_when_none_is_defined():
+    assert "-p" not in scan_command({"ssh-keyscan": "keyscan"}, "web",
+                                    timeout=10)
+
+
+def test_remove_command_qualifies_the_ported_identifiers():
+    """The entries of a host on a non-default port carry the
+    '[host]:port' form, and only the qualified identifier matches
+    them for the removal."""
+    command = remove_command({"ssh-keygen": "keygen"}, "web", "store",
+                             port="2222")
+
+    assert command == ["keygen", "-R", "[web]:2222", "-f", "store"]
+
+
+def test_remove_command_keeps_the_bare_identifiers_of_the_default_port():
+    command = remove_command({"ssh-keygen": "keygen"}, "web", "store",
+                             port="22")
+
+    assert command == ["keygen", "-R", "web", "-f", "store"]
+    assert remove_command({"ssh-keygen": "keygen"}, "web", "store") == \
+        ["keygen", "-R", "web", "-f", "store"]
+
+
+def test_rescan_actions_qualify_the_ported_identifiers(
+        stub_project, fake_tools, monkeypatch):
+    """The actions carry the port forms of both tools, and the
+    unresolvable names contribute removals without scans."""
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+
+    def fake_getaddrinfo(name, *args, **kwargs):
+        if name == "192.0.2.10":
+            return [(2, 1, 6, "", ("192.0.2.10", 0))]
+        raise socket.gaierror("no DNS")
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_getaddrinfo)
+
+    actions, resolvable = rescan_actions(project, "web", "store")
+
+    assert [phase for phase, argv in actions] == \
+        ["remove", "remove", "scan"]
+    assert in_sequence(actions[0][1], ["-R", "[web]:2222"])
+    assert in_sequence(actions[1][1], ["-R", "[192.0.2.10]:2222"])
+    assert in_sequence(actions[2][1], ["-p", "2222"])
+    assert resolvable == ["192.0.2.10"]
+
+
 def test_rescan_hosts_removes_and_scans_the_identifiers(
         stub_project, fake_tools, tmp_path):
     store = str(tmp_path / "store" / "known_hosts")
@@ -249,8 +305,8 @@ def test_rescan_hosts_removes_and_scans_the_identifiers(
     assert (os.stat(store).st_mode & 0o777) == 0o600
     with open(fake_tools["log"]) as handle:
         removals = handle.read().splitlines()
-    assert any("-R web" in line for line in removals)
-    assert any("-R 192.0.2.10" in line for line in removals)
+    assert any("-R [web]:2222" in line for line in removals)
+    assert any("-R [192.0.2.10]:2222" in line for line in removals)
 
 
 def test_rescan_hosts_reports_a_host_without_keys(stub_project, fake_tools,
@@ -722,7 +778,7 @@ def test_rescan_hosts_stores_keys_matching_sshfp(monkeypatch,
     """Keys whose fingerprints match the SSHFP records are stored
     without confirmation."""
     project = fqdn_project(stub_project, fake_tools, fake_binary)
-    stub_dns(monkeypatch, {(4, FQDN_FINGERPRINT)}, authenticated=True)
+    stub_dns(monkeypatch, {(4, 2, FQDN_FINGERPRINT)}, authenticated=True)
     store = tmp_path / "store"
 
     results = rescan_hosts(project, ["web"], store=str(store),
@@ -742,7 +798,7 @@ def test_rescan_hosts_refuses_keys_contradicting_sshfp(monkeypatch,
     """Keys which contradict the DNS answer are not stored, and the
     stored entries of the host stay untouched."""
     project = fqdn_project(stub_project, fake_tools, fake_binary)
-    stub_dns(monkeypatch, {(4, 'ff' * 32)}, authenticated=True)
+    stub_dns(monkeypatch, {(4, 2, 'ff' * 32)}, authenticated=True)
     store = tmp_path / "store"
     store.write_text("old\n")
 
@@ -811,7 +867,7 @@ def test_rescan_hosts_dns_verify_requires_authentication(monkeypatch,
     """The strict mode does not store keys from DNS answers which a
     DNSSEC-validating resolver did not authenticate."""
     project = fqdn_project(stub_project, fake_tools, fake_binary)
-    stub_dns(monkeypatch, {(4, FQDN_FINGERPRINT)}, authenticated=False)
+    stub_dns(monkeypatch, {(4, 2, FQDN_FINGERPRINT)}, authenticated=False)
     store = tmp_path / "store"
     store.write_text("old\n")
 
@@ -827,7 +883,7 @@ def test_rescan_hosts_dns_verify_requires_authentication(monkeypatch,
 def test_rescan_hosts_dns_verify_stores_authenticated_keys(
         monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
     project = fqdn_project(stub_project, fake_tools, fake_binary)
-    stub_dns(monkeypatch, {(4, FQDN_FINGERPRINT)}, authenticated=True)
+    stub_dns(monkeypatch, {(4, 2, FQDN_FINGERPRINT)}, authenticated=True)
     store = tmp_path / "store"
 
     results = rescan_hosts(project, ["web"], store=str(store),
@@ -835,6 +891,118 @@ def test_rescan_hosts_dns_verify_stores_authenticated_keys(
 
     assert results[0][1]
     assert FQDN_KEY_LINE in store.read_text()
+
+
+def test_rescan_hosts_matches_sha1_records(monkeypatch, stub_project,
+                                           fake_tools, fake_binary,
+                                           tmp_path):
+    """Zones which publish the SHA-1 fingerprint type verify against
+    the SHA-1 digest of the scanned keys, the way ssh verifies
+    SSHFP records."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    sha1 = hashlib.sha1(b'\x21' * 32).hexdigest()
+    stub_dns(monkeypatch, {(4, 1, sha1)}, authenticated=True)
+    store = tmp_path / "store"
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",))
+
+    host, succeeded, message = results[0]
+    assert succeeded
+    assert "SSHFP" in message
+    assert FQDN_KEY_LINE in store.read_text()
+
+
+def test_rescan_hosts_keeps_the_old_trust_when_the_operator_declines(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """In the default phases the removal requires keys to store:
+    declined keys keep the old trust instead of leaving the host
+    without entries."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    stub_dns(monkeypatch, set(), authenticated=True)
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           confirm=lambda host, offered: False)
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    assert store.read_text() == "old\n"
+
+
+def test_rescan_hosts_keeps_the_old_trust_when_sshfp_contradicts(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """A contradicting DNS answer refuses the host and keeps its
+    stored entries in the default phases."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    stub_dns(monkeypatch, {(4, 2, 'ff' * 32)}, authenticated=True)
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    results = rescan_hosts(project, ["web"], store=str(store))
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    assert store.read_text() == "old\n"
+
+
+def test_rescan_hosts_keeps_the_old_trust_for_unfingerprintable_keys(
+        stub_project, fake_tools, fake_binary, tmp_path):
+    """Keys of the types without SSHFP algorithm numbers -- the FIDO
+    key types among them -- refuse the host instead of replacing its
+    trust with nothing."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "sk-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\"}'\n")
+    binaries["ssh-keyscan"] = fake_binary(
+        "sk-keyscan",
+        "#!/bin/sh\n"
+        "printf '%s\\n' '192.0.2.10 sk-ssh-ed25519@openssh.com "
+        "AAAAfakekey'\n")
+    project = stub_project(raw={"binaries": binaries})
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    results = rescan_hosts(project, ["web"], store=str(store))
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    assert 'could not be fingerprinted' in message
+    assert store.read_text() == "old\n"
+
+
+def test_rescan_host_port_follows_the_resolution_chain(
+        stub_project, fake_tools, fake_binary, monkeypatch):
+    """The port follows the ssh connection plugin's 'port' option: the
+    inventory variables over the 'ANSIBLE_REMOTE_PORT' environment
+    over the 'remote_port' configuration option."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "portless-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\"}'\n")
+
+    monkeypatch.delenv("ANSIBLE_REMOTE_PORT", raising=False)
+    project = stub_project(raw={"binaries": binaries})
+    assert resolve_host(project, "web")["port"] is None
+
+    project = stub_project(raw={"binaries": binaries},
+                           cfg_options={"remote_port": "2200"})
+    assert resolve_host(project, "web")["port"] == "2200"
+
+    monkeypatch.setenv("ANSIBLE_REMOTE_PORT", "2300")
+    assert resolve_host(project, "web")["port"] == "2300"
+
+    binaries["ansible-inventory"] = fake_binary(
+        "ported-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_port\": 2222}'\n")
+    project = stub_project(raw={"binaries": binaries})
+    assert resolve_host(project, "web")["port"] == 2222
 
 
 def test_rescan_hosts_stores_into_the_user_store(monkeypatch,

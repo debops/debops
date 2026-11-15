@@ -173,6 +173,69 @@ def host_identifiers(project, host, parameters=None):
     return identifiers
 
 
+def scan_command(binaries, identifier, port=None, timeout=10):
+    """Return the ssh-keyscan command line for a host identifier.
+
+    The port of the host, when the resolution defines one, is passed
+    to the scanner; ssh-keyscan writes the entries of the connections
+    on non-default ports in the '[host]:port' form which the
+    known_hosts matching requires.
+    """
+    command = [binaries['ssh-keyscan'], '-H', '-T', str(timeout)]
+    if port:
+        command.extend(['-p', str(port)])
+    command.append(identifier)
+    return command
+
+
+def remove_command(binaries, identifier, store, port=None):
+    """Return the ssh-keygen command line which removes the entries of
+    a host identifier from a known_hosts store.
+
+    The entries of a host on a non-default port carry the
+    '[host]:port' form of the name, and only the qualified identifier
+    matches them for the removal.
+    """
+    if port and str(port) != '22':
+        identifier = '[' + identifier + ']:' + str(port)
+    return [binaries['ssh-keygen'], '-R', identifier, '-f', store]
+
+
+def rescan_actions(project, host, store, phases=('remove', 'scan'),
+                   timeout=10):
+    """Return the rescan actions of a host: '(actions, resolvable)'.
+
+    'actions' is the list of '(phase, argv)' tuples -- the ssh-keygen
+    removals and the ssh-keyscan scans of the host's identifiers, in
+    the order the phases name them. 'resolvable' carries the
+    identifiers the scan covers, which the classification uses for the
+    SSHFP lookup. The connection port of the host comes from the same
+    resolution the ssh command uses, so the scan hits the port the
+    connections use.
+    """
+    try:
+        parameters = resolve_host(project, host)
+    except (ValueError, ChildProcessError):
+        parameters = None
+    port = (parameters or {}).get('port')
+    identifiers = host_identifiers(project, host, parameters)
+    binaries = project.config.raw['binaries']
+    actions = []
+    resolvable = []
+    if 'remove' in phases:
+        for identifier, _ in identifiers:
+            actions.append(('remove', remove_command(
+                binaries, identifier, store, port)))
+    if 'scan' in phases:
+        for identifier, can_scan in identifiers:
+            if not can_scan:
+                continue
+            resolvable.append(identifier)
+            actions.append(('scan', scan_command(
+                binaries, identifier, port, timeout)))
+    return actions, resolvable
+
+
 def _confirmed_keys(host, fingerprints, confirm, details):
     """Return the keys to store after the confirmation callback.
 
@@ -185,11 +248,11 @@ def _confirmed_keys(host, fingerprints, confirm, details):
         return [key for algorithm, fingerprint, key in fingerprints]
     offered = []
     seen = set()
-    for algorithm, fingerprint, key in fingerprints:
-        if fingerprint in seen:
+    for algorithm, digests, key in fingerprints:
+        if digests[2] in seen:
             continue
-        seen.add(fingerprint)
-        offered.append((ssh_fingerprint(fingerprint), key.split()[1]))
+        seen.add(digests[2])
+        offered.append((ssh_fingerprint(digests[2]), key.split()[1]))
     if confirm(host, offered):
         return [key for algorithm, fingerprint, key in fingerprints]
     details.append('the scanned keys of the host were rejected by the '
@@ -218,16 +281,19 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
         fields = key.split()
         if len(fields) < 3:
             continue
-        algorithm, fingerprint = key_fingerprint(fields[1], fields[2])
+        algorithm, digests = key_fingerprint(fields[1], fields[2])
         if algorithm is not None:
-            fingerprints.append((algorithm, fingerprint, key))
+            fingerprints.append((algorithm, digests, key))
 
     if dns_mode == 'no-dns':
         return keys, details
     if not fingerprints:
-        details.append('the scanned keys could not be fingerprinted')
-        return _confirmed_keys(host, fingerprints, confirm, details), \
-            details
+        # Keys of the types without SSHFP algorithm numbers -- the
+        # FIDO key types among them, which OpenSSH does not map
+        # either -- are refused, not stored without verification.
+        details.append('the scanned keys could not be fingerprinted; '
+                       'the host was not stored')
+        return None, details
 
     candidates = [identifier for identifier in resolvable
                   if not is_ip_address(identifier)]
@@ -259,13 +325,20 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
         return _confirmed_keys(host, fingerprints, confirm, details), \
             details
 
-    record_algorithms = {algorithm for algorithm, fingerprint in records}
-    matched = [key for algorithm, fingerprint, key in fingerprints
-               if (algorithm, fingerprint) in records]
-    contradicted = [key for algorithm, fingerprint, key in fingerprints
+    record_algorithms = {algorithm for algorithm, _, _ in records}
+
+    def key_matches(algorithm, digests):
+        """Whether any digest of the key appears in a record of the
+        key's algorithm."""
+        return any((algorithm, digest_type, digests[digest_type])
+                   in records for digest_type in digests)
+
+    matched = [key for algorithm, digests, key in fingerprints
+               if key_matches(algorithm, digests)]
+    contradicted = [key for algorithm, digests, key in fingerprints
                     if algorithm in record_algorithms
-                    and (algorithm, fingerprint) not in records]
-    unverified = [key for algorithm, fingerprint, key in fingerprints
+                    and not key_matches(algorithm, digests)]
+    unverified = [key for algorithm, digests, key in fingerprints
                   if algorithm not in record_algorithms]
     if contradicted:
         details.append('the host keys do not match the SSHFP records of '
@@ -298,9 +371,16 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
     operation. The 'dns-verify' mode additionally requires that a
     DNSSEC-validating resolver marked the DNS answer as authenticated.
 
-    After the keys are accepted, the stale entries of all of the host's
-    identifiers are removed from the store and the accepted keys are
-    appended. A host which fails a phase is reported and the remaining
+    After the keys are accepted, the stale entries of all of the
+    host's identifiers are removed from the store and the accepted
+    keys are appended. The removal happens only when the scan produced
+    keys to store: refused or contradictory keys keep the old trust
+    intact, so a rescan never leaves a host without its known entries.
+    The connections use the port of the host's resolution; the entries
+    of the hosts on non-default ports carry the '[host]:port' form of
+    the identifiers.
+
+    A host which fails a phase is reported and the remaining
     hosts continue, so one host without a running sshd does not mask
     the results of the others.
 
@@ -328,13 +408,10 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
             'Cannot rescan the hosts: the project known_hosts mode is '
             'active, but the view does not declare a known_hosts store')
 
-    binaries = project.config.raw['binaries']
     results = []
     for host in hosts:
-        identifiers = host_identifiers(project, host)
-        names = [identifier for identifier, resolvable in identifiers]
-        resolvable = [identifier for identifier, can_scan in identifiers
-                      if can_scan]
+        actions, resolvable = rescan_actions(project, host, store,
+                                             phases, timeout)
         succeeded = True
         details = []
         store_keys = None
@@ -342,16 +419,16 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
 
         if 'scan' in phases:
             keys = []
-            for identifier in resolvable:
+            for phase, argv in actions:
+                if phase != 'scan':
+                    continue
                 try:
                     process = subprocess.run(
-                        [binaries['ssh-keyscan'], '-H', '-T', str(timeout),
-                         identifier],
-                        capture_output=True, text=True,
+                        argv, capture_output=True, text=True,
                         timeout=timeout + 5)
                 except subprocess.TimeoutExpired:
                     succeeded = False
-                    details.append('the key scan of ' + identifier
+                    details.append('the key scan of ' + argv[-1]
                                    + ' timed out')
                     continue
                 keys.extend(line for line in process.stdout.splitlines()
@@ -372,26 +449,28 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                                + host)
 
         # The stored entries of a host are only removed when the scan
-        # produced keys to store, or when removal was requested
-        # explicitly without a scan phase. A failed scan keeps the old
-        # trust intact.
-        remove_entries = (('remove' in phases
-                           and (scan_ok is None or scan_ok))
-                          or (scan_ok and store_keys is not None))
+        # produced keys to store, or when the removal was requested
+        # explicitly without a scan phase. A failed scan and keys
+        # which were refused keep the old trust intact: the removal
+        # never leaves a host without its known entries.
+        if scan_ok is None:
+            remove_entries = 'remove' in phases
+        else:
+            remove_entries = bool(scan_ok and store_keys)
         if remove_entries and os.path.exists(store):
-            for identifier in names:
+            for phase, argv in actions:
+                if phase != 'remove':
+                    continue
                 process = subprocess.run(
-                    [binaries['ssh-keygen'], '-R', identifier,
-                     '-f', store],
-                    capture_output=True, text=True)
+                    argv, capture_output=True, text=True)
                 if process.returncode != 0:
                     succeeded = False
                     detail = (process.stderr.strip().splitlines()
                               or [''])[-1]
                     details.append('cannot remove the entries of '
-                                   + identifier + ': ' + detail)
+                                   + argv[2] + ': ' + detail)
 
-        if store_keys is not None:
+        if store_keys:
             ensure_store_dir(store, store_project)
             with open(store, 'a') as handle:
                 handle.write('\n'.join(store_keys) + '\n')
