@@ -37,6 +37,33 @@ SSH_OPTIONS_WITH_VALUE = set('BbcDEeFIiJLlMmOoQRSVWw')
 SFTP_OPTIONS_WITH_VALUE = set('BbcDFiJlRoPRsS')
 
 
+def value_options_of(parser, passthrough=()):
+    """Return the options of a parser which take a value.
+
+    The getopt-style walk needs to know which options carry a value so
+    that the token after such an option is not mistaken for an operand.
+    The parser's own registered actions are inspected: actions that
+    take no value (flags, counters, help) are skipped, everything else
+    contributes its short option letters and long option names. The
+    'passthrough' letters are the options of the underlying command,
+    which the parser does not register but the walk must still honor.
+
+    Returns '(shorts, longs)': the set of the short option letters and
+    the list of the long option names which take a value.
+    """
+    shorts = set(passthrough)
+    longs = []
+    for action in parser._actions:
+        if action.nargs == 0:
+            continue
+        for option_string in action.option_strings:
+            if option_string.startswith('--'):
+                longs.append(option_string)
+            else:
+                shorts.add(option_string.lstrip('-'))
+    return shorts, longs
+
+
 def split_options_operand(tokens, value_options, long_value_options=()):
     """Split an argument list into the options and the first operand.
 

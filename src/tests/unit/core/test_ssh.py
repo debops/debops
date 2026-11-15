@@ -29,7 +29,8 @@ from debops.core.ssh import (SFTP_OPTIONS_WITH_VALUE, SSH_OPTIONS_WITH_VALUE,
                              render_config_snippet, resolve_destination,
                              resolve_host, resolve_patterns, rescan_hosts,
                              split_destination, split_options_operand,
-                             translate_ssh_args, write_config_snippet)
+                             translate_ssh_args, value_options_of,
+                             write_config_snippet)
 
 
 @pytest.mark.parametrize("destination,user,host,port", [
@@ -941,3 +942,21 @@ def test_build_ssh_command_refuses_an_undeclared_store(stub_project):
         build_ssh_command(project, "web", parameters)
 
     assert "does not declare a known_hosts store" in str(error.value)
+
+
+def test_value_options_of_derives_the_value_taking_options():
+    """The walk's option sets are derived from the parser itself, so
+    adding a value option to the parser teaches the walk without
+    hand-maintained sets."""
+    import argparse
+
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('-V', '--view', help='the view')
+    parser.add_argument('-a', '--accept', action='store_true')
+    parser.add_argument('-v', '--verbose', action='count')
+    parser.add_argument('--project-dir', nargs='?')
+
+    shorts, longs = value_options_of(parser, passthrough={'o'})
+
+    assert shorts == {'o', 'V'}
+    assert longs == ['--view', '--project-dir']

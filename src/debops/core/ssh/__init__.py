@@ -19,7 +19,7 @@ from .utils import (SFTP_OPTIONS_WITH_VALUE, SSH_OPTIONS_WITH_VALUE,
                     resolve_destination, resolve_host, resolve_patterns,
                     render_ssh_drop_in, split_options_operand,
                     ssh_executable, ssh_store_dir, ssh_store_file,
-                    translate_ssh_args)
+                    translate_ssh_args, value_options_of)
 from .ssh import (build_ssh_command, host_identifiers, rescan_hosts,
                   split_destination, write_config_snippet,
                   render_config_snippet)
