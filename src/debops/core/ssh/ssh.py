@@ -29,10 +29,10 @@ import tempfile
 
 from .dns import (is_ip_address, is_link_local, key_fingerprint,
                   lookup_sshfp, ssh_fingerprint)
-from .utils import (USER_KNOWN_HOSTS_STORE, ensure_store_dir,
+from .store import (USER_KNOWN_HOSTS_STORE, ensure_store_dir,
                     known_hosts_mode, known_hosts_option,
-                    known_hosts_store, quote_store_path, resolve_host,
-                    ssh_executable)
+                    known_hosts_store, quote_store_path, require_store)
+from .utils import resolve_host, ssh_executable
 from ..utils import unexpanduser
 
 logger = logging.getLogger(__name__)
@@ -134,13 +134,8 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
     """
     command = [(parameters.get('ssh_executable') or ssh_executable(project)
                 or project.config.raw['binaries']['ssh'])]
-    store = None
-    if known_hosts_mode(project) == 'project':
-        store = known_hosts_store(project)
-        if not store:
-            raise ValueError(
-                'The project known_hosts mode is active for the view, '
-                'but the view does not declare a known_hosts store')
+    store, inject = require_store(project)
+    if inject:
         command.extend(['-o', known_hosts_option(store)])
 
     effective_user = user or parameters.get('user')
@@ -156,7 +151,7 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
     configured_args = parameters.get('ssh_args')
     configured_tokens = shlex.split(configured_args) \
         if configured_args else []
-    if store:
+    if inject:
         configured_tokens = without_known_hosts_options(configured_tokens)
     command.extend(configured_tokens)
     for key in ('common_args', 'extra_args'):
@@ -451,21 +446,15 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
     host; the message is empty when the host completed the requested
     phases. Raises ValueError when no store can be determined.
     """
+    store_project = None
     if store is None:
-        store = known_hosts_store(project)
+        store, inject = require_store(project)
         # The user mode stores the keys in '~/.ssh/known_hosts', which
         # lies outside of the project by design; only the project mode
         # derives the store from configuration, so only that store is
         # contained.
-        store_project = (project.path
-                         if known_hosts_mode(project) == 'project'
-                         else None)
-    else:
-        store_project = None
-    if not store:
-        raise ValueError(
-            'Cannot rescan the hosts: the project known_hosts mode is '
-            'active, but the view does not declare a known_hosts store')
+        if inject:
+            store_project = project.path
 
     results = []
     for host in hosts:

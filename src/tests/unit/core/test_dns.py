@@ -73,7 +73,7 @@ def test_lookup_sshfp_parses_records_and_the_authenticated_flag():
     ])
     resolver = mock.Mock(return_value=answer)
 
-    with mock.patch.object(dns_module.dns.resolver, 'resolve', resolver):
+    with mock.patch('dns.resolver.resolve', resolver):
         authenticated, records = lookup_sshfp('web.example.org')
 
     assert authenticated
@@ -95,7 +95,7 @@ def test_lookup_sshfp_skips_records_without_comparable_digests():
     ])
     resolver = mock.Mock(return_value=answer)
 
-    with mock.patch.object(dns_module.dns.resolver, 'resolve', resolver):
+    with mock.patch('dns.resolver.resolve', resolver):
         _, records = lookup_sshfp('web.example.org')
 
     assert records == {(4, 2, KEY_FINGERPRINT)}

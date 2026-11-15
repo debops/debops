@@ -4,28 +4,21 @@
 
 """The machinery shared by the ssh-family commands.
 
-The known_hosts store selection, the store layout of a project view,
-the resolution of the connection parameters of an inventory host and
+The resolution of the connection parameters of an inventory host and
 the splitting of ssh-style argument lists are shared by the
 'debops ssh', 'debops scp' and 'debops sftp' subcommands; the
-command-specific builders live in the sibling modules.
+known_hosts store lives in the sibling :mod:`debops.core.ssh.store`
+module, the command-specific builders in the other siblings.
 """
 
 import configparser
 import json
 import logging
 import os
-import pkgutil
 import shlex
 import subprocess
 
-import jinja2
-
-from ..utils import path_inside_project
-
 logger = logging.getLogger(__name__)
-
-USER_KNOWN_HOSTS_STORE = '~/.ssh/known_hosts'
 
 # The ssh options which take a separate value argument, per the usage
 # line of the OpenSSH 9.2 ssh(1). Used to walk argument lists where
@@ -262,150 +255,6 @@ def translate_ssh_args(ssh_args):
             dropped.append(token)
             index += 1
     return translated, dropped
-
-
-def ssh_store_dir(project_path, view):
-    """Return the directory of the view's isolated known_hosts store."""
-    return os.path.join(project_path, '.debops', 'ssh', 'views', view)
-
-
-def ssh_store_file(project_path, view):
-    """Return the known_hosts file of the view's isolated store."""
-    return os.path.join(ssh_store_dir(project_path, view), 'known_hosts')
-
-
-def ensure_store_dir(store_file, project=None):
-    """Create the directory chain of a view's known_hosts store.
-
-    The directories from the '.debops/ssh' root of the project down
-    to the store directory are created with the 0700 mode of the
-    real '~/.ssh'; existing directories which are open to the group
-    or the others are tightened to the same mode. A store outside of
-    the project layout gets only its own directory ensured, without
-    permission changes. When the project directory is given, the store
-    path is refused when it resolves outside of it. Returns the store
-    directory.
-    """
-    store_file = os.path.expanduser(store_file)
-    if project is not None and not path_inside_project(store_file, project):
-        raise ValueError('Refusing to create a known_hosts store outside '
-                         'of the project directory: ' + store_file)
-    store_dir = os.path.dirname(os.path.abspath(store_file))
-    views_dir = os.path.dirname(store_dir)
-    ssh_dir = os.path.dirname(views_dir)
-    in_project = False
-    if (os.path.basename(views_dir) == 'views'
-            and os.path.basename(ssh_dir) == 'ssh'
-            and os.path.basename(os.path.dirname(ssh_dir)) == '.debops'):
-        # The '.debops' directory keeps the default permissions; only
-        # the 'ssh' tree becomes private
-        os.makedirs(os.path.dirname(ssh_dir), exist_ok=True)
-        chain = [ssh_dir, views_dir, store_dir]
-        in_project = True
-    else:
-        chain = [store_dir]
-    for directory in chain:
-        existed = os.path.isdir(directory)
-        os.makedirs(directory, mode=0o700, exist_ok=True)
-        if existed and in_project:
-            mode = os.stat(directory).st_mode & 0o777
-            if mode & 0o077:
-                os.chmod(directory, 0o700)
-    return store_dir
-
-
-def render_ssh_drop_in(view):
-    """Return the content of the view's SSH known_hosts drop-in.
-
-    The drop-in is a TOML document which declares the project
-    known_hosts mode and the view's isolated store through the Ansible
-    configuration; the project directory merges it into the
-    configuration tree, and the generated 'ansible.cfg' carries the
-    store. The '${DEBOPS_PROJECT_PATH}' reference expands when the
-    configuration is loaded and when the 'ansible.cfg' is parsed.
-    """
-    template = jinja2.Template(
-            pkgutil.get_data(
-                'debops',
-                os.path.join('_data', 'templates', 'projectdir', 'modern',
-                             'view', 'ssh.toml.j2')).decode('utf-8'),
-            trim_blocks=True)
-    return template.render(view_name=view,
-                           store_path='.debops/ssh/views/' + view
-                           + '/known_hosts')
-
-
-def known_hosts_mode(project):
-    """Return the known_hosts mode of the project's active view:
-    'user' or 'project'."""
-    views = project.config.raw.get('views', {})
-    view_config = views.get(project.view, {})
-    return view_config.get('ssh', {}).get('known_hosts', 'user')
-
-
-def quote_store_path(store):
-    """Return the store path in the form the ssh option parsing keeps
-    as one value.
-
-    A path which carries whitespace would be split into fragment
-    paths by the option parsing of ssh, both in the '-o' option value
-    and in the 'ssh_config' file; the double-quoted form survives
-    both. Paths which carry quotes, backslashes or newlines cannot be
-    represented and raise ValueError.
-    """
-    if '"' in store or '\\' in store or '\n' in store or '\r' in store:
-        raise ValueError(
-            'The known_hosts store path carries quotes, backslashes '
-            'or newlines and cannot be written into an SSH option: '
-            + store)
-    if any(character.isspace() for character in store):
-        return '"' + store + '"'
-    return store
-
-
-def known_hosts_option(store):
-    """Return the value of the '-o UserKnownHostsFile' option for a
-    known_hosts store."""
-    return 'UserKnownHostsFile=' + quote_store_path(store)
-
-
-def declared_known_hosts_store(project):
-    """Return the known_hosts store declared in the view's ansible.cfg.
-
-    The store is the value of the 'UserKnownHostsFile' option in the
-    '[ssh_connection] ssh_args' of the generated configuration, written
-    by the 'view-<view>-ssh.toml' configuration drop-in. The function
-    returns None when the view does not declare a store; such a view
-    stays on the user store while the 'project' mode is active.
-    """
-    try:
-        ssh_args = project.ansible_cfg.get_option(
-            'ssh_args', section='ssh_connection')
-    except (configparser.NoOptionError, configparser.NoSectionError):
-        return None
-    for token in shlex.split(ssh_args):
-        if token.startswith('UserKnownHostsFile='):
-            value = token.split('=', 1)[1]
-            # The drop-in quotes the store path for the option parsing
-            # of ssh; the quotes stay literal inside the single-quoted
-            # configuration token
-            value = value[1:-1] if value.startswith('"') \
-                and value.endswith('"') else value
-            return os.path.expanduser(value)
-    return None
-
-
-def known_hosts_store(project):
-    """Return the known_hosts store of the active mode.
-
-    The 'user' mode resolves to the user's default known_hosts file.
-    The 'project' mode resolves to the store declared in the view's
-    configuration and returns None when the view does not declare one.
-    """
-    mode = known_hosts_mode(project)
-    if mode == 'project':
-        return declared_known_hosts_store(project)
-    return os.path.expanduser(USER_KNOWN_HOSTS_STORE)
 
 
 # The connection options of the ssh connection plugin, each in the

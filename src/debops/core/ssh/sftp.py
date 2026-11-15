@@ -14,8 +14,8 @@ import logging
 import os
 import shlex
 
-from .utils import (compose_options, known_hosts_mode, known_hosts_option,
-                    known_hosts_store, resolve_destination, split_host_path,
+from .store import known_hosts_option, require_store
+from .utils import (compose_options, resolve_destination, split_host_path,
                     translate_ssh_args)
 
 logger = logging.getLogger(__name__)
@@ -62,12 +62,8 @@ def build_sftp_command(project, destination, identity=None, accept=False,
         command.extend(['-i', identity_file])
 
     ssh_options = []
-    if known_hosts_mode(project) == 'project':
-        store = known_hosts_store(project)
-        if not store:
-            raise ValueError(
-                'The project known_hosts mode is active for the view, '
-                'but the view does not declare a known_hosts store')
+    store, inject = require_store(project)
+    if inject:
         ssh_options.append(('-o', known_hosts_option(store)))
     translated, dropped = [], []
     for value in (parameters.get('common_args'),
