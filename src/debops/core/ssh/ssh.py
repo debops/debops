@@ -118,6 +118,12 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
         # arguments
         command.extend(['-o', 'StrictHostKeyChecking=accept-new'])
 
+    if options:
+        # The options the operator typed directly precede everything
+        # DebOps derives: ssh applies the first obtained value of an
+        # option, and an '-l' or '-o' the operator typed must not be
+        # defeated by the inventory or the view
+        command.extend(options)
     effective_user = user or parameters.get('user')
     if effective_user:
         command.extend(['-l', effective_user])
@@ -127,13 +133,6 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
     effective_identity = identity or parameters.get('identity')
     if effective_identity:
         command.extend(['-i', effective_identity])
-    if options:
-        # The options the operator typed directly precede the resolved
-        # arguments: ssh applies the first obtained value of an
-        # option, and the operator's own '-o' must not be defeated by
-        # a value of the view
-        command.extend(options)
-
     configured_args = parameters.get('ssh_args')
     configured_tokens = shlex.split(configured_args) \
         if configured_args else []
@@ -316,7 +315,6 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
     be stored. The details list receives the report lines for the
     result.
     """
-    fingerprints = []
     fingerprints = []
     unparsable = set()
     for key in keys:
@@ -559,6 +557,11 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
         # removals and the append leaves the operator's store as it
         # was, and the append cannot merge into a last line which
         # lacks its newline
+        if os.path.islink(store):
+            # The cycle is written through the symlink, the way the
+            # client configuration is: the target the operator's
+            # dotfiles manage keeps receiving the entries
+            store = os.path.realpath(store)
         store_existed = os.path.exists(store)
         work_store = store
         temp_path = None
@@ -573,14 +576,18 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                     dir=os.path.dirname(store) or '.',
                     prefix='known_hosts.')
                 backup = temp_path + '.old'
-                with os.fdopen(descriptor, 'w') as handle:
+                # The copy and the append run in binary mode: the
+                # store content is not text in any locale, and an
+                # operator comment in an unusual encoding must not
+                # abort the rescan
+                with os.fdopen(descriptor, 'wb') as handle:
                     if store_existed:
-                        with open(store) as source:
+                        with open(store, 'rb') as source:
                             content = source.read()
                     else:
-                        content = ''
-                    if content and not content.endswith('\n'):
-                        content += '\n'
+                        content = b''
+                    if content and not content.endswith(b'\n'):
+                        content += b'\n'
                     handle.write(content)
                 os.chmod(temp_path, 0o600)
                 work_store = temp_path
@@ -608,8 +615,8 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                         details.append('cannot remove the entries of '
                                        + argv[2] + ': ' + detail)
             if store_keys:
-                with open(work_store, 'a') as handle:
-                    handle.write('\n'.join(store_keys) + '\n')
+                with open(work_store, 'ab') as handle:
+                    handle.write(('\n'.join(store_keys) + '\n').encode())
             if work_store is not store:
                 # The private mode is the store's mode, established or
                 # created

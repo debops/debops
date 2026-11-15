@@ -2101,3 +2101,71 @@ def test_build_scp_command_keeps_the_operator_store_declaration(
 
     assert sum("UserKnownHostsFile=" in token
                for token in command) == 1
+
+
+def test_build_ssh_command_lets_the_operator_flag_lead(stub_project,
+                                                       fake_tools):
+    """An '-l' the operator typed reaches the command ahead of the
+    user the inventory defines: ssh applies the first obtained
+    value."""
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+    parameters = resolve_host(project, "web")
+
+    command = build_ssh_command(project, "web", parameters,
+                                options=["-l", "root"])
+
+    assert command.index("root") < command.index("admin")
+
+
+def test_rescan_hosts_reads_a_store_in_another_encoding(
+        stub_project, fake_tools, monkeypatch, tmp_path):
+    """The store copy runs in binary mode: an operator comment in an
+    encoding the locale does not decode does not abort the rescan."""
+    store = tmp_path / "known_hosts"
+    with open(store, "wb") as handle:
+        handle.write("# komment \xff\n".encode('latin-1'))
+        handle.write(b"old entry\n")
+
+    def fake_getaddrinfo(name, *args, **kwargs):
+        if name == "192.0.2.10":
+            return [(2, 1, 6, "", ("192.0.2.10", 0))]
+        raise socket.gaierror("no DNS")
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_getaddrinfo)
+
+    results = rescan_hosts(stub_project(raw={
+        "binaries": dict(fake_tools["binaries"])}),
+        ["web"], store=str(store), dns_mode='no-dns')
+
+    assert results == [("web", True, "")]
+    content = store.read_bytes()
+    assert "komment".encode('latin-1') in content
+    assert "old entry".encode() in content
+    assert b"ssh-ed25519" in content
+
+
+def test_rescan_hosts_writes_through_a_symlinked_store(
+        stub_project, fake_tools, monkeypatch, tmp_path):
+    """A store which is a symlink into a dotfiles tree receives the
+    entries through the link; the link itself survives."""
+    target = tmp_path / "dotfiles" / "known_hosts"
+    target.parent.mkdir()
+    target.write_text("old entry\n")
+    store = tmp_path / ".ssh" / "known_hosts"
+    store.parent.mkdir()
+    store.symlink_to(target)
+
+    def fake_getaddrinfo(name, *args, **kwargs):
+        if name == "192.0.2.10":
+            return [(2, 1, 6, "", ("192.0.2.10", 0))]
+        raise socket.gaierror("no DNS")
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_getaddrinfo)
+
+    rescan_hosts(stub_project(raw={
+        "binaries": dict(fake_tools["binaries"])}),
+        ["web"], store=str(store), dns_mode='no-dns')
+
+    assert store.is_symlink()
+    assert "ssh-ed25519" in target.read_text()
+    assert "old entry" in target.read_text()

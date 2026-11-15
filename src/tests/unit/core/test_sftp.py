@@ -197,3 +197,24 @@ def test_build_sftp_command_carries_the_store_once(stub_project,
                           for index, token in enumerate(command)
                           if "UserKnownHostsFile=" in token)
     assert command.index("ControlMaster=auto") > store_position
+
+
+def test_build_sftp_command_strips_the_resolved_ports(stub_project,
+                                                      fake_tools,
+                                                      fake_binary):
+    """sftp re-emits its own port after the options it forwards; the
+    resolved ports are stripped and the inventory port is the port
+    the session uses."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "ported-args-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_port\": 2222,"
+        " \"ansible_ssh_args\": \"-o Port=9999\"}'\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    command = build_sftp_command(project, "web:/srv")
+
+    assert in_sftp_sequence(command, ["-P", "2222"])
+    assert "Port=9999" not in command
