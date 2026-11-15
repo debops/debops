@@ -317,13 +317,18 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
     result.
     """
     fingerprints = []
+    fingerprints = []
+    unparsable = set()
     for key in keys:
         fields = key.split()
         if len(fields) < 3:
+            unparsable.add(fields[1] if len(fields) > 1 else 'malformed')
             continue
         algorithm, digests = key_fingerprint(fields[1], fields[2])
         if algorithm is not None:
             fingerprints.append((algorithm, digests, key))
+        else:
+            unparsable.add(fields[1])
 
     if dns_mode == 'no-dns':
         return keys, details
@@ -333,6 +338,17 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
         # either -- are refused, not stored without verification.
         details.append('the scanned keys could not be fingerprinted; '
                        'the host was not stored')
+        return None, details
+    if unparsable:
+        # A scan which offers unverifiable keys alongside verifiable
+        # ones cannot be trusted for the unverifiable part: the key
+        # offer of a connection carries public keys their holder does
+        # not need to own. The host is refused; its stored entries
+        # stay.
+        details.append('the scan produced keys of the types without '
+                       'SSHFP algorithm numbers ('
+                       + ', '.join(sorted(unparsable))
+                       + '); the host was not stored')
         return None, details
 
     candidates = [identifier for identifier in resolvable
@@ -390,22 +406,29 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
                        'stored')
         return None, details
     if not authenticated and not trust_unsigned:
-        if unverified:
-            details.append(str(len(unverified)) + ' of the scanned keys'
-                           ' have no SSHFP records and were not stored')
         # The policy refuses the unsigned match; the confirmation
         # callback is the operator's explicit override of it
         if confirm is None:
+            if unverified:
+                details.append(str(len(unverified)) + ' of the scanned '
+                               'keys have no SSHFP records and were '
+                               'not stored')
             details.append('the SSHFP records of ' + hostname + ' are '
                            'not DNSSEC-validated; the host was not '
                            'stored (rerun with \'--confirm\' to accept '
                            'the keys after checking the fingerprints)')
             return None, details
+        stored = _confirmed_keys(host, fingerprints, confirm, details)
+        if stored is None:
+            if unverified:
+                details.append(str(len(unverified)) + ' of the scanned '
+                               'keys have no SSHFP records and were '
+                               'not stored')
+            return None, details
         details.append('the SSHFP records of ' + hostname + ' are not '
-                       'DNSSEC-validated; the keys need the operator '
-                       'confirmation')
-        return _confirmed_keys(host, fingerprints, confirm, details), \
-            details
+                       'DNSSEC-validated; the keys are stored as '
+                       'scanned by the operator\'s decision')
+        return stored, details
     if authenticated:
         if unverified:
             details.append(str(len(unverified)) + ' of the scanned keys'
@@ -439,14 +462,17 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
     that a DNSSEC-validating resolver marked the DNS answer as
     authenticated.
 
-    After the keys are accepted, the stale entries of all of the
-    host's identifiers are removed from the store and the accepted
-    keys are appended. The removal happens only when the scan produced
-    keys to store: refused or contradictory keys keep the old trust
-    intact, so a rescan never leaves a host without its known entries.
-    The connections use the port of the host's resolution; the entries
-    of the hosts on non-default ports carry the '[host]:port' form of
-    the identifiers.
+    After the keys are accepted, the stored entries of the identifiers
+    which answered the scan are replaced: the store is copied to a
+    temporary file, the stale entries are removed from the copy and
+    the accepted keys are appended, and the copy replaces the store
+    atomically -- a crash in the middle leaves the operator's store as
+    it was. The entries of the identifiers which did not answer stay
+    until they do. The stored entries of a host whose keys were
+    refused stay as they are, so a rescan never leaves a host without
+    its known entries. The connections use the port of the host's
+    resolution; the entries of the hosts on non-default ports carry
+    the '[host]:port' form of the identifiers.
 
     A host which fails a phase is reported and the remaining
     hosts continue, so one host without a running sshd does not mask
@@ -528,39 +554,74 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
             remove_entries = 'remove' in phases
         else:
             remove_entries = bool(scan_ok and store_keys)
-        if remove_entries and os.path.exists(store):
-            for phase, argv in actions:
-                if phase != 'remove':
-                    continue
-                if 'scan' in phases:
-                    # Only the identifiers which answered the scan
-                    # have their entries replaced; the entries of the
-                    # identifiers which did not respond stay until
-                    # they do
-                    bare = argv[2]
-                    if bare.startswith('[') and ']' in bare:
-                        bare = bare[1:bare.index(']')]
-                    if bare not in scanned:
+        # The cycle of removals and appends works on a copy of the
+        # store which replaces it atomically: a crash between the
+        # removals and the append leaves the operator's store as it
+        # was, and the append cannot merge into a last line which
+        # lacks its newline
+        store_existed = os.path.exists(store)
+        work_store = store
+        temp_path = None
+        backup = None
+        try:
+            if (store_existed and remove_entries) or store_keys:
+                ensure_store_dir(store, store_project)
+                # The store is created with the private mode from the
+                # start, without the world-readable window between the
+                # creation and the chmod
+                descriptor, temp_path = tempfile.mkstemp(
+                    dir=os.path.dirname(store) or '.',
+                    prefix='known_hosts.')
+                backup = temp_path + '.old'
+                with os.fdopen(descriptor, 'w') as handle:
+                    if store_existed:
+                        with open(store) as source:
+                            content = source.read()
+                    else:
+                        content = ''
+                    if content and not content.endswith('\n'):
+                        content += '\n'
+                    handle.write(content)
+                os.chmod(temp_path, 0o600)
+                work_store = temp_path
+            if store_existed and remove_entries:
+                for phase, argv in actions:
+                    if phase != 'remove':
                         continue
-                process = subprocess.run(
-                    argv, capture_output=True, text=True)
-                if process.returncode != 0:
-                    succeeded = False
-                    detail = (process.stderr.strip().splitlines()
-                              or [''])[-1]
-                    details.append('cannot remove the entries of '
-                                   + argv[2] + ': ' + detail)
-
-        if store_keys:
-            ensure_store_dir(store, store_project)
-            # The store is created with the private mode from the
-            # start, without the world-readable window between the
-            # creation and the chmod
-            descriptor = os.open(store, os.O_WRONLY | os.O_APPEND
-                                 | os.O_CREAT, 0o600)
-            with os.fdopen(descriptor, 'a') as handle:
-                handle.write('\n'.join(store_keys) + '\n')
-            os.chmod(store, 0o600)
+                    if 'scan' in phases:
+                        # Only the identifiers which answered the scan
+                        # have their entries replaced; the entries of
+                        # the identifiers which did not respond stay
+                        # until they do
+                        bare = argv[2]
+                        if bare.startswith('[') and ']' in bare:
+                            bare = bare[1:bare.index(']')]
+                        if bare not in scanned:
+                            continue
+                    process = subprocess.run(
+                        argv[:-1] + [work_store],
+                        capture_output=True, text=True)
+                    if process.returncode != 0:
+                        succeeded = False
+                        detail = (process.stderr.strip().splitlines()
+                                  or [''])[-1]
+                        details.append('cannot remove the entries of '
+                                       + argv[2] + ': ' + detail)
+            if store_keys:
+                with open(work_store, 'a') as handle:
+                    handle.write('\n'.join(store_keys) + '\n')
+            if work_store is not store:
+                # The private mode is the store's mode, established or
+                # created
+                os.chmod(work_store, 0o600)
+                os.replace(work_store, store)
+                temp_path = None
+        finally:
+            # The working copy and the backup which 'ssh-keygen -R'
+            # leaves next to it go with it
+            for leftover in (temp_path, backup):
+                if leftover and os.path.exists(leftover):
+                    os.unlink(leftover)
 
         message = '; '.join(details)
         results.append((host, succeeded, message))
