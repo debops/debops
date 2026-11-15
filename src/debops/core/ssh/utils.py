@@ -251,20 +251,22 @@ def without_known_hosts_options(tokens):
 
     The options appear as an '-o' option with its value, as the
     attached '-oUserKnownHostsFile=...' form, or as the bare value
-    token; the rest of the arguments keep their order.
+    token -- with the equals sign of the option form or the space of
+    the configuration form; the rest of the arguments keep their
+    order.
     """
     kept = []
     index = 0
     while index < len(tokens):
         token = tokens[index]
-        if token.startswith('-oUserKnownHostsFile='):
+        if token.startswith('-oUserKnownHostsFile'):
             index += 1
             continue
         if token == '-o' and index + 1 < len(tokens) \
-                and tokens[index + 1].startswith('UserKnownHostsFile='):
+                and tokens[index + 1].startswith('UserKnownHostsFile'):
             index += 2
             continue
-        if token.startswith('UserKnownHostsFile='):
+        if token.startswith('UserKnownHostsFile'):
             index += 1
             continue
         kept.append(token)
