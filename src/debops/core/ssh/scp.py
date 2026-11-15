@@ -14,8 +14,8 @@ import logging
 import os
 import shlex
 
-from .utils import (compose_options, known_hosts_mode, known_hosts_store,
-                    resolve_destination, split_operand,
+from .utils import (compose_options, known_hosts_mode, known_hosts_option,
+                    known_hosts_store, resolve_destination, split_operand,
                     translate_ssh_args)
 
 logger = logging.getLogger(__name__)
@@ -80,7 +80,9 @@ def build_scp_command(project, sources, destination_operand,
             extra={'allow': 'stderr'})
 
     unique_ports = set(ports)
-    if len(unique_ports) == 1:
+    if len(unique_ports) == 1 and not (scp_args and '-P' in scp_args):
+        # An explicit '-P' of the operator wins over the inventory
+        # ports; scp applies the last obtained value
         ssh_options.append(('-P', unique_ports.pop()))
     elif len(unique_ports) > 1:
         logger.notice(
@@ -116,7 +118,7 @@ def build_scp_command(project, sources, destination_operand,
             raise ValueError(
                 'The project known_hosts mode is active for the view, '
                 'but the view does not declare a known_hosts store')
-        ssh_options.insert(0, ('-o', 'UserKnownHostsFile=' + store))
+        ssh_options.insert(0, ('-o', known_hosts_option(store)))
 
     command = [binary or project.config.raw['binaries']['scp']]
     command.extend(compose_options(ssh_options))
