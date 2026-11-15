@@ -94,8 +94,11 @@ def build_scp_command(project, sources, destination_operand,
         ssh_options.append(('-o', 'StrictHostKeyChecking=accept-new'))
     if known_hosts_mode(project) == 'project':
         store = known_hosts_store(project)
-        if store:
-            ssh_options.insert(0, ('-o', 'UserKnownHostsFile=' + store))
+        if not store:
+            raise ValueError(
+                'The project known_hosts mode is active for the view, '
+                'but the view does not declare a known_hosts store')
+        ssh_options.insert(0, ('-o', 'UserKnownHostsFile=' + store))
 
     command = [binary]
     command.extend(compose_options(ssh_options))
