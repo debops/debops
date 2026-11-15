@@ -16,6 +16,7 @@ import base64
 import hashlib
 import logging
 import os
+import shlex
 import socket
 from unittest import mock
 
@@ -1911,3 +1912,144 @@ def test_build_ssh_command_lets_the_operator_options_win(
 
     assert command.index("ControlMaster=no") \
         < command.index("ControlMaster=auto")
+
+
+def test_rescan_hosts_refuses_the_mixed_unfingerprintable_scan(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """A scan which offers unverifiable keys alongside a verified one
+    refuses the host: the key offer of a connection carries public
+    keys their holder does not need to own."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "fqdn-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"" + FQDN + "\"}'\n")
+    binaries["ssh-keyscan"] = fake_binary(
+        "mixed-keyscan",
+        "#!/bin/sh\n"
+        "printf '%s\\n' \"$4 ssh-ed25519 " + FQDN_KEY_BLOB + "\"\\n"
+        "printf '%s\\n' \"$4 sk-ssh-ed25519@openssh.com AAAAskkey\"\n")
+    project = stub_project(raw={"binaries": binaries})
+    stub_dns(monkeypatch, {(4, 2, FQDN_FINGERPRINT)}, authenticated=True)
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    results = rescan_hosts(project, ["web"], store=str(store))
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    assert "without SSHFP algorithm numbers" in message
+    assert "sk-ssh-ed25519@openssh.com" in message
+    assert store.read_text() == "old\n"
+    # The refusal happens before any removal runs
+    log = fake_tools["log"]
+    removals = open(log).read() if os.path.exists(log) else ""
+    assert " -R " not in removals
+
+
+def test_rescan_hosts_reports_the_operator_decision_on_unsigned(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """With the refusal policy and '--confirm', an acceptance stores
+    every scanned key and the report says the operator decided; a
+    decline stores nothing and says the unverified keys were not
+    stored."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    project.config.raw['ssh'] = {'rescan': {
+        'trust_unsigned_records': False}}
+    stub_dns(monkeypatch, {(4, 2, FQDN_FINGERPRINT)}, authenticated=False)
+    store = tmp_path / "store"
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           confirm=lambda host, offered: True)
+
+    host, succeeded, message = results[0]
+    assert succeeded
+    assert "were not stored" not in message
+    assert "by the operator's decision" in message
+    assert FQDN_KEY_LINE in store.read_text()
+
+    after_accept = store.read_text()
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           confirm=lambda host, offered: False)
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    # The decline stores nothing: the store keeps the state the
+    # acceptance left
+    assert store.read_text() == after_accept
+
+
+def test_rescan_hosts_keeps_the_store_on_a_removal_failure(
+        stub_project, fake_tools, fake_binary, monkeypatch, tmp_path):
+    """The removals and the append happen on a copy of the store: a
+    removal which fails is reported and the store is still replaced
+    with the state the cycle reached."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "dual-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\"}'\n")
+    binaries["ssh-keygen"] = fake_binary(
+        "failing-keygen",
+        "#!/bin/sh\n"
+        'for name in "$@"; do\n'
+        '    if [ "$name" = "192.0.2.10" ]; then\n'
+        "        echo 'cannot remove' >&2\n"
+        "        exit 1\n"
+        "    fi\n"
+        "done\n"
+        "printf '%s\\n' \"$*\" >> "
+        + shlex.quote(str(tmp_path / "keygen.log")) + "\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    def fake_getaddrinfo(name, *args, **kwargs):
+        if name == "192.0.2.10":
+            return [(2, 1, 6, "", ("192.0.2.10", 0))]
+        raise socket.gaierror("no DNS")
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_getaddrinfo)
+
+    store = tmp_path / "store" / "known_hosts"
+    os.makedirs(os.path.dirname(store))
+    with open(store, "w") as handle:
+        handle.write("old entry of web\n")
+        handle.write("old entry of the address\n")
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           dns_mode='no-dns')
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    assert "cannot remove the entries of 192.0.2.10" in message
+    content = store.read_text()
+    # The failed removal kept the address entry, the unanswered name
+    # keeps its entry, and the scanned keys were appended
+    assert "old entry of the address" in content
+    assert "old entry of web" in content
+    assert "AAAAfakekey" in content
+    assert not (tmp_path / "store" / "known_hosts.old").exists()
+
+
+def test_rescan_hosts_normalizes_the_last_store_line(
+        stub_project, fake_tools, monkeypatch, tmp_path):
+    """A store whose last line lacks its newline does not merge the
+    appended entry into it."""
+    store = tmp_path / "known_hosts"
+    with open(store, "w") as handle:
+        handle.write("old entry without newline")
+
+    def fake_getaddrinfo(name, *args, **kwargs):
+        if name == "192.0.2.10":
+            return [(2, 1, 6, "", ("192.0.2.10", 0))]
+        raise socket.gaierror("no DNS")
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_getaddrinfo)
+
+    rescan_hosts(stub_project(raw={
+        "binaries": dict(fake_tools["binaries"])}),
+        ["web"], store=str(store), dns_mode='no-dns')
+
+    lines = store.read_text().splitlines()
+    assert "old entry without newline" in lines
+    assert any("ssh-ed25519" in line for line in lines)
