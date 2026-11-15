@@ -960,3 +960,76 @@ def test_value_options_of_derives_the_value_taking_options():
 
     assert shorts == {'o', 'V'}
     assert longs == ['--view', '--project-dir']
+
+
+def test_write_config_snippet_amends_the_store_list(stub_project,
+                                                    fake_tools, tmp_path):
+    """Writing from a second project appends its store to the list
+    instead of overwriting the first project's entry, and the user's
+    own store stays the first entry."""
+    config = tmp_path / "ssh_config"
+    project_a = stub_project(
+        cfg_options={"ssh_args":
+                     "-o UserKnownHostsFile="
+                     "~/src/a/.debops/ssh/views/system/"
+                     "known_hosts"},
+        raw={"views": {"system": {"ssh": {"known_hosts": "project"}}}})
+    project_b = stub_project(
+        cfg_options={"ssh_args":
+                     "-o UserKnownHostsFile="
+                     "~/src/b/.debops/ssh/views/system/"
+                     "known_hosts"},
+        raw={"views": {"system": {"ssh": {"known_hosts": "project"}}}})
+
+    write_config_snippet(project_a, str(config))
+    write_config_snippet(project_b, str(config))
+
+    content = config.read_text()
+    store_line = [line for line in content.splitlines()
+                  if line.strip().startswith('UserKnownHostsFile')][0]
+    stores = store_line.split()[1:]
+    assert stores[0] == '~/.ssh/known_hosts'
+    assert stores == sorted(stores)
+    assert '~/src/a/.debops/ssh/views/system/known_hosts' in stores
+    assert '~/src/b/.debops/ssh/views/system/known_hosts' in stores
+
+
+def test_write_config_snippet_is_deterministic_across_projects(
+        stub_project, tmp_path):
+    """Two operators writing from different projects in different
+    order end with the identical managed block."""
+    project_a = stub_project(
+        cfg_options={"ssh_args":
+                     "-o UserKnownHostsFile="
+                     "~/src/a/.debops/ssh/views/system/"
+                     "known_hosts"},
+        raw={"views": {"system": {"ssh": {"known_hosts": "project"}}}})
+    project_b = stub_project(
+        cfg_options={"ssh_args":
+                     "-o UserKnownHostsFile="
+                     "~/src/b/.debops/ssh/views/system/"
+                     "known_hosts"},
+        raw={"views": {"system": {"ssh": {"known_hosts": "project"}}}})
+    config_a = tmp_path / "config-a"
+    config_b = tmp_path / "config-b"
+
+    write_config_snippet(project_a, str(config_a))
+    write_config_snippet(project_b, str(config_a))
+    write_config_snippet(project_b, str(config_b))
+    write_config_snippet(project_a, str(config_b))
+
+    assert config_a.read_text() == config_b.read_text()
+
+
+def test_write_config_snippet_replaces_atomically(stub_project, tmp_path):
+    """The new content is written to a temporary file and renamed, so
+    no partial configuration is left behind."""
+    config = tmp_path / "ssh_config"
+    config.write_text("Host bastion\n    ForwardAgent yes\n")
+
+    write_config_snippet(stub_project(), str(config))
+
+    assert config.read_text().strip()
+    leftovers = [entry.name for entry in tmp_path.iterdir()
+                 if entry.name != 'ssh_config']
+    assert leftovers == []

@@ -411,14 +411,39 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
     return results
 
 
-def render_config_snippet(project):
+def parse_config_stores(existing):
+    """Return the project store paths listed in the managed block of
+    an existing ssh configuration.
+
+    The first path of the 'UserKnownHostsFile' line is the operator's
+    own known_hosts file and is not part of the result: it stays the
+    first entry of the line, because ssh appends newly accepted keys to
+    the first file of the list.
+    """
+    if CONFIG_BLOCK_BEGIN not in existing or CONFIG_BLOCK_END not in existing:
+        return []
+    block = existing.split(CONFIG_BLOCK_BEGIN, 1)[1].split(
+        CONFIG_BLOCK_END, 1)[0]
+    for line in block.splitlines():
+        stripped = line.strip()
+        if stripped.startswith('UserKnownHostsFile'):
+            stores = stripped.split()[1:]
+            return stores[1:]
+    return []
+
+
+def render_config_snippet(project, project_stores=None):
     """Return the lines of the managed SSH client configuration block.
 
     In the 'project' mode the block adds the view's declared store as
     an additional known_hosts source next to the user's own, so that
     plain ssh outside of DebOps trusts the same hosts without writing
-    into the project store. In the 'user' mode there is nothing to
-    configure and the block carries a note instead.
+    into the project store. The 'project_stores' parameter carries the
+    store paths of the other projects and views already present in the
+    operator's configuration; the line lists them sorted, so the block
+    stays identical no matter which project wrote it last. In the
+    'user' mode there is nothing to configure and the block carries a
+    note instead.
     """
     mode = known_hosts_mode(project)
     store = known_hosts_store(project)
@@ -428,10 +453,12 @@ def render_config_snippet(project):
             raise ValueError('The known_hosts store path contains newline '
                              'characters and cannot be written into an '
                              'SSH client configuration: ' + store)
+        stores = sorted(set((project_stores or [])
+                            + [unexpanduser(store)]))
         lines.append('Host *')
         lines.append('    UserKnownHostsFile '
                      + USER_KNOWN_HOSTS_STORE + ' '
-                     + unexpanduser(store))
+                     + ' '.join(stores))
     else:
         lines.append('# The known_hosts mode of the view is set to "'
                      + mode + '"; there is nothing to configure.')
@@ -444,16 +471,20 @@ def write_config_snippet(project, path):
 
     The content between the managed markers is replaced; the content
     outside of the markers is preserved. A file without the markers
-    gets the block appended. Returns True when the file changed.
+    gets the block appended. Store paths of other projects and views
+    already listed in the block are kept, so projects do not overwrite
+    each other's trust entries. The file is replaced atomically.
+    Returns True when the file changed.
     """
     path = os.path.expanduser(path)
-    block = '\n'.join(render_config_snippet(project))
     existed = os.path.exists(path)
     existing = ''
     if existed:
         with open(path) as handle:
             existing = handle.read()
+    existing_stores = parse_config_stores(existing)
 
+    block = '\n'.join(render_config_snippet(project, existing_stores))
     if CONFIG_BLOCK_BEGIN in existing and CONFIG_BLOCK_END in existing:
         head = existing.split(CONFIG_BLOCK_BEGIN, 1)[0]
         tail = existing.split(CONFIG_BLOCK_END, 1)[1]
@@ -469,8 +500,12 @@ def write_config_snippet(project, path):
         if parent and not os.path.isdir(parent):
             os.makedirs(parent)
             os.chmod(parent, 0o700)
-        with open(path, 'w') as handle:
+        mode = 0o600
+        if existed:
+            mode = os.stat(path).st_mode & 0o777
+        temp_path = path + '.debops-new'
+        with open(temp_path, 'w') as handle:
             handle.write(content)
-        if not existed:
-            os.chmod(path, 0o600)
+        os.chmod(temp_path, mode)
+        os.replace(temp_path, path)
     return changed
