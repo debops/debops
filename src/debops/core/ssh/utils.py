@@ -362,11 +362,22 @@ def resolve_host(project, host):
         raise ValueError(
             'The ansible_host of the host "' + host + '" looks like an '
             'SSH option instead of a host name or address: ' + destination)
+    try:
+        remote_port = project.ansible_cfg.get_option(
+            'remote_port', section='defaults')
+    except (configparser.NoOptionError, configparser.NoSectionError):
+        remote_port = None
     return {
         'destination': destination,
         'user': user,
+        # The port follows the resolution of the ssh connection
+        # plugin's 'port' option: the inventory variables over the
+        # 'ANSIBLE_REMOTE_PORT' environment over the 'remote_port'
+        # option of the configuration.
         'port': (variables.get('ansible_port')
-                 or variables.get('ansible_ssh_port')),
+                 or variables.get('ansible_ssh_port')
+                 or os.environ.get('ANSIBLE_REMOTE_PORT')
+                 or remote_port),
         'ssh_args': variables.get('ansible_ssh_args'),
         'identity': variables.get('ansible_ssh_private_key_file'),
         'common_args': variables.get('ansible_ssh_common_args'),

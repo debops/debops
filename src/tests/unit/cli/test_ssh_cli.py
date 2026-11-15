@@ -259,9 +259,30 @@ def test_do_ssh_rescan_eval_prints_the_actions(monkeypatch, stub_project,
 
     assert exit_info.value.code == 0
     out = capsys.readouterr().out
-    assert "ssh-keygen -R web" in out
+    assert "ssh-keygen -R '[web]:2222'" in out
+    assert "-p 2222" in out
     assert "ssh-keyscan" in out
     assert not store.exists(), "the --eval option created the store"
+
+
+def test_do_ssh_rescan_eval_quotes_the_store_path(monkeypatch,
+                                                  stub_project,
+                                                  fake_tools, capsys,
+                                                  tmp_path):
+    """The printed actions are shell-reusable: the arguments with
+    spaces stay single arguments."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+    spaced = tmp_path / "dir with spaces"
+    store = spaced / "known_hosts"
+
+    with pytest.raises(SystemExit):
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(known_hosts_file=str(store)))
+
+    out = capsys.readouterr().out
+    assert "dir with spaces/known_hosts'" in out
 
 
 def test_do_ssh_rescan_eval_with_the_remove_phase_only(monkeypatch,

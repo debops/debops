@@ -20,8 +20,8 @@ from .utils import (SFTP_OPTIONS_WITH_VALUE, SSH_OPTIONS_WITH_VALUE,
                     render_ssh_drop_in, split_options_operand,
                     ssh_executable, ssh_store_dir, ssh_store_file,
                     translate_ssh_args, value_options_of)
-from .ssh import (build_ssh_command, host_identifiers, rescan_hosts,
-                  split_destination, write_config_snippet,
-                  render_config_snippet)
+from .ssh import (build_ssh_command, host_identifiers, remove_command,
+                  render_config_snippet, rescan_actions, rescan_hosts,
+                  scan_command, split_destination, write_config_snippet)
 from .scp import build_scp_command
 from .sftp import build_sftp_command

@@ -38,9 +38,11 @@ def key_fingerprint(key_type, key_blob):
 
     The key type is the token ssh-keyscan reports ('ssh-ed25519',
     'ssh-rsa', ...), the key blob is its base64 encoding. Returns the
-    SSHFP algorithm number and the SHA-256 fingerprint in lowercase
-    hex, or (None, None) when the key type is unknown or the blob is
-    not valid base64.
+    SSHFP algorithm number and the fingerprints of the key blob in
+    lowercase hex, keyed by the SSHFP fingerprint type numbers
+    (1: SHA-1, 2: SHA-256) -- a zone can publish either digest and
+    ssh verifies both. Returns (None, None) when the key type is
+    unknown or the blob is not valid base64.
     """
     algorithm = ALGORITHMS.get(key_type)
     if algorithm is None:
@@ -49,7 +51,8 @@ def key_fingerprint(key_type, key_blob):
         blob = base64.b64decode(key_blob)
     except (ValueError, TypeError):
         return None, None
-    return algorithm, hashlib.sha256(blob).hexdigest()
+    return algorithm, {1: hashlib.sha1(blob).hexdigest(),
+                       2: hashlib.sha256(blob).hexdigest()}
 
 
 def ssh_fingerprint(fingerprint):
@@ -76,13 +79,25 @@ def lookup_sshfp(hostname):
 
     Returns ``(authenticated, records)``: whether a validating resolver
     marked the answer with the authenticated-data flag, and the set of
-    ``(algorithm, fingerprint)`` pairs the zone publishes. Lookup
-    failures raise the dnspython exceptions.
+    '(algorithm, fingerprint_type, fingerprint)' triples the zone
+    publishes; the fingerprint types are limited to the SHA-1 and
+    SHA-256 digests the comparison knows. Lookup failures raise the
+    dnspython exceptions.
     """
     answer = dns.resolver.resolve(hostname, 'SSHFP', want_dnssec=True)
     authenticated = bool(answer.response.flags & dns.flags.AD)
     records = set()
     for rdata in answer:
         fields = rdata.to_text().split()
-        records.add((int(fields[0]), fields[2].lower()))
+        if len(fields) < 3:
+            continue
+        try:
+            algorithm, digest_type = int(fields[0]), int(fields[1])
+        except ValueError:
+            continue
+        if digest_type not in (1, 2):
+            # The other fingerprint types are reserved; their records
+            # carry no digest the keys can be compared against
+            continue
+        records.add((algorithm, digest_type, fields[2].lower()))
     return authenticated, records
