@@ -43,6 +43,11 @@ SFTP_OPTIONS_WITH_VALUE = set('BbcDFiJlPRsSX')
 # list ('ssh -Q' lists the query types).
 SSH_OPTIONS_WITH_OPTIONAL_VALUE = {'Q'}
 
+# The ssh flags which the transfer commands accept themselves, passed
+# through when they appear in the resolved ssh arguments; the other
+# flags are dropped.
+SSH_FLAGS_PASSTHROUGH = set('C46')
+
 
 def value_options_of(parser, passthrough=()):
     """Return the options of a parser which take a value.
@@ -197,13 +202,17 @@ def split_operand(operand):
 def compose_options(pairs):
     """Return the argv list for ssh option pairs, without duplicates.
 
-    The pairs are '(option, value)' tuples. The first occurrence of a
-    pair wins, matching the way ssh treats its configuration; the
-    result is the flat argv list the options compose into.
+    The items are '(option, value)' tuples and bare flag tokens. The
+    first occurrence of an item wins, matching the way ssh treats its
+    configuration; the result is the flat argv list the options
+    compose into.
     """
     argv = []
-    for pair in dict.fromkeys(pairs):
-        argv.extend(pair)
+    for item in dict.fromkeys(pairs):
+        if isinstance(item, str):
+            argv.append(item)
+        else:
+            argv.extend(item)
     return argv
 
 
@@ -219,16 +228,45 @@ def bracket_ipv6(host):
     return host
 
 
+def without_known_hosts_options(tokens):
+    """Drop the 'UserKnownHostsFile' options from the resolved ssh
+    arguments.
+
+    The options appear as an '-o' option with its value, as the
+    attached '-oUserKnownHostsFile=...' form, or as the bare value
+    token; the rest of the arguments keep their order.
+    """
+    kept = []
+    index = 0
+    while index < len(tokens):
+        token = tokens[index]
+        if token.startswith('-oUserKnownHostsFile='):
+            index += 1
+            continue
+        if token == '-o' and index + 1 < len(tokens) \
+                and tokens[index + 1].startswith('UserKnownHostsFile='):
+            index += 2
+            continue
+        if token.startswith('UserKnownHostsFile='):
+            index += 1
+            continue
+        kept.append(token)
+        index += 1
+    return kept
+
+
 def translate_ssh_args(ssh_args):
     """Translate ssh arguments into the '-o' option pairs which the
     file-transfer commands accept for their ssh connections.
 
     '-J destination' becomes the ('-o', 'ProxyJump=destination') pair,
-    '-o value' pairs pass through unchanged, and the options which
-    configure port and packet forwards -- meaningless for a file
-    transfer -- are dropped and reported. Returns the list of
-    '(option, value)' pairs to add to the command, and the list of the
-    dropped arguments as display strings.
+    '-o value' pairs pass through unchanged, the flags the transfer
+    commands accept themselves ('-C', '-4', '-6') pass through as bare
+    tokens, and the options which configure port and packet forwards
+    -- meaningless for a file transfer -- are dropped and reported.
+    Returns the list of '(option, value)' pairs and bare tokens to add
+    to the command, and the list of the dropped arguments as display
+    strings.
     """
     tokens = (shlex.split(ssh_args)
               if isinstance(ssh_args, str) else list(ssh_args))
@@ -259,6 +297,11 @@ def translate_ssh_args(ssh_args):
             else:
                 dropped.append(token)
                 index += 1
+        elif len(token) == 2 and token[1] in SSH_FLAGS_PASSTHROUGH:
+            # The compression and address-family flags of ssh are
+            # flags of the transfer commands as well
+            translated.append(token)
+            index += 1
         elif letter in SSH_OPTIONS_WITH_VALUE and attached:
             dropped.append(token)
             index += 1
