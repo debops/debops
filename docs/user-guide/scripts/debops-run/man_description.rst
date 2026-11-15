@@ -16,7 +16,7 @@ An additional benefit of using these commands is that the user does not have to
 provide a full path to the playbooks - the script will try to find the correct
 playbook in a set of different directories or even inside Ansible Collections.
 
-The commands connect to the hosts through SSH. With the ``-a|--accept``
+The commands connect to the hosts through SSH. With the ``--accept``
 option, the first connection to a host accepts an unseen SSH host key and
 stores it. Without the option, :command:`ssh` refuses an unseen key and the
 connection fails.

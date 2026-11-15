@@ -16,17 +16,16 @@ The options of DebOps are parsed in front of the destination. The options
 which DebOps does not interpret are passed to :command:`sftp` unchanged,
 in front of the destination or after it, in the place they were written.
 
-.. warning::
+The option which accepts an unseen SSH host key is the long ``--accept``
+form. The short ``-a`` belongs to :command:`sftp`, which resumes
+interrupted transfers with it, and passes through unchanged:
 
-   The ``-a`` option of :command:`debops sftp` accepts an unseen SSH host
-   key on the first contact. The ``-a`` option of :command:`sftp` resumes
-   interrupted transfers. To use the ``resume`` option of
-   :command:`sftp`, write it after the destination:
+.. code-block:: console
 
-   .. code-block:: console
-
-      alice@controller:~$ debops sftp web-1 -a
+   alice@controller:~$ debops sftp web-1 -a
 
 The ``--`` marker before the destination hands the rest of the arguments
-to :command:`sftp` verbatim. The inventory is not consulted and the
-known_hosts store of the project is not applied.
+to :command:`sftp` verbatim. The inventory is not consulted; the options
+of DebOps still apply in front of the marker, ``--accept`` among them --
+with it, the known_hosts store of the project is applied to the handoff
+as well.
