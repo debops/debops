@@ -464,12 +464,14 @@ class Interpreter(object):
                                                         estimate_text))
 
         if args.eval:
-            store = args.known_hosts_file or ssh.known_hosts_store(project)
-            if not store:
-                print_error('The project known_hosts mode is active, but '
-                            'the view does not declare a known_hosts '
-                            'store')
-                sys.exit(1)
+            if args.known_hosts_file:
+                store = args.known_hosts_file
+            else:
+                try:
+                    store, _ = ssh.require_store(project)
+                except ValueError as errmsg:
+                    print_error(errmsg)
+                    sys.exit(1)
             for host in hosts:
                 actions, _ = ssh.rescan_actions(
                     project, host, store, phases, args.timeout)

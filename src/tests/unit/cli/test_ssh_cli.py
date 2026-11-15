@@ -470,7 +470,8 @@ def test_do_ssh_rescan_reports_the_store_error(monkeypatch, stub_project,
             make_interpreter(), rescan_args(eval=False))
 
     assert exit_info.value.code == 1
-    assert "Cannot rescan" in capsys.readouterr().err
+    assert "does not declare a known_hosts store" in \
+        capsys.readouterr().err
 
 
 def test_do_ssh_config_write_reports_the_error(monkeypatch, stub_project,

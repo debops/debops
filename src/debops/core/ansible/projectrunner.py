@@ -16,7 +16,7 @@ import logging
 import os
 import textwrap
 
-from ..ssh.utils import declared_known_hosts_store, ensure_store_dir
+from ..ssh.store import declared_known_hosts_store, ensure_store_dir
 
 logger = logging.getLogger(__name__)
 
