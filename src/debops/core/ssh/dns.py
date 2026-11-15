@@ -20,11 +20,6 @@ import base64
 import hashlib
 import ipaddress
 
-# The dnspython import lives inside the lookup function: the rest of
-# the ssh suite imports this module for the key fingerprinting and
-# the address helpers, and the project machinery imports the suite;
-# none of that needs the DNS resolver
-
 # The SSHFP algorithm numbers of the key types ssh-keyscan reports,
 # per RFC 4255 and its updates.
 ALGORITHMS = {
