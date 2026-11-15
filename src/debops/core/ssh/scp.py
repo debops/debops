@@ -16,7 +16,7 @@ import shlex
 
 from .store import known_hosts_option, require_store
 from .utils import (bracket_ipv6, compose_options, resolve_destination,
-                    split_operand, translate_ssh_args)
+                    split_operand, translate_ssh_args, without_known_hosts_options)
 
 logger = logging.getLogger(__name__)
 
@@ -65,10 +65,12 @@ def build_scp_command(project, sources, destination_operand,
         extra = parameters.get('scp_extra_args')
         if extra:
             transfer_args.extend(shlex.split(extra))
-        for value in (parameters.get('common_args'),
+        for value in (parameters.get('ssh_args'),
+                      parameters.get('common_args'),
                       parameters.get('extra_args')):
             if value:
-                translated, dropped_side = translate_ssh_args(value)
+                tokens = without_known_hosts_options(shlex.split(value))
+                translated, dropped_side = translate_ssh_args(tokens)
                 ssh_options.extend(translated)
                 dropped.extend(dropped_side)
 

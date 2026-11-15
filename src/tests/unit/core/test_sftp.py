@@ -9,9 +9,19 @@ sftp command builder only composes arguments, so its binary is a plain
 path in the configuration.
 """
 
+import logging
+
 import pytest
 
 from debops.core.ssh.sftp import build_sftp_command
+
+
+def in_sftp_sequence(command, arguments):
+    """Whether the argument run appears in the command."""
+    length = len(arguments)
+    return any(
+        command[index:index + length] == arguments
+        for index in range(len(command) + 1 - length))
 
 
 def test_build_sftp_command_resolves_the_host(stub_project, fake_tools):
@@ -132,3 +142,58 @@ def test_build_sftp_command_refuses_an_undeclared_store(stub_project, fake_tools
         build_sftp_command(project, "web")
 
     assert "does not declare a known_hosts store" in str(error.value)
+
+
+def test_build_sftp_command_carries_the_resolved_ssh_args(
+        stub_project, fake_tools):
+    """The resolved 'ssh_args' reach the session: a jump host written
+    there applies to the session the way it applies to 'debops ssh'."""
+    project = stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])},
+        cfg_options={"ssh_args": "-J bastion@jump"})
+
+    command = build_sftp_command(project, "web:/srv")
+
+    assert in_sftp_sequence(command, ["-o", "ProxyJump=bastion@jump"])
+
+
+def test_build_sftp_command_passes_the_transfer_flags_through(
+        stub_project, fake_tools, caplog):
+    """The compression flag of ssh is a flag of sftp as well and
+    passes through without a drop notice."""
+    with caplog.at_level(logging.NOTICE):
+        project = stub_project(
+            raw={"binaries": dict(fake_tools["binaries"])},
+            cfg_options={"ssh_args": "-C"})
+
+    command = build_sftp_command(project, "web:/srv")
+
+    assert "-C" in command
+    assert not caplog.records
+
+
+def test_build_sftp_command_carries_the_store_once(stub_project,
+                                                   fake_tools,
+                                                   fake_binary,
+                                                   tmp_path):
+    """The store of the view is injected first; the drop-in's own
+    store declaration in 'ssh_args' is filtered out."""
+    store = str(tmp_path / ".debops" / "ssh" / "views" / "system" /
+                "known_hosts")
+    project = stub_project(
+        raw={"binaries": dict(fake_tools["binaries"]),
+             "views": {"system": {"ssh": {"known_hosts": "project"}}}},
+        cfg_options={"ssh_args":
+                     "-o ControlMaster=auto "
+                     "-o UserKnownHostsFile=" + store})
+
+    command = build_sftp_command(project, "web:/srv")
+
+    assert sum("UserKnownHostsFile=" in token
+               for token in command) == 1
+    assert command[command.index("-o") + 1].startswith(
+        "UserKnownHostsFile=")
+    store_position = next(index
+                          for index, token in enumerate(command)
+                          if "UserKnownHostsFile=" in token)
+    assert command.index("ControlMaster=auto") > store_position
