@@ -98,9 +98,15 @@ class AnsibleProjectRunner(Runner):
         if base:
             composed += ' ' + base
         store = declared_known_hosts_store(self.project)
-        if store and not any(
-                token.startswith('UserKnownHostsFile')
-                for token in shlex.split(composed)):
+        try:
+            tokens = shlex.split(composed)
+        except ValueError:
+            # An environment value whose quotes do not balance cannot
+            # be inspected; the store is carried, as it was before the
+            # inspection existed
+            tokens = []
+        if store and not any('UserKnownHostsFile' in token
+                             for token in tokens):
             # The single-quoted form survives the argument splitting
             # of the ssh connection plugin, which would consume the
             # double quotes of the store path directly
