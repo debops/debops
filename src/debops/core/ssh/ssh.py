@@ -11,8 +11,8 @@ line, cycles the known_hosts entries for 'debops ssh rescan', and
 renders the SSH client configuration snippet for the
 outside-of-DebOps path.
 
-The known_hosts store is selected by the 'ssh.known_hosts'
-configuration option: the 'user' mode resolves to the user's default
+The known_hosts store is selected by the 'ssh.known_hosts' option of
+the view: the 'user' mode resolves to the user's default
 known_hosts file, the 'project' mode to the store declared in the
 view's 'ansible.cfg' through the 'UserKnownHostsFile' option of the
 '[ssh_connection] ssh_args' -- the value the 'view-<view>-ssh.toml'
@@ -92,6 +92,12 @@ def build_ssh_command(project, host, parameters=None, user=None, port=None,
     """
     if parameters is None:
         parameters = {}
+    if known_hosts_mode(project) == 'project':
+        store = known_hosts_store(project)
+        if not store:
+            raise ValueError(
+                'The project known_hosts mode is active for the view, '
+                'but the view does not declare a known_hosts store')
     command = [ssh_executable(project)
                or project.config.raw['binaries']['ssh']]
 
@@ -427,7 +433,7 @@ def render_config_snippet(project):
                      + USER_KNOWN_HOSTS_STORE + ' '
                      + unexpanduser(store))
     else:
-        lines.append('# The ssh.known_hosts option is set to "'
+        lines.append('# The known_hosts mode of the view is set to "'
                      + mode + '"; there is nothing to configure.')
     lines.append(CONFIG_BLOCK_END)
     return lines
