@@ -22,7 +22,8 @@ from unittest import mock
 import pytest
 
 import debops.core.ssh as ssh_module
-from debops.core.ssh import (SFTP_OPTIONS_WITH_VALUE, SSH_OPTIONS_WITH_VALUE,
+from debops.core.ssh import (SCP_OPTIONS_WITH_VALUE, SFTP_OPTIONS_WITH_VALUE,
+                             SSH_OPTIONS_WITH_VALUE,
                              build_handoff_command, build_ssh_command,
                              ensure_store_dir, host_identifiers,
                              known_hosts_mode, known_hosts_store,
@@ -30,7 +31,7 @@ from debops.core.ssh import (SFTP_OPTIONS_WITH_VALUE, SSH_OPTIONS_WITH_VALUE,
                              rescan_actions, resolve_destination,
                              resolve_host, resolve_patterns, rescan_hosts,
                              scan_command, split_destination,
-                             split_options_operand, translate_ssh_args,
+                             split_options_operands, translate_ssh_args,
                              value_options_of, write_config_snippet)
 
 
@@ -529,58 +530,107 @@ def test_resolve_destination_rejects_the_unknown_host(stub_project,
     assert "Cannot resolve the host" in str(error.value)
 
 
-def test_split_options_operand_walks_the_options():
-    head, operand, tail = split_options_operand(
+def test_split_options_operands_walk_the_options():
+    options, operands, tail = split_options_operands(
         ["-o", "Foo=1", "-v", "host", "cmd"], SSH_OPTIONS_WITH_VALUE)
 
-    assert head == ["-o", "Foo=1", "-v"]
-    assert operand == "host"
+    assert options == ["-o", "Foo=1", "-v"]
+    assert operands == ["host"]
     assert tail == ["cmd"]
 
 
-def test_split_options_operand_handles_attached_values():
-    head, operand, tail = split_options_operand(
+def test_split_options_operands_handle_attached_values():
+    options, operands, tail = split_options_operands(
         ["-oFoo=1", "host"], SSH_OPTIONS_WITH_VALUE)
 
-    assert head == ["-oFoo=1"]
-    assert operand == "host"
+    assert options == ["-oFoo=1"]
+    assert operands == ["host"]
     assert tail == []
 
 
-def test_split_options_operand_ends_the_options_at_the_marker():
-    head, operand, tail = split_options_operand(
+def test_split_options_operands_consume_the_cluster_values():
+    """A cluster whose last letter takes a value consumes the next
+    token; the letters after a value-taking letter are its attached
+    value."""
+    options, operands, _ = split_options_operands(
+        ["-qL", "8080:host:port", "host"], SSH_OPTIONS_WITH_VALUE)
+
+    assert options == ["-qL", "8080:host:port"]
+    assert operands == ["host"]
+
+    options, operands, _ = split_options_operands(
+        ["-qL8080:host:port", "host"], SSH_OPTIONS_WITH_VALUE)
+
+    assert options == ["-qL8080:host:port"]
+    assert operands == ["host"]
+
+
+def test_split_options_operands_end_the_options_at_the_marker():
+    options, operands, tail = split_options_operands(
         ["--", "-weird", "rest"], SSH_OPTIONS_WITH_VALUE)
 
-    assert head == []
-    assert operand == "-weird"
+    assert options == []
+    assert operands == ["-weird"]
     assert tail == ["rest"]
 
 
-def test_split_options_operand_consumes_the_long_values():
-    head, operand, tail = split_options_operand(
-        ["--view", "system", "host"], SSH_OPTIONS_WITH_VALUE,
-        ("--view",))
+def test_split_options_operands_cover_all_the_operands():
+    """Without 'stop_at_operand' the walk collects every operand, the
+    way the multi-operand commands permute."""
+    options, operands, tail = split_options_operands(
+        ["src", "-O", "-P", "2222", "dst"], SCP_OPTIONS_WITH_VALUE,
+        stop_at_operand=False)
 
-    assert head == ["--view", "system"]
-    assert operand == "host"
-
-
-def test_split_options_operand_reports_a_missing_operand():
-    head, operand, tail = split_options_operand(["-v"], SSH_OPTIONS_WITH_VALUE)
-
-    assert head == ["-v"]
-    assert operand is None
+    assert options == ["-O", "-P", "2222"]
+    assert operands == ["src", "dst"]
     assert tail == []
 
 
-def test_split_options_operand_keeps_the_sftp_batch_value():
+def test_split_options_operands_consume_the_long_values():
+    options, operands, _ = split_options_operands(
+        ["--view", "system", "host"], SSH_OPTIONS_WITH_VALUE,
+        ("--view",))
+
+    assert options == ["--view", "system"]
+    assert operands == ["host"]
+
+
+def test_split_options_operands_leave_the_optional_value_alone():
+    options, operands, _ = split_options_operands(
+        ["-Q"], SSH_OPTIONS_WITH_VALUE)
+
+    assert options == ["-Q"]
+    assert operands == []
+
+
+def test_split_options_operands_refuse_a_dangling_value():
+    """An option which requires a value and finds none raises; left
+    valueless, the command would consume an operand as the value."""
+    with pytest.raises(ValueError, match="requires a value"):
+        split_options_operands(["-o"], SSH_OPTIONS_WITH_VALUE)
+
+    with pytest.raises(ValueError, match="requires a value"):
+        split_options_operands(["src", "-F"], SCP_OPTIONS_WITH_VALUE,
+                               stop_at_operand=False)
+
+
+def test_split_options_operands_report_a_missing_operand():
+    options, operands, tail = split_options_operands(
+        ["-v"], SSH_OPTIONS_WITH_VALUE)
+
+    assert options == ["-v"]
+    assert operands == []
+    assert tail == []
+
+
+def test_split_options_operands_keep_the_sftp_batch_value():
     """The '-b' option of sftp takes a value; the batch file is not
     mistaken for the destination."""
-    head, operand, tail = split_options_operand(
+    options, operands, tail = split_options_operands(
         ["-b", "/tmp/batch", "host"], SFTP_OPTIONS_WITH_VALUE)
 
-    assert head == ["-b", "/tmp/batch"]
-    assert operand == "host"
+    assert options == ["-b", "/tmp/batch"]
+    assert operands == ["host"]
     assert tail == []
 
 

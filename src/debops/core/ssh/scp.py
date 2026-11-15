@@ -122,5 +122,9 @@ def build_scp_command(project, sources, destination_operand,
     command.extend(compose_options(ssh_options))
     command.extend(scp_args or [])
     command.extend(transfer_args)
+    if any(operand.startswith('-') for operand in operands):
+        # An operand which starts with '-' would be parsed as an
+        # option; the marker ends the option parsing of scp
+        command.append('--')
     command.extend(operands)
     return command

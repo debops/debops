@@ -27,14 +27,26 @@ logger = logging.getLogger(__name__)
 
 USER_KNOWN_HOSTS_STORE = '~/.ssh/known_hosts'
 
-# The ssh options which take a separate value argument, per the
-# ssh(1) usage line. Used to walk argument lists where ssh options and
-# operands mix.
-SSH_OPTIONS_WITH_VALUE = set('BbcDEeFIiJLlMmOoQRSVWw')
+# The ssh options which take a separate value argument, per the usage
+# line of the OpenSSH 9.2 ssh(1). Used to walk argument lists where
+# ssh options and operands mix. A newer OpenSSH which adds value
+# options needs the set revisited; the walk cannot infer the values
+# of the options it does not know.
+SSH_OPTIONS_WITH_VALUE = set('BbcDEeFIiJLlmOopQRSWw')
+
+# The scp options which take a separate value argument, per the usage
+# line of the OpenSSH 9.2 scp(1). The scp grammar differs from the
+# ssh one: '-P' is the port and '-B', '-O', '-R' are flags.
+SCP_OPTIONS_WITH_VALUE = set('cDFiJlPSX')
 
 # The sftp options which take a separate value argument, per the
-# sftp(1) usage line.
-SFTP_OPTIONS_WITH_VALUE = set('BbcDFiJlRoPRsS')
+# usage line of the OpenSSH 9.2 sftp(1).
+SFTP_OPTIONS_WITH_VALUE = set('BbcDFiJlPRsSX')
+
+# The ssh options whose value is optional: they consume the next
+# token when one follows, and stand alone at the end of the argument
+# list ('ssh -Q' lists the query types).
+SSH_OPTIONS_WITH_OPTIONAL_VALUE = {'Q'}
 
 
 def value_options_of(parser, passthrough=()):
@@ -64,41 +76,88 @@ def value_options_of(parser, passthrough=()):
     return shorts, longs
 
 
-def split_options_operand(tokens, value_options, long_value_options=()):
-    """Split an argument list into the options and the first operand.
+def _option_consumes_next(token, value_options, long_value_options):
+    """Whether the option token consumes the following token as its
+    value.
+
+    A long option with the value attached ('--option=value') does
+    not; a short option consumes the next token when its last letter
+    takes a value and the token carries no attached value ('-o value',
+    '-qL value'), while the attached form ('-oValue') does not.
+    """
+    if token.startswith('--'):
+        if '=' in token:
+            return False
+        return token in long_value_options
+    if len(token) == 2:
+        return token[1] in value_options
+    # A cluster of short options; the first letter which takes a
+    # value ends the option part of the token
+    for position, letter in enumerate(token[1:]):
+        if letter in value_options:
+            return position + 2 == len(token)
+    return False
+
+
+def split_options_operands(tokens, value_options, long_value_options=(),
+                           stop_at_operand=True):
+    """Split an argument list into the options and the operands.
 
     The walk follows the getopt permutation: an option which takes a
-    value keeps the next token as its value, and the first token which
-    is neither an option nor an option value is the operand. The
-    tokens after the operand are returned as the tail, for the
-    arguments which follow the operand on the command line. The '--'
-    marker ends the options; the next token is the operand even when
-    it looks like an option.
+    value keeps the next token as its value, and the tokens which are
+    neither options nor option values are the operands, in the order
+    they appear. With 'stop_at_operand' the walk ends at the first
+    operand and the tokens after it are returned as the 'tail', in
+    their places -- the arguments which follow the operand on the
+    command line, such as the remote command of ssh, must not be
+    permuted. Without it the walk covers the whole list, the way the
+    multi-operand commands permute.
 
     The 'value_options' are the option letters which take a value and
     'long_value_options' the long option names; the set carries the
     options of the parser and the ones passed through to the command.
+    The '--' marker ends the options; the next token is an operand
+    even when it looks like an option.
+
+    An option which requires a value and finds none raises ValueError;
+    left valueless, the command would consume an operand as the value
+    instead. The options with an optional value stand alone.
     """
-    head = []
+    options = []
+    operands = []
     index = 0
     while index < len(tokens):
         token = tokens[index]
         if token == '--':
             index += 1
+            # The tokens after the marker are the operands, even when
+            # they look like options
+            if stop_at_operand:
+                if index < len(tokens):
+                    operands.append(tokens[index])
+                    index += 1
+            else:
+                operands.extend(tokens[index:])
+                index = len(tokens)
             break
         if not token.startswith('-') or token == '-':
-            break
-        head.append(token)
-        letter = token[1] if len(token) > 1 else ''
-        takes_value = ((letter in value_options and len(token) == 2)
-                       or token in long_value_options)
-        if takes_value and index + 1 < len(tokens):
+            operands.append(token)
             index += 1
-            head.append(tokens[index])
+            if stop_at_operand:
+                break
+            continue
+        options.append(token)
+        if _option_consumes_next(token, value_options,
+                                 long_value_options):
+            if index + 1 < len(tokens):
+                index += 1
+                options.append(tokens[index])
+            elif token[-1] not in SSH_OPTIONS_WITH_OPTIONAL_VALUE:
+                raise ValueError('the option ' + token
+                                 + ' requires a value')
         index += 1
-    if index < len(tokens):
-        return head, tokens[index], tokens[index + 1:]
-    return head, None, []
+    tail = tokens[index:] if stop_at_operand else []
+    return options, operands, tail
 
 
 def split_host_path(operand):

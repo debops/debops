@@ -120,13 +120,9 @@ A batch file holds one :command:`sftp` command per line:
 
 The options which DebOps does not interpret are passed to :command:`sftp`
 unchanged, in front of the destination or after it, in the place they were
-written. The ``-a`` option of :command:`debops sftp` accepts an unseen host
-key; the ``-a`` option of :command:`sftp` resumes an interrupted transfer,
-and it works when written after the destination:
-
-.. code-block:: console
-
-   alice@controller:~$ debops sftp web-1 -a
+written. The ``-a`` option of :command:`sftp` resumes an interrupted
+transfer and passes through unchanged; the option of DebOps which accepts
+an unseen host key is the long ``--accept`` form.
 
 
 First contact
@@ -134,12 +130,12 @@ First contact
 
 The first connection to a new host stops. :command:`ssh` asks about the
 host key, and in a script it refuses the key and the connection fails. The
-``-a``/``--accept`` option accepts an unseen host key on the first contact
+``--accept`` option accepts an unseen host key on the first contact
 and stores it:
 
 .. code-block:: console
 
-   alice@controller:~$ debops ssh -a web-1
+   alice@controller:~$ debops ssh --accept web-1
 
 A key which changes later is refused either way. The option accepts only
 keys which are not known yet. When a host presents a different key than the
@@ -148,7 +144,11 @@ connect again.
 
 The option exists on all of the commands which connect: :command:`debops
 ssh`, :command:`debops scp`, :command:`debops sftp`, as well as
-:command:`debops exec` and :command:`debops run`.
+:command:`debops exec` and :command:`debops run`. On the commands which
+compose an ssh command line the option is the long ``--accept`` form: the
+short ``-a`` belongs to the underlying commands, which disable the
+authentication agent forwarding (:command:`ssh`) or resume interrupted
+transfers (:command:`sftp`) with it, and passes through unchanged.
 
 
 The known_hosts store of the project

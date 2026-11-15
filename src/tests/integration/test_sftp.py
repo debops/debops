@@ -116,7 +116,7 @@ def test_sftp_accepts_unseen_host_keys(run_debops, tmp_path, debops_env,
     batch = tmp_path / "batch"
     batch.write_text("ls /tmp\n")
 
-    result = run_debops("sftp", "-a", "-b", str(batch), "testhost",
+    result = run_debops("sftp", "--accept", "-b", str(batch), "testhost",
                         cwd=str(project_dir), env=debops_env)
 
     assert result.returncode == 0
