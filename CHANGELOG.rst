@@ -85,6 +85,34 @@ General
   top of the project directory environment. The file is ignored by
   git and holds variables specific to one view.
 
+- The SSH host keys of the inventory hosts can be stored per
+  infrastructure view instead of the operator's own
+  :file:`~/.ssh/known_hosts` file. The
+  ``views.<view>.ssh.known_hosts`` configuration option selects the
+  mode; in the ``project`` mode the keys are stored in a
+  known_hosts file inside the project directory, used by the
+  DebOps commands and the Ansible runs of the view alike. The store
+  is declared when the project or the view is created with the
+  ``--ssh`` option.
+
+- The :command:`debops run`, :command:`debops check` and
+  :command:`debops exec` commands accept unseen SSH host keys on
+  the first contact with a host when run with the ``--accept``
+  option, storing the key in the active known_hosts store. This
+  removes the host key prompt from the first Ansible connection to
+  a newly provisioned host.
+
+- The new :command:`debops ssh`, :command:`debops scp` and
+  :command:`debops sftp` commands connect to and transfer files
+  from hosts defined in the Ansible inventory of the project, with
+  the SSH connection options composed from the inventory
+  variables. The :command:`debops ssh` command manages the SSH
+  host keys of the hosts: the ``rescan`` subcommand refreshes the
+  known_hosts entries, optionally verifying the keys against the
+  SSHFP records published in DNS, and the ``config`` subcommand
+  prints an SSH client configuration which makes the hosts
+  reachable using plain :command:`ssh`.
+
 Changed
 ~~~~~~~
 
