@@ -1033,3 +1033,38 @@ def test_write_config_snippet_replaces_atomically(stub_project, tmp_path):
     leftovers = [entry.name for entry in tmp_path.iterdir()
                  if entry.name != 'ssh_config']
     assert leftovers == []
+
+
+def test_resolve_host_honors_the_legacy_ssh_variables(
+        stub_project, fake_tools, fake_binary):
+    """The pre-2.0 variable names Ansible still honors work as
+    fallbacks."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "legacy-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_ssh_host\": \"192.0.2.10\","
+        " \"ansible_ssh_user\": \"legacyuser\","
+        " \"ansible_ssh_port\": \"2222\"}'\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    parameters = resolve_host(project, "web")
+
+    assert parameters["destination"] == "192.0.2.10"
+    assert parameters["user"] == "legacyuser"
+    assert parameters["port"] == "2222"
+
+
+def test_resolve_host_reads_the_per_host_ssh_args(
+        stub_project, fake_tools, fake_binary):
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "ssh-args-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_ssh_args\": \"-o BatchMode=yes\"}'\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    parameters = resolve_host(project, "web")
+
+    assert parameters["ssh_args"] == "-o BatchMode=yes"

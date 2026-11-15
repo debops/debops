@@ -262,3 +262,22 @@ def test_build_scp_command_refuses_an_undeclared_store(stub_project, fake_tools)
         build_scp_command(project, ["web:/src"], "local")
 
     assert "does not declare a known_hosts store" in str(error.value)
+
+
+def test_build_scp_command_uses_the_per_host_executable_and_extra_args(
+        stub_project, fake_tools, fake_binary):
+    """ansible_scp_executable and ansible_scp_extra_args from the
+    inventory shape the transfer command."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "transfer-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_scp_executable\": \"/usr/bin/scp-legacy\","
+        " \"ansible_scp_extra_args\": \"-O\"}'\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    command = build_scp_command(project, ["web:/src"], "local")
+
+    assert command[0] == "/usr/bin/scp-legacy"
+    assert "-O" in command
