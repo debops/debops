@@ -18,6 +18,8 @@ import os
 import shlex
 import subprocess
 
+from .dns import is_ip_address
+
 logger = logging.getLogger(__name__)
 
 # The ssh options which take a separate value argument, per the usage
@@ -205,6 +207,18 @@ def compose_options(pairs):
     return argv
 
 
+def bracket_ipv6(host):
+    """Return the host in the form the scp and sftp grammars parse as
+    one address.
+
+    An IPv6 literal carries colons, which the transfer grammars read
+    as the host/path separator; the bracketed form survives them.
+    """
+    if is_ip_address(host) and ':' in host:
+        return '[' + host + ']'
+    return host
+
+
 def translate_ssh_args(ssh_args):
     """Translate ssh arguments into the '-o' option pairs which the
     file-transfer commands accept for their ssh connections.
@@ -349,6 +363,13 @@ def resolve_host(project, host):
             'The ansible_host of the host "' + host + '" looks like an '
             'SSH option instead of a host name or address: ' + destination)
     parameters['destination'] = destination
+    user = parameters['user']
+    if user is not None and user.startswith('-'):
+        # Composed into the destination tokens of the transfers, such
+        # a value would be parsed as an ssh option by sftp
+        raise ValueError(
+            'The user of the host "' + host + '" looks like an SSH '
+            'option instead of an account name: ' + user)
     for key in ('port', 'timeout'):
         value = parameters[key]
         if value is not None and not isinstance(value, (str, int)):
