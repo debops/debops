@@ -43,7 +43,7 @@ def build_sftp_command(project, destination, identity=None, accept=False,
         host = host_part.strip('[]')
 
     parameters = resolve_destination(project, host)
-    binary = (parameters.get('ansible_sftp_executable')
+    binary = (parameters.get('sftp_executable')
               or project.config.raw['binaries']['sftp'])
     effective_user = user or parameters.get('user')
     destination_token = (effective_user + '@' if effective_user else '') \
@@ -52,7 +52,7 @@ def build_sftp_command(project, destination, identity=None, accept=False,
 
     command = [binary]
     sftp_args = (sftp_args or []) + shlex.split(
-        parameters.get('ansible_sftp_extra_args') or '')
+        parameters.get('sftp_extra_args') or '')
     port = parameters.get('port')
     if port:
         command.extend(['-P', str(port)])

@@ -584,3 +584,44 @@ def test_without_accept_option_the_ssh_args_env_is_untouched(stub_project):
     runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"])
 
     assert "ANSIBLE_SSH_ARGS" not in runner._ansible_env
+
+
+def test_accept_option_carries_the_project_store(stub_project,
+                                                 monkeypatch, tmp_path):
+    """When the composed ssh arguments do not declare the store of the
+    view -- an operator's environment variable masks the configured
+    ones -- the store is appended, so the accepted keys land in the
+    project store."""
+    monkeypatch.setenv("ANSIBLE_SSH_ARGS", "-o Ambient=1")
+    store = str(tmp_path / ".debops" / "ssh" / "views" / "system" /
+                "known_hosts")
+    project = stub_project(
+        cfg_options={"inventory": "ansible/inventory",
+                     "collections_path": "",
+                     "ssh_args": "-o UserKnownHostsFile=" + store},
+        raw={"views": {"system": {"ssh": {"known_hosts": "project"}}}})
+    runner = AnsiblePlaybookRunner(project, ansible_args=["site.yml"],
+                                   accept=True)
+
+    assert runner._ansible_env["ANSIBLE_SSH_ARGS"] == \
+        ("-o Ambient=1 -o StrictHostKeyChecking=accept-new"
+         " -o UserKnownHostsFile=" + store)
+
+
+def test_accept_option_keeps_a_declared_store(stub_project,
+                                              monkeypatch, tmp_path):
+    """The composed arguments of the configuration already declare the
+    store; none is appended a second time."""
+    monkeypatch.delenv("ANSIBLE_SSH_ARGS", raising=False)
+    store = str(tmp_path / ".debops" / "ssh" / "views" / "system" /
+                "known_hosts")
+    project = stub_project(cfg_options={
+        "inventory": "ansible/inventory",
+        "collections_path": "",
+        "ssh_args": "-o UserKnownHostsFile=" + store})
+    runner = AnsiblePlaybookRunner(project, ansible_args=["site.yml"],
+                                   accept=True)
+
+    assert runner._ansible_env["ANSIBLE_SSH_ARGS"] == \
+        ("-o UserKnownHostsFile=" + store
+         + " -o StrictHostKeyChecking=accept-new")

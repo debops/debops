@@ -77,7 +77,10 @@ class AnsibleProjectRunner(Runner):
         'ansible.cfg', so the composed value carries the configured
         arguments forward and adds the accept-new option; an
         'ANSIBLE_SSH_ARGS' variable of the operator's environment takes
-        precedence over the configured one.
+        precedence over the configured one. The known_hosts store of
+        the view is carried as well when the composed value does not
+        declare one: without it, an operator's environment variable
+        would store the accepted keys outside of the project store.
         """
         try:
             ssh_args = self.project.ansible_cfg.get_option(
@@ -85,9 +88,14 @@ class AnsibleProjectRunner(Runner):
         except (configparser.NoOptionError, configparser.NoSectionError):
             ssh_args = None
         base = os.environ.get('ANSIBLE_SSH_ARGS') or ssh_args
-        env['ANSIBLE_SSH_ARGS'] = ((base + ' ' if base else '')
-                                   + '-o StrictHostKeyChecking='
-                                     'accept-new')
+        composed = ((base + ' ' if base else '')
+                    + '-o StrictHostKeyChecking='
+                      'accept-new')
+        store = declared_known_hosts_store(self.project)
+        if store and 'UserKnownHostsFile=' not in composed:
+            composed += (' -o UserKnownHostsFile='
+                         + self._quote_spaces(store))
+        env['ANSIBLE_SSH_ARGS'] = composed
 
     def _quote_spaces(self, string):
         if ' ' in string:

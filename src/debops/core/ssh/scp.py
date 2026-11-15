@@ -59,10 +59,10 @@ def build_scp_command(project, sources, destination_operand,
         side_identity = parameters.get('identity')
         if side_identity:
             identities.append(side_identity)
-        executable = parameters.get('ansible_scp_executable')
+        executable = parameters.get('scp_executable')
         if executable:
             executables.append(executable)
-        extra = parameters.get('ansible_scp_extra_args')
+        extra = parameters.get('scp_extra_args')
         if extra:
             transfer_args.extend(shlex.split(extra))
         for value in (parameters.get('common_args'),

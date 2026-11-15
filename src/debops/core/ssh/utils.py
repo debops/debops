@@ -372,14 +372,55 @@ def known_hosts_store(project):
     return os.path.expanduser(USER_KNOWN_HOSTS_STORE)
 
 
+# The connection options of the ssh connection plugin, each in the
+# resolution order the plugin applies: the inventory variables over
+# the environment over the option of the 'ansible.cfg'. The table
+# carries the variable names, the environment variable and the
+# configuration option of each connection parameter; the 'debops ssh'
+# commands resolve them the same way the plugin does, so a connection
+# composed by DebOps reaches the host the same way an Ansible
+# connection does.
+CONNECTION_OPTIONS = (
+    # (key, variable names, environment name, ini section, ini key)
+    ('destination', ('ansible_host', 'ansible_ssh_host'),
+     None, None, None),
+    ('user', ('ansible_user', 'ansible_ssh_user'),
+     'ANSIBLE_REMOTE_USER', 'defaults', 'remote_user'),
+    ('port', ('ansible_port', 'ansible_ssh_port'),
+     'ANSIBLE_REMOTE_PORT', 'defaults', 'remote_port'),
+    ('identity', ('ansible_private_key_file',
+                  'ansible_ssh_private_key_file'),
+     'ANSIBLE_PRIVATE_KEY_FILE', 'defaults', 'private_key_file'),
+    ('ssh_args', ('ansible_ssh_args',),
+     'ANSIBLE_SSH_ARGS', 'ssh_connection', 'ssh_args'),
+    ('common_args', ('ansible_ssh_common_args',),
+     'ANSIBLE_SSH_COMMON_ARGS', 'ssh_connection', 'ssh_common_args'),
+    ('extra_args', ('ansible_ssh_extra_args',),
+     'ANSIBLE_SSH_EXTRA_ARGS', 'ssh_connection', 'ssh_extra_args'),
+    ('ssh_executable', ('ansible_ssh_executable',),
+     'ANSIBLE_SSH_EXECUTABLE', 'ssh_connection', 'ssh_executable'),
+    ('scp_executable', ('ansible_scp_executable',),
+     'ANSIBLE_SCP_EXECUTABLE', 'ssh_connection', 'scp_executable'),
+    ('scp_extra_args', ('ansible_scp_extra_args',),
+     'ANSIBLE_SCP_EXTRA_ARGS', 'ssh_connection', 'scp_extra_args'),
+    ('sftp_executable', ('ansible_sftp_executable',),
+     'ANSIBLE_SFTP_EXECUTABLE', 'ssh_connection', 'sftp_executable'),
+    ('sftp_extra_args', ('ansible_sftp_extra_args',),
+     'ANSIBLE_SFTP_EXTRA_ARGS', 'ssh_connection', 'sftp_extra_args'),
+    ('timeout', (), 'ANSIBLE_TIMEOUT', 'defaults', 'timeout'),
+)
+
+
 def resolve_host(project, host):
     """Return the connection parameters of an inventory host.
 
     The parameters come from the Ansible inventory, resolved with
     'ansible-inventory --host' the same way the Ansible runners resolve
-    it. Returns a dict with the keys 'destination', 'user', 'port',
-    'identity', 'common_args' and 'extra_args'; parameters the
-    inventory does not define are None.
+    it, and follow the option resolution of the ssh connection plugin
+    (:data:`CONNECTION_OPTIONS`): the inventory variables over the
+    environment over the options of the 'ansible.cfg'. Returns a dict
+    with the keys of :data:`CONNECTION_OPTIONS`; parameters which
+    nothing defines are None.
 
     Raises ValueError when the host is not defined in the inventory of
     the project's view, ChildProcessError when the resolution cannot
@@ -403,49 +444,27 @@ def resolve_host(project, host):
         raise ValueError('Cannot resolve the host "' + host + '": the '
                          'inventory returned no usable host variables')
 
-    user = (variables.get('ansible_user')
-            or variables.get('ansible_ssh_user'))
-    if user is None:
-        # Ansible semantics: the inventory connection variable wins over
-        # the configuration, and the ANSIBLE_REMOTE_USER environment
-        # overrides the 'remote_user' option of the configuration.
-        try:
-            remote_user = project.ansible_cfg.get_option(
-                'remote_user', section='defaults')
-        except (configparser.NoOptionError, configparser.NoSectionError):
-            remote_user = None
-        user = (os.environ.get('ANSIBLE_REMOTE_USER') or remote_user)
-    destination = (variables.get('ansible_host')
-                   or variables.get('ansible_ssh_host') or host)
+    parameters = {}
+    for key, var_names, env_name, section, ini_key in CONNECTION_OPTIONS:
+        value = next((variables[name] for name in var_names
+                      if variables.get(name)), None)
+        if not value and env_name:
+            value = os.environ.get(env_name)
+        if not value and ini_key:
+            try:
+                value = project.ansible_cfg.get_option(ini_key,
+                                                       section=section)
+            except (configparser.NoOptionError,
+                    configparser.NoSectionError):
+                value = None
+        parameters[key] = value
+    destination = parameters['destination'] or host
     if destination.startswith('-'):
         raise ValueError(
             'The ansible_host of the host "' + host + '" looks like an '
             'SSH option instead of a host name or address: ' + destination)
-    try:
-        remote_port = project.ansible_cfg.get_option(
-            'remote_port', section='defaults')
-    except (configparser.NoOptionError, configparser.NoSectionError):
-        remote_port = None
-    return {
-        'destination': destination,
-        'user': user,
-        # The port follows the resolution of the ssh connection
-        # plugin's 'port' option: the inventory variables over the
-        # 'ANSIBLE_REMOTE_PORT' environment over the 'remote_port'
-        # option of the configuration.
-        'port': (variables.get('ansible_port')
-                 or variables.get('ansible_ssh_port')
-                 or os.environ.get('ANSIBLE_REMOTE_PORT')
-                 or remote_port),
-        'ssh_args': variables.get('ansible_ssh_args'),
-        'identity': variables.get('ansible_ssh_private_key_file'),
-        'common_args': variables.get('ansible_ssh_common_args'),
-        'extra_args': variables.get('ansible_ssh_extra_args'),
-        'ansible_scp_executable': variables.get('ansible_scp_executable'),
-        'ansible_scp_extra_args': variables.get('ansible_scp_extra_args'),
-        'ansible_sftp_executable': variables.get('ansible_sftp_executable'),
-        'ansible_sftp_extra_args': variables.get('ansible_sftp_extra_args'),
-    }
+    parameters['destination'] = destination
+    return parameters
 
 
 def resolve_patterns(project, patterns):
