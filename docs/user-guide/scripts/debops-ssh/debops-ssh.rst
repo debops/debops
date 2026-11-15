@@ -15,7 +15,7 @@ Run a remote command, accept an unseen host key on the first contact:
 
 .. code-block:: console
 
-   alice@controller:~$ debops ssh -a web-1 'uname -r'
+   alice@controller:~$ debops ssh --accept web-1 'uname -r'
 
 Options
 ~~~~~~~
@@ -42,11 +42,13 @@ Options
 ``-i <key>, --identity <key>``
   Use this private key instead of the key defined in the inventory.
 
-``-a, --accept``
+``--accept``
   Accept an unseen SSH host key on the first contact and store it in the
   active known_hosts store. Without the option, :command:`ssh` refuses an
   unseen key and the connection fails. A key which changes later is refused
-  either way.
+  either way. The short ``-a`` belongs to :command:`ssh`, which disables
+  the authentication agent forwarding with it, and passes through
+  unchanged.
 
 ``--eval``
   Do not connect; instead print the composed :command:`ssh` command to

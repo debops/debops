@@ -41,6 +41,13 @@ effect.
   Emit an ASCII "bell" at the end of the :command:`ansible` command execution
   to notify the user. This might be useful during longer module runs.
 
+``-a, --accept``
+  Accept an unseen SSH host key on the first contact and store it. In
+  the ``project`` known_hosts mode of the view the key lands in the
+  store of the view, otherwise in the operator's own
+  :file:`~/.ssh/known_hosts` file. A key which changes later is
+  refused.
+
 ``--eval``
   Do not execute :command:`ansible` command; instead print out all the
   environment variables and the command itself to stdout.
