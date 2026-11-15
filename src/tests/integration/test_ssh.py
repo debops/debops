@@ -214,7 +214,7 @@ def test_ssh_project_mode_uses_the_declared_store(run_debops, tmp_path,
              "known_hosts")
     drop_in = project_dir / ".debops" / "conf.d" / "view-system-ssh.toml"
     drop_in.write_text(
-        "[ssh]\n"
+        "[views.system.ssh]\n"
         "known_hosts = 'project'\n"
         "\n"
         "[views.system.ansible.ssh_connection]\n"
