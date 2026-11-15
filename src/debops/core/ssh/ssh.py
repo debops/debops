@@ -25,6 +25,7 @@ import os
 import shlex
 import socket
 import subprocess
+import tempfile
 
 from .dns import (is_ip_address, is_link_local, key_fingerprint,
                   lookup_sshfp, ssh_fingerprint)
@@ -530,7 +531,12 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
 
         if store_keys:
             ensure_store_dir(store, store_project)
-            with open(store, 'a') as handle:
+            # The store is created with the private mode from the
+            # start, without the world-readable window between the
+            # creation and the chmod
+            descriptor = os.open(store, os.O_WRONLY | os.O_APPEND
+                                 | os.O_CREAT, 0o600)
+            with os.fdopen(descriptor, 'a') as handle:
                 handle.write('\n'.join(store_keys) + '\n')
             os.chmod(store, 0o600)
 
@@ -613,8 +619,11 @@ def write_config_snippet(project, path):
     outside of the markers is preserved. A file without the markers
     gets the block appended. Store paths of other projects and views
     already listed in the block are kept, so projects do not overwrite
-    each other's trust entries. The file is replaced atomically.
-    Returns True when the file changed.
+    each other's trust entries. The file is replaced atomically, from
+    a uniquely named temporary file. A 'UserKnownHostsFile' directive
+    outside of the managed block is reported: ssh applies the first
+    obtained value of an option, so such a directive shadows the
+    block. Returns True when the file changed.
     """
     path = os.path.expanduser(path)
     existed = os.path.exists(path)
@@ -623,6 +632,21 @@ def write_config_snippet(project, path):
         with open(path) as handle:
             existing = handle.read()
     existing_stores = parse_config_stores(existing)
+
+    outside = existing
+    if CONFIG_BLOCK_BEGIN in existing:
+        outside = existing.split(CONFIG_BLOCK_BEGIN, 1)[0]
+        if CONFIG_BLOCK_END in existing:
+            outside += existing.split(CONFIG_BLOCK_END, 1)[1]
+    for line in outside.splitlines():
+        if line.strip().startswith('UserKnownHostsFile'):
+            logger.notice(
+                'The SSH client configuration declares its own '
+                'UserKnownHostsFile outside of the managed block; '
+                'ssh applies the first obtained value of an option, '
+                'and the managed block may not apply',
+                extra={'allow': 'stderr'})
+            break
 
     block = '\n'.join(render_config_snippet(project, existing_stores))
     if CONFIG_BLOCK_BEGIN in existing and CONFIG_BLOCK_END in existing:
@@ -643,9 +667,16 @@ def write_config_snippet(project, path):
         mode = 0o600
         if existed:
             mode = os.stat(path).st_mode & 0o777
-        temp_path = path + '.debops-new'
-        with open(temp_path, 'w') as handle:
-            handle.write(content)
-        os.chmod(temp_path, mode)
-        os.replace(temp_path, path)
+        # A unique temporary name: two projects writing the block at
+        # the same time must not truncate each other's content
+        descriptor, temp_path = tempfile.mkstemp(
+            dir=parent or '.', prefix=os.path.basename(path) + '.')
+        try:
+            with os.fdopen(descriptor, 'w') as handle:
+                handle.write(content)
+            os.chmod(temp_path, mode)
+            os.replace(temp_path, path)
+        except OSError:
+            os.unlink(temp_path)
+            raise
     return changed

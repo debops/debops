@@ -150,6 +150,16 @@ short ``-a`` belongs to the underlying commands, which disable the
 authentication agent forwarding (:command:`ssh`) or resume interrupted
 transfers (:command:`sftp`) with it, and passes through unchanged.
 
+Two other short options belong to DebOps itself: ``-v`` increases the
+DebOps verbosity and ``-V`` selects the infrastructure view. The
+``-v`` of :command:`ssh`, which turns its debugging on, and the
+``-V`` of :command:`ssh`, which prints its version, reach the command
+only after the ``--`` marker:
+
+.. code-block:: console
+
+   alice@controller:~$ debops ssh -- -v web-1
+
 
 The known_hosts store of the project
 ------------------------------------
