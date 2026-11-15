@@ -31,8 +31,8 @@ from debops.core.ssh import (SCP_OPTIONS_WITH_VALUE, SFTP_OPTIONS_WITH_VALUE,
                              parse_config_stores, remove_command,
                              render_config_snippet,
                              rescan_actions, resolve_destination,
-                             resolve_host, resolve_patterns, rescan_hosts,
-                             scan_command, split_destination,
+                             require_store, resolve_host, resolve_patterns,
+                             rescan_hosts, scan_command, split_destination,
                              split_operand, without_known_hosts_options,
                              split_options_operands, translate_ssh_args,
                              value_options_of, write_config_snippet)
@@ -1572,3 +1572,20 @@ def test_resolve_host_refuses_non_scalar_numeric_options(
 
     with pytest.raises(ValueError, match="not a usable value"):
         resolve_host(project, "web")
+
+
+def test_require_store_resolves_the_mode_and_the_injection(stub_project):
+    """The user mode needs no injection; the project mode injects the
+    declared store and refuses a view without one."""
+    assert require_store(stub_project()) == \
+        (os.path.expanduser("~/.ssh/known_hosts"), False)
+
+    project = stub_project(
+        cfg_options={"ssh_args": "-o UserKnownHostsFile=/store"},
+        raw={"views": {"system": {"ssh": {"known_hosts": "project"}}}})
+    assert require_store(project) == ("/store", True)
+
+    dormant = stub_project(raw={"views": {"system": {"ssh": {
+        "known_hosts": "project"}}}})
+    with pytest.raises(ValueError, match="does not declare a known_hosts"):
+        require_store(dormant)
