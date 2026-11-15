@@ -190,7 +190,9 @@ def split_operand(operand):
         return None, None, operand
     user = None
     if '@' in host_part:
-        user, _, host_part = host_part.partition('@')
+        # ssh splits the user at the last '@' of the destination, the
+        # way 'ssh -G a@b@c' reports the user 'a@b'
+        user, _, host_part = host_part.rpartition('@')
     host = host_part.strip('[]')
     return user, host, path
 
@@ -339,6 +341,32 @@ def known_hosts_mode(project):
     return view_config.get('ssh', {}).get('known_hosts', 'user')
 
 
+def quote_store_path(store):
+    """Return the store path in the form the ssh option parsing keeps
+    as one value.
+
+    A path which carries whitespace would be split into fragment
+    paths by the option parsing of ssh, both in the '-o' option value
+    and in the 'ssh_config' file; the double-quoted form survives
+    both. Paths which carry quotes, backslashes or newlines cannot be
+    represented and raise ValueError.
+    """
+    if '"' in store or '\\' in store or '\n' in store or '\r' in store:
+        raise ValueError(
+            'The known_hosts store path carries quotes, backslashes '
+            'or newlines and cannot be written into an SSH option: '
+            + store)
+    if any(character.isspace() for character in store):
+        return '"' + store + '"'
+    return store
+
+
+def known_hosts_option(store):
+    """Return the value of the '-o UserKnownHostsFile' option for a
+    known_hosts store."""
+    return 'UserKnownHostsFile=' + quote_store_path(store)
+
+
 def declared_known_hosts_store(project):
     """Return the known_hosts store declared in the view's ansible.cfg.
 
@@ -355,7 +383,13 @@ def declared_known_hosts_store(project):
         return None
     for token in shlex.split(ssh_args):
         if token.startswith('UserKnownHostsFile='):
-            return os.path.expanduser(token.split('=', 1)[1])
+            value = token.split('=', 1)[1]
+            # The drop-in quotes the store path for the option parsing
+            # of ssh; the quotes stay literal inside the single-quoted
+            # configuration token
+            value = value[1:-1] if value.startswith('"') \
+                and value.endswith('"') else value
+            return os.path.expanduser(value)
     return None
 
 
@@ -556,14 +590,18 @@ def ssh_executable(project):
 
 
 def build_handoff_command(project, command, arguments, identity=None,
-                          accept=False):
+                          accept=False, passthrough=()):
     """Build the command line of the '--' handoff invocation.
 
     The arguments which follow the '--' marker go to the command
     unchanged: the inventory is not consulted and the known_hosts
     store is not injected, so the command behaves like the plain
-    binary. Only the options which DebOps itself interprets apply:
-    the identity and the accept-new option.
+    binary. The options which DebOps itself interprets apply: the
+    identity and the accept-new option. The 'passthrough' options are
+    the ones the argument walk collected before the marker -- options
+    of the command which DebOps does not interpret; they keep their
+    places in front of the arguments, so nothing the operator wrote
+    before the marker is lost.
     """
     binary = ssh_executable(project) if command == 'ssh' else None
     options = []
@@ -572,4 +610,4 @@ def build_handoff_command(project, command, arguments, identity=None,
     if accept:
         options.extend(['-o', 'StrictHostKeyChecking=accept-new'])
     return [binary or project.config.raw['binaries'][command]] \
-        + options + list(arguments)
+        + options + list(passthrough) + list(arguments)

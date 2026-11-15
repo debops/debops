@@ -344,7 +344,8 @@ class Interpreter(object):
         if args.handoff is not None:
             command = ssh.build_handoff_command(
                 project, 'sftp', args.handoff,
-                identity=args.identity, accept=args.accept)
+                identity=args.identity, accept=args.accept,
+                passthrough=args.sftp_head_args)
         else:
             try:
                 command = ssh.build_sftp_command(
@@ -382,7 +383,8 @@ class Interpreter(object):
         if args.handoff is not None:
             command = ssh.build_handoff_command(
                 project, 'ssh', args.handoff,
-                identity=args.identity, accept=args.accept)
+                identity=args.identity, accept=args.accept,
+                passthrough=args.ssh_extra_args)
         else:
             user, host, port = ssh.split_destination(args.host)
             user = user or args.user
