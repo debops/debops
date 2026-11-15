@@ -36,7 +36,7 @@ Options
 ``-i <key>, --identity <key>``
   Use this private key instead of the key defined in the inventory.
 
-``-a, --accept``
+``--accept``
   Accept an unseen SSH host key on the first contact and store it in the
   active known_hosts store. This option is not related to the ``-a`` option
   of :command:`sftp`, which resumes an interrupted transfer; the ``resume``
