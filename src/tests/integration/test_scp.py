@@ -126,7 +126,7 @@ def test_scp_accepts_unseen_host_keys(run_debops, tmp_path, debops_env,
     local_file = tmp_path / "source.txt"
     local_file.write_text("first contact\n")
 
-    result = run_debops("scp", "-a", str(local_file),
+    result = run_debops("scp", "--accept", str(local_file),
                         "testhost:/tmp/remote-first",
                         cwd=str(project_dir), env=debops_env)
 

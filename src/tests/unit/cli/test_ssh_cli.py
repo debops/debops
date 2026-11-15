@@ -55,7 +55,7 @@ def ssh_args(**kwargs):
 def scp_args(**kwargs):
     defaults = dict(project_dir=None, view="system",
                     sources=["web:/src"], destination="web:/dst",
-                    identity=None, accept=False, eval=True, handoff=None,
+                    identity=None, accept=False, eval=True,
                     scp_extra_args=[])
     defaults.update(kwargs)
     return SimpleNamespace(**defaults)
@@ -96,17 +96,82 @@ def test_do_scp_eval_composes_the_command(monkeypatch, stub_project,
     assert "192.0.2.10:/src" in capsys.readouterr().out
 
 
-def test_do_scp_eval_hands_the_arguments_over(monkeypatch, stub_project,
-                                              fake_tools, capsys):
-    stub_the_project(monkeypatch, stub_project(
-        raw={"binaries": dict(fake_tools["binaries"])}))
+def test_scp_walk_knows_the_scp_grammar():
+    """The scp option table: '-P' takes the port, '-O' and '-B' are
+    flags -- the values must not become operands."""
+    cli = Subcommands(["debops", "scp", "-P", "2222", "-O", "src",
+                       "host:/dst"])
+
+    assert cli.args.scp_extra_args == ["-P", "2222", "-O"]
+    assert cli.args.sources == ["src"]
+    assert cli.args.destination == "host:/dst"
+
+
+def test_scp_walk_continues_the_operands_after_the_marker():
+    """The '--' marker ends the option parsing, the way it does for
+    scp; the tokens after it are the operands."""
+    cli = Subcommands(["debops", "scp", "a", "b", "--", "c"])
+
+    assert cli.args.sources == ["a", "b"]
+    assert cli.args.destination == "c"
+
+    cli = Subcommands(["debops", "scp", "--", "-foo", "host:path"])
+
+    assert cli.args.sources == ["-foo"]
+    assert cli.args.destination == "host:path"
+
+
+def test_scp_walk_refuses_a_dangling_option_value(capsys):
+    with pytest.raises(SystemExit) as exit_info:
+        Subcommands(["debops", "scp", "src", "-F", "--", "dst"])
+
+    assert exit_info.value.code == 2
+    assert "requires a value" in capsys.readouterr().err
+
+
+def test_sftp_walk_knows_the_sftp_grammar(capsys):
+    """The sftp option table: '-r' is a flag, '-X' takes a value, and
+    the '-a' of sftp passes through instead of selecting the DebOps
+    accept-new mode."""
+    cli = Subcommands(["debops", "sftp", "-r", "-a", "host"])
+
+    assert cli.args.sftp_head_args == ["-r", "-a"]
+    assert cli.args.destination == "host"
+
+    cli = Subcommands(["debops", "sftp", "-X", "buffer_size=8192",
+                       "host"])
+
+    assert cli.args.sftp_head_args == ["-X", "buffer_size=8192"]
+    assert cli.args.destination == "host"
+
+
+def test_ssh_walk_knows_the_ssh_grammar(capsys):
+    """The ssh option table: '-M' is a flag, '-Q' takes an optional
+    value. The query option alone still leaves the connect invocation
+    without a destination, the same as before."""
+    cli = Subcommands(["debops", "ssh", "-M", "host"])
+
+    assert cli.args.ssh_extra_args == ["-M"]
+    assert cli.args.host == "host"
+
+    cli = Subcommands(["debops", "ssh", "-Q", "cipher", "host"])
+
+    assert cli.args.ssh_extra_args == ["-Q", "cipher"]
+    assert cli.args.host == "host"
 
     with pytest.raises(SystemExit) as exit_info:
-        Interpreter.do_scp(make_interpreter(),
-                           scp_args(handoff=["-r", "a", "b"]))
+        Subcommands(["debops", "ssh", "-Q"])
 
-    assert exit_info.value.code == 0
-    assert capsys.readouterr().out.strip() == "/usr/bin/scp -r a b"
+    assert exit_info.value.code == 2
+    assert "destination" in capsys.readouterr().err
+
+
+def test_ssh_walk_refuses_a_dangling_option_value(capsys):
+    with pytest.raises(SystemExit) as exit_info:
+        Subcommands(["debops", "ssh", "-o", "--", "host"])
+
+    assert exit_info.value.code == 2
+    assert "requires a value" in capsys.readouterr().err
 
 
 def test_do_scp_reports_the_missing_operands(monkeypatch, stub_project,

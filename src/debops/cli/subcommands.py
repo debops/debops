@@ -16,8 +16,9 @@ except ModuleNotFoundError:
     __version__ = "0.0.0"
 
 from . import print_error
-from ..core.ssh import (SFTP_OPTIONS_WITH_VALUE, SSH_OPTIONS_WITH_VALUE,
-                        split_options_operand, value_options_of)
+from ..core.ssh import (SCP_OPTIONS_WITH_VALUE, SFTP_OPTIONS_WITH_VALUE,
+                        SSH_OPTIONS_WITH_VALUE, split_options_operands,
+                        value_options_of)
 import shutil
 
 
@@ -758,7 +759,7 @@ Connection of a host:""")
         parser.add_argument('-i', '--identity', type=str, metavar='KEY',
                             help='use this private key instead of the '
                                  'inventory value')
-        parser.add_argument('-a', '--accept', default=False,
+        parser.add_argument('--accept', default=False,
                             help='accept unseen ssh host keys on first '
                                  'contact for this session',
                             action='store_true')
@@ -776,9 +777,13 @@ Connection of a host:""")
         handoff = tokens[marker + 1:] if marker < len(tokens) else None
         value_options, long_value_options = value_options_of(
             parser, passthrough=SSH_OPTIONS_WITH_VALUE)
-        head, destination, tail = split_options_operand(
-            tokens[:marker], value_options, long_value_options)
-        self.args, extras = parser.parse_known_args(head)
+        try:
+            options, operands, tail = split_options_operands(
+                tokens[:marker], value_options, long_value_options)
+        except ValueError as error:
+            parser.error(str(error))
+        destination = operands[0] if operands else None
+        self.args, extras = parser.parse_known_args(options)
         if destination is None and handoff is None:
             parser.error('the following arguments are required: '
                          'destination')
@@ -871,7 +876,7 @@ Connection of a host:""")
                             help='select the infrastructure view')
         parser.add_argument('-i', '--identity', type=str, metavar='KEY',
                             help='use this private key for both sides')
-        parser.add_argument('-a', '--accept', default=False,
+        parser.add_argument('--accept', default=False,
                             help='accept unseen ssh host keys on first '
                                  'contact for this invocation',
                             action='store_true')
@@ -879,40 +884,26 @@ Connection of a host:""")
                             help='print the scp command and exit',
                             action='store_true')
         # The source and the destination operands are split out of the
-        # argument list by the getopt-style walk in 'do_scp'
+        # argument list by the getopt-style walk in 'do_scp'; the
+        # tokens after the '--' marker are the operands as well, the
+        # way scp ends its option parsing there
         # The scp options which DebOps does not interpret are gathered
         # as unrecognized arguments and passed to scp unchanged
         tokens = self.args[2:]
         marker = tokens.index('--') if '--' in tokens else len(tokens)
-        handoff = tokens[marker + 1:] if marker < len(tokens) else None
         value_options, long_value_options = value_options_of(
-            parser, passthrough=SSH_OPTIONS_WITH_VALUE)
-        operands = []
-        options = []
-        index = 0
-        while index < marker:
-            token = tokens[index]
-            if token == '--':
-                operands.extend(tokens[index + 1:marker])
-                break
-            if not token.startswith('-') or token == '-':
-                operands.append(token)
-                index += 1
-                continue
-            options.append(token)
-            letter = token[1] if len(token) > 1 else ''
-            takes_value = ((letter in value_options
-                            and len(token) == 2)
-                           or token in long_value_options)
-            if takes_value and index + 1 < len(tokens):
-                index += 1
-                options.append(tokens[index])
-            index += 1
+            parser, passthrough=SCP_OPTIONS_WITH_VALUE)
+        try:
+            options, operands, _ = split_options_operands(
+                tokens[:marker], value_options, long_value_options,
+                stop_at_operand=False)
+        except ValueError as error:
+            parser.error(str(error))
+        operands.extend(tokens[marker + 1:])
         self.args, extras = parser.parse_known_args(options)
-        if handoff is None and len(operands) < 2:
+        if len(operands) < 2:
             parser.error('at least two operands are required: one or '
                          'more sources and a destination')
-        self.args.handoff = handoff if len(operands) < 2 else None
         self.args.sources = operands[:-1]
         self.args.destination = operands[-1]
         self.args.scp_extra_args = extras
@@ -929,7 +920,7 @@ Connection of a host:""")
                             help='select the infrastructure view')
         parser.add_argument('-i', '--identity', type=str, metavar='KEY',
                             help='use this private key for the session')
-        parser.add_argument('-a', '--accept', default=False,
+        parser.add_argument('--accept', default=False,
                             help='accept unseen ssh host keys on first '
                                  'contact for this session',
                             action='store_true')
@@ -946,9 +937,13 @@ Connection of a host:""")
         handoff = tokens[marker + 1:] if marker < len(tokens) else None
         value_options, long_value_options = value_options_of(
             parser, passthrough=SFTP_OPTIONS_WITH_VALUE)
-        head, destination, tail = split_options_operand(
-            tokens[:marker], value_options, long_value_options)
-        self.args, extras = parser.parse_known_args(head)
+        try:
+            options, operands, tail = split_options_operands(
+                tokens[:marker], value_options, long_value_options)
+        except ValueError as error:
+            parser.error(str(error))
+        destination = operands[0] if operands else None
+        self.args, extras = parser.parse_known_args(options)
         if destination is None and handoff is None:
             parser.error('the following arguments are required: '
                          'destination')

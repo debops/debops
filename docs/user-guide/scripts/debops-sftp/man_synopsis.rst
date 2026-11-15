@@ -5,4 +5,4 @@
 Synopsis
 ========
 
-``debops sftp`` [-h|--help] [--project-dir <project_dir>] [-V|--view <view>] [-i|--identity <key>] [-a|--accept] [--eval] [-v|--verbose] [<sftp_options>] <[user@]host[:path]> [<sftp_options>]
+``debops sftp`` [-h|--help] [--project-dir <project_dir>] [-V|--view <view>] [-i|--identity <key>] [--accept] [--eval] [-v|--verbose] [<sftp_options>] <[user@]host[:path]> [<sftp_options>]
