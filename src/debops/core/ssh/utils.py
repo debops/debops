@@ -6,7 +6,7 @@
 
 The resolution of the connection parameters of an inventory host and
 the splitting of ssh-style argument lists are shared by the
-'debops ssh', 'debops scp' and 'debops sftp' subcommands; the
+'debops ssh', 'debops scp' and 'debops sftp' subcommands. The
 known_hosts store lives in the sibling :mod:`debops.core.ssh.store`
 module, the command-specific builders in the other siblings.
 """
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 # The ssh options which take a separate value argument, per the usage
 # line of the OpenSSH 9.2 ssh(1). Used to walk argument lists where
 # ssh options and operands mix. A newer OpenSSH which adds value
-# options needs the set revisited; the walk cannot infer the values
+# options needs the set revisited. The walk cannot infer the values
 # of the options it does not know.
 SSH_OPTIONS_WITH_VALUE = set('BbcDEeFIiJLlmOopQRSWw')
 
@@ -44,7 +44,7 @@ SFTP_OPTIONS_WITH_VALUE = set('BbcDFiJlPRsSX')
 SSH_OPTIONS_WITH_OPTIONAL_VALUE = {'Q'}
 
 # The ssh flags which the transfer commands accept themselves, passed
-# through when they appear in the resolved ssh arguments; the other
+# through when they appear in the resolved ssh arguments. The other
 # flags are dropped.
 SSH_FLAGS_PASSTHROUGH = set('C46')
 
@@ -660,7 +660,7 @@ class JumpRewriter:
 # resolution order the plugin applies: the inventory variables over
 # the environment over the option of the 'ansible.cfg'. The table
 # carries the variable names, the environment variable and the
-# configuration option of each connection parameter; the 'debops ssh'
+# configuration option of each connection parameter. The 'debops ssh'
 # commands resolve them the same way the plugin does, so a connection
 # composed by DebOps reaches the host the same way an Ansible
 # connection does.
