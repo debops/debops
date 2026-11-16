@@ -16,6 +16,8 @@ import shlex
 import shutil
 import site
 import socket
+import subprocess
+import types
 
 import pytest
 
@@ -360,3 +362,68 @@ def test_ssh_eval_drops_the_marker_before_the_remote_command(
     command = shlex.split(result.stdout)
     assert command[command.index("127.0.0.1"):] == \
         ["127.0.0.1", "ls", "-l", "/"]
+
+
+def make_jump_project(run_debops, tmp_path, debops_env, jump_port,
+                      target_port):
+    """A project in the project known_hosts mode with a jump setup.
+
+    The 'bastion' host listens on the jump port, the 'behind' host on
+    the target port; the connection to 'behind' is declared to
+    traverse the bastion through the '-J' option of the inventory.
+    Both daemons run on 127.0.0.1 of the machine running the tests.
+    """
+    project_dir = tmp_path / "example-jump"
+    run_debops("project", "init", "-t", "modern", "--no-requirements",
+               "--ssh", str(project_dir), env=debops_env, check=True)
+    hosts = (project_dir / "ansible" / "views" / "system" / "inventory" /
+             "hosts")
+    hosts.write_text(
+        "[debops_all_hosts]\n"
+        "bastion ansible_host=127.0.0.1 ansible_port="
+        + str(jump_port) + "\n"
+        "behind ansible_host=127.0.0.1 ansible_port=" + str(target_port)
+        + " ansible_ssh_common_args='-J 127.0.0.1:" + str(jump_port)
+        + "'\n")
+    return project_dir
+
+
+def jump_store(project_dir):
+    """The project known_hosts store of the jump project."""
+    return (project_dir / ".debops" / "ssh" / "views" / "system" /
+            "known_hosts")
+
+
+def user_known_hosts_snapshot():
+    """The bytes of the operator's own known_hosts file, for the tests
+    which assert that nothing writes into it."""
+    path = os.path.expanduser("~/.ssh/known_hosts")
+    try:
+        with open(path, "rb") as handle:
+            return handle.read()
+    except FileNotFoundError:
+        return b""
+
+
+def store_has_entry(store, identifier):
+    """Whether the store holds an entry for the given identifier.
+
+    The store entries carry hashed host names, so the presence of an
+    entry is probed the way the suite itself probes it, with
+    'ssh-keygen -F'.
+    """
+    probe = subprocess.run(
+        ["ssh-keygen", "-F", identifier, "-f", str(store)],
+        capture_output=True, text=True)
+    return probe.returncode == 0 and bool(probe.stdout.strip())
+
+
+def test_jump_pair_daemons_authenticate(jump_pair):
+    """The spawned daemons of the jump pair accept the public key of
+    the account running the tests."""
+    for port in (jump_pair.bastion_port, jump_pair.target_port):
+        subprocess.run(
+            ["ssh", "-o", "BatchMode=yes",
+             "-o", "UserKnownHostsFile=" + jump_pair.throwaway,
+             "-o", "StrictHostKeyChecking=no",
+             "-p", str(port), "127.0.0.1", "true"], check=True)
