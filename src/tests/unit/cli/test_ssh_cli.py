@@ -884,3 +884,45 @@ def test_do_ssh_rescan_declines_the_word_no(monkeypatch, stub_project,
 
     assert exit_info.value.code == 0
     assert store.read_text() == "old\n"
+
+
+def test_do_ssh_rescan_declines_a_bare_enter(monkeypatch, stub_project,
+                                             fake_tools, tmp_path):
+    """A bare Enter declines: the keys of a host are worth their two
+    characters, and a trust decision is not made by a reflex."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+    monkeypatch.setattr("builtins.input", mock.Mock(return_value="  \n"))
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(confirm=True, known_hosts_file=str(store)))
+
+    assert exit_info.value.code == 0
+    assert store.read_text() == "old\n"
+
+
+def test_do_ssh_rescan_accepts_an_explicit_yes(monkeypatch, stub_project,
+                                               fake_tools, fake_binary,
+                                               tmp_path):
+    import base64
+    binaries = dict(fake_tools["binaries"])
+    binaries["ssh-keyscan"] = fake_binary(
+        "valid-keyscan",
+        "#!/bin/sh\nprintf '%s\\n' '192.0.2.10 ssh-ed25519 "
+        + base64.b64encode(b'\x21' * 32).decode('ascii') + "'\n")
+    stub_the_project(monkeypatch, stub_project(raw={"binaries": binaries}))
+    monkeypatch.setattr("builtins.input", mock.Mock(return_value="y"))
+    store = tmp_path / "store"
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(eval=False, confirm=True,
+                        known_hosts_file=str(store)))
+
+    assert exit_info.value.code == 0
+    assert store.read_text().strip()
