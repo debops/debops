@@ -1403,6 +1403,16 @@ class ProjectDir(object):
                                  "another view")
 
         filename_view = view.replace('/', '-')
+        if not re.match(r'^[A-Za-z0-9][A-Za-z0-9_-]*$', view):
+            # The view name lands in the configuration tree keys, the
+            # drop-in file names and the store paths of the view; a
+            # name outside of the letters, the digits, the dashes and
+            # the underscores reaches contexts which parse it
+            # differently than the tree lookup does
+            raise ValueError(
+                'The view name can carry only letters, digits, dashes '
+                'and underscores, and must not start with a dash or an '
+                'underscore: ' + view)
         if self.project_type == 'modern':
             if view:
                 if self.encrypt == 'git-crypt' and not os.path.exists(
