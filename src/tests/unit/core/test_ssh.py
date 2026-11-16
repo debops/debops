@@ -513,28 +513,32 @@ def test_resolve_patterns_expands_the_inventory_patterns(stub_project,
                                                          fake_tools):
     project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
 
-    hosts, unmatched = resolve_patterns(project, ["multi"])
+    hosts, unmatched, variables = resolve_patterns(project, ["multi"])
 
     assert hosts == ["web-1", "web-2"]
     assert unmatched == []
+    assert set(variables) == {"web-1", "web-2"}
 
 
 def test_resolve_patterns_unions_and_deduplicates(stub_project, fake_tools):
     project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
 
-    hosts, unmatched = resolve_patterns(project, ["multi", "solo", "multi"])
+    hosts, unmatched, variables = resolve_patterns(
+        project, ["multi", "solo", "multi"])
 
     assert hosts == ["web-1", "web-2", "web-3"]
     assert unmatched == []
+    assert set(variables) == {"web-1", "web-2", "web-3"}
 
 
 def test_resolve_patterns_reports_the_unmatched(stub_project, fake_tools):
     project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
 
-    hosts, unmatched = resolve_patterns(project, ["none"])
+    hosts, unmatched, variables = resolve_patterns(project, ["none"])
 
     assert hosts == []
     assert unmatched == ["none"]
+    assert variables == {}
 
 
 def test_resolve_patterns_reports_a_failing_expansion(stub_project,
@@ -744,33 +748,10 @@ def test_resolve_host_rejects_an_unusable_answer(stub_project, fake_binary):
 
 def test_resolve_patterns_reports_an_unrunnable_binary(stub_project):
     project = stub_project(raw={"binaries": {
-        "ansible": "/nonexistent/ansible"}})
+        "ansible-inventory": "/nonexistent/ansible-inventory"}})
 
     with pytest.raises(ChildProcessError):
         resolve_patterns(project, ["all"])
-
-
-def test_resolve_patterns_skips_the_noise(stub_project, fake_tools,
-                                          fake_binary):
-    """Warning lines, blank lines and a trailing non-indented line do
-    not become host names."""
-    binaries = dict(fake_tools["binaries"])
-    binaries["ansible"] = fake_binary(
-        "noisy-ansible",
-        "#!/bin/sh\n"
-        "printf '[NOTE: cached]\\n'\n"
-        "printf '\\n'\n"
-        "printf 'hosts (2):\\n'\n"
-        "printf '\\n'\n"
-        "printf '    web-1\\n'\n"
-        "printf '  web-2\\n'\n"
-        "printf 'unrelated tail\\n'\n")
-    project = stub_project(raw={"binaries": binaries})
-
-    hosts, unmatched = resolve_patterns(project, ["group"])
-
-    assert hosts == ["web-1", "web-2"]
-    assert unmatched == []
 
 
 def test_resolve_destination_rejects_the_multi_match(stub_project,
@@ -1899,14 +1880,12 @@ def test_sftp_command_refuses_the_option_shaped_destination(
 
 
 def test_scp_and_sftp_bracket_the_ipv6_destinations(
-        stub_project, fake_tools, fake_binary):
+        stub_project, fake_tools, inventory_fake):
     """The transfer grammars read the colons of an IPv6 literal as the
     host and path separator; the bracketed form survives them."""
     binaries = dict(fake_tools["binaries"])
-    binaries["ansible-inventory"] = fake_binary(
-        "ipv6-inventory",
-        "#!/bin/sh\n"
-        "printf '%s' '{\"ansible_host\": \"2001:db8::1\"}'\n")
+    binaries["ansible-inventory"] = inventory_fake(
+        "ipv6-inventory", '{"ansible_host": "2001:db8::1"}')
     project = stub_project(raw={"binaries": binaries})
 
     command = build_scp_command(project, ["/etc/hostname"],

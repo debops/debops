@@ -39,6 +39,25 @@ def fake_binary(tmp_path):
 
 
 @pytest.fixture
+def inventory_fake(fake_binary):
+    """Return a builder of an 'ansible-inventory' fake which answers
+    the '--host' mode and the '--list --limit' mode alike: the
+    '--list' dump carries the given variables as the hostvars of the
+    'web' host, whatever pattern it is asked for."""
+    def build(name, hostvars_json):
+        return fake_binary(
+            name,
+            "#!/bin/sh\n"
+            'if [ "$1" = "--list" ]; then\n'
+            "    printf '%s' '{\"_meta\": {\"hostvars\": {\"web\": "
+            + hostvars_json + "}}}'\n"
+            "else\n"
+            "    printf '%s' '" + hostvars_json + "'\n"
+            "fi\n")
+    return build
+
+
+@pytest.fixture
 def fake_tools(tmp_path):
     """Fake external tools: an inventory which knows the 'web' host and
     rejects everything else, an 'ansible' which answers the
@@ -49,12 +68,55 @@ def fake_tools(tmp_path):
 
     inventory = write_fake_binary(tmp_path / "fake-ansible-inventory",
                                   "#!/bin/sh\n"
+                                  'if [ "$1" = "--host" ]; then\n'
                                   'if [ "$2" = "web" ]; then\n'
                                   "    printf '%s' '" + HOST_VARS + "'\n"
                                   "else\n"
                                   "    echo 'ERROR! You must pass a single "
                                   "valid host to --host parameter' >&2\n"
                                   "    exit 5\n"
+                                  "fi\n"
+                                  'elif [ "$1" = "--list" ]; then\n'
+                                  'case "$3" in\n'
+                                  '"broken")\n'
+                                  "    echo 'the expansion failed' >&2\n"
+                                  "    exit 3\n"
+                                  "    ;;\n"
+                                  '"multi")\n'
+                                  "    printf '%s' '{\"_meta\": "
+                                  "{\"hostvars\": {\"web-1\": {}, "
+                                  "\"web-2\": {}}}}'\n"
+                                  "    ;;\n"
+                                  '"solo")\n'
+                                  "    printf '%s' '{\"_meta\": "
+                                  "{\"hostvars\": {\"web-3\": {}}}}'\n"
+                                  "    ;;\n"
+                                  '"web")\n'
+                                  "    printf '%s' '{\"_meta\": "
+                                  "{\"hostvars\": {\"web\": "
+                                  + HOST_VARS + "}}}'\n"
+                                  "    ;;\n"
+                                  '"many")\n'
+                                  "    printf '%s' '{\"_meta\": "
+                                  "{\"hostvars\": {'\n"
+                                  "    first=1\n"
+                                  "    i=1\n"
+                                  "    while [ \"$i\" -le 100 ]; do\n"
+                                  "        if [ \"$first\" = 0 ]; then\n"
+                                  "            printf '%s' ', '\n"
+                                  "        fi\n"
+                                  "        printf '\"many-host-%s\": {}' "
+                                  "\"$i\"\n"
+                                  "        first=0\n"
+                                  "        i=$((i+1))\n"
+                                  "    done\n"
+                                  "    printf '%s' '}}}'\n"
+                                  "    ;;\n"
+                                  "*)\n"
+                                  "    printf '%s' '{\"_meta\": "
+                                  "{\"hostvars\": {}}}'\n"
+                                  "    ;;\n"
+                                  "esac\n"
                                   "fi\n")
     keygen = write_fake_binary(tmp_path / "fake-ssh-keygen",
                                "#!/bin/sh\n"
