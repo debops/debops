@@ -388,20 +388,21 @@ def proxy_jump_command(hop, option_pairs):
     The value is executed by the shell, so every element which may
     carry shell syntax is quoted: the '-W [%h]:%p' forwarding tokens
     are quoted the way the implicit ProxyJump command of ssh quotes
-    them, and the destination of the jump process is quoted with the
-    shell quoting rules. The option pairs arrive already in their
-    final form; the store path inside them is quoted by
-    'quote_store_path'.
+    them, the destination of the jump process is quoted with the
+    shell quoting rules, and every option value is quoted as well --
+    the shell strips the quotes and ssh receives the option value
+    intact, so no value author has to pre-quote for the shell: a '$'
+    or a backtick inside a store path stays literal.
     """
     destination, port = _split_hop(hop)
     parts = ['ssh']
     if port:
-        parts.extend(['-p', port])
+        parts.extend(['-p', shlex.quote(str(port))])
     for pair in option_pairs:
         if isinstance(pair, tuple):
-            parts.extend(pair)
+            parts.extend([pair[0], shlex.quote(pair[1])])
         else:
-            parts.append(pair)
+            parts.append(shlex.quote(pair))
     parts.extend(['-W', shlex.quote('[%h]:%p')])
     parts.append(shlex.quote(destination))
     return 'ProxyCommand=' + ' '.join(parts)

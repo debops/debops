@@ -2048,6 +2048,16 @@ def test_proxy_jump_command_quotes_the_shell_syntax():
     assert "'[2001:db8::1]'" in value
 
 
+def test_proxy_jump_command_quotes_the_option_values():
+    """The option values are quoted for the shell which executes the
+    ProxyCommand: a '$' or a backtick inside a store path stays
+    literal instead of expanding in the jump process."""
+    value = proxy_jump_command(
+        "hop", [("-o", 'UserKnownHostsFile="/store/$x/kh"')])
+
+    assert "'UserKnownHostsFile=\"/store/$x/kh\"'" in value
+
+
 def test_jump_rewriter_rewrites_the_option_forms():
     """The four option forms of a single hop are rewritten alike."""
     for tokens in (["-J", "hop"], ["-Jhop"],
