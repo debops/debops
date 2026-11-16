@@ -31,7 +31,7 @@ from debops.core.ssh import (SCP_OPTIONS_WITH_VALUE, SFTP_OPTIONS_WITH_VALUE,
                              known_hosts_mode, known_hosts_option,
                              known_hosts_store,
                              parse_config_stores, proxy_jump_command,
-                             remove_command,
+                             quote_store_path, remove_command,
                              render_config_snippet,
                              rescan_actions, resolve_destination,
                              build_scp_command, build_sftp_command,
@@ -1996,6 +1996,25 @@ def test_translate_ssh_args_drops_a_trailing_value_option():
 
     assert translated == [("-o", "ProxyJump=1234:localhost:22")]
     assert dropped == ["-F"]
+
+
+@pytest.mark.parametrize("store", [
+    '/store/with"quote',
+    "/store/with'apostrophe",
+    '/store/with\\backslash',
+    '/store/with\nnewline',
+    '/store/with\rcarriage',
+])
+def test_quote_store_path_refuses_the_unrepresentable(store):
+    """A store path which cannot be represented inside the ssh option
+    values and the shell-executed contexts is refused."""
+    with pytest.raises(ValueError):
+        quote_store_path(store)
+
+
+def test_quote_store_path_quotes_the_whitespace():
+    assert quote_store_path('/store/with space') == '"/store/with space"'
+    assert quote_store_path('/plain/store') == '/plain/store'
 
 
 def test_proxy_jump_command_carries_the_options_and_the_port():
