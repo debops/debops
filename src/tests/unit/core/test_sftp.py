@@ -99,14 +99,13 @@ def test_build_sftp_command_passes_the_operator_options(stub_project,
 
 
 def test_build_sftp_command_drops_the_forwards(stub_project, fake_tools,
-                                               fake_binary):
+                                               inventory_fake):
     """A forward configured for a host does not transfer to the file
     transfer session."""
-    inventory = fake_binary(
+    inventory = inventory_fake(
         "forward-inventory",
-        "#!/bin/sh\n"
-        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
-        " \"ansible_ssh_common_args\": \"-L 1234:localhost:5678\"}'\n")
+        '{"ansible_host": "192.0.2.10",'
+        ' "ansible_ssh_common_args": "-L 1234:localhost:5678"}')
     binaries = dict(fake_tools["binaries"])
     binaries["ansible-inventory"] = inventory
     project = stub_project(raw={"binaries": binaries})
@@ -204,17 +203,16 @@ def test_build_sftp_command_carries_the_store_once(stub_project,
 
 def test_build_sftp_command_strips_the_resolved_ports(stub_project,
                                                       fake_tools,
-                                                      fake_binary):
+                                                      inventory_fake):
     """sftp re-emits its own port after the options it forwards; the
     resolved ports are stripped and the inventory port is the port
     the session uses."""
     binaries = dict(fake_tools["binaries"])
-    binaries["ansible-inventory"] = fake_binary(
+    binaries["ansible-inventory"] = inventory_fake(
         "ported-args-inventory",
-        "#!/bin/sh\n"
-        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
-        " \"ansible_port\": 2222,"
-        " \"ansible_ssh_args\": \"-o Port=9999\"}'\n")
+        '{"ansible_host": "192.0.2.10",'
+        ' "ansible_port": 2222,'
+        ' "ansible_ssh_args": "-o Port=9999"}')
     project = stub_project(raw={"binaries": binaries})
 
     command = build_sftp_command(project, "web:/srv")
