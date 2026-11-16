@@ -17,6 +17,7 @@ import os
 import re
 import subprocess
 import sys
+from fnmatch import fnmatch
 from types import SimpleNamespace
 from unittest import mock
 
@@ -914,6 +915,69 @@ def test_create_encfs_initializes_the_legacy_secrets(
     store_class.return_value.encrypt_encfs.assert_called_with()
 
 
+def test_create_ssh_writes_the_known_hosts_configuration(tmp_path):
+    """'init --ssh' writes the TOML drop-in of the default view, creates
+    the store directory and carries the declared store into the
+    generated 'ansible.cfg'."""
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="modern",
+                         config=make_configuration())
+    project.create(git_repo=False, ssh=True)
+
+    drop_in = (tmp_path / "example" / ".debops" / "conf.d" /
+               "view-system-ssh.toml")
+    content = drop_in.read_text()
+    assert "known_hosts = 'project'" in content
+    assert ".debops/ssh/views/system/known_hosts" in content
+    assert "-o 'UserKnownHostsFile=" in content
+    assert "ControlMaster=auto" in content
+
+    store_dir = (tmp_path / "example" / ".debops" / "ssh" / "views" /
+                 "system")
+    for directory in (tmp_path / "example" / ".debops" / "ssh",
+                      tmp_path / "example" / ".debops" / "ssh" / "views",
+                      store_dir):
+        assert directory.is_dir()
+        assert (os.stat(directory).st_mode & 0o777) == 0o700
+
+    gitignore = (tmp_path / "example" / ".gitignore").read_text()
+    # The store files are tracked in the project repository, so the
+    # history records the changes of the host trust; the transient
+    # copies and the scan throwaways of the rescan are not
+    assert "/.debops/ssh/views/*/known_hosts.*" in gitignore
+    assert not fnmatch("known_hosts", "known_hosts.*")
+    assert fnmatch("known_hosts.1baqveun", "known_hosts.*")
+    assert fnmatch("known_hosts.1baqveun.old", "known_hosts.*")
+    assert fnmatch("known_hosts.scan.1baqveun", "known_hosts.*")
+    assert not (tmp_path / "example" / ".debops" / "ssh" /
+                ".gitignore").exists()
+
+
+def test_mkview_ssh_writes_the_drop_in_for_the_new_view(tmp_path):
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="modern",
+                         config=make_configuration())
+    project.create(git_repo=False)
+    project.mkview(view="other", ssh=True)
+
+    ansible_cfg = (tmp_path / "example" / "ansible" / "views" / "other" /
+                   "ansible.cfg").read_text()
+    assert "UserKnownHostsFile=" in ansible_cfg
+    assert ".debops/ssh/views/other/known_hosts" in ansible_cfg
+
+
+def test_create_refuses_ssh_for_legacy_projects(tmp_path):
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="legacy",
+                         config=make_configuration())
+
+    with pytest.raises(ValueError,
+                       match='only in "modern" DebOps project'):
+        project.create(git_repo=False, ssh=True)
+
+    assert not (tmp_path / "example").exists()
+
+
 def test_create_aborts_on_a_failed_git_crypt_init(tmp_path, monkeypatch,
                                                   gpg_stub):
     """A git-crypt initialization failure aborts the project creation
@@ -1709,3 +1773,55 @@ def test_init_detects_an_encrypted_inventory(tmp_path, monkeypatch):
 
     assert project.config.raw["views"]["system"]["encryption"] == {
             "enabled": True, "mounted": False, "type": "encfs"}
+
+
+def test_mkview_refuses_the_hostile_view_names(tmp_path):
+    """The view name lands in the configuration tree keys, the drop-in
+    file names and the store paths of the view, and it is part of the
+    MCP instance names; a name outside of the letters, the digits and
+    the underscores is refused."""
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="modern",
+                         config=make_configuration())
+    project.create(git_repo=False)
+
+    with pytest.raises(ValueError):
+        project.mkview(view="my.view")
+    with pytest.raises(ValueError):
+        project.mkview(view="has-dash")
+    with pytest.raises(ValueError):
+        project.mkview(view="-leading")
+    with pytest.raises(ValueError):
+        project.mkview(view="has space")
+
+
+def test_create_refuses_a_dash_in_the_default_view(tmp_path):
+    """'debops project init --default-view' validates the view name
+    the same way 'debops project mkview' does."""
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="modern",
+                         config=make_configuration())
+
+    with pytest.raises(ValueError):
+        project.create(git_repo=False, default_view="has-dash")
+    assert not (tmp_path / "example" / "ansible").exists()
+
+
+def test_the_project_machinery_imports_without_dnspython():
+    """The runners and the project directory import the ssh store
+    substrate; the DNS resolver of the SSHFP verification stays out
+    of the import graph."""
+    code = ('import sys\n'
+            'import debops.core.projectdir\n'
+            'import debops.core.ansible.projectrunner\n'
+            'sys.exit(1 if "dns.resolver" in sys.modules else 0)\n')
+    env = dict(os.environ)
+    env["PYTHONPATH"] = os.pathsep.join(
+        [os.path.dirname(os.path.dirname(os.path.dirname(
+            os.path.abspath(projectdir_module.__file__)))),
+         env.get("PYTHONPATH", "")]).rstrip(os.pathsep)
+
+    result = subprocess.run([sys.executable, "-c", code], env=env,
+                            capture_output=True, text=True)
+
+    assert result.returncode == 0, result.stderr

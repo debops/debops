@@ -149,7 +149,7 @@ def test_project_init_creates_the_project(monkeypatch):
                      default_view="system", venv=False, requirements=True,
                      git=True, encrypt=None, keys=None, spec_sources=None,
                      allow_io=False, dry_run=False, force=False,
-                     graph=False, list=False, host=None)
+                     graph=False, list=False, host=None, ssh=False)
 
     interpreter.do_project_init(args)
 
@@ -159,7 +159,7 @@ def test_project_init_creates_the_project(monkeypatch):
     project.create.assert_called_once_with(
         git_repo=True, venv=False, requirements=True,
         default_view="system", spec_sources=None, allow_io=False,
-        dry_run=False, force=False, inspect_mode=None, inspect_host=None)
+        dry_run=False, force=False, inspect_mode=None, inspect_host=None, ssh=False)
     cli_module.ProjectVenv.assert_not_called()
 
 
@@ -175,7 +175,7 @@ def test_project_init_installs_the_virtual_environment(monkeypatch):
                      default_view="system", venv=True, requirements=True,
                      git=True, encrypt=None, keys=None, spec_sources=None,
                      allow_io=False, dry_run=False, force=False,
-                     graph=False, list=False, host=None)
+                     graph=False, list=False, host=None, ssh=False)
 
     interpreter.do_project_init(args)
 
@@ -194,14 +194,14 @@ def test_project_init_skips_the_venv_install_without_requirements(monkeypatch):
                      default_view="system", venv=True, requirements=False,
                      git=True, encrypt=None, keys=None, spec_sources=None,
                      allow_io=False, dry_run=False, force=False,
-                     graph=False, list=False, host=None)
+                     graph=False, list=False, host=None, ssh=False)
 
     interpreter.do_project_init(args)
 
     project.create.assert_called_once_with(
         git_repo=True, venv=True, requirements=False,
         default_view="system", spec_sources=None, allow_io=False,
-        dry_run=False, force=False, inspect_mode=None, inspect_host=None)
+        dry_run=False, force=False, inspect_mode=None, inspect_host=None, ssh=False)
     projectvenv_type.assert_not_called()
 
 
@@ -290,7 +290,7 @@ def test_project_init_reports_a_failure(monkeypatch, capsys, exception):
     with pytest.raises(SystemExit) as caught:
         interpreter.do_project_init(make_args(
             project_dir="/tmp/example", type="legacy", default_view="system",
-            encrypt=None, keys=None))
+            encrypt=None, keys=None, ssh=False))
 
     assert caught.value.code == 1
     assert "Error: boom" in capsys.readouterr().err
@@ -354,9 +354,10 @@ def test_project_mkview_creates_the_view(monkeypatch):
     interpreter = make_interpreter()
 
     interpreter.do_project_mkview(make_args(
-        project_dir=".", new_view="webservers", encrypt=None, keys=None))
+        project_dir=".", new_view="webservers", encrypt=None, keys=None,
+        ssh=False))
 
-    project.mkview.assert_called_once_with(view="webservers")
+    project.mkview.assert_called_once_with(view="webservers", ssh=False)
 
 
 def test_project_commit_commits_interactively(monkeypatch):
@@ -380,14 +381,14 @@ def test_exec_runs_the_runner(monkeypatch):
     monkeypatch.setattr(cli_module, "AnsibleRunner", runner_type)
     interpreter = make_interpreter()
     args = make_args(project_dir=".", view="system", eval=False, bell=True,
-                     ansible_args=["all"])
+                     accept=False, ansible_args=["all"])
 
     with pytest.raises(SystemExit) as caught:
         interpreter.do_exec(args)
 
     assert caught.value.code == 3
     runner_type.assert_called_once_with(project, ansible_args=["all"],
-                                        bell=True)
+                                        bell=True, accept=False)
     runner.execute.assert_called_once_with()
 
 
@@ -403,6 +404,7 @@ def test_exec_eval_mode_delegates_to_the_runner(monkeypatch, capsys):
     with pytest.raises(SystemExit) as caught:
         interpreter.do_exec(make_args(project_dir=".", view="system",
                                       eval=True, bell=False,
+                                      accept=False,
                                       ansible_args=["all"]))
 
     assert caught.value.code == 0
@@ -423,6 +425,7 @@ def test_exec_reports_a_runner_failure(monkeypatch, capsys, exception):
     with pytest.raises(SystemExit) as caught:
         interpreter.do_exec(make_args(project_dir=".", view="system",
                                       eval=False, bell=False,
+                                      accept=False,
                                       ansible_args=["all"]))
 
     assert caught.value.code == 1
@@ -442,6 +445,7 @@ def test_exec_reports_an_aborted_hook(monkeypatch, capsys):
     with pytest.raises(SystemExit) as caught:
         interpreter.do_exec(make_args(project_dir=".", view="system",
                                       eval=False, bell=False,
+                                      accept=False,
                                       ansible_args=["all"]))
 
     assert caught.value.code == 1
@@ -461,7 +465,9 @@ def test_run_executes_the_playbooks(monkeypatch):
     with pytest.raises(SystemExit) as caught:
         interpreter.do_run(make_args(project_dir=".", view="system",
                                      eval=False, bell=False,
-                                     ansible_args=["site.yml"], debug=False))
+                                     accept=False,
+                                     ansible_args=["site.yml"],
+                                     debug=False))
 
     assert caught.value.code == 0
     runner.execute.assert_called_once_with()
@@ -480,7 +486,9 @@ def test_run_reports_a_child_process_failure(monkeypatch, capsys):
     with pytest.raises(SystemExit) as caught:
         interpreter.do_run(make_args(project_dir=".", view="system",
                                      eval=False, bell=False,
-                                     ansible_args=["site.yml"], debug=False))
+                                     accept=False,
+                                     ansible_args=["site.yml"],
+                                     debug=False))
 
     assert caught.value.code == 1
     assert "Error: dirty working tree" in capsys.readouterr().err
@@ -857,7 +865,8 @@ def test_exec_reports_a_project_failure(monkeypatch, capsys, exception):
 
     with pytest.raises(SystemExit) as caught:
         interpreter.do_exec(make_args(project_dir=".", view="system",
-                                      eval=False, bell=False))
+                                      eval=False, bell=False,
+                                      accept=False))
 
     assert caught.value.code == 1
     assert "Error: boom" in capsys.readouterr().err
@@ -872,7 +881,8 @@ def test_run_reports_a_project_failure(monkeypatch, capsys, exception):
 
     with pytest.raises(SystemExit) as caught:
         interpreter.do_run(make_args(project_dir=".", view="system",
-                                     eval=False, bell=False))
+                                     eval=False, bell=False,
+                                     accept=False))
 
     assert caught.value.code == 1
     assert "Error: boom" in capsys.readouterr().err
@@ -892,7 +902,9 @@ def test_run_reports_a_runner_failure(monkeypatch, capsys, exception):
     with pytest.raises(SystemExit) as caught:
         interpreter.do_run(make_args(project_dir=".", view="system",
                                      eval=False, bell=False,
-                                     ansible_args=["site.yml"], debug=False))
+                                     accept=False,
+                                     ansible_args=["site.yml"],
+                                     debug=False))
 
     assert caught.value.code == 1
     assert "Error: boom" in capsys.readouterr().err
@@ -910,6 +922,7 @@ def test_run_eval_mode_delegates_to_the_runner(monkeypatch):
     with pytest.raises(SystemExit) as caught:
         interpreter.do_run(make_args(project_dir=".", view="system",
                                      eval=True, bell=False,
+                                     accept=False,
                                      ansible_args=["site.yml"], debug=False))
 
     assert caught.value.code == 0

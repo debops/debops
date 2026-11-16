@@ -85,11 +85,44 @@ General
   top of the project directory environment. The file is ignored by
   git and holds variables specific to one view.
 
+- The SSH host keys of the inventory hosts can be stored per
+  infrastructure view in a known_hosts file inside the project
+  directory, selected by the ``views.<view>.ssh.known_hosts``
+  configuration option and used by the DebOps commands and the
+  Ansible runs of the view alike. The store files are tracked in
+  the git repository of the project.
+
+- The :command:`debops run`, :command:`debops check` and
+  :command:`debops exec` commands accept unseen SSH host keys on
+  the first contact with a host when run with the ``--accept``
+  option. The acceptance is announced before the run and the keys
+  the store gained are reported afterwards.
+
+- The new :command:`debops ssh`, :command:`debops scp` and
+  :command:`debops sftp` commands connect to and transfer files
+  from hosts defined in the Ansible inventory of the project, with
+  the SSH connection options composed from the inventory
+  variables.
+
+- The new :command:`debops ssh rescan` command refreshes the
+  known_hosts entries of the inventory hosts. It scans the current
+  host keys, verifies them against the SSHFP records of the DNS
+  when the zone publishes them, and rewrites only the entries of
+  the hosts whose keys changed. The defaults of the verification
+  and the prompting are configurable.
+
 Changed
 ~~~~~~~
 
 General
 '''''''
+
+- View names of DebOps projects no longer accept dashes or other
+  characters outside of the letters, the digits and the underscores.
+  The names are validated when the views are created, by
+  :command:`debops project init --default-view` and
+  :command:`debops project mkview`; the views which already exist
+  keep working.
 
 - Drop support for the end-of-life Python releases 3.8, 3.9 and 3.10;
   Python 3.11 or newer is required to run the :command:`debops`

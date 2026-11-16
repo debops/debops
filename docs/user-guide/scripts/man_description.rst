@@ -18,3 +18,7 @@ directories" which contain Ansible inventory, any installed Ansible Collections
 and other data related to a given environment. You can also execute Ansible
 playbooks from DebOps or other Ansible Collections as well as your own
 playbooks using simple commands against the current environment.
+
+The :command:`debops ssh`, :command:`debops scp` and :command:`debops sftp`
+commands connect to the hosts of the Ansible inventory over SSH and manage
+the SSH host keys of the project.

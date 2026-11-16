@@ -1,0 +1,140 @@
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+"""Tests for ``debops.core.ssh.dns``.
+
+The SSHFP lookups are driven through a monkeypatched resolver, so no
+live DNS is touched.
+"""
+
+import base64
+import hashlib
+from types import SimpleNamespace
+from unittest import mock
+
+import dns.flags
+import dns.resolver
+
+import debops.core.ssh.dns as dns_module
+from debops.core.ssh.dns import (is_ip_address, is_link_local,
+                                 key_fingerprint, lookup_sshfp,
+                                 ssh_fingerprint)
+
+KEY_BLOB = b'\x21' * 32
+KEY_B64 = base64.b64encode(KEY_BLOB).decode('ascii')
+KEY_FINGERPRINT = hashlib.sha256(KEY_BLOB).hexdigest()
+KEY_SHA1 = hashlib.sha1(KEY_BLOB).hexdigest()
+
+
+def test_key_fingerprint_maps_the_algorithm_and_computes_the_hashes():
+    """The fingerprints are keyed by the SSHFP fingerprint type
+    numbers; a zone can publish either digest."""
+    algorithm, digests = key_fingerprint('ssh-ed25519', KEY_B64)
+
+    assert algorithm == 4
+    assert digests == {1: KEY_SHA1, 2: KEY_FINGERPRINT}
+
+
+def test_key_fingerprint_rejects_unknown_types_and_blobs():
+    assert key_fingerprint('ssh-quantum', KEY_B64) == (None, None)
+    assert key_fingerprint('ssh-ed25519', 'not base64!!') == (None, None)
+
+
+def test_ssh_fingerprint_uses_the_form_ssh_prints():
+    expected = 'SHA256:' + base64.b64encode(
+        bytes.fromhex(KEY_FINGERPRINT)).decode('ascii').rstrip('=')
+
+    assert ssh_fingerprint(KEY_FINGERPRINT) == expected
+    assert ssh_fingerprint(KEY_FINGERPRINT).startswith('SHA256:')
+
+
+def test_is_ip_address_recognizes_literals():
+    assert is_ip_address('192.0.2.10')
+    assert is_ip_address('2001:db8::1')
+    assert not is_ip_address('web.example.org')
+    assert not is_ip_address('not an address')
+
+
+def test_is_link_local_recognizes_the_unreachable_addresses():
+    assert is_link_local('fe80::e079:c1ff:fee5:fd61')
+    assert is_link_local('169.254.1.1')
+    assert not is_link_local('fe80::1%eth0')
+    assert not is_link_local('2001:db8::1')
+    assert not is_link_local('web.example.org')
+
+
+def test_lookup_sshfp_parses_records_and_the_authenticated_flag():
+    answer = mock.MagicMock()
+    answer.response = SimpleNamespace(
+        flags=dns.flags.AD | dns.flags.QR)
+    answer.__iter__.return_value = iter([
+        mock.Mock(to_text=mock.Mock(return_value='4 2 ' + KEY_FINGERPRINT)),
+        mock.Mock(to_text=mock.Mock(return_value='1 1 deadbeef')),
+    ])
+    resolver = mock.Mock()
+    resolver.resolve.return_value = answer
+
+    with mock.patch('dns.resolver.Resolver',
+                    mock.Mock(return_value=resolver)):
+        authenticated, records = lookup_sshfp('web.example.org')
+
+    assert authenticated
+    assert records == {(4, 2, KEY_FINGERPRINT), (1, 1, 'deadbeef')}
+    resolver.resolve.assert_called_once_with('web.example.org', 'SSHFP')
+
+
+def test_lookup_sshfp_searches_the_system_domains():
+    """The search list of the system's resolver configuration applies,
+    the way ssh's own name resolution applies it: a short inventory
+    name finds the records of the domain the resolver searches."""
+    answer = mock.MagicMock()
+    answer.response = SimpleNamespace(flags=0)
+    answer.__iter__.return_value = iter([])
+    resolver = mock.Mock()
+    resolver.resolve.return_value = answer
+
+    with mock.patch('dns.resolver.Resolver',
+                    mock.Mock(return_value=resolver)):
+        lookup_sshfp('web')
+
+    assert resolver.use_search_by_default is True
+
+
+def test_lookup_sshfp_reads_the_absence_of_records():
+    """NXDOMAIN and the empty answer are the absence of records, not
+    failures; the other lookup conditions raise."""
+    resolver = mock.Mock()
+    resolver.resolve.side_effect = dns.resolver.NXDOMAIN()
+
+    with mock.patch('dns.resolver.Resolver',
+                    mock.Mock(return_value=resolver)):
+        assert lookup_sshfp('no-such.example.org') == (False, set())
+
+    resolver = mock.Mock()
+    resolver.resolve.side_effect = dns.resolver.NoAnswer()
+
+    with mock.patch('dns.resolver.Resolver',
+                    mock.Mock(return_value=resolver)):
+        assert lookup_sshfp('empty.example.org') == (False, set())
+
+
+def test_lookup_sshfp_skips_records_without_comparable_digests():
+    """Records of the reserved fingerprint types and malformed records
+    carry no digest the keys can be compared against."""
+    answer = mock.MagicMock()
+    answer.response = SimpleNamespace(flags=0)
+    answer.__iter__.return_value = iter([
+        mock.Mock(to_text=mock.Mock(return_value='4 2 ' + KEY_FINGERPRINT)),
+        mock.Mock(to_text=mock.Mock(return_value='4 9 cafebabe')),
+        mock.Mock(to_text=mock.Mock(return_value='4 x notanumber')),
+        mock.Mock(to_text=mock.Mock(return_value='4 2')),
+    ])
+    resolver = mock.Mock()
+    resolver.resolve.return_value = answer
+
+    with mock.patch('dns.resolver.Resolver',
+                    mock.Mock(return_value=resolver)):
+        _, records = lookup_sshfp('web.example.org')
+
+    assert records == {(4, 2, KEY_FINGERPRINT)}

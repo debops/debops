@@ -1,0 +1,20 @@
+{# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# SSH known_hosts configuration of the '{{ view_name }}' view. The
+# '${DEBOPS_PROJECT_PATH}' reference is expanded by DebOps when the
+# configuration is loaded and by Ansible when the 'ansible.cfg' file is
+# parsed.
+
+[views."{{ view_name }}".ssh]
+known_hosts = 'project'
+
+[views."{{ view_name }}".ansible.ssh_connection]
+# The first element restates the default of the 'ssh_args' option of
+# the Ansible ssh connection plugin, which the store declaration
+# would otherwise replace. The store path is double-quoted inside the
+# option value: unquoted, the option parsing of ssh would split a
+# project path which carries whitespace into fragment paths
+ssh_args = ["-C -o ControlMaster=auto -o ControlPersist=60s",
+            "-o 'UserKnownHostsFile=\"${DEBOPS_PROJECT_PATH}/{{ store_path }}\"'"]

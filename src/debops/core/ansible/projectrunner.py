@@ -14,7 +14,11 @@ from ..runner import Runner
 import configparser
 import logging
 import os
+import shlex
 import textwrap
+
+from ..ssh.store import (USER_KNOWN_HOSTS_STORE, declared_known_hosts_store,
+                         ensure_store_dir, quote_store_path)
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +27,7 @@ class AnsibleProjectRunner(Runner):
 
     def __init__(self, project, bell=False):
         super().__init__(project, bell=bell, secrets_name='ansible')
+        self._accept_armed = False
 
         try:
             self._inventory_paths = (
@@ -46,6 +51,137 @@ class AnsibleProjectRunner(Runner):
             raise ValueError(textwrap.fill(errmsg, 78) + '\n\n'
                              '    [ansible defaults]\n'
                              '    inventory = ansible/inventory')
+
+        self._ensure_known_hosts_store()
+
+    def _ensure_known_hosts_store(self):
+        """Create the known_hosts store directory which the view
+        declares in its 'ansible.cfg'.
+
+        The ssh client cannot create the missing parent directories
+        when it accepts a host key into the store, so the directory
+        chain is ensured before the connections run.
+        """
+        store = declared_known_hosts_store(self.project)
+        if store:
+            try:
+                ensure_store_dir(store, self.project.path)
+            except OSError as error:
+                logger.notice('Cannot ensure the known_hosts store of '
+                              'the view: ' + str(error),
+                              extra={'allow': 'stderr'})
+
+    def _enable_accept_new(self, env):
+        """Compose the 'ANSIBLE_SSH_ARGS' environment variable which
+        makes the ssh connections accept unseen host keys on first
+        contact.
+
+        The environment variable masks the 'ssh_args' of the
+        'ansible.cfg', so the composed value carries the configured
+        arguments forward and adds the accept-new option; an
+        'ANSIBLE_SSH_ARGS' variable of the operator's environment takes
+        precedence over the configured one. The known_hosts store of
+        the view is carried as well when the composed value does not
+        declare one: without it, an operator's environment variable
+        would store the accepted keys outside of the project store.
+
+        The acceptance itself happens inside the ssh connections of
+        the run; the runner announces it up front, and reports what
+        the store gained after the run finished.
+        """
+        try:
+            ssh_args = self.project.ansible_cfg.get_option(
+                'ssh_args', section='ssh_connection')
+        except (configparser.NoOptionError, configparser.NoSectionError):
+            ssh_args = None
+        base = os.environ.get('ANSIBLE_SSH_ARGS') or ssh_args
+        if not base:
+            # Neither the environment nor the configuration carries the
+            # ssh_args: the connection plugin applies its own default,
+            # which the composed variable would replace -- restate it,
+            # the way the ssh configuration drop-in of the project mode
+            # does. The default of the plugin is restated here by
+            # value; a change of the plugin default must be mirrored
+            base = '-C -o ControlMaster=auto -o ControlPersist=60s'
+        # The accept-new option leads the composed value: ssh applies
+        # the first obtained value of an option, and an explicit
+        # '--accept' must not be defeated by a StrictHostKeyChecking
+        # in the base arguments
+        composed = '-o StrictHostKeyChecking=accept-new'
+        if base:
+            composed += ' ' + base
+        store = declared_known_hosts_store(self.project)
+        try:
+            tokens = shlex.split(composed)
+        except ValueError:
+            # An environment value whose quotes do not balance cannot
+            # be inspected; the store is carried, as it was before the
+            # inspection existed
+            tokens = []
+        if store and not any('UserKnownHostsFile' in token
+                             for token in tokens):
+            # The single-quoted form survives the argument splitting
+            # of the ssh connection plugin, which would consume the
+            # double quotes of the store path directly
+            composed += (' -o \'UserKnownHostsFile='
+                         + quote_store_path(store) + '\'')
+        env['ANSIBLE_SSH_ARGS'] = composed
+        self._accept_armed = True
+        logger.notice('Ansible will auto-accept new SSH host keys',
+                      extra={'allow': ['stderr', 'syslog']})
+
+    def _accept_store(self):
+        """Return the known_hosts file the connections accept new keys
+        into: the store the view declares, or the operator's own
+        known_hosts file in the user mode."""
+        return (declared_known_hosts_store(self.project)
+                or os.path.expanduser(USER_KNOWN_HOSTS_STORE))
+
+    def _snapshot_accepted_keys(self):
+        """Return the known_hosts entries the store holds before the
+        run, as a set of lines, or None when the acceptance is not
+        armed.
+
+        The entries are compared as lines, not as key material: the
+        acceptance of Ansible's connections appends lines and never
+        rewrites the existing ones, so a new line is a new entry even
+        when its key is already trusted under another name of the
+        host -- and that is exactly the event worth reporting.
+        """
+        if not self._accept_armed:
+            return None
+        try:
+            with open(self._accept_store(), 'rb') as handle:
+                content = handle.read().decode('utf-8', 'replace')
+        except OSError:
+            return set()
+        return {line for line in content.splitlines() if line}
+
+    def _report_accepted_keys(self, snapshot):
+        """Report the host keys Ansible accepted during the run.
+
+        The report names Ansible as the acceptor, because the
+        acceptance happens inside its ssh connections; it is skipped
+        when the store gained no entries, and the singular form is
+        used for one entry.
+        """
+        if snapshot is None:
+            return
+        try:
+            with open(self._accept_store(), 'rb') as handle:
+                content = handle.read().decode('utf-8', 'replace')
+        except OSError:
+            return
+        added = ({line for line in content.splitlines() if line}
+                 - snapshot)
+        if not added:
+            return
+        count = len(added)
+        logger.notice(
+            'Ansible auto-accepted {} {} during the run'.format(
+                count, 'SSH host key' if count == 1
+                else 'SSH host keys'),
+            extra={'allow': ['stderr', 'syslog']})
 
     def _quote_spaces(self, string):
         if ' ' in string:

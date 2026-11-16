@@ -1,0 +1,928 @@
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+"""The ssh suite handlers of the interpreter, driven in-process.
+
+The integration tests run the command line as a subprocess, which the
+coverage measurement does not see; these tests call the handlers
+directly with a stubbed project, so the error paths, the '--eval'
+compositions and the '--' handoffs are covered at the Python level.
+"""
+
+import os
+import shlex
+import socket
+from types import SimpleNamespace
+from unittest import mock
+
+import pytest
+
+import debops.cli.interpreter as cli_module
+from debops.cli.interpreter import Interpreter
+from debops.cli.subcommands import Subcommands
+
+
+def make_interpreter():
+    interpreter = Interpreter.__new__(Interpreter)
+    interpreter.config = mock.Mock()
+    interpreter.cwd = "/shell/cwd"
+    return interpreter
+
+
+def stub_the_project(monkeypatch, project):
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+
+
+def stub_the_execution(monkeypatch):
+    """Replace 'os.execvp' with a recorder; the real call would
+    replace the test process."""
+    executed = []
+    monkeypatch.setattr(os, "execvp",
+                        lambda *arguments: executed.append(arguments))
+    return executed
+
+
+def ssh_args(**kwargs):
+    defaults = dict(project_dir=None, view="system", host="web", user=None,
+                    port=None, identity=None, accept=False, eval=True,
+                    handoff=None, ssh_args=[], ssh_extra_args=[])
+    defaults.update(kwargs)
+    return SimpleNamespace(**defaults)
+
+
+def scp_args(**kwargs):
+    defaults = dict(project_dir=None, view="system",
+                    sources=["web:/src"], destination="web:/dst",
+                    identity=None, accept=False, eval=True,
+                    scp_extra_args=[])
+    defaults.update(kwargs)
+    return SimpleNamespace(**defaults)
+
+
+def in_sequence_list(command, sequences):
+    """Whether each run of arguments appears, in order, in the
+    command."""
+    position = 0
+    for sequence in sequences:
+        length = len(sequence)
+        found = next((index for index in range(position, len(command))
+                      if command[index:index + length] == sequence),
+                     None)
+        if found is None:
+            return False
+        position = found + length
+    return True
+
+
+def sftp_args(**kwargs):
+    defaults = dict(project_dir=None, view="system", destination="web",
+                    identity=None, accept=False, eval=True, handoff=None,
+                    sftp_head_args=[], sftp_tail_args=[])
+    defaults.update(kwargs)
+    return SimpleNamespace(**defaults)
+
+
+def rescan_args(**kwargs):
+    defaults = dict(project_dir=None, view="system", remove=False,
+                    scan=False, eval=True, known_hosts_file=None,
+                    timeout=10, hosts=["web"], dns_mode=None,
+                    confirm=None)
+    defaults.update(kwargs)
+    return SimpleNamespace(**defaults)
+
+
+def config_args(**kwargs):
+    defaults = dict(project_dir=None, view="system", write=False)
+    defaults.update(kwargs)
+    return SimpleNamespace(**defaults)
+
+
+def test_do_scp_eval_composes_the_command(monkeypatch, stub_project,
+                                          fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_scp(make_interpreter(), scp_args())
+
+    assert exit_info.value.code == 0
+    assert "192.0.2.10:/src" in capsys.readouterr().out
+
+
+def test_scp_walk_knows_the_scp_grammar():
+    """The scp option table: '-P' takes the port, '-O' and '-B' are
+    flags -- the values must not become operands."""
+    cli = Subcommands(["debops", "scp", "-P", "2222", "-O", "src",
+                       "host:/dst"])
+
+    assert cli.args.scp_extra_args == ["-P", "2222", "-O"]
+    assert cli.args.sources == ["src"]
+    assert cli.args.destination == "host:/dst"
+
+
+def test_scp_walk_continues_the_operands_after_the_marker():
+    """The '--' marker ends the option parsing, the way it does for
+    scp; the tokens after it are the operands."""
+    cli = Subcommands(["debops", "scp", "a", "b", "--", "c"])
+
+    assert cli.args.sources == ["a", "b"]
+    assert cli.args.destination == "c"
+
+    cli = Subcommands(["debops", "scp", "--", "-foo", "host:path"])
+
+    assert cli.args.sources == ["-foo"]
+    assert cli.args.destination == "host:path"
+
+
+def test_scp_walk_refuses_a_dangling_option_value(capsys):
+    with pytest.raises(SystemExit) as exit_info:
+        Subcommands(["debops", "scp", "src", "-F", "--", "dst"])
+
+    assert exit_info.value.code == 2
+    assert "requires a value" in capsys.readouterr().err
+
+
+def test_sftp_walk_knows_the_sftp_grammar(capsys):
+    """The sftp option table: '-r' is a flag, '-X' takes a value, and
+    the '-a' of sftp passes through instead of selecting the DebOps
+    accept-new mode."""
+    cli = Subcommands(["debops", "sftp", "-r", "-a", "host"])
+
+    assert cli.args.sftp_head_args == ["-r", "-a"]
+    assert cli.args.destination == "host"
+
+    cli = Subcommands(["debops", "sftp", "-X", "buffer_size=8192",
+                       "host"])
+
+    assert cli.args.sftp_head_args == ["-X", "buffer_size=8192"]
+    assert cli.args.destination == "host"
+
+
+def test_ssh_walk_knows_the_ssh_grammar(capsys):
+    """The ssh option table: '-M' is a flag, '-Q' takes an optional
+    value. The query option alone still leaves the connect invocation
+    without a destination, the same as before."""
+    cli = Subcommands(["debops", "ssh", "-M", "host"])
+
+    assert cli.args.ssh_extra_args == ["-M"]
+    assert cli.args.host == "host"
+
+    cli = Subcommands(["debops", "ssh", "-Q", "cipher", "host"])
+
+    assert cli.args.ssh_extra_args == ["-Q", "cipher"]
+    assert cli.args.host == "host"
+
+    with pytest.raises(SystemExit) as exit_info:
+        Subcommands(["debops", "ssh", "-Q"])
+
+    assert exit_info.value.code == 2
+    assert "destination" in capsys.readouterr().err
+
+
+def test_ssh_walk_refuses_a_dangling_option_value(capsys):
+    with pytest.raises(SystemExit) as exit_info:
+        Subcommands(["debops", "ssh", "-o", "--", "host"])
+
+    assert exit_info.value.code == 2
+    assert "requires a value" in capsys.readouterr().err
+
+
+def test_do_scp_reports_the_missing_operands(monkeypatch, stub_project,
+                                             fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_scp(make_interpreter(), scp_args(sources=[]))
+
+    assert exit_info.value.code == 2
+    assert "required" in capsys.readouterr().err
+
+
+def test_do_scp_reports_the_resolution_error(monkeypatch, stub_project,
+                                             fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_scp(make_interpreter(),
+                           scp_args(destination="unknown:/dst"))
+
+    assert exit_info.value.code == 1
+    assert "Cannot resolve" in capsys.readouterr().err
+
+
+def test_do_scp_executes_the_command(monkeypatch, stub_project, fake_tools):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+    executed = stub_the_execution(monkeypatch)
+
+    Interpreter.do_scp(make_interpreter(), scp_args(eval=False))
+
+    assert executed[0][0] == "/usr/bin/scp"
+
+
+def test_do_sftp_eval_composes_the_command(monkeypatch, stub_project,
+                                           fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_sftp(make_interpreter(), sftp_args())
+
+    assert exit_info.value.code == 0
+    assert "admin@192.0.2.10" in capsys.readouterr().out
+
+
+def test_do_sftp_eval_hands_the_arguments_over(monkeypatch, stub_project,
+                                               fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_sftp(make_interpreter(),
+                            sftp_args(handoff=["-b", "batch", "host"]))
+
+    assert exit_info.value.code == 0
+    assert capsys.readouterr().out.strip() == "/usr/bin/sftp -b batch host"
+
+
+def test_do_sftp_reports_the_resolution_error(monkeypatch, stub_project,
+                                              fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_sftp(make_interpreter(),
+                            sftp_args(destination="unknown"))
+
+    assert exit_info.value.code == 1
+    assert "Cannot resolve" in capsys.readouterr().err
+
+
+def test_do_sftp_executes_the_command(monkeypatch, stub_project, fake_tools):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+    executed = stub_the_execution(monkeypatch)
+
+    Interpreter.do_sftp(make_interpreter(), sftp_args(eval=False))
+
+    assert executed[0][0] == "/usr/bin/sftp"
+
+
+def test_do_ssh_connect_eval_composes_the_command(monkeypatch, stub_project,
+                                                  fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_connect(make_interpreter(), ssh_args())
+
+    assert exit_info.value.code == 0
+    command = shlex.split(capsys.readouterr().out)
+    assert command[command.index("-l") + 1] == "admin"
+    assert command[-1] == "192.0.2.10"
+
+
+def test_do_ssh_connect_eval_hands_the_arguments_over(monkeypatch,
+                                                      stub_project,
+                                                      fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_connect(make_interpreter(),
+                                   ssh_args(handoff=["--help"]))
+
+    assert exit_info.value.code == 0
+    assert capsys.readouterr().out.strip() == "/usr/bin/ssh --help"
+
+
+def test_do_ssh_connect_reports_the_resolution_error(monkeypatch,
+                                                     stub_project,
+                                                     fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_connect(make_interpreter(),
+                                   ssh_args(host="unknown"))
+
+    assert exit_info.value.code == 1
+    assert "Cannot resolve" in capsys.readouterr().err
+
+
+def test_do_ssh_connect_executes_the_command(monkeypatch, stub_project,
+                                             fake_tools):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+    executed = stub_the_execution(monkeypatch)
+
+    Interpreter.do_ssh_connect(make_interpreter(), ssh_args(eval=False))
+
+    assert executed[0][0] == "/usr/bin/ssh"
+
+
+def test_do_ssh_rescan_eval_prints_the_actions(monkeypatch, stub_project,
+                                               fake_tools, capsys,
+                                               tmp_path):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+    store = tmp_path / "store"
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(known_hosts_file=str(store)))
+
+    assert exit_info.value.code == 0
+    out = capsys.readouterr().out
+    assert "ssh-keygen -R '[web]:2222'" in out
+    assert "-p 2222" in out
+    assert "ssh-keyscan" in out
+    assert not store.exists(), "the --eval option created the store"
+
+
+def test_do_ssh_rescan_eval_quotes_the_store_path(monkeypatch,
+                                                  stub_project,
+                                                  fake_tools, capsys,
+                                                  tmp_path):
+    """The printed actions are shell-reusable: the arguments with
+    spaces stay single arguments."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+    spaced = tmp_path / "dir with spaces"
+    store = spaced / "known_hosts"
+
+    with pytest.raises(SystemExit):
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(known_hosts_file=str(store)))
+
+    out = capsys.readouterr().out
+    assert "dir with spaces/known_hosts'" in out
+
+
+def test_do_ssh_rescan_eval_with_the_remove_phase_only(monkeypatch,
+                                                       stub_project,
+                                                       fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit):
+        Interpreter.do_ssh_rescan(
+            make_interpreter(), rescan_args(remove=True))
+
+    out = capsys.readouterr().out
+    assert "ssh-keygen" in out
+    assert "ssh-keyscan" not in out
+
+
+def test_do_ssh_rescan_eval_with_the_scan_phase_only(monkeypatch,
+                                                     stub_project,
+                                                     fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit):
+        Interpreter.do_ssh_rescan(
+            make_interpreter(), rescan_args(scan=True))
+
+    out = capsys.readouterr().out
+    assert "ssh-keyscan" in out
+    assert "ssh-keygen" not in out
+
+
+def test_do_ssh_rescan_reports_the_expansion_error(monkeypatch, stub_project,
+                                                   fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(), rescan_args(hosts=["broken"]))
+
+    assert exit_info.value.code == 1
+    assert "Cannot resolve the pattern" in capsys.readouterr().err
+
+
+def test_do_ssh_rescan_fails_when_nothing_matches(monkeypatch, stub_project,
+                                                  fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(), rescan_args(hosts=["none"]))
+
+    assert exit_info.value.code == 1
+    assert "No hosts matched" in capsys.readouterr().err
+
+
+def test_do_ssh_rescan_eval_requires_a_store(monkeypatch, stub_project,
+                                             fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"]),
+             "views": {"system": {"ssh": {"known_hosts": "project"}}}}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(make_interpreter(), rescan_args())
+
+    assert exit_info.value.code == 1
+    assert "does not declare a known_hosts store" \
+        in capsys.readouterr().err
+
+
+def test_do_ssh_rescan_refreshes_the_hosts(monkeypatch, stub_project,
+                                           fake_tools, fake_binary,
+                                           tmp_path):
+    import base64
+    binaries = dict(fake_tools["binaries"])
+    binaries["ssh-keyscan"] = fake_binary(
+        "valid-keyscan",
+        "#!/bin/sh\nprintf '%s\\n' '192.0.2.10 ssh-ed25519 "
+        + base64.b64encode(b'\x21' * 32).decode('ascii') + "'\n")
+    stub_the_project(monkeypatch, stub_project(raw={"binaries": binaries}))
+    store = tmp_path / "store"
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(eval=False, known_hosts_file=str(store)))
+
+    assert exit_info.value.code == 0
+    assert store.read_text().strip()
+
+
+def test_do_ssh_rescan_reports_the_failed_hosts(monkeypatch, stub_project,
+                                                fake_tools, fake_binary,
+                                                capsys, tmp_path):
+    binaries = dict(fake_tools["binaries"])
+    binaries["ssh-keyscan"] = fake_binary(
+        "silent-keyscan", "#!/bin/sh\nexit 0\n")
+    stub_the_project(monkeypatch, stub_project(raw={"binaries": binaries}))
+    store = tmp_path / "store"
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(eval=False, known_hosts_file=str(store)))
+
+    assert exit_info.value.code == 1
+    assert "Cannot refresh" in capsys.readouterr().err
+
+
+def test_do_ssh_rescan_reports_the_store_error(monkeypatch, stub_project,
+                                               fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"]),
+             "views": {"system": {"ssh": {"known_hosts": "project"}}}}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(), rescan_args(eval=False))
+
+    assert exit_info.value.code == 1
+    assert "does not declare a known_hosts store" in \
+        capsys.readouterr().err
+
+
+def test_do_ssh_rescan_reads_the_defaults_from_the_configuration(
+        monkeypatch, stub_project, fake_tools):
+    """The DNS mode and the confirmation come from the
+    'ssh.rescan.resolver_mode' and 'ssh.rescan.confirm' options when
+    the command line names neither."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"]),
+             "ssh": {"rescan": {"resolver_mode": "no-dns",
+                                "confirm": True}}}))
+    calls = []
+
+    def capture(*args, **kwargs):
+        calls.append(kwargs)
+        return []
+
+    monkeypatch.setattr("debops.core.ssh.rescan_hosts", capture)
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(), rescan_args(eval=False))
+
+    assert exit_info.value.code == 0
+    assert calls[0]["dns_mode"] == "no-dns"
+    assert callable(calls[0]["confirm"])
+
+
+def test_do_ssh_rescan_options_override_the_configuration(
+        monkeypatch, stub_project, fake_tools):
+    """'--dns-verify' and '--no-confirm' override the configured
+    defaults; '--confirm' turns the prompting on against a 'false'
+    configuration."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"]),
+             "ssh": {"rescan": {"resolver_mode": "no-dns",
+                                "confirm": True}}}))
+    calls = []
+
+    def capture(*args, **kwargs):
+        calls.append(kwargs)
+        return []
+
+    monkeypatch.setattr("debops.core.ssh.rescan_hosts", capture)
+
+    with pytest.raises(SystemExit):
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(eval=False, dns_mode="dns-verify",
+                        confirm=False))
+
+    assert calls[0]["dns_mode"] == "dns-verify"
+    assert calls[0]["confirm"] is None
+
+    with pytest.raises(SystemExit):
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(eval=False, dns_mode="dns-verify",
+                        confirm=True))
+
+    assert calls[1]["confirm"] is not None
+
+
+def test_do_ssh_rescan_reports_an_unknown_resolver_mode(
+        monkeypatch, stub_project, fake_tools, capsys):
+    """A 'ssh.rescan.resolver_mode' value outside of the known modes
+    aborts with the error instead of running as the default mode."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"]),
+             "ssh": {"rescan": {"resolver_mode": "bogus"}}}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(), rescan_args(eval=False))
+
+    assert exit_info.value.code == 1
+    assert "unknown DNS verification mode" in capsys.readouterr().err
+
+
+def test_do_ssh_rescan_eval_reports_the_resolution_failures(
+        monkeypatch, stub_project, fake_tools, fake_binary, capsys):
+    """A host whose connection parameters do not resolve is reported
+    like a failed scan; the remaining hosts continue."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "bad-host-inventory",
+        "#!/bin/sh\n"
+        'if [ "$1" = "--list" ]; then\n'
+        'if [ "$3" = "bad" ]; then\n'
+        "    printf '%s' '{\"all\": {\"hosts\": [\"bad\"]}, "
+        "\"_meta\": {\"hostvars\": {\"bad\": "
+        "{\"ansible_host\": \"192.0.2.99\","
+        " \"ansible_user\": \"-oProxyCommand=evil\"}}}}'\n"
+        "else\n"
+        "    printf '%s' '{\"all\": {\"hosts\": [\"web\"]}, "
+        "\"_meta\": {\"hostvars\": {\"web\": "
+        "{\"ansible_host\": \"192.0.2.10\"}}}}'\n"
+        "fi\n"
+        "else\n"
+        'if [ "$2" = "bad" ]; then\n'
+        "    printf '%s' '{\"ansible_host\": \"192.0.2.99\","
+        " \"ansible_user\": \"-oProxyCommand=evil\"}'\n"
+        "else\n"
+        "    printf '%s' '{\"ansible_host\": \"192.0.2.10\"}'\n"
+        "fi\n"
+        "fi\n")
+    project_stub = stub_project(raw={"binaries": binaries})
+    stub_the_project(monkeypatch, project_stub)
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(), rescan_args(hosts=["bad", "web"]))
+
+    assert exit_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "Cannot refresh the known_hosts entries of the host " \
+           "\"bad\"" in captured.err
+    assert "ssh-keyscan" in captured.out
+
+
+def test_do_ssh_config_write_reports_the_error(monkeypatch, stub_project,
+                                               capsys, tmp_path):
+    """A write which the filesystem refuses aborts with the error; the
+    expanded path is mocked so the test cannot touch the operator's
+    own '~/.ssh/config'."""
+    blocker = tmp_path / "blocker"
+    blocker.write_text("not a directory\n")
+    monkeypatch.setattr(cli_module.os.path, "expanduser",
+                        lambda path: str(blocker / "sub"))
+    stub_the_project(monkeypatch, stub_project())
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_config(
+            make_interpreter(),
+            config_args(write=True, project_dir=str(tmp_path)))
+
+    assert exit_info.value.code == 1
+
+
+@pytest.mark.parametrize("handler,args_factory", [
+    ("do_scp", scp_args),
+    ("do_sftp", sftp_args),
+    ("do_ssh_connect", ssh_args),
+    ("do_ssh_rescan", rescan_args),
+    ("do_ssh_config", config_args),
+])
+def test_handlers_report_the_project_errors(monkeypatch, stub_project,
+                                            capsys, handler, args_factory):
+    """A project directory which cannot be opened aborts the handler
+    with the error message and the exit code 1."""
+    monkeypatch.setattr(
+        cli_module, "ProjectDir",
+        mock.Mock(side_effect=IsADirectoryError("locked")))
+
+    with pytest.raises(SystemExit) as exit_info:
+        getattr(Interpreter, handler)(make_interpreter(), args_factory())
+
+    assert exit_info.value.code == 1
+    assert "locked" in capsys.readouterr().err
+
+
+def test_ssh_connect_requires_a_destination(capsys):
+    """The section parser dispatches on the first token; the connect
+    parser reports the missing destination on its own."""
+    cli = Subcommands(["debops", "ssh", "placeholder"])
+    cli.args = ["debops", "ssh"]
+
+    with pytest.raises(SystemExit) as exit_info:
+        cli.do_ssh_connect()
+
+    assert exit_info.value.code == 2
+    assert "destination" in capsys.readouterr().err
+
+
+def test_scp_requires_the_operands(capsys):
+    with pytest.raises(SystemExit) as exit_info:
+        Subcommands(["debops", "scp"])
+
+    assert exit_info.value.code == 2
+    assert "at least two operands" in capsys.readouterr().err
+
+
+def test_sftp_requires_a_destination(capsys):
+    with pytest.raises(SystemExit) as exit_info:
+        Subcommands(["debops", "sftp"])
+
+    assert exit_info.value.code == 2
+    assert "destination" in capsys.readouterr().err
+
+
+def test_scp_help_parses_without_the_operands(capsys):
+    """The '--help' output parses before the operand requirement fires."""
+    with pytest.raises(SystemExit) as exit_info:
+        Subcommands(["debops", "scp", "--help"])
+
+    assert exit_info.value.code == 0
+    assert "copy files" in capsys.readouterr().out
+
+
+def test_scp_parses_multiple_sources(capsys):
+    cli = Subcommands(["debops", "scp", "-V", "system", "f1", "f2",
+                       "web:/dst"])
+
+    assert cli.args.sources == ["f1", "f2"]
+    assert cli.args.destination == "web:/dst"
+
+
+def test_do_ssh_rescan_prints_the_host_count_and_estimate(
+        monkeypatch, stub_project, fake_tools, capsys, tmp_path):
+    """The estimate is not shown for scans below the threshold; the
+    composed actions are."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+    monkeypatch.setattr('socket.getaddrinfo',
+                        mock.Mock(side_effect=socket.gaierror('no dns')))
+    store = tmp_path / "store"
+
+    with pytest.raises(SystemExit):
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(eval=True, known_hosts_file=str(store),
+                        hosts=["multi", "solo"]))
+
+    out = capsys.readouterr().out
+    assert "ssh-keygen" in out
+    assert "Scanning 3 hosts" not in out
+
+
+def test_do_ssh_rescan_skips_the_estimate_for_short_scans(
+        monkeypatch, stub_project, fake_tools, capsys):
+    """A scan of a few hosts is fast enough for interactive
+    operation; no estimate is printed for it."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit):
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(eval=True, hosts=["multi", "solo"]))
+
+    assert "estimated time" not in capsys.readouterr().out
+
+
+def test_do_ssh_rescan_prints_the_estimate_for_long_scans(
+        monkeypatch, stub_project, fake_tools, capsys):
+    """A scan of a hundred hosts crosses the three minute threshold
+    and the estimate is shown."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+    monkeypatch.setattr('socket.getaddrinfo',
+                        mock.Mock(side_effect=socket.gaierror('no dns')))
+
+    with pytest.raises(SystemExit):
+        Interpreter.do_ssh_rescan(
+            make_interpreter(), rescan_args(eval=True, hosts=["many"]))
+
+    out = capsys.readouterr().out
+    assert "Scanning 100 hosts" in out
+    assert "estimated time: 3 minutes" in out
+
+
+def test_ssh_handoff_forwards_the_collected_options(monkeypatch,
+                                                    stub_project,
+                                                    fake_tools, capsys):
+    """The options the walk collected before the '--' marker reach the
+    composed handoff command; the tunnel of an option-only invocation
+    is not lost."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_connect(
+            make_interpreter(),
+            ssh_args(eval=True, handoff=["web01"],
+                     ssh_extra_args=["-L", "8080:localhost:80"]))
+
+    assert exit_info.value.code == 0
+    command = shlex.split(capsys.readouterr().out)
+    assert command[command.index("web01") - 2:command.index("web01")] == \
+        ["-L", "8080:localhost:80"]
+
+
+def test_ssh_handoff_applies_the_collected_user_and_port(monkeypatch,
+                                                         stub_project,
+                                                         fake_tools,
+                                                         capsys):
+    """The '-p' and '-u' options the walk collected before the '--'
+    marker reach the composed handoff command; the connection reaches
+    the port the operator named."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_connect(
+            make_interpreter(),
+            ssh_args(eval=True, handoff=["web01"], user="alice",
+                     port=2222))
+
+    assert exit_info.value.code == 0
+    command = shlex.split(capsys.readouterr().out)
+    assert in_sequence_list(command, [["-l", "alice"],
+                                      ["-p", "2222"],
+                                      ["web01"]])
+
+
+def test_sftp_handoff_forwards_the_collected_options(monkeypatch,
+                                                     stub_project,
+                                                     fake_tools, capsys):
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_sftp(
+            make_interpreter(),
+            sftp_args(eval=True, handoff=["host"],
+                      sftp_head_args=["-q"]))
+
+    assert exit_info.value.code == 0
+    assert capsys.readouterr().out.strip() == "/usr/bin/sftp -q host"
+
+
+def test_do_ssh_connect_reports_the_builder_errors(monkeypatch,
+                                                   stub_project,
+                                                   fake_tools, capsys):
+    """The builder refusals -- the project mode without a declared
+    store among them -- are reported, not raised as tracebacks."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"]),
+             "views": {"system": {"ssh": {"known_hosts": "project"}}}}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_connect(
+            make_interpreter(), ssh_args(eval=True))
+
+    assert exit_info.value.code == 1
+    assert "does not declare a known_hosts store" in \
+        capsys.readouterr().err
+
+
+def test_do_ssh_rescan_declines_when_the_input_ends(monkeypatch,
+                                                    stub_project,
+                                                    fake_tools, tmp_path):
+    """A closed standard input declines the confirmation; the rescan
+    completes and the old trust of the host is kept."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+    monkeypatch.setattr("builtins.input",
+                        mock.Mock(side_effect=EOFError))
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(confirm=True, known_hosts_file=str(store)))
+
+    assert exit_info.value.code == 0
+    assert store.read_text() == "old\n"
+
+
+def test_ssh_handoff_reports_the_store_refusal(monkeypatch, stub_project,
+                                               fake_tools, capsys):
+    """The handoff with '--accept' in a project-mode view without a
+    declared store is refused with the clean error the other paths
+    produce."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"]),
+             "views": {"system": {"ssh": {"known_hosts": "project"}}}}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_connect(
+            make_interpreter(),
+            ssh_args(eval=True, handoff=["web01"], accept=True))
+
+    assert exit_info.value.code == 1
+    assert "does not declare a known_hosts store" in \
+        capsys.readouterr().err
+
+
+def test_do_ssh_rescan_declines_the_word_no(monkeypatch, stub_project,
+                                            fake_tools, tmp_path):
+    """Only an affirmative answer stores the keys: 'no' declines, the
+    way the prompt reads, and the old trust of the host is kept."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+    monkeypatch.setattr("builtins.input",
+                        mock.Mock(return_value="no"))
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(confirm=True, known_hosts_file=str(store)))
+
+    assert exit_info.value.code == 0
+    assert store.read_text() == "old\n"
+
+
+def test_do_ssh_rescan_declines_a_bare_enter(monkeypatch, stub_project,
+                                             fake_tools, tmp_path):
+    """A bare Enter declines: the keys of a host are worth their two
+    characters, and a trust decision is not made by a reflex."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"])}))
+    monkeypatch.setattr("builtins.input", mock.Mock(return_value="  \n"))
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(confirm=True, known_hosts_file=str(store)))
+
+    assert exit_info.value.code == 0
+    assert store.read_text() == "old\n"
+
+
+def test_do_ssh_rescan_accepts_an_explicit_yes(monkeypatch, stub_project,
+                                               fake_tools, fake_binary,
+                                               tmp_path):
+    import base64
+    binaries = dict(fake_tools["binaries"])
+    binaries["ssh-keyscan"] = fake_binary(
+        "valid-keyscan",
+        "#!/bin/sh\nprintf '%s\\n' '192.0.2.10 ssh-ed25519 "
+        + base64.b64encode(b'\x21' * 32).decode('ascii') + "'\n")
+    stub_the_project(monkeypatch, stub_project(raw={"binaries": binaries}))
+    monkeypatch.setattr("builtins.input", mock.Mock(return_value="y"))
+    store = tmp_path / "store"
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(eval=False, confirm=True,
+                        known_hosts_file=str(store)))
+
+    assert exit_info.value.code == 0
+    assert store.read_text().strip()

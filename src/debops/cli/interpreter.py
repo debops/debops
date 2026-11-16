@@ -12,9 +12,11 @@ from ..core.projectvenv import ProjectVenv
 from ..core.ansible.ansiblerunner import AnsibleRunner
 from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
+from ..core import ssh
 from xdg.BaseDirectory import xdg_config_home
 import logging
 import getpass
+import shlex
 import sys
 import os
 
@@ -76,6 +78,20 @@ class Interpreter(object):
         elif self.parsed_args.section == 'env':
             self.do_env(self.parsed_args.args)
 
+        elif self.parsed_args.section == 'ssh':
+            if self.parsed_args.command == 'rescan':
+                self.do_ssh_rescan(self.parsed_args.args)
+            elif self.parsed_args.command == 'config':
+                self.do_ssh_config(self.parsed_args.args)
+            else:
+                self.do_ssh_connect(self.parsed_args.args)
+
+        elif self.parsed_args.section == 'scp':
+            self.do_scp(self.parsed_args.args)
+
+        elif self.parsed_args.section == 'sftp':
+            self.do_sftp(self.parsed_args.args)
+
         elif self.parsed_args.section == 'config':
             if self.parsed_args.command == 'list':
                 self.do_config_list(self.parsed_args.args)
@@ -98,7 +114,7 @@ class Interpreter(object):
                 spec_sources=args.spec_sources,
                 allow_io=args.allow_io, dry_run=args.dry_run,
                 force=args.force, inspect_mode=_inspect_mode(args),
-                inspect_host=args.host)
+                inspect_host=args.host, ssh=args.ssh)
             if args.venv and args.requirements:
                 venv = ProjectVenv(project)
                 venv.install()
@@ -160,7 +176,7 @@ class Interpreter(object):
             project = ProjectDir(path=args.project_dir, config=self.config,
                                  cwd=self.cwd, encrypt=args.encrypt,
                                  keys=args.keys)
-            project.mkview(view=args.new_view)
+            project.mkview(view=args.new_view, ssh=args.ssh)
         except (IsADirectoryError, NotADirectoryError,
                 InventorySpecError, ChildProcessError,
                 ValueError) as errmsg:
@@ -208,7 +224,7 @@ class Interpreter(object):
 
         try:
             runner = AnsibleRunner(project, ansible_args=args.ansible_args,
-                                   bell=args.bell)
+                                   bell=args.bell, accept=args.accept)
         except (NoDefaultViewException, ValueError,
                 FileNotFoundError) as errmsg:
             print_error(errmsg)
@@ -236,7 +252,7 @@ class Interpreter(object):
         try:
             runner = AnsiblePlaybookRunner(
                 project, ansible_args=args.ansible_args, bell=args.bell,
-                debug=args.debug)
+                debug=args.debug, accept=args.accept)
         except (NoDefaultViewException, ValueError,
                 FileNotFoundError, ChildProcessError) as errmsg:
             print_error(errmsg)
@@ -278,6 +294,303 @@ class Interpreter(object):
             for line in runner.show_env(scope=args.scope):
                 print(line)
             sys.exit(0)
+
+    def do_scp(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd, view=args.view)
+        except (IsADirectoryError, NotADirectoryError,
+                ViewNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        if not args.sources or args.destination is None:
+            print_error('At least two operands are required: one or '
+                        'more sources and a destination; see '
+                        '\'debops scp --help\'')
+            sys.exit(2)
+
+        try:
+            command = ssh.build_scp_command(
+                project, args.sources, args.destination,
+                identity=args.identity, accept=args.accept,
+                scp_args=args.scp_extra_args)
+        except (ValueError, ChildProcessError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        if args.eval:
+            print(shlex.join(command))
+            sys.exit(0)
+
+        logger.debug('Copying "' + '", "'.join(args.sources) + '" to "'
+                     + args.destination + '"',
+                     extra={'allow': 'stderr'})
+        try:
+            os.execvp(command[0], command)
+        except (FileNotFoundError, PermissionError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+    def do_sftp(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd, view=args.view)
+        except (IsADirectoryError, NotADirectoryError,
+                ViewNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        if args.handoff is not None:
+            try:
+                command = ssh.build_handoff_command(
+                    project, 'sftp', args.handoff,
+                    identity=args.identity, accept=args.accept,
+                    passthrough=args.sftp_head_args)
+            except (ValueError, ChildProcessError) as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
+        else:
+            try:
+                command = ssh.build_sftp_command(
+                    project, args.destination,
+                    identity=args.identity, accept=args.accept,
+                    sftp_args=args.sftp_tail_args,
+                    sftp_head_args=args.sftp_head_args)
+            except (ValueError, ChildProcessError) as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
+
+        if args.eval:
+            print(shlex.join(command))
+            sys.exit(0)
+
+        if args.handoff is None:
+            logger.debug('Starting the sftp session with "'
+                         + args.destination + '"',
+                         extra={'allow': 'stderr'})
+        try:
+            os.execvp(command[0], command)
+        except (FileNotFoundError, PermissionError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+    def do_ssh_connect(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd, view=args.view)
+        except (IsADirectoryError, NotADirectoryError,
+                ViewNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        if args.handoff is not None:
+            try:
+                command = ssh.build_handoff_command(
+                    project, 'ssh', args.handoff,
+                    identity=args.identity, accept=args.accept,
+                    passthrough=args.ssh_extra_args,
+                    user=args.user, port=args.port)
+            except (ValueError, ChildProcessError) as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
+        else:
+            user, host, port = ssh.split_destination(args.host)
+            user = user or args.user
+            port = port or args.port
+
+            try:
+                parameters = ssh.resolve_destination(project, host)
+            except (ValueError, ChildProcessError) as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
+
+            try:
+                command = ssh.build_ssh_command(
+                    project, host, parameters,
+                    user=user, port=port, identity=args.identity,
+                    accept=args.accept, ssh_args=args.ssh_args,
+                    options=args.ssh_extra_args)
+            except ValueError as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
+
+        if args.eval:
+            print(shlex.join(command))
+            sys.exit(0)
+
+        if args.handoff is None:
+            logger.debug('Connecting to the host "' + host + '"',
+                         extra={'allow': 'stderr'})
+        try:
+            os.execvp(command[0], command)
+        except (FileNotFoundError, PermissionError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+    def do_ssh_rescan(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd, view=args.view)
+        except (IsADirectoryError, NotADirectoryError,
+                ViewNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        # The defaults of the DNS mode and the confirmation come from
+        # the configuration; the options of the command line override
+        # them
+        rescan_config = project.config.raw.get('ssh', {}).get(
+            'rescan', {})
+        dns_mode = args.dns_mode or rescan_config.get('resolver_mode',
+                                                      'dns')
+        if dns_mode not in ('dns', 'no-dns', 'dns-verify'):
+            print_error('The ssh.rescan.resolver_mode option of the '
+                        'configuration carries an unknown DNS '
+                        'verification mode: ' + str(dns_mode))
+            sys.exit(1)
+        confirm = args.confirm
+        if confirm is None:
+            confirm = rescan_config.get('confirm', False)
+
+        phases = ('remove', 'scan')
+        if args.remove and not args.scan:
+            phases = ('remove',)
+        elif args.scan and not args.remove:
+            phases = ('scan',)
+
+        try:
+            hosts, unmatched, variables = ssh.resolve_patterns(
+                project, args.hosts)
+        except (ValueError, ChildProcessError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        for pattern in unmatched:
+            logger.notice('The pattern "' + pattern + '" matched no '
+                          'hosts', extra={'allow': 'stderr'})
+        if not hosts:
+            print_error('No hosts matched the given patterns: '
+                        + ' '.join(args.hosts))
+            sys.exit(1)
+
+        # A scan of a few hosts is fast enough for interactive
+        # operation; the estimate is only shown when the worst case
+        # takes three minutes or longer.
+        # A reachable host scans in about two seconds including the
+        # startup of the command; hosts which do not respond wait for
+        # the full key scan timeout, so the real time can be longer.
+        estimate = len(hosts) * 2
+        if estimate >= 180:
+            if estimate >= 3600:
+                estimate_text = '{:.1f} hours'.format(estimate / 3600.0)
+            else:
+                estimate_text = '{} minutes'.format(estimate // 60)
+            print('Scanning {} hosts, estimated time: {} (hosts which '
+                  'do not respond take longer).'.format(len(hosts),
+                                                        estimate_text))
+
+        if args.eval:
+            if args.known_hosts_file:
+                store = args.known_hosts_file
+            else:
+                try:
+                    store, _ = ssh.require_store(project)
+                except ValueError as errmsg:
+                    print_error(errmsg)
+                    sys.exit(1)
+            for host in hosts:
+                # The variables of the pattern expansion resolve the
+                # host without a second invocation; a host whose
+                # resolution fails is reported like a failed scan and
+                # the remaining hosts continue
+                try:
+                    parameters = None if host not in variables else \
+                        ssh.resolve_host(project, host,
+                                         variables=variables[host])
+                except (ValueError, ChildProcessError) as errmsg:
+                    print_error('Cannot refresh the known_hosts entries '
+                                'of the host "' + host + '": '
+                                + str(errmsg))
+                    continue
+                actions, _ = ssh.rescan_actions(
+                    project, host, store, phases, args.timeout,
+                    parameters=parameters)
+                for phase, argv in actions:
+                    print(shlex.join(argv))
+            sys.exit(0)
+
+        def confirm_host(host, offered):
+            """Show the scanned fingerprints and ask for the host."""
+            print('The SSH host keys of "' + host + '" were scanned:')
+            for fingerprint, key_type in offered:
+                print('  ' + fingerprint + '  ' + key_type)
+            try:
+                answer = input('  Accept these keys and store them? '
+                               '[y=yes, Enter=no, Ctrl-C=abort] ')
+            except EOFError:
+                # The input ended; without an answer the keys are not
+                # stored
+                print('  The input ended; the keys were not stored')
+                return False
+            # Only an explicit affirmative answer stores the keys: a
+            # bare Enter, a typo or an unknown word declines, the way
+            # a trust prompt should behave -- the keys of a host are
+            # worth their two characters
+            return answer.strip().lower() in ('y', 'yes')
+
+        try:
+            results = ssh.rescan_hosts(
+                project, hosts, store=args.known_hosts_file,
+                phases=phases, timeout=args.timeout,
+                dns_mode=dns_mode, variables=variables,
+                confirm=confirm_host if confirm else None)
+        except (ValueError, OSError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        except KeyboardInterrupt:
+            print('Rescan aborted; the hosts processed so far keep '
+                  'their state')
+            sys.exit(130)
+
+        failed = [(host, message) for host, ok, message in results
+                  if not ok]
+        for host, message in failed:
+            print_error('Cannot refresh the known_hosts entries of the '
+                        'host "' + host + '": ' + message)
+        sys.exit(1 if failed else 0)
+
+    def do_ssh_config(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd, view=args.view)
+        except (IsADirectoryError, NotADirectoryError,
+                ViewNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        if args.write:
+            config_path = os.path.expanduser('~/.ssh/config')
+            try:
+                changed = ssh.write_config_snippet(project, config_path)
+            except (OSError, ValueError) as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
+            if changed:
+                logger.notice('Wrote the managed debops ssh block into '
+                              + config_path,
+                              extra={'allow': ['stderr', 'syslog']})
+            else:
+                logger.notice('The managed debops ssh block in '
+                              + config_path + ' is up to date',
+                              extra={'allow': ['stderr', 'syslog']})
+            sys.exit(0)
+
+        try:
+            for line in ssh.render_config_snippet(project):
+                print(line)
+        except ValueError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
 
     def do_config_list(self, args):
         try:

@@ -48,10 +48,56 @@ umount = "{{ env['DEBOPS_CMD_UMOUNT'] | d('umount') }}"
 # hosts with FUSE support. By default it will rely on the system's $PATH.
 fusermount = "{{ env['DEBOPS_CMD_FUSERMOUNT'] | d('fusermount') }}"
 
+# Path to binary which will be used to connect to the hosts over the
+# 'ssh(1)' protocol. By default it will rely on the system's $PATH.
+ssh = "{{ env['DEBOPS_CMD_SSH'] | d('ssh') }}"
+
+# Path to binary which will be used to remove the known_hosts entries of the
+# hosts. By default it will rely on the system's $PATH.
+ssh-keygen = "{{ env['DEBOPS_CMD_SSH_KEYGEN'] | d('ssh-keygen') }}"
+
+# Path to binary which will be used to scan the SSH host keys of the hosts.
+# By default it will rely on the system's $PATH.
+ssh-keyscan = "{{ env['DEBOPS_CMD_SSH_KEYSCAN'] | d('ssh-keyscan') }}"
+
+# Path to binary which will be used to copy files to and from the hosts over
+# the 'ssh(1)' protocol. By default it will rely on the system's $PATH.
+scp = "{{ env['DEBOPS_CMD_SCP'] | d('scp') }}"
+
+# Path to binary which will be used to run the interactive file transfer
+# sessions over the 'ssh(1)' protocol. By default it will rely on the
+# system's $PATH.
+sftp = "{{ env['DEBOPS_CMD_SFTP'] | d('sftp') }}"
+
 [git]
 
 # The default commit message used for new git repositories.
 init_message = "Initialize new DebOps project directory"
+
+[ssh.rescan]
+
+# What to do when the scanned keys of a host match the SSHFP records
+# of the DNS, but the DNS answer was not authenticated by DNSSEC.
+# RFC 4255 forbids trusting unauthenticated SSHFP records; with
+# 'true', such a match grants no trust and the keys are handled like
+# the keys of hosts without SSHFP records: stored as scanned, or
+# confirmed by the operator with the '--confirm' option. With
+# 'false', such hosts are not stored at all; run the rescan with
+# '--confirm' to accept the keys after checking the fingerprints.
+trust_unsigned_records = true
+
+# The DNS verification mode the rescan runs with when the '--dns',
+# '--no-dns' and '--dns-verify' options do not name one. The modes
+# are the ones of the options: 'dns' verifies the scanned keys
+# against the SSHFP records of the DNS, 'no-dns' skips the DNS check
+# and 'dns-verify' requires a DNSSEC-validating resolver to
+# authenticate the records before a match is trusted.
+resolver_mode = 'dns'
+
+# Ask for the scanned fingerprints before every store of a rescan,
+# the way the '--confirm' option does. The '--no-confirm' option
+# turns the prompting off for one invocation.
+confirm = false
 
 [project.venv]
 

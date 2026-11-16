@@ -25,13 +25,16 @@ class AnsiblePlaybookRunner(AnsibleProjectRunner):
     """Run the :command:`ansible-playbook` command in the project
     environment."""
 
-    def __init__(self, project, ansible_args, bell=False, debug=False):
+    def __init__(self, project, ansible_args, bell=False, debug=False,
+                 accept=False):
         super().__init__(project, bell=bell)
 
         self._playbook_dirs = self._expand_playbook_paths(project)
         self._known_collections = self._find_collections(project)
 
         self._ansible_env = {'ANSIBLE_CONFIG': project.ansible_cfg.path}
+        if accept:
+            self._enable_accept_new(self._ansible_env)
         self._ansible_command = [
                 project.config.raw['binaries']['ansible-playbook']
         ]
@@ -286,6 +289,7 @@ class AnsiblePlaybookRunner(AnsibleProjectRunner):
 
     def execute(self):
         unlocked = False
+        snapshot = self._snapshot_accepted_keys()
         if not self._found_playbooks:
             raise ValueError('No playbooks specified, aborting')
 
@@ -338,6 +342,7 @@ class AnsiblePlaybookRunner(AnsibleProjectRunner):
         finally:
             if unlocked:
                 self._lock_secrets()
+            self._report_accepted_keys(snapshot)
 
         post_hook_name = 'post-' + run_check_mode
         run_hooks(self.project.path, post_hook_name,

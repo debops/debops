@@ -13,6 +13,7 @@ from .ansible.ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
 from .ansible.secrets import AnsibleSecretStore
 from .secrets import SecretManager
+from . import ssh
 from .ansible.inventoryspec import (parse_spec, merge_specs, apply_spec,
                                     render_keep,
                                     render_spec, load_template,
@@ -859,11 +860,11 @@ class ProjectDir(object):
     def _create_modern_project(self, path, default_view='system', venv=False,
                                spec_sources=None, allow_io=False,
                                dry_run=False, force=False, inspect_mode=None,
-                               inspect_host=None):
+                               inspect_host=None, ssh=False):
         logger.debug('Initializing new "modern" project directory')
         self.project_type = 'modern'
         default_view = default_view or 'system'
-        filename_view = default_view.replace('/', '-')
+        self._validate_view_name(default_view)
         venv = bool(venv)
 
         # Create modern project directory structure
@@ -966,7 +967,7 @@ class ProjectDir(object):
 
         # Create .debops/conf.d/view-<name>.yml
         self._write_file(os.path.join(path, '.debops', 'conf.d',
-                                      'view-' + filename_view + '.yml'),
+                                      'view-' + default_view + '.yml'),
                          default_view_yml.render(
                              env=self.environment(),
                              view_name=default_view,
@@ -987,6 +988,12 @@ class ProjectDir(object):
         self._write_file(os.path.join(path, '.gitignore'),
                          default_gitignore.render()
                          + '\n')
+
+        # The SSH known_hosts configuration of the default view is
+        # written before the project configuration is merged, so that
+        # the generated 'ansible.cfg' carries the declared store
+        if ssh:
+            self.write_ssh_known_hosts(default_view)
 
         # Create ansible/collections/requirements.yml
         self._write_file(os.path.join(path, 'ansible', 'collections',
@@ -1216,7 +1223,7 @@ class ProjectDir(object):
     def create(self, git_repo=True, venv=False, requirements=None,
                default_view='system', spec_sources=None, allow_io=False,
                dry_run=False, force=False, inspect_mode=None,
-               inspect_host=None):
+               inspect_host=None, ssh=False):
         logger.debug('Creating new project directory')
         # First let's make sure that we are not inside another project
         self._modern_config_path = self._find_up_dir(self.path,
@@ -1244,13 +1251,19 @@ class ProjectDir(object):
                 self.path, default_view=default_view, venv=venv,
                 spec_sources=spec_sources, allow_io=allow_io, dry_run=dry_run,
                 force=force, inspect_mode=inspect_mode,
-                inspect_host=inspect_host)
+                inspect_host=inspect_host, ssh=ssh)
         elif self.project_type == 'legacy':
             if venv:
                 raise ValueError(
                     'Python virtual environments can be enabled '
                     'only in "modern" DebOps project directories; '
                     'use the "debops project init -t modern --venv" '
+                    'command')
+            if ssh:
+                raise ValueError(
+                    'The SSH known_hosts configuration is available '
+                    'only in "modern" DebOps project directories; '
+                    'use the "debops project init -t modern --ssh" '
                     'command')
             inspect_output = self._create_legacy_project(
                 self.path, spec_sources=spec_sources, allow_io=allow_io,
@@ -1340,7 +1353,55 @@ class ProjectDir(object):
 
         return inspect_output
 
-    def mkview(self, view):
+    def write_ssh_known_hosts(self, view):
+        """Write the SSH known_hosts configuration of a view.
+
+        The 'view-<view>-ssh.toml' drop-in declares the project
+        known_hosts mode and the view's isolated known_hosts store
+        through the Ansible configuration, so that the generated
+        'ansible.cfg' carries the store once the project configuration
+        is merged. The store directory is created; the store files are
+        tracked in the git repository of the project, so the history
+        records how the trust of the project changed. Returns the path
+        of the store directory.
+        """
+        if self.project_type != 'modern':
+            raise ValueError('The SSH known_hosts configuration is '
+                             'available only in "modern" DebOps project '
+                             'directories')
+        filename_view = view.replace('/', '-')
+        self._write_file(
+                os.path.join(self.path, '.debops', 'conf.d',
+                             'view-' + filename_view + '-ssh.toml'),
+                ssh.render_ssh_drop_in(view) + '\n')
+
+        store_dir = ssh.ensure_store_dir(ssh.ssh_store_file(self.path, view),
+                                         self.path)
+        return store_dir
+
+    @staticmethod
+    def _validate_view_name(view):
+        """Refuse the view names which cannot name every context the
+        view appears in.
+
+        The MCP server of DebOps implements systemd instances
+        recognized by '<project>-<view>' and passed to
+        'debops-mcp@<project>-<view>.service'; the instance name
+        splits at its last dash, so a dash inside a view name would
+        make two different (project, view) pairs produce the same
+        instance name. The view name lands in the configuration tree
+        keys, the drop-in file names and the store paths of the view
+        as well, where the other characters outside of the letters,
+        the digits and the underscores parse differently than the
+        tree lookup does.
+        """
+        if not re.match(r'^[A-Za-z0-9][A-Za-z0-9_]*$', view or ''):
+            raise ValueError(
+                'The view name can carry only letters, digits and '
+                'underscores, and must not start with an underscore: '
+                + str(view))
+
+    def mkview(self, view, ssh=False):
 
         # Make sure that users are not trying to nest the view inside of
         # another view
@@ -1363,7 +1424,7 @@ class ProjectDir(object):
                 raise ValueError(f"The '{view}' view cannot be placed inside "
                                  "another view")
 
-        filename_view = view.replace('/', '-')
+        self._validate_view_name(view)
         if self.project_type == 'modern':
             if view:
                 if self.encrypt == 'git-crypt' and not os.path.exists(
@@ -1434,12 +1495,18 @@ class ProjectDir(object):
                 # Create .debops/conf.d/view-<name>.yml
                 self._write_file(
                         os.path.join(self.path, '.debops', 'conf.d',
-                                     'view-' + filename_view + '.yml'),
+                                     'view-' + view + '.yml'),
                         default_view_yml.render(
                             env=self.environment(),
                             view_name=view,
                             venv=self._venv_enabled())
                         + '\n')
+
+                # The SSH known_hosts drop-in is written before the
+                # project configuration is merged, so that the generated
+                # 'ansible.cfg' carries the declared store
+                if ssh:
+                    self.write_ssh_known_hosts(view)
 
                 encrypted_secrets = self.encrypt
 
