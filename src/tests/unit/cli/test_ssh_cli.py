@@ -87,7 +87,7 @@ def sftp_args(**kwargs):
 def rescan_args(**kwargs):
     defaults = dict(project_dir=None, view="system", remove=False,
                     scan=False, eval=True, known_hosts_file=None,
-                    timeout=10, hosts=["web"], dns_mode="dns",
+                    timeout=10, hosts=["web"], dns_mode=None,
                     confirm=None)
     defaults.update(kwargs)
     return SimpleNamespace(**defaults)
@@ -487,6 +487,83 @@ def test_do_ssh_rescan_reports_the_store_error(monkeypatch, stub_project,
     assert exit_info.value.code == 1
     assert "does not declare a known_hosts store" in \
         capsys.readouterr().err
+
+
+def test_do_ssh_rescan_reads_the_defaults_from_the_configuration(
+        monkeypatch, stub_project, fake_tools):
+    """The DNS mode and the confirmation come from the
+    'ssh.rescan.resolver_mode' and 'ssh.rescan.confirm' options when
+    the command line names neither."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"]),
+             "ssh": {"rescan": {"resolver_mode": "no-dns",
+                                "confirm": True}}}))
+    calls = []
+
+    def capture(*args, **kwargs):
+        calls.append(kwargs)
+        return []
+
+    monkeypatch.setattr("debops.core.ssh.rescan_hosts", capture)
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(), rescan_args(eval=False))
+
+    assert exit_info.value.code == 0
+    assert calls[0]["dns_mode"] == "no-dns"
+    assert callable(calls[0]["confirm"])
+
+
+def test_do_ssh_rescan_options_override_the_configuration(
+        monkeypatch, stub_project, fake_tools):
+    """'--dns-verify' and '--no-confirm' override the configured
+    defaults; '--confirm' turns the prompting on against a 'false'
+    configuration."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"]),
+             "ssh": {"rescan": {"resolver_mode": "no-dns",
+                                "confirm": True}}}))
+    calls = []
+
+    def capture(*args, **kwargs):
+        calls.append(kwargs)
+        return []
+
+    monkeypatch.setattr("debops.core.ssh.rescan_hosts", capture)
+
+    with pytest.raises(SystemExit):
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(eval=False, dns_mode="dns-verify",
+                        confirm=False))
+
+    assert calls[0]["dns_mode"] == "dns-verify"
+    assert calls[0]["confirm"] is None
+
+    with pytest.raises(SystemExit):
+        Interpreter.do_ssh_rescan(
+            make_interpreter(),
+            rescan_args(eval=False, dns_mode="dns-verify",
+                        confirm=True))
+
+    assert calls[1]["confirm"] is not None
+
+
+def test_do_ssh_rescan_reports_an_unknown_resolver_mode(
+        monkeypatch, stub_project, fake_tools, capsys):
+    """A 'ssh.rescan.resolver_mode' value outside of the known modes
+    aborts with the error instead of running as the default mode."""
+    stub_the_project(monkeypatch, stub_project(
+        raw={"binaries": dict(fake_tools["binaries"]),
+             "ssh": {"rescan": {"resolver_mode": "bogus"}}}))
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(), rescan_args(eval=False))
+
+    assert exit_info.value.code == 1
+    assert "unknown DNS verification mode" in capsys.readouterr().err
 
 
 def test_do_ssh_config_write_reports_the_error(monkeypatch, stub_project,

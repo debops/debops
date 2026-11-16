@@ -322,6 +322,19 @@ a matter of policy:
   run the rescan with ``--confirm`` to accept the keys after checking
   the fingerprints.
 
+``ssh.rescan.resolver_mode``
+  Type: string, one of ``dns``, ``no-dns``, ``dns-verify``.
+  Purpose: selects the DNS verification mode the rescan runs with
+  when the ``--dns``, ``--no-dns`` and ``--dns-verify`` options do
+  not name one. The modes are the ones of the options.
+
+``ssh.rescan.confirm``
+  Type: boolean.
+  Purpose: asks for the fingerprints before every store of the
+  rescan, the way the ``--confirm`` option does. The
+  ``--no-confirm`` option of the rescan turns the prompting off for
+  one invocation.
+
 .. note::
 
    SSHFP verification is as strong as the DNS answer. On a
