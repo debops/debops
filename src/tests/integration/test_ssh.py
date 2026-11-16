@@ -57,11 +57,16 @@ def test_ssh_help_lists_the_subcommands(run_debops, tmp_path, debops_env):
     assert result.returncode == 0
     assert "rescan" in result.stdout
     assert "config" in result.stdout
-    assert "-u NAME" in result.stdout
+    # The invocation forms of the options are rendered differently by
+    # different Python versions; the long names are stable
+    assert "--user" in result.stdout
+    assert "--port" in result.stdout
+    assert "--identity" in result.stdout
+    assert "--accept" in result.stdout
     assert "--eval" in result.stdout
-    assert "-v, --verbose" in result.stdout
-    assert "--project-dir [PROJECT_DIR]" in result.stdout
-    assert "-V VIEW, --view VIEW" in result.stdout
+    assert "--verbose" in result.stdout
+    assert "--project-dir" in result.stdout
+    assert "--view" in result.stdout
 
 
 def test_ssh_without_arguments_shows_the_commands(run_debops, tmp_path,
