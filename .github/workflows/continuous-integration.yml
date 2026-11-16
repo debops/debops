@@ -258,8 +258,8 @@ jobs:
       - name: Prepare test environment
         run: |
           pip3 install --user -c requirements-ci.txt \
-            wheel setuptools pytest pytest-cov future pyyaml python-dotenv \
-            toml pyxdg jinja2 jsonschema distro GitPython
+            wheel setuptools pytest pytest-cov dnspython future pyyaml \
+            python-dotenv toml pyxdg jinja2 jsonschema distro GitPython
           pip3 check
 
       - name: Run DebOps unit tests
@@ -286,7 +286,7 @@ jobs:
           sudo apt-get -yq install git gnupg git-crypt
           python3 -m venv "${RUNNER_TEMP}/venv"
           "${RUNNER_TEMP}/venv/bin/pip" install -c requirements-ci.txt \
-            wheel setuptools pytest pytest-cov ansible-core \
+            wheel setuptools pytest pytest-cov ansible-core dnspython \
             future pyyaml python-dotenv toml pyxdg jinja2 jsonschema \
             distro GitPython
           "${RUNNER_TEMP}/venv/bin/pip" check
