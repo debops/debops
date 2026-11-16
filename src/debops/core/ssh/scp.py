@@ -65,7 +65,6 @@ def build_scp_command(project, sources, destination_operand,
     translated = []
     dropped = []
     store, inject = require_store(project)
-    ports = []
     identities = []
     executables = []
     transfer_args = []
@@ -81,8 +80,6 @@ def build_scp_command(project, sources, destination_operand,
         port = parameters.get('port')
         operand_specs.append(('remote', (side_user, destination_host,
                                          port, path)))
-        if port:
-            ports.append(str(port))
         side_identity = parameters.get('identity')
         if side_identity:
             identities.append(side_identity)
@@ -121,20 +118,29 @@ def build_scp_command(project, sources, destination_operand,
             + ' '.join(dropped),
             extra={'allow': 'stderr'})
 
-    unique_ports = set(ports)
+    remote_ports = [value[2] for kind, value in operand_specs
+                    if kind == 'remote']
+    # The effective port of an operand without an inventory port is
+    # the ssh default; the conflict decision compares the effective
+    # ports, or a mix of a default-port host and an explicit-port host
+    # would look like one unique port
+    effective_ports = {str(port) if port else '22'
+                       for port in remote_ports}
 
     # The operands compose in the order they were given. When the
-    # resolved ports differ, each remote operand carries its own port
+    # effective ports differ, each remote operand carries its own port
     # in the 'scp://' URI form -- the plain grammar applies one port
     # to every connection of the command, the URI form one per
-    # operand; the local operands are local paths in both cases
+    # operand, and an operand without a port stays on the port its ssh
+    # client configuration names; the local operands are local paths
+    # in both cases
     operands = []
     for kind, value in operand_specs:
         if kind == 'local':
             operands.append(value)
             continue
         side_user, destination_host, port, path = value
-        if len(unique_ports) > 1:
+        if len(effective_ports) > 1:
             operands.append(_uri_operand(side_user, destination_host,
                                          port, path))
         else:
@@ -162,11 +168,16 @@ def build_scp_command(project, sources, destination_operand,
         ssh_options.append(('-o', known_hosts_option(store)))
     if accept:
         ssh_options.append(('-o', 'StrictHostKeyChecking=accept-new'))
-    if len(unique_ports) == 1 and not (scp_args and '-P' in scp_args):
+    if len(effective_ports) == 1 and remote_ports and all(remote_ports) \
+            and not (scp_args and '-P' in scp_args):
         # An explicit '-P' of the operator wins over the inventory
-        # ports; scp applies the last obtained value
-        ssh_options.append(('-P', unique_ports.pop()))
-    elif len(unique_ports) > 1:
+        # ports; scp applies the last obtained value. The port is
+        # composed only when every remote operand carries the same
+        # explicit port: a '-P 22' for hosts without an inventory port
+        # would override the Port entries of the operator's own ssh
+        # client configuration
+        ssh_options.append(('-P', effective_ports.pop()))
+    elif len(effective_ports) > 1:
         logger.notice(
             'The operands resolve to hosts with different ssh ports; '
             'each remote operand carries its own port in the scp:// '
