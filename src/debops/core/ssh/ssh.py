@@ -33,7 +33,7 @@ from .store import (USER_KNOWN_HOSTS_STORE, ensure_store_dir,
                     known_hosts_mode, known_hosts_option,
                     known_hosts_store, quote_store_path, require_store)
 from .utils import (resolve_host, ssh_executable, transfer_executable,
-                    without_known_hosts_options)
+                    translate_ssh_args, without_known_hosts_options)
 from ..utils import unexpanduser
 
 logger = logging.getLogger(__name__)
@@ -234,8 +234,123 @@ def remove_command(binaries, identifier, store, port=None):
     return [binaries['ssh-keygen'], '-R', identifier, '-f', store]
 
 
+def connection_jump_names(parameters):
+    """Return the jump hosts of a host's resolved connection options,
+    in the order the connections traverse them.
+
+    The hops of the '-J' and 'ProxyJump=' options of 'ssh_args' and
+    the connection extras. A bastion hidden inside a 'ProxyCommand'
+    cannot be discovered: the command is an arbitrary shell pipeline.
+    """
+    names = []
+    for value in (parameters.get('ssh_args'),
+                  parameters.get('common_args'),
+                  parameters.get('extra_args')):
+        if not value:
+            continue
+        translated, dropped = translate_ssh_args(value)
+        for pair in translated:
+            if isinstance(pair, tuple) and pair[0] == '-o' \
+                    and pair[1].startswith('ProxyJump='):
+                for hop in pair[1][len('ProxyJump='):].split(','):
+                    if hop and hop not in names:
+                        names.append(hop)
+    return names
+
+
+def _hop_endpoint(hop):
+    """Split a ProxyJump hop into the host, the port and the
+    known_hosts identifier the connections verify the hop under."""
+    name = hop
+    if '@' in name:
+        name = name.rpartition('@')[2]
+    port = None
+    if name.startswith('[') and ']' in name:
+        host, _, remainder = name[1:].partition(']')
+        name = host
+        if remainder.startswith(':') and remainder[1:].isdigit():
+            port = remainder[1:]
+    elif ':' in name:
+        name, _, candidate = name.rpartition(':')
+        if candidate.isdigit():
+            port = candidate
+        else:
+            name = hop
+    identifier = name
+    if port and port != '22':
+        identifier = '[' + name + ']:' + port
+    return name, port, identifier
+
+
+def _collect_through_connection(project, parameters, store, timeout,
+                                details):
+    """Collect the host keys of a host whose connection traverses a
+    jump host, by running the connection itself with a throwaway
+    known_hosts file.
+
+    The connection authenticates the first jump host against the
+    entries the store already holds for it, and the key of the
+    negotiated exchange with the destination is collected into the
+    throwaway whether or not the authentication succeeds -- the
+    connection runs with BatchMode and a remote command which does
+    nothing. Returns the collected key lines which do not belong to
+    the jump, or None when the jump's key is not known to the store
+    or the connection could not be established.
+    """
+    parameters = parameters or {}
+    jumps = connection_jump_names(parameters)
+    if not jumps:
+        return None
+    _, _, identifier = _hop_endpoint(jumps[0])
+    binaries = project.config.raw['binaries']
+    probe = subprocess.run(
+        [binaries['ssh-keygen'], '-F', identifier, '-f', store],
+        capture_output=True, text=True)
+    jump_entries = [line for line in probe.stdout.splitlines() if line]
+    if not jump_entries:
+        details.append('the key of the jump host ' + identifier
+                       + ' is not known to the store; scan the jump '
+                         'host first')
+        return None
+    store_dir = os.path.dirname(store) or '.'
+    descriptor, throwaway = tempfile.mkstemp(
+        dir=store_dir, prefix='known_hosts-scan.')
+    with os.fdopen(descriptor, 'w') as handle:
+        handle.write('\n'.join(jump_entries) + '\n')
+    os.chmod(throwaway, 0o600)
+    try:
+        command = [(parameters.get('ssh_executable')
+                    or ssh_executable(project)
+                    or binaries['ssh']),
+                   '-o', 'BatchMode=yes',
+                   '-o', 'UserKnownHostsFile=' + throwaway,
+                   '-o', 'StrictHostKeyChecking=accept-new']
+        port = parameters.get('port')
+        if port:
+            command.extend(['-p', str(port)])
+        for value in (parameters.get('ssh_args'),
+                      parameters.get('common_args'),
+                      parameters.get('extra_args')):
+            if value:
+                command.extend(shlex.split(value))
+        command.append(parameters.get('destination') or '')
+        command.append('true')
+        try:
+            subprocess.run(command, capture_output=True, text=True,
+                           timeout=timeout + 5)
+        except subprocess.TimeoutExpired:
+            details.append('the connection to the host timed out')
+            return None
+        lines = [line for line in open(throwaway).read().splitlines()
+                 if line and line not in jump_entries]
+        return lines or None
+    finally:
+        if os.path.exists(throwaway):
+            os.unlink(throwaway)
+
+
 def rescan_actions(project, host, store, phases=('remove', 'scan'),
-                   timeout=10):
+                   timeout=10, parameters=None):
     """Return the rescan actions of a host: '(actions, resolvable)'.
 
     'actions' is the list of '(phase, argv)' tuples -- the ssh-keygen
@@ -248,12 +363,14 @@ def rescan_actions(project, host, store, phases=('remove', 'scan'),
     the identifiers the scan covers, for the SSHFP lookup of the
     classification. The connection port of the host comes from the
     same resolution the ssh command uses, so the scan hits the port
-    the connections use.
+    the connections use. The resolved parameters can be handed in
+    when the caller has already resolved them.
     """
-    try:
-        parameters = resolve_host(project, host)
-    except (ValueError, ChildProcessError):
-        parameters = None
+    if parameters is None:
+        try:
+            parameters = resolve_host(project, host)
+        except (ValueError, ChildProcessError):
+            parameters = None
     port = (parameters or {}).get('port')
     identifiers = host_identifiers(project, host, parameters)
     binaries = project.config.raw['binaries']
@@ -476,6 +593,16 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
     hosts continue, so one host without a running sshd does not mask
     the results of the others.
 
+    A host whose connection traverses a jump host scans after the
+    jump: the keys of the jump must be in the store before a
+    connection through it can be verified. When the direct scan of
+    such a host produces no keys and the resolved connection options
+    carry a 'ProxyJump' whose key the store knows, the keys are
+    collected through the connection itself: the connection runs
+    with a throwaway known_hosts file, so only the keys which pass
+    the verification of this run enter the store. A bastion hidden
+    inside a 'ProxyCommand' cannot be discovered.
+
     The 'confirm' callback, when given, is called with the host name
     and the list of '(fingerprint, key_type)' pairs of the keys which
     are about to be stored, and returns whether they should be stored.
@@ -496,10 +623,39 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
         if inject:
             store_project = project.path
 
-    results = []
+    # The connection parameters of the hosts are resolved up front:
+    # the hosts whose connections traverse another host of the run
+    # scan after that host, because the connection-scan of a host
+    # behind a jump needs the key of the jump in the store
+    parameters_of = {}
     for host in hosts:
-        actions, resolvable = rescan_actions(project, host, store,
-                                             phases, timeout)
+        try:
+            parameters_of[host] = resolve_host(project, host)
+        except (ValueError, ChildProcessError):
+            parameters_of[host] = None
+    known_names = set()
+    for host in hosts:
+        known_names.add(host)
+        parameters = parameters_of[host]
+        if parameters and parameters.get('destination'):
+            known_names.add(parameters['destination'])
+
+    def traverses_run_host(item):
+        for hop in connection_jump_names(parameters_of[item] or {}):
+            name, _, _ = _hop_endpoint(hop)
+            if name in known_names:
+                return True
+        return False
+
+    ordered_hosts = [host for host in hosts
+                     if not traverses_run_host(host)]
+    ordered_hosts += [host for host in hosts if traverses_run_host(host)]
+
+    results = []
+    for host in ordered_hosts:
+        parameters = parameters_of[host]
+        actions, resolvable = rescan_actions(
+            project, host, store, phases, timeout, parameters=parameters)
         succeeded = True
         details = []
         store_keys = None
@@ -527,6 +683,20 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                 keys.extend(line for line in fresh
                             if line not in keys)
             scan_ok = bool(keys)
+            if not keys and connection_jump_names(parameters or {}):
+                # The host did not answer the direct scan; when its
+                # connection traverses a jump host whose key the
+                # store knows, the keys are collected through the
+                # connection itself
+                details.append('the direct scan produced no keys; '
+                               'the keys are collected through the '
+                               'connection')
+                keys = _collect_through_connection(
+                    project, parameters, store, timeout, details) or []
+                destination = (parameters or {}).get('destination')
+                if keys and destination:
+                    scanned.add(destination)
+                scan_ok = bool(keys)
             if keys:
                 trust_unsigned = project.config.raw.get('ssh', {}).get(
                     'rescan', {}).get('trust_unsigned_records', True)
