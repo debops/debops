@@ -297,8 +297,11 @@ confirmation; keys which contradict the records are refused with a
 report, because a mismatch means the host on the network is not the
 host the DNS describes. Hosts without SSHFP records are handled as
 before. The ``--no-dns`` option skips the DNS check entirely, and
-``--dns-verify`` refuses hosts whose records the resolver did not
-authenticate, even with ``--confirm``.
+``--dns-verify`` requires that a DNSSEC-validating resolver
+authenticated the records before a match is trusted: hosts whose
+records the resolver did not authenticate and hosts without records
+are refused, and with ``--confirm`` their keys can be accepted after
+checking the fingerprints.
 
 A match against records which the resolver did not authenticate
 grants no trust: RFC 4255, which defines the SSHFP record, forbids
@@ -321,12 +324,25 @@ a matter of policy:
    DNSSEC-signed zone the records are authenticated and the match is a
    genuine third-party verification; on an unsigned zone the match is
    trust in DNS, and the option above decides whether it may confirm
-   anything.
+   anything. The authenticated-data flag of the answer means
+   something only when the resolver path to the zone is itself
+   trusted: a resolver which does not validate can be fed answers
+   which carry the flag regardless.
+
+   A lookup which fails -- a resolver which reports the answers
+   unverifiable, a timeout, a broken installation -- is not treated
+   as the absence of records: the host is refused with a report, and
+   only ``--no-dns`` skips the check entirely.
 
 With the ``-c|--confirm`` option, rescan shows the fingerprints of the
 scanned keys in the form which ``ssh-keygen -l`` prints and asks for
 each host before storing them - press Enter to accept, Ctrl-C to abort
-the whole run.
+the whole run. Every store of the run is gated on the decision: the
+keys of the ``--no-dns`` mode and the hosts the DNS modes would
+refuse are offered the same way, and the fingerprints cover every key
+type the scan produced, the types without SSHFP algorithm numbers
+among them. The keys which contradict the published records of a
+host are refused with or without the option.
 
 Run ``rescan`` when a host was provisioned or recreated, before the first
 connection to it.
