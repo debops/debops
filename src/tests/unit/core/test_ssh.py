@@ -549,6 +549,35 @@ def test_resolve_patterns_reports_a_failing_expansion(stub_project,
         resolve_patterns(project, ["broken"])
 
 
+def test_resolve_patterns_covers_the_hosts_without_variables(
+        stub_project, fake_tools, fake_binary):
+    """A host which defines no variables of its own appears in the
+    group structure of the '--list' dump but not in its hostvars; the
+    expansion covers it and the destination resolves it to its own
+    name."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "bare-host-inventory",
+        "#!/bin/sh\n"
+        'if [ "$1" = "--list" ]; then\n'
+        "    printf '%s' '{\"db\": {\"hosts\": [\"barehost\"]}, "
+        "\"_meta\": {\"hostvars\": {}}}'\n"
+        "else\n"
+        "    printf '%s' '{}'\n"
+        "fi\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    hosts, unmatched, variables = resolve_patterns(project, ["db"])
+
+    assert hosts == ["barehost"]
+    assert unmatched == []
+    assert variables == {"barehost": {}}
+
+    parameters = resolve_destination(project, "barehost")
+
+    assert parameters["destination"] == "barehost"
+
+
 def test_resolve_destination_resolves_the_literal_host(stub_project,
                                                        fake_tools):
     project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})

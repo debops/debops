@@ -156,12 +156,14 @@ TWO_HOST_INVENTORY = (
     "fi\n"
     'elif [ "$1" = "--list" ]; then\n'
     'if [ "$3" = "web" ]; then\n'
-    "    printf '%s' '{\"_meta\": {\"hostvars\": {\"web\": "
+    "    printf '%s' '{\"all\": {\"hosts\": [\"web\"]}, "
+    "\"_meta\": {\"hostvars\": {\"web\": "
     "{\"ansible_host\": \"192.0.2.10\", \"ansible_port\": \"2222\","
     " \"ansible_user\": \"admin\","
     " \"ansible_ssh_private_key_file\": \"/keys/web\"}}}}'\n"
     'elif [ "$3" = "web2" ]; then\n'
-    "    printf '%s' '{\"_meta\": {\"hostvars\": {\"web2\": "
+    "    printf '%s' '{\"all\": {\"hosts\": [\"web2\"]}, "
+    "\"_meta\": {\"hostvars\": {\"web2\": "
     "{\"ansible_host\": \"192.0.2.11\", \"ansible_port\": \"2223\","
     " \"ansible_user\": \"admin2\","
     " \"ansible_ssh_private_key_file\": \"/keys/web2\"}}}}'\n"
