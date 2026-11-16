@@ -73,6 +73,19 @@ well. This is the way to use the options of :command:`ssh` itself:
 
    alice@controller:~$ debops ssh -- -G web-1
 
+.. note::
+
+   The arguments after the ``--`` marker reach :command:`ssh` exactly as
+   you type them. A jump host declared there, with ``-J`` or
+   ``ProxyJump=``, is handled by :command:`ssh` alone: the jump process
+   inherits only the ``-F`` and ``-v`` options of the command, so the
+   host key of the bastion is verified against your own
+   :file:`~/.ssh/known_hosts` file, not against the store of the view.
+   With ``--accept`` the key of the destination still lands in the store
+   and the key of the bastion does not. Declare the jump hosts of a
+   project through the inventory variables instead, where the rewritten
+   ``ProxyCommand`` carries the store of the view to the jump process.
+
 
 Copying files
 -------------
