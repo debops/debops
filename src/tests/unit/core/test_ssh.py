@@ -1840,6 +1840,34 @@ def test_rescan_hosts_dns_verify_asks_for_confirmation_without_records(
     assert FQDN_KEY_LINE in store.read_text()
 
 
+def test_rescan_hosts_confirmation_gates_the_validated_match(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """With '--confirm', the DNSSEC-validated match is offered like
+    every other store; a decline keeps the host unstored."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    stub_dns(monkeypatch, {(4, 2, FQDN_FINGERPRINT)}, authenticated=True)
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",),
+                           confirm=lambda host, offered: False)
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    assert "rejected by the operator" in message
+    assert store.read_text() == "old\n"
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",),
+                           confirm=lambda host, offered: True)
+
+    host, succeeded, message = results[0]
+    assert succeeded
+    assert "by the operator's decision" in message
+    assert FQDN_KEY_LINE in store.read_text()
+
+
 def test_rescan_hosts_confirmation_cannot_override_a_contradiction(
         monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
     """Keys which contradict the published records are refused with

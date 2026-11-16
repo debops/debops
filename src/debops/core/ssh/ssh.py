@@ -658,12 +658,24 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
                        'scanned by the operator\'s decision')
         return stored, details
     if authenticated:
-        if unverified:
-            details.append(str(len(unverified)) + ' of the scanned keys'
-                           ' have no SSHFP records and were not stored')
-        details.append('the host keys match the SSHFP records of '
-                       + hostname + ' (DNSSEC-validated)')
-        return matched, details
+        if confirm is None:
+            if unverified:
+                details.append(str(len(unverified)) + ' of the scanned '
+                               'keys have no SSHFP records and were '
+                               'not stored')
+            details.append('the host keys match the SSHFP records of '
+                           + hostname + ' (DNSSEC-validated)')
+            return matched, details
+        # The operator asked to decide every store: the offer carries
+        # every scanned key, and the acceptance stores them as
+        # scanned, the same contract the other paths give
+        stored = _confirmed_keys(host, fingerprints, confirm, details)
+        if stored is not None:
+            details.append('the host keys match the SSHFP records of '
+                           + hostname + ' (DNSSEC-validated); the keys '
+                           'are stored as scanned by the operator\'s '
+                           'decision')
+        return stored, details
     # The unsigned match grants no trust of its own: the keys are
     # handled like the keys of a host without SSHFP records
     details.append('the SSHFP match of ' + hostname + ' is not '
@@ -724,9 +736,11 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
     the unsigned matches of the 'dns' mode without the
     'trust_unsigned_records' option, the unverified hosts of the
     'dns-verify' mode -- are offered like the hosts without records,
-    and the raw keys of the 'no-dns' mode are offered as scanned. The
-    keys which contradict the published SSHFP records of a host are
-    refused with or without the callback.
+    the raw keys of the 'no-dns' mode are offered as scanned, and the
+    DNSSEC-validated matches are offered too, so an operator who
+    wants to eyeball every store can. The keys which contradict the
+    published SSHFP records of a host are refused with or without the
+    callback.
 
     Returns a list of '(host, succeeded, message)' tuples, one per
     host; the message is empty when the host completed the requested

@@ -121,8 +121,14 @@ def lookup_sshfp(hostname):
     # The DNSSEC request of the lookup is carried by the EDNS flags in
     # dnspython 2.x: the DO bit asks the resolver for the DNSSEC
     # records, and a resolver which validates marks the verified
-    # answers with the AD flag of the response
+    # answers with the AD flag of the response. The search list of the
+    # system's resolver configuration applies as well, the way the
+    # name resolution of ssh applies it: a short name of the inventory
+    # finds the records of the domain the resolver searches, where an
+    # absolute lookup would find nothing and the two trust decisions
+    # would diverge
     resolver = dns.resolver.Resolver()
+    resolver.use_search_by_default = True
     resolver.use_edns(0, dns.flags.DO, 4096)
     resolver.lifetime = 5.0
     try:

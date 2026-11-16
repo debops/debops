@@ -84,6 +84,23 @@ def test_lookup_sshfp_parses_records_and_the_authenticated_flag():
     resolver.resolve.assert_called_once_with('web.example.org', 'SSHFP')
 
 
+def test_lookup_sshfp_searches_the_system_domains():
+    """The search list of the system's resolver configuration applies,
+    the way ssh's own name resolution applies it: a short inventory
+    name finds the records of the domain the resolver searches."""
+    answer = mock.MagicMock()
+    answer.response = SimpleNamespace(flags=0)
+    answer.__iter__.return_value = iter([])
+    resolver = mock.Mock()
+    resolver.resolve.return_value = answer
+
+    with mock.patch('dns.resolver.Resolver',
+                    mock.Mock(return_value=resolver)):
+        lookup_sshfp('web')
+
+    assert resolver.use_search_by_default is True
+
+
 def test_lookup_sshfp_reads_the_absence_of_records():
     """NXDOMAIN and the empty answer are the absence of records, not
     failures; the other lookup conditions raise."""
