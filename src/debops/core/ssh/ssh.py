@@ -728,6 +728,12 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
     the verification of this run enter the store. A bastion hidden
     inside a 'ProxyCommand' cannot be discovered.
 
+    The ordering covers the hosts which depend on another host of
+    the run: a chain scanned in one run, A through B to C, scans in
+    the order given, and the connection-scan of A fails when B's key
+    is not in the store yet. The failure is reported; run the rescan
+    again and A is collected once B is known.
+
     The 'confirm' callback, when given, is called with the host name
     and the list of '(fingerprint, key_type)' pairs of the keys which
     are about to be stored, and returns whether they should be stored.
