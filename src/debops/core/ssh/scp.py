@@ -11,7 +11,6 @@ parameters, the jump arguments and the known_hosts store of
 """
 
 import logging
-import os
 import shlex
 
 from .store import known_hosts_option, require_store
