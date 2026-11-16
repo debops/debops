@@ -648,16 +648,19 @@ def resolve_host(project, host, variables=None):
 
 
 def inventory_dump(project, patterns):
-    """Return the host variables of the hosts each pattern matches.
+    """Return the matched hosts and their variables per pattern.
 
     One 'ansible-inventory --list --limit <pattern>' invocation per
     pattern returns the matched hosts together with their variables --
     the same dump the '--host' mode prints for a single host. The
     output is the JSON interface of the inventory, not the
     human-oriented listing of '--list-hosts'. Returns a list of
-    '(pattern, hostvars)' pairs in the order of the patterns;
-    'hostvars' maps each matched host name to its variables. A pattern
-    which matches no host carries an empty 'hostvars'. Raises
+    '(pattern, matched, hostvars)' triples in the order of the
+    patterns: 'matched' carries the matched host names, taken from the
+    group structure of the dump -- a host which defines no variables
+    of its own appears there but not in '_meta.hostvars' --
+    and 'hostvars' maps each variable-carrying host to its variables.
+    A pattern which matches no host carries empty 'matched'. Raises
     ValueError when the resolution fails, ChildProcessError when it
     cannot run.
     """
@@ -681,7 +684,15 @@ def inventory_dump(project, patterns):
             raise ValueError(
                 'Cannot resolve the pattern "' + pattern + '": the '
                 'inventory returned no usable data')
-        dumps.append((pattern, dump.get('_meta', {}).get('hostvars', {})))
+        matched = []
+        for group_name, group in dump.items():
+            if group_name == '_meta' or not isinstance(group, dict):
+                continue
+            for name in group.get('hosts', []):
+                if name not in matched:
+                    matched.append(name)
+        hostvars = dump.get('_meta', {}).get('hostvars', {})
+        dumps.append((pattern, matched, hostvars))
     return dumps
 
 
@@ -692,24 +703,25 @@ def resolve_patterns(project, patterns):
     the same pattern engine the runners use, so 'all', the group
     names, the wildcards and the unions work; each pattern is expanded
     with its own invocation, whose JSON dump carries the variables of
-    the matched hosts as well. Returns '(hosts, unmatched,
+    the variable-carrying hosts as well. Returns '(hosts, unmatched,
     variables)': the deduplicated host names in the order of the
     patterns, the patterns which matched no host, and the variables of
-    the matched hosts keyed by name -- the variables spare the callers
-    a second resolution of every host. Raises ValueError when the
+    the hosts keyed by name -- the hosts without variables of their
+    own map to an empty dict, and the variables spare the callers a
+    second resolution of every host. Raises ValueError when the
     expansion fails, ChildProcessError when it cannot run.
     """
     hosts = []
     unmatched = []
     variables = {}
-    for pattern, hostvars in inventory_dump(project, patterns):
-        if not hostvars:
+    for pattern, matched, hostvars in inventory_dump(project, patterns):
+        if not matched:
             unmatched.append(pattern)
             continue
-        for name, host_variables in hostvars.items():
+        for name in matched:
             if name not in hosts:
                 hosts.append(name)
-            variables.setdefault(name, host_variables)
+            variables.setdefault(name, hostvars.get(name, {}))
     return hosts, unmatched, variables
 
 
@@ -725,18 +737,19 @@ def resolve_destination(project, name):
     when the name is not defined in the inventory or when it matches
     several hosts, ChildProcessError when the expansion cannot run.
     """
-    hostvars = inventory_dump(project, [name])[0][1]
-    if not hostvars:
+    pattern, matched, hostvars = inventory_dump(project, [name])[0]
+    if not matched:
         raise ValueError('Cannot resolve the host "' + name + '": it is '
                          'not defined in the inventory of the view')
-    if set(hostvars) == {name}:
-        return resolve_host(project, name, variables=hostvars[name])
-    if len(hostvars) == 1:
+    if set(matched) == {name}:
+        return resolve_host(project, name,
+                            variables=hostvars.get(name, {}))
+    if len(matched) == 1:
         raise ValueError('The destination "' + name + '" is an '
                          'inventory pattern; a single host destination '
                          'is required')
     raise ValueError('The destination "' + name + '" matches '
-                     + str(len(hostvars)) + ' inventory hosts; a single '
+                     + str(len(matched)) + ' inventory hosts; a single '
                      'host destination is required')
 
 
