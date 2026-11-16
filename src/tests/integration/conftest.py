@@ -13,7 +13,9 @@ importable.
 
 import os
 import shutil
+import socket
 import subprocess
+import time
 
 import pytest
 
@@ -79,3 +81,154 @@ def localhost_ssh():
             pytest.skip("ssh does not authenticate to localhost")
     except (OSError, subprocess.SubprocessError):
         pytest.skip("ssh does not authenticate to localhost")
+
+
+class JumpPair:
+    """The two spawned ssh daemons of the jump-host tests.
+
+    'bastion_port' is the port of the jump host, 'target_port' the
+    port of the host behind it, and 'throwaway' the path of an empty
+    known_hosts file for connections which must not establish trust.
+    """
+
+    def __init__(self, bastion_port, target_port, throwaway):
+        self.bastion_port = bastion_port
+        self.target_port = target_port
+        self.throwaway = str(throwaway)
+
+
+def _sshd_binary():
+    for candidate in (shutil.which("sshd"), "/usr/sbin/sshd",
+                      "/usr/local/sbin/sshd"):
+        if candidate and os.path.isfile(candidate):
+            return candidate
+    return None
+
+
+def _free_port():
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        return probe.getsockname()[1]
+
+
+def _spawn_sshd(tmp_path, tag, port):
+    """Spawn one unprivileged ssh daemon on the given loopback port.
+
+    The daemon runs as the account running the tests, with a fresh
+    host key and the authorized keys of the operator's own account, so
+    the connections authenticate the way the localhost tests do. The
+    fresh host key is trusted by neither the operator's own
+    known_hosts file nor any store of the tests.
+    """
+    host_key = tmp_path / ("sshd-" + tag + "-hostkey")
+    subprocess.run(
+        ["ssh-keygen", "-q", "-t", "ed25519", "-N", "", "-f", str(host_key)],
+        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    config = tmp_path / ("sshd-" + tag + ".conf")
+    config.write_text(
+        "Port {port}\n"
+        "ListenAddress 127.0.0.1\n"
+        "HostKey {host_key}\n"
+        "PidFile {pid}\n"
+        "AuthorizedKeysFile {keys}\n"
+        "PasswordAuthentication no\n"
+        "KbdInteractiveAuthentication no\n"
+        "PubkeyAuthentication yes\n"
+        "UsePAM no\n"
+        "LogLevel ERROR\n"
+        "Subsystem sftp internal-sftp\n".format(
+            port=port, host_key=host_key,
+            pid=tmp_path / ("sshd-" + tag + ".pid"),
+            keys=os.path.expanduser("~/.ssh/authorized_keys")))
+    log = tmp_path / ("sshd-" + tag + ".log")
+    return subprocess.Popen(
+        [_sshd_binary(), "-D", "-f", str(config), "-E", str(log)],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def _await_daemon(process, port, throwaway, deadline=15.0):
+    """Return when the daemon authenticates a public key connection.
+
+    The probe carries a throwaway known_hosts file and disables the
+    strict checking, so the readiness check itself establishes no
+    trust anywhere.
+    """
+    limit = time.monotonic() + deadline
+    command = ["ssh", "-o", "BatchMode=yes",
+               "-o", "StrictHostKeyChecking=no",
+               "-o", "UserKnownHostsFile=" + str(throwaway),
+               "-o", "ConnectTimeout=1", "-p", str(port),
+               "127.0.0.1", "true"]
+    while time.monotonic() < limit:
+        if process.poll() is not None:
+            raise RuntimeError("the ssh daemon exited with status "
+                               + str(process.returncode))
+        probe = subprocess.run(command, capture_output=True, timeout=5)
+        if probe.returncode == 0:
+            return
+        time.sleep(0.25)
+    raise RuntimeError("the ssh daemon on port " + str(port)
+                       + " did not accept connections")
+
+
+def _start_daemon(tmp_path, tag, throwaway):
+    """Start one daemon, retrying the transient port collisions."""
+    for _ in range(3):
+        port = _free_port()
+        process = _spawn_sshd(tmp_path, tag, port)
+        try:
+            _await_daemon(process, port, throwaway)
+        except RuntimeError:
+            if process.poll() is not None:
+                # The daemon exited on its own; a likely collision with
+                # another listener -- the next attempt may win the port
+                process.wait()
+                continue
+            process.terminate()
+            process.wait()
+            raise
+        return process, port
+    raise RuntimeError("the ssh daemon of the jump pair did not come up")
+
+
+@pytest.fixture
+def jump_pair(tmp_path, localhost_ssh):
+    """Two ssh daemons on distinct loopback ports with fresh host keys.
+
+    The first daemon plays the jump host, the second the host behind
+    it. The fixture requires the same public key setup as the
+    'localhost_ssh' fixture: the daemons authorize the keys of the
+    account running the tests.
+    """
+    sshd = _sshd_binary()
+    keys_file = os.path.expanduser("~/.ssh/authorized_keys")
+    if sshd is None:
+        pytest.skip("no ssh daemon binary for the jump pair")
+    if not os.path.exists(keys_file):
+        pytest.skip("no authorized keys for the jump pair")
+    throwaway = tmp_path / "throwaway-known-hosts"
+    throwaway.write_text("")
+    daemons = []
+    ports = []
+    try:
+        for tag in ("bastion", "target"):
+            process, port = _start_daemon(tmp_path, tag, throwaway)
+            daemons.append(process)
+            ports.append(port)
+    except RuntimeError:
+        for process in daemons:
+            process.terminate()
+        for process in daemons:
+            process.wait()
+        pytest.skip("the ssh daemons of the jump pair did not come up")
+    try:
+        yield JumpPair(ports[0], ports[1], throwaway)
+    finally:
+        for process in daemons:
+            process.terminate()
+        for process in daemons:
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
