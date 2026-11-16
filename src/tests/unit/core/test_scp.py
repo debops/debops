@@ -303,6 +303,18 @@ def test_uri_operand_encodes_the_path_and_carries_the_parts():
     assert _uri_operand("admin", "web", 22, "") == "scp://admin@web:22"
 
 
+def test_uri_operand_refuses_the_uri_hostile_authority():
+    """A host name, an account or a port which would re-split the
+    authority of the URI is refused instead of silently retargeting
+    the connection."""
+    with pytest.raises(ValueError):
+        _uri_operand(None, "host/path", 2222, "/tmp/x")
+    with pytest.raises(ValueError):
+        _uri_operand("a@b", "host", 2222, "/tmp/x")
+    with pytest.raises(ValueError):
+        _uri_operand(None, "host", "22;rm", "/tmp/x")
+
+
 def test_build_scp_command_reports_the_differing_identities(
         stub_project, fake_tools, fake_binary):
     """Two operands which resolve to different private keys get no
