@@ -118,8 +118,15 @@ def lookup_sshfp(hostname):
     import dns.flags
     import dns.resolver
 
+    # The DNSSEC request of the lookup is carried by the EDNS flags in
+    # dnspython 2.x: the DO bit asks the resolver for the DNSSEC
+    # records, and a resolver which validates marks the verified
+    # answers with the AD flag of the response
+    resolver = dns.resolver.Resolver()
+    resolver.use_edns(0, dns.flags.DO, 4096)
+    resolver.lifetime = 5.0
     try:
-        answer = dns.resolver.resolve(hostname, 'SSHFP', want_dnssec=True)
+        answer = resolver.resolve(hostname, 'SSHFP')
     except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
         return False, set()
     authenticated = bool(answer.response.flags & dns.flags.AD)
