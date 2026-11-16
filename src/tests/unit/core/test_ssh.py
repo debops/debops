@@ -1840,6 +1840,63 @@ def test_rescan_hosts_dns_verify_asks_for_confirmation_without_records(
     assert FQDN_KEY_LINE in store.read_text()
 
 
+def test_rescan_hosts_rewrites_nothing_when_the_keys_match(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """A rescan of an unchanged host leaves the store file alone: the
+    scanned keys are compared with the entries the store holds, key
+    by key, and the fresh salt of a hashed host name does not count
+    as a change."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    stub_dns(monkeypatch, set(), authenticated=True)
+    store = tmp_path / "store"
+
+    first = rescan_hosts(project, ["web"], store=str(store))
+
+    assert first[0][1]
+    content = store.read_bytes()
+    assert content.strip()
+
+    second = rescan_hosts(project, ["web"], store=str(store))
+
+    assert second[0][1]
+    assert 'match the entries the store already holds' in second[0][2]
+    assert store.read_bytes() == content
+
+
+def test_rescan_hosts_rewrites_the_entries_of_a_changed_key(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """A host whose key changed gets its entries rewritten, and a
+    rescan of the rotated state is idempotent like any other."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    stub_dns(monkeypatch, set(), authenticated=True)
+    store = tmp_path / "store"
+
+    rescan_hosts(project, ["web"], store=str(store))
+    content_before = store.read_bytes()
+
+    binaries = project.config.raw['binaries']
+    binaries['ssh-keyscan'] = fake_binary(
+        "rotated-keyscan",
+        "#!/bin/sh\nprintf '%s\\n' \"$4 ssh-ed25519 "
+        + base64.b64encode(b'\x42' * 32).decode('ascii') + "\"\n")
+
+    results = rescan_hosts(project, ["web"], store=str(store))
+
+    assert results[0][1]
+    content = store.read_bytes()
+    assert content != content_before
+    assert base64.b64encode(b'\x42' * 32).decode('ascii') \
+        in content.decode()
+    assert 'match the entries the store already holds' \
+        not in results[0][2]
+
+    results = rescan_hosts(project, ["web"], store=str(store))
+
+    assert results[0][1]
+    assert 'match the entries the store already holds' in results[0][2]
+    assert store.read_bytes() == content
+
+
 def test_rescan_hosts_confirmation_gates_the_validated_match(
         monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
     """With '--confirm', the DNSSEC-validated match is offered like
