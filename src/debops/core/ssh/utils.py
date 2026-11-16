@@ -339,6 +339,184 @@ def translate_ssh_args(ssh_args):
     return translated, dropped
 
 
+def _split_hop(hop):
+    """Split a jump hop specification into the destination of the jump
+    process and its port.
+
+    The grammar of a '-J' hop: '[user@]host[:port]', with brackets
+    around an IPv6 address which carries a port. The plain destination
+    grammar of ssh does not parse 'host:port', so the port is carried
+    as the '-p' option of the jump process, the way the implicit
+    ProxyCommand of ssh carries it.
+    """
+    user = None
+    hostport = hop
+    if '@' in hostport:
+        user, _, hostport = hostport.rpartition('@')
+    port = None
+    if hostport.startswith('[') and ']' in hostport:
+        host, _, remainder = hostport[1:].partition(']')
+        host = '[' + host + ']'
+        if remainder.startswith(':') and remainder[1:].isdigit():
+            port = remainder[1:]
+    else:
+        host, separator, candidate = hostport.rpartition(':')
+        if not separator or not candidate.isdigit():
+            host = hostport
+        else:
+            port = candidate
+    destination = (user + '@' if user else '') + host
+    return destination, port
+
+
+def proxy_jump_command(hop, option_pairs):
+    """Return the ProxyCommand option value which runs the connection
+    through a jump host with the given option pairs of the parent.
+
+    OpenSSH builds the connection to a jump host from the parent
+    command line as a child 'ssh -W [%h]:%p <hop>' which inherits only
+    the '-F' and '-v' options of the parent: the options DebOps
+    composes for the destination -- the known_hosts store, the host
+    key checking mode, the connection timeout -- never reach the jump
+    process. The explicit ProxyCommand carries them.
+
+    The value is executed by the shell, so every element which may
+    carry shell syntax is quoted: the '-W [%h]:%p' forwarding tokens
+    are quoted the way the implicit ProxyJump command of ssh quotes
+    them, and the destination of the jump process is quoted with the
+    shell quoting rules. The option pairs arrive already in their
+    final form; the store path inside them is quoted by
+    'quote_store_path'.
+    """
+    destination, port = _split_hop(hop)
+    parts = ['ssh']
+    if port:
+        parts.extend(['-p', port])
+    for pair in option_pairs:
+        if isinstance(pair, tuple):
+            parts.extend(pair)
+        else:
+            parts.append(pair)
+    parts.extend(['-W', shlex.quote('[%h]:%p')])
+    parts.append(shlex.quote(destination))
+    return 'ProxyCommand=' + ' '.join(parts)
+
+
+class JumpRewriter:
+    """Rewrite the structured jump options of a composed ssh command
+    into explicit ProxyCommand options.
+
+    The '-J hop', '-Jhop', '-o ProxyJump=hop' and '-oProxyJump=hop'
+    forms of a single hop become '-o ProxyCommand=...' options which
+    run the jump connection with the option pairs given at the
+    construction -- the trust and mode options of the parent command.
+    The rewriting instance accumulates its state across the argument
+    groups of one command, so a 'ProxyCommand' of the operator in one
+    group and a structured jump in another are recognized as the
+    ambiguity they are: 'check' raises ValueError when both appear,
+    because the ProxyCommand would shadow the jump handling of DebOps
+    and the discovered jump would not be the bastion the connection
+    actually traverses.
+
+    A comma-separated hop list, a jump chain, is left unchanged: every
+    additional hop would need another nested ProxyCommand layer with
+    its own quoting; the chains are a documented limitation of the
+    suite.
+    """
+
+    def __init__(self, option_pairs):
+        self.option_pairs = list(option_pairs)
+        self._jump_rewritten = False
+        self._proxy_seen = False
+
+    def rewrite_tokens(self, tokens):
+        """Return the token list with the structured jumps rewritten.
+
+        The '-o' options are consumed together with their value token,
+        so a value which resembles a jump option is never inspected on
+        its own.
+        """
+        result = []
+        index = 0
+        while index < len(tokens):
+            token = tokens[index]
+            if token == '-o':
+                value = tokens[index + 1] if index + 1 < len(tokens) else None
+                if value is not None and value.startswith('ProxyJump='):
+                    hop = value[len('ProxyJump='):]
+                    if hop and ',' not in hop:
+                        self._jump_rewritten = True
+                        result.append('-o')
+                        result.append(
+                            proxy_jump_command(hop, self.option_pairs))
+                        index += 2
+                        continue
+                if value is not None and value.startswith('ProxyCommand='):
+                    self._proxy_seen = True
+                result.append(token)
+                if value is not None:
+                    result.append(value)
+                    index += 2
+                else:
+                    index += 1
+                continue
+            letter = token[1] if len(token) > 1 else ''
+            attached = len(token) > 2
+            hop = None
+            consumed = 1
+            if token == '-J' or (letter == 'J' and attached):
+                hop = token[2:] if attached else (
+                    tokens[index + 1] if index + 1 < len(tokens) else None)
+                consumed = 2 if (not attached and hop is not None) else 1
+            elif attached and letter == 'o' \
+                    and token[2:].startswith('ProxyJump='):
+                hop = token[2:][len('ProxyJump='):]
+            elif token.startswith('ProxyCommand='):
+                self._proxy_seen = True
+            if hop is None:
+                result.append(token)
+                index += consumed
+                continue
+            if not hop or ',' in hop:
+                result.extend(tokens[index:index + consumed])
+                index += consumed
+                continue
+            self._jump_rewritten = True
+            result.extend(['-o', proxy_jump_command(hop, self.option_pairs)])
+            index += consumed
+        return result
+
+    def rewrite_pairs(self, pairs):
+        """Return the option pair list with the structured jumps
+        rewritten."""
+        result = []
+        for pair in pairs:
+            if isinstance(pair, tuple) and pair[0] == '-o' \
+                    and pair[1].startswith('ProxyJump='):
+                hop = pair[1][len('ProxyJump='):]
+                if hop and ',' not in hop:
+                    self._jump_rewritten = True
+                    result.append(
+                        ('-o', proxy_jump_command(hop, self.option_pairs)))
+                    continue
+            if isinstance(pair, tuple) and pair[0] == '-o' \
+                    and pair[1].startswith('ProxyCommand='):
+                self._proxy_seen = True
+            elif isinstance(pair, str) and pair.startswith('ProxyCommand='):
+                self._proxy_seen = True
+            result.append(pair)
+        return result
+
+    def check(self):
+        """Raise ValueError when a ProxyCommand coexists with a
+        structured jump of the same command."""
+        if self._jump_rewritten and self._proxy_seen:
+            raise ValueError(
+                'The connection defines both a ProxyCommand and a jump '
+                'host; the ProxyCommand would shadow the jump handling '
+                'of DebOps, so the connection is refused')
+
+
 # The connection options of the ssh connection plugin, each in the
 # resolution order the plugin applies: the inventory variables over
 # the environment over the option of the 'ansible.cfg'. The table

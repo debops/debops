@@ -25,11 +25,13 @@ import pytest
 import debops.core.ssh as ssh_module
 from debops.core.ssh import (SCP_OPTIONS_WITH_VALUE, SFTP_OPTIONS_WITH_VALUE,
                              SSH_OPTIONS_WITH_VALUE,
-                             build_handoff_command, build_ssh_command,
+                             JumpRewriter, build_handoff_command,
+                             build_ssh_command,
                              ensure_store_dir, host_identifiers,
                              known_hosts_mode, known_hosts_option,
                              known_hosts_store,
-                             parse_config_stores, remove_command,
+                             parse_config_stores, proxy_jump_command,
+                             remove_command,
                              render_config_snippet,
                              rescan_actions, resolve_destination,
                              build_scp_command, build_sftp_command,
@@ -145,7 +147,8 @@ def test_build_ssh_command_prefers_the_explicit_options(
         "-l", "override",
         "-p", "1022",
         "-i", "/other/key",
-        "-J", "jump@bastion",
+        "-o", "ProxyCommand=ssh -o ConnectTimeout=10 "
+              "-W '[%h]:%p' jump@bastion",
         "-o", "Foo=1",
         "-o", "ConnectTimeout=10",
         "192.0.2.10",
@@ -190,7 +193,9 @@ def test_build_ssh_command_passes_the_connection_extras_through(
                                 ssh_args=["ls", "-l", "/"])
 
     assert in_sequence(command, ["-o", "ControlMaster=auto"])
-    assert in_sequence(command, ["-J", "jump@bastion"])
+    assert in_sequence(command, ["-o", "ProxyCommand=ssh "
+                                 "-o ConnectTimeout=10 -W '[%h]:%p' "
+                                 "jump@bastion"])
     assert in_sequence(command, ["-o", "Foo=1"])
     assert command[command.index("192.0.2.10"):] == \
         ["192.0.2.10", "ls", "-l", "/"]
@@ -1800,6 +1805,96 @@ def test_translate_ssh_args_drops_a_trailing_value_option():
 
     assert translated == [("-o", "ProxyJump=1234:localhost:22")]
     assert dropped == ["-F"]
+
+
+def test_proxy_jump_command_carries_the_options_and_the_port():
+    """The ProxyCommand value runs the jump connection with the given
+    option pairs of the parent, and the port of the hop is carried as
+    the '-p' option, the way the implicit ProxyJump command of ssh
+    carries it."""
+    value = proxy_jump_command(
+        "jump@bastion:2222",
+        [("-o", "UserKnownHostsFile=/store"), ("-o", "BatchMode=yes")])
+
+    assert value == ("ProxyCommand=ssh -p 2222 "
+                     "-o UserKnownHostsFile=/store -o BatchMode=yes "
+                     "-W '[%h]:%p' jump@bastion")
+
+
+def test_proxy_jump_command_quotes_the_shell_syntax():
+    """The value is executed by the shell: the IPv6 brackets and the
+    spaces of a destination are quoted, so they survive the shell."""
+    value = proxy_jump_command("[2001:db8::1]:2222", [])
+
+    assert "-p 2222" in value
+    assert "'[2001:db8::1]'" in value
+
+
+def test_jump_rewriter_rewrites_the_option_forms():
+    """The four option forms of a single hop are rewritten alike."""
+    for tokens in (["-J", "hop"], ["-Jhop"],
+                   ["-o", "ProxyJump=hop"], ["-oProxyJump=hop"]):
+        rewriter = JumpRewriter([("-o", "UserKnownHostsFile=/s")])
+        rewritten = rewriter.rewrite_tokens(list(tokens))
+        assert rewritten == ["-o", "ProxyCommand=ssh "
+                             "-o UserKnownHostsFile=/s "
+                             "-W '[%h]:%p' hop"], tokens
+
+
+def test_jump_rewriter_consumes_the_option_values_as_pairs():
+    """The '-o' options are consumed with their value tokens, so a
+    store path or another option value is never inspected as a jump
+    option on its own."""
+    rewriter = JumpRewriter([])
+    rewritten = rewriter.rewrite_tokens(
+        ["-o", "UserKnownHostsFile=x", "-J", "hop"])
+
+    assert rewritten == ["-o", "UserKnownHostsFile=x",
+                         "-o", "ProxyCommand=ssh -W '[%h]:%p' hop"]
+
+
+def test_jump_rewriter_leaves_the_chains():
+    """A comma-separated hop list stays unchanged; the chains are a
+    documented limitation of the suite."""
+    rewriter = JumpRewriter([])
+
+    assert rewriter.rewrite_tokens(["-J", "a,b"]) == ["-J", "a,b"]
+    assert rewriter.rewrite_tokens(["-o", "ProxyJump=a,b"]) == \
+        ["-o", "ProxyJump=a,b"]
+    assert rewriter.rewrite_pairs([("-o", "ProxyJump=a,b")]) == \
+        [("-o", "ProxyJump=a,b")]
+
+
+def test_jump_rewriter_refuses_the_proxycommand_mix():
+    """A ProxyCommand of the operator and a structured jump of the
+    same connection are refused: the ProxyCommand would shadow the
+    jump handling of DebOps."""
+    rewriter = JumpRewriter([])
+    rewriter.rewrite_tokens(["-o", "ProxyCommand=nc x", "-J", "hop"])
+
+    with pytest.raises(ValueError):
+        rewriter.check()
+
+
+def test_jump_rewriter_recognizes_the_mix_across_the_groups():
+    """The conflict state accumulates across the argument groups of
+    one command."""
+    rewriter = JumpRewriter([])
+    rewriter.rewrite_tokens(["-o", "ProxyCommand=nc x"])
+    rewriter.rewrite_tokens(["-J", "hop"])
+
+    with pytest.raises(ValueError):
+        rewriter.check()
+
+
+def test_jump_rewriter_rewrites_the_pairs():
+    """The pair form of the file-transfer builders is rewritten
+    alike."""
+    rewriter = JumpRewriter([("-o", "BatchMode=yes")])
+    rewritten = rewriter.rewrite_pairs([("-o", "ProxyJump=hop")])
+
+    assert rewritten == [("-o", "ProxyCommand=ssh -o BatchMode=yes "
+                          "-W '[%h]:%p' hop")]
 
 
 def test_write_config_snippet_writes_through_a_symlink(stub_project,
