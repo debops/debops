@@ -660,7 +660,7 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
 
 
 def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
-                 timeout=10, dns_mode='dns', confirm=None):
+                 timeout=10, dns_mode='dns', confirm=None, variables=None):
     """Cycle the known_hosts entries of the given hosts.
 
     For each host, its current host keys are scanned first and held in
@@ -717,7 +717,10 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
 
     Returns a list of '(host, succeeded, message)' tuples, one per
     host; the message is empty when the host completed the requested
-    phases. Raises ValueError when no store can be determined.
+    phases. The 'variables' parameter carries the host variables a
+    pattern expansion already fetched, keyed by host name -- the hosts
+    it covers resolve without a second invocation of the inventory.
+    Raises ValueError when no store can be determined.
     """
     store_project = None
     if store:
@@ -734,11 +737,15 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
     # The connection parameters of the hosts are resolved up front:
     # the hosts whose connections traverse another host of the run
     # scan after that host, because the connection-scan of a host
-    # behind a jump needs the key of the jump in the store
+    # behind a jump needs the key of the jump in the store. The
+    # variables a pattern expansion already fetched resolve the hosts
+    # without a second invocation
+    variables = variables or {}
     parameters_of = {}
     for host in hosts:
         try:
-            parameters_of[host] = resolve_host(project, host)
+            parameters_of[host] = resolve_host(
+                project, host, variables=variables.get(host))
         except (ValueError, ChildProcessError):
             parameters_of[host] = None
     known_names = set()

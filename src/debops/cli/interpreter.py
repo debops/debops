@@ -444,7 +444,8 @@ class Interpreter(object):
             phases = ('scan',)
 
         try:
-            hosts, unmatched = ssh.resolve_patterns(project, args.hosts)
+            hosts, unmatched, variables = ssh.resolve_patterns(
+                project, args.hosts)
         except (ValueError, ChildProcessError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
@@ -482,8 +483,14 @@ class Interpreter(object):
                     print_error(errmsg)
                     sys.exit(1)
             for host in hosts:
+                # The variables of the pattern expansion resolve the
+                # host without a second invocation
+                parameters = None if host not in variables else \
+                    ssh.resolve_host(project, host,
+                                     variables=variables[host])
                 actions, _ = ssh.rescan_actions(
-                    project, host, store, phases, args.timeout)
+                    project, host, store, phases, args.timeout,
+                    parameters=parameters)
                 for phase, argv in actions:
                     print(shlex.join(argv))
             sys.exit(0)
@@ -510,7 +517,7 @@ class Interpreter(object):
             results = ssh.rescan_hosts(
                 project, hosts, store=args.known_hosts_file,
                 phases=phases, timeout=args.timeout,
-                dns_mode=args.dns_mode,
+                dns_mode=args.dns_mode, variables=variables,
                 confirm=confirm_host if args.confirm else None)
         except (ValueError, OSError) as errmsg:
             print_error(errmsg)

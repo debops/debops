@@ -561,7 +561,7 @@ CONNECTION_OPTIONS = (
 )
 
 
-def resolve_host(project, host):
+def resolve_host(project, host, variables=None):
     """Return the connection parameters of an inventory host.
 
     The parameters come from the Ansible inventory, resolved with
@@ -572,27 +572,32 @@ def resolve_host(project, host):
     with the keys of :data:`CONNECTION_OPTIONS`; parameters which
     nothing defines are None.
 
+    The 'variables' parameter carries the host variables which a
+    pattern expansion already fetched; when given, no resolution of
+    the host runs and the parameters compose from the given variables.
+
     Raises ValueError when the host is not defined in the inventory of
     the project's view, ChildProcessError when the resolution cannot
     run.
     """
-    binary = project.config.raw['binaries']['ansible-inventory']
-    try:
-        process = subprocess.run(
-            [binary, '--host', host], cwd=project.path,
-            env=project.environment(), capture_output=True, text=True)
-    except OSError as error:
-        raise ChildProcessError(
-            'Cannot run the inventory resolution: ' + str(error))
-    if process.returncode != 0:
-        detail = (process.stderr.strip().splitlines() or [''])[-1]
-        raise ValueError('Cannot resolve the host "' + host + '": '
-                         + detail)
-    try:
-        variables = json.loads(process.stdout)
-    except ValueError:
-        raise ValueError('Cannot resolve the host "' + host + '": the '
-                         'inventory returned no usable host variables')
+    if variables is None:
+        binary = project.config.raw['binaries']['ansible-inventory']
+        try:
+            process = subprocess.run(
+                [binary, '--host', host], cwd=project.path,
+                env=project.environment(), capture_output=True, text=True)
+        except OSError as error:
+            raise ChildProcessError(
+                'Cannot run the inventory resolution: ' + str(error))
+        if process.returncode != 0:
+            detail = (process.stderr.strip().splitlines() or [''])[-1]
+            raise ValueError('Cannot resolve the host "' + host + '": '
+                             + detail)
+        try:
+            variables = json.loads(process.stdout)
+        except ValueError:
+            raise ValueError('Cannot resolve the host "' + host + '": the '
+                             'inventory returned no usable host variables')
 
     parameters = {}
     for key, var_names, env_name, section, ini_key in CONNECTION_OPTIONS:
@@ -642,58 +647,70 @@ def resolve_host(project, host):
     return parameters
 
 
-def resolve_patterns(project, patterns):
-    """Expand Ansible inventory patterns into inventory host names.
+def inventory_dump(project, patterns):
+    """Return the host variables of the hosts each pattern matches.
 
-    The patterns are expanded by the 'ansible' binary with
-    '--list-hosts', the same pattern engine the runners use, so
-    'all', the group names, the wildcards and the unions work. The
-    parsed output is the human-oriented listing of the 'ansible' tool
-    and not a versioned interface -- a format change of ansible-core
-    surfaces here, and the raw output is logged at the debug level for
-    such a case. Returns '(hosts, unmatched)': the deduplicated host
-    names in the order of the patterns, and the patterns which matched
-    no host. Raises ValueError when the expansion fails,
-    ChildProcessError when it cannot run.
+    One 'ansible-inventory --list --limit <pattern>' invocation per
+    pattern returns the matched hosts together with their variables --
+    the same dump the '--host' mode prints for a single host. The
+    output is the JSON interface of the inventory, not the
+    human-oriented listing of '--list-hosts'. Returns a list of
+    '(pattern, hostvars)' pairs in the order of the patterns;
+    'hostvars' maps each matched host name to its variables. A pattern
+    which matches no host carries an empty 'hostvars'. Raises
+    ValueError when the resolution fails, ChildProcessError when it
+    cannot run.
     """
-    binary = project.config.raw['binaries']['ansible']
-    hosts = []
-    unmatched = []
+    binary = project.config.raw['binaries']['ansible-inventory']
+    dumps = []
     for pattern in patterns:
         try:
             process = subprocess.run(
-                [binary, pattern, '--list-hosts'], cwd=project.path,
+                [binary, '--list', '--limit', pattern], cwd=project.path,
                 env=project.environment(), capture_output=True, text=True)
         except OSError as error:
             raise ChildProcessError(
-                'Cannot run the pattern expansion: ' + str(error))
+                'Cannot run the inventory resolution: ' + str(error))
         if process.returncode != 0:
             detail = (process.stderr.strip().splitlines() or [''])[-1]
-            raise ValueError('Cannot expand the pattern "' + pattern
+            raise ValueError('Cannot resolve the pattern "' + pattern
                              + '": ' + detail)
-        logger.debug('The pattern expansion of "' + pattern + '" wrote: '
-                     + process.stdout.strip().replace('\n', ' | '))
-        matched = []
-        in_list = False
-        for line in process.stdout.splitlines():
-            if line.startswith('['):
-                continue
-            if not in_list:
-                if line.lstrip().startswith('hosts ('):
-                    in_list = True
-                continue
-            if not line.strip():
-                continue
-            if line.startswith((' ', '\t')):
-                matched.append(line.strip())
-            else:
-                break
-        for host in matched:
-            if host not in hosts:
-                hosts.append(host)
-        if not matched:
+        try:
+            dump = json.loads(process.stdout)
+        except ValueError:
+            raise ValueError(
+                'Cannot resolve the pattern "' + pattern + '": the '
+                'inventory returned no usable data')
+        dumps.append((pattern, dump.get('_meta', {}).get('hostvars', {})))
+    return dumps
+
+
+def resolve_patterns(project, patterns):
+    """Expand Ansible inventory patterns into inventory host names.
+
+    The patterns are expanded by 'ansible-inventory --list --limit',
+    the same pattern engine the runners use, so 'all', the group
+    names, the wildcards and the unions work; each pattern is expanded
+    with its own invocation, whose JSON dump carries the variables of
+    the matched hosts as well. Returns '(hosts, unmatched,
+    variables)': the deduplicated host names in the order of the
+    patterns, the patterns which matched no host, and the variables of
+    the matched hosts keyed by name -- the variables spare the callers
+    a second resolution of every host. Raises ValueError when the
+    expansion fails, ChildProcessError when it cannot run.
+    """
+    hosts = []
+    unmatched = []
+    variables = {}
+    for pattern, hostvars in inventory_dump(project, patterns):
+        if not hostvars:
             unmatched.append(pattern)
-    return hosts, unmatched
+            continue
+        for name, host_variables in hostvars.items():
+            if name not in hosts:
+                hosts.append(name)
+            variables.setdefault(name, host_variables)
+    return hosts, unmatched, variables
 
 
 def resolve_destination(project, name):
@@ -703,22 +720,23 @@ def resolve_destination(project, name):
     expanded the way the Ansible patterns are, and only a name which
     matches itself resolves -- 'all' and the other patterns are the
     domain of 'debops ssh rescan', even when they would match a single
-    host. Raises ValueError when the name is not defined in the
-    inventory or when it matches several hosts, ChildProcessError when
-    the expansion cannot run.
+    host. The expansion and the connection parameters come from one
+    'ansible-inventory --list --limit' invocation. Raises ValueError
+    when the name is not defined in the inventory or when it matches
+    several hosts, ChildProcessError when the expansion cannot run.
     """
-    hosts, _ = resolve_patterns(project, [name])
-    if not hosts:
+    hostvars = inventory_dump(project, [name])[0][1]
+    if not hostvars:
         raise ValueError('Cannot resolve the host "' + name + '": it is '
                          'not defined in the inventory of the view')
-    if hosts == [name]:
-        return resolve_host(project, name)
-    if len(hosts) == 1:
+    if set(hostvars) == {name}:
+        return resolve_host(project, name, variables=hostvars[name])
+    if len(hostvars) == 1:
         raise ValueError('The destination "' + name + '" is an '
                          'inventory pattern; a single host destination '
                          'is required')
     raise ValueError('The destination "' + name + '" matches '
-                     + str(len(hosts)) + ' inventory hosts; a single '
+                     + str(len(hostvars)) + ' inventory hosts; a single '
                      'host destination is required')
 
 

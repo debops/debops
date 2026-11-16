@@ -141,27 +141,33 @@ def test_build_scp_command_passes_the_operator_options(stub_project,
 
 TWO_HOST_INVENTORY = (
     "#!/bin/sh\n"
+    'if [ "$1" = "--host" ]; then\n'
     'if [ "$2" = "web" ]; then\n'
     "    printf '%s' '{\"ansible_host\": \"192.0.2.10\","
     " \"ansible_port\": \"2222\", \"ansible_user\": \"admin\","
     " \"ansible_ssh_private_key_file\": \"/keys/web\"}'\n"
-    "elif [ \"$2\" = \"web2\" ]; then\n"
+    'elif [ "$2" = "web2" ]; then\n'
     "    printf '%s' '{\"ansible_host\": \"192.0.2.11\","
     " \"ansible_port\": \"2223\", \"ansible_user\": \"admin2\","
     " \"ansible_ssh_private_key_file\": \"/keys/web2\"}'\n"
     "else\n"
     "    echo 'ERROR! no such host' >&2\n"
     "    exit 5\n"
-    "fi\n")
-
-TWO_HOST_ANSIBLE = (
-    "#!/bin/sh\n"
-    'if [ "$1" = "web" ]; then\n'
-    "    printf 'hosts (1):\\n    web\\n'\n"
-    'elif [ "$1" = "web2" ]; then\n'
-    "    printf 'hosts (1):\\n    web2\\n'\n"
+    "fi\n"
+    'elif [ "$1" = "--list" ]; then\n'
+    'if [ "$3" = "web" ]; then\n'
+    "    printf '%s' '{\"_meta\": {\"hostvars\": {\"web\": "
+    "{\"ansible_host\": \"192.0.2.10\", \"ansible_port\": \"2222\","
+    " \"ansible_user\": \"admin\","
+    " \"ansible_ssh_private_key_file\": \"/keys/web\"}}}}'\n"
+    'elif [ "$3" = "web2" ]; then\n'
+    "    printf '%s' '{\"_meta\": {\"hostvars\": {\"web2\": "
+    "{\"ansible_host\": \"192.0.2.11\", \"ansible_port\": \"2223\","
+    " \"ansible_user\": \"admin2\","
+    " \"ansible_ssh_private_key_file\": \"/keys/web2\"}}}}'\n"
     "else\n"
-    "    exit 0\n"
+    "    printf '%s' '{\"_meta\": {\"hostvars\": {}}}'\n"
+    "fi\n"
     "fi\n")
 
 
@@ -169,7 +175,6 @@ def two_host_project(stub_project, fake_tools, fake_binary):
     binaries = dict(fake_tools["binaries"])
     binaries["ansible-inventory"] = fake_binary(
         "two-host-inventory", TWO_HOST_INVENTORY)
-    binaries["ansible"] = fake_binary("two-host-ansible", TWO_HOST_ANSIBLE)
     return stub_project(raw={"binaries": binaries})
 
 
@@ -233,14 +238,13 @@ def test_build_scp_command_uses_the_explicit_identity(
 
 
 def test_build_scp_command_drops_the_forwards(stub_project, fake_tools,
-                                              fake_binary):
+                                              inventory_fake):
     """A forward configured for a host does not transfer to the file
     transfer connection."""
-    inventory = fake_binary(
+    inventory = inventory_fake(
         "forward-inventory",
-        "#!/bin/sh\n"
-        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
-        " \"ansible_ssh_common_args\": \"-L 1234:localhost:5678\"}'\n")
+        '{"ansible_host": "192.0.2.10",'
+        ' "ansible_ssh_common_args": "-L 1234:localhost:5678"}')
     binaries = dict(fake_tools["binaries"])
     binaries["ansible-inventory"] = inventory
     project = stub_project(raw={"binaries": binaries})
@@ -306,16 +310,15 @@ def test_build_scp_command_refuses_an_undeclared_store(stub_project, fake_tools)
 
 
 def test_build_scp_command_uses_the_per_host_executable_and_extra_args(
-        stub_project, fake_tools, fake_binary):
+        stub_project, fake_tools, inventory_fake):
     """ansible_scp_executable and ansible_scp_extra_args from the
     inventory shape the transfer command."""
     binaries = dict(fake_tools["binaries"])
-    binaries["ansible-inventory"] = fake_binary(
+    binaries["ansible-inventory"] = inventory_fake(
         "transfer-inventory",
-        "#!/bin/sh\n"
-        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
-        " \"ansible_scp_executable\": \"/usr/bin/scp-legacy\","
-        " \"ansible_scp_extra_args\": \"-O\"}'\n")
+        '{"ansible_host": "192.0.2.10",'
+        ' "ansible_scp_executable": "/usr/bin/scp-legacy",'
+        ' "ansible_scp_extra_args": "-O"}')
     project = stub_project(raw={"binaries": binaries})
 
     command = build_scp_command(project, ["web:/src"], "local")
@@ -398,19 +401,18 @@ def test_build_scp_command_carries_the_store_once(stub_project,
 
 def test_build_scp_command_leads_the_derived_options(stub_project,
                                                      fake_tools,
-                                                     fake_binary):
+                                                     inventory_fake):
     """The store, the accept-new instruction and the port of the
     inventory precede the translated arguments: ssh applies the first
     obtained value, and the derived values must not be defeated by
     the view's ssh_args."""
     binaries = dict(fake_tools["binaries"])
-    binaries["ansible-inventory"] = fake_binary(
+    binaries["ansible-inventory"] = inventory_fake(
         "hardened-inventory",
-        "#!/bin/sh\n"
-        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
-        " \"ansible_port\": 2222,"
-        " \"ansible_ssh_args\": \"-o StrictHostKeyChecking=yes"
-        " -o Port=9999\"}'\n")
+        '{"ansible_host": "192.0.2.10",'
+        ' "ansible_port": 2222,'
+        ' "ansible_ssh_args": "-o StrictHostKeyChecking=yes'
+        ' -o Port=9999"}')
     project = stub_project(
         raw={"binaries": binaries,
              "views": {"system": {"ssh": {"known_hosts": "project"}}}},
@@ -432,19 +434,18 @@ def test_build_scp_command_leads_the_derived_options(stub_project,
 
 def test_build_scp_command_strips_the_resolved_ports(stub_project,
                                                      fake_tools,
-                                                     fake_binary):
+                                                     inventory_fake):
     """scp re-emits its own port after the options it forwards, so a
     'Port=' in the resolved arguments would win over the '-P' of the
     inventory regardless of the composed order; the resolved ports
     are stripped and the inventory port is the port the transfer
     uses."""
     binaries = dict(fake_tools["binaries"])
-    binaries["ansible-inventory"] = fake_binary(
+    binaries["ansible-inventory"] = inventory_fake(
         "ported-args-inventory",
-        "#!/bin/sh\n"
-        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
-        " \"ansible_port\": 2222,"
-        " \"ansible_ssh_args\": \"-o Port=9999\"}'\n")
+        '{"ansible_host": "192.0.2.10",'
+        ' "ansible_port": 2222,'
+        ' "ansible_ssh_args": "-o Port=9999"}')
     project = stub_project(raw={"binaries": binaries})
 
     command = build_scp_command(project, ["/etc/hostname"], "web:/tmp/x")
