@@ -940,33 +940,11 @@ def test_create_ssh_writes_the_known_hosts_configuration(tmp_path):
         assert (os.stat(directory).st_mode & 0o777) == 0o700
 
     gitignore = (tmp_path / "example" / ".gitignore").read_text()
-    assert "/.debops/ssh/views/*/known_hosts*" in gitignore
+    # The store files are tracked in the project repository, so the
+    # history records the changes of the host trust
+    assert "/.debops/ssh" not in gitignore
     assert not (tmp_path / "example" / ".debops" / "ssh" /
                 ".gitignore").exists()
-
-
-def test_ssh_replaces_the_broad_gitignore_entry(tmp_path):
-    """A '.gitignore' which ignored the whole '.debops/ssh/' tree is
-    narrowed to the known_hosts files."""
-    project_dir = tmp_path / "example"
-    project_dir.mkdir()
-    (project_dir / ".gitignore").write_text(
-        "#-- operator content\n/.debops/venv/\n/.debops/ssh/\n")
-
-    project = ProjectDir(str(project_dir), create=True,
-                         project_type="modern",
-                         config=make_configuration())
-    project.create(git_repo=False, ssh=True)
-
-    lines = (project_dir / ".gitignore").read_text().splitlines()
-    assert "/.debops/ssh/" not in lines
-    assert "/.debops/ssh/views/*/known_hosts*" in lines
-    assert "#-- operator content" in lines
-
-    ansible_cfg = (tmp_path / "example" / "ansible" / "views" / "system" /
-                   "ansible.cfg").read_text()
-    assert "[ssh_connection]" in ansible_cfg
-    assert "UserKnownHostsFile=" in ansible_cfg
 
 
 def test_mkview_ssh_writes_the_drop_in_for_the_new_view(tmp_path):
@@ -1789,28 +1767,6 @@ def test_init_detects_an_encrypted_inventory(tmp_path, monkeypatch):
 
     assert project.config.raw["views"]["system"]["encryption"] == {
             "enabled": True, "mounted": False, "type": "encfs"}
-
-
-def test_ssh_updates_the_gitignore_pattern_of_the_store(tmp_path):
-    """The ignore pattern which covered only the store file learns the
-    'known_hosts.old' backups which 'ssh-keygen -R' leaves next to
-    it."""
-    project_dir = tmp_path / "example"
-    project_dir.mkdir()
-    (project_dir / ".gitignore").write_text(
-        "#-- operator content\n"
-        "/.debops/ssh/views/*/known_hosts\n")
-
-    project = ProjectDir(str(project_dir), create=True,
-                         project_type="modern",
-                         config=make_configuration())
-    project.create(git_repo=False, ssh=True)
-
-    lines = (project_dir / ".gitignore").read_text().splitlines()
-    assert "/.debops/ssh/views/*/known_hosts*" in lines
-    assert "/.debops/ssh/views/*/known_hosts\n" not in \
-        (project_dir / ".gitignore").read_text()
-    assert "#-- operator content" in lines
 
 
 def test_the_project_machinery_imports_without_dnspython():
