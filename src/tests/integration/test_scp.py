@@ -9,6 +9,7 @@ working public key authentication to it; they skip otherwise. The
 '--eval' tests only compose the command and run everywhere.
 """
 
+import shlex
 import socket
 import subprocess
 
@@ -82,7 +83,9 @@ def test_scp_eval_translates_the_jump(run_debops, tmp_path, debops_env):
                         cwd=str(project_dir), env=debops_env)
 
     assert result.returncode == 0
-    assert "-o ProxyJump=operator@incus.example.org" in result.stdout
+    command = shlex.split(result.stdout)
+    assert "ProxyCommand=ssh -W '[%h]:%p' operator@incus.example.org" \
+        in command
 
 
 def test_scp_copies_a_file_to_the_host(run_debops, tmp_path, debops_env,
