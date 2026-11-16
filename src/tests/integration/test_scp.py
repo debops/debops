@@ -93,12 +93,15 @@ def test_scp_copies_a_file_to_the_host(run_debops, tmp_path, debops_env,
     project_dir = make_project(run_debops, tmp_path, debops_env)
     local_file = tmp_path / "source.txt"
     local_file.write_text("copy me\n")
+    # The remote path derives from the test's own temporary directory,
+    # so the runs do not share or litter fixed /tmp names
+    remote_copy = "/tmp/" + tmp_path.name + "-remote-copy"
 
-    result = run_debops("scp", str(local_file), "testhost:/tmp/remote-copy",
+    result = run_debops("scp", str(local_file), "testhost:" + remote_copy,
                         cwd=str(project_dir), env=debops_env)
     assert result.returncode == 0
 
-    back = run_debops("ssh", "testhost", "cat", "/tmp/remote-copy",
+    back = run_debops("ssh", "testhost", "cat", remote_copy,
                       cwd=str(project_dir), env=debops_env)
     assert back.stdout == "copy me\n"
 
@@ -143,9 +146,11 @@ def test_scp_copies_multiple_files_to_the_host(run_debops, tmp_path,
                                                debops_env, localhost_ssh):
     """Several local sources copy to the host in one command."""
     project_dir = make_project(run_debops, tmp_path, debops_env)
-    first = tmp_path / "scp-multi-first.txt"
+    # The remote names follow the local names, which derive from the
+    # test's own temporary directory
+    first = tmp_path / (tmp_path.name + "-first.txt")
     first.write_text("one\n")
-    second = tmp_path / "scp-multi-second.txt"
+    second = tmp_path / (tmp_path.name + "-second.txt")
     second.write_text("two\n")
 
     result = run_debops("scp", str(first), str(second), "testhost:/tmp/",
@@ -153,9 +158,9 @@ def test_scp_copies_multiple_files_to_the_host(run_debops, tmp_path,
 
     assert result.returncode == 0
 
-    back = run_debops("ssh", "testhost", "cat", "/tmp/scp-multi-first.txt",
+    back = run_debops("ssh", "testhost", "cat", "/tmp/" + first.name,
                       cwd=str(project_dir), env=debops_env)
     assert back.stdout == "one\n"
-    back = run_debops("ssh", "testhost", "cat", "/tmp/scp-multi-second.txt",
+    back = run_debops("ssh", "testhost", "cat", "/tmp/" + second.name,
                       cwd=str(project_dir), env=debops_env)
     assert back.stdout == "two\n"
