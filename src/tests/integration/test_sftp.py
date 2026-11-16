@@ -11,6 +11,7 @@ everywhere.
 """
 
 import getpass
+import shlex
 
 import pytest
 
@@ -81,7 +82,9 @@ def test_sftp_eval_translates_the_jump(run_debops, tmp_path, debops_env):
                         cwd=str(project_dir), env=debops_env)
 
     assert result.returncode == 0
-    assert "-o ProxyJump=operator@incus.example.org" in result.stdout
+    command = shlex.split(result.stdout)
+    assert "ProxyCommand=ssh -W '[%h]:%p' operator@incus.example.org" \
+        in command
 
 
 def test_sftp_batch_session_transfers_a_file(run_debops, tmp_path,

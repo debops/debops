@@ -15,8 +15,9 @@ import os
 import shlex
 
 from .store import known_hosts_option, require_store
-from .utils import (bracket_ipv6, compose_options, resolve_destination,
-                    split_host_path, translate_ssh_args, without_known_hosts_options)
+from .utils import (JumpRewriter, bracket_ipv6, compose_options,
+                    resolve_destination, split_host_path,
+                    translate_ssh_args, without_known_hosts_options)
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +108,20 @@ def build_sftp_command(project, destination, identity=None, accept=False,
             + ' '.join(dropped),
             extra={'allow': 'stderr'})
     ssh_options.extend(translated)
+
+    # The options the jump process runs with are the ones of the
+    # session: the store of the view and the host key checking mode;
+    # the structured jumps are rewritten into explicit ProxyCommand
+    # options which carry them into the jump process
+    child_pairs = []
+    if inject:
+        child_pairs.append(('-o', known_hosts_option(store)))
+    if accept:
+        child_pairs.append(('-o', 'StrictHostKeyChecking=accept-new'))
+    rewriter = JumpRewriter(child_pairs)
+    ssh_options = rewriter.rewrite_pairs(ssh_options)
+    rewriter.check()
+
     command.extend(compose_options(ssh_options))
 
     command.extend(sftp_head_args or [])
