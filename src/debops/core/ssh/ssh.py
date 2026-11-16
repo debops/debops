@@ -684,6 +684,30 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
         details
 
 
+def _entry_key_material(lines):
+    """Return the '(key type, key blob)' pairs of known_hosts entry
+    lines.
+
+    The comparison of a scanned key against the stored entries runs on
+    the key material alone: the hashed form of a host name carries a
+    fresh salt on every scan, so the text of an unchanged entry
+    changes while its key does not. The marker lines ('@cert-authority',
+    '@revoked') carry their material one field later.
+    """
+    material = set()
+    for line in lines:
+        if line.startswith('#'):
+            continue
+        fields = line.split()
+        if fields and fields[0].startswith('@'):
+            if len(fields) < 4:
+                continue
+            material.add((fields[2], fields[3]))
+        elif len(fields) >= 3:
+            material.add((fields[1], fields[2]))
+    return material
+
+
 def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                  timeout=10, dns_mode='dns', confirm=None, variables=None):
     """Cycle the known_hosts entries of the given hosts.
@@ -717,6 +741,13 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
     A host which fails a phase is reported and the remaining
     hosts continue, so one host without a running sshd does not mask
     the results of the others.
+
+    The scanned keys are compared with the entries the store holds,
+    key by key, and only the entries of the identifiers whose key
+    material changed are rewritten: a rescan of an unchanged host
+    leaves the store file alone. The hashed host names of the
+    entries carry a fresh salt on every scan, so the comparison runs
+    on the key material and not on the text of the lines.
 
     A host whose connection traverses a jump host scans after the
     jump: the keys of the jump must be in the store before a
@@ -808,10 +839,12 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
         details = []
         store_keys = None
         scan_ok = None
+        keys_by_identifier = {}
 
         if 'scan' in phases:
             keys = []
             scanned = set()
+            keys_by_identifier = {}
             for phase, argv in actions:
                 if phase != 'scan':
                     continue
@@ -828,6 +861,9 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                          if line and not line.startswith('#')]
                 if fresh:
                     scanned.add(argv[-1])
+                    merged = keys_by_identifier.get(argv[-1], [])
+                    keys_by_identifier[argv[-1]] = merged + [
+                        line for line in fresh if line not in merged]
                 keys.extend(line for line in fresh
                             if line not in keys)
             scan_ok = bool(keys)
@@ -844,6 +880,7 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                 destination = (parameters or {}).get('destination')
                 if keys and destination:
                     scanned.add(destination)
+                    keys_by_identifier[destination] = list(keys)
                 scan_ok = bool(keys)
             if keys:
                 trust_unsigned = project.config.raw.get('ssh', {}).get(
@@ -861,15 +898,57 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                 details.append('no resolvable identifiers to scan for '
                                + host)
 
+        # The entries the store already holds, per the identifier the
+        # scan covers; 'ssh-keygen -F' resolves the hashed entries
+        # whatever salt they were hashed with
+        store_existed = os.path.exists(store)
+        stored_material = {}
+        changed = set()
+        line_identifier = {}
+        if 'scan' in phases and store_keys:
+            if store_existed:
+                binaries = project.config.raw['binaries']
+                port = (parameters or {}).get('port')
+                for identifier in scanned:
+                    qualified = identifier
+                    if port and str(port) != '22':
+                        qualified = '[' + identifier + ']:' + str(port)
+                    probe = subprocess.run(
+                        [binaries['ssh-keygen'], '-F', qualified,
+                         '-f', store],
+                        capture_output=True, text=True)
+                    stored_material[identifier] = _entry_key_material(
+                        probe.stdout.splitlines())
+            for identifier, lines in keys_by_identifier.items():
+                for line in lines:
+                    line_identifier.setdefault(line, identifier)
+            for identifier in scanned:
+                accepted = _entry_key_material(
+                    [line for line in store_keys
+                     if line_identifier.get(line) == identifier])
+                if accepted != stored_material.get(identifier, set()):
+                    changed.add(identifier)
+            if store_existed and not changed:
+                # Every scanned key matches the entry the store
+                # already holds, key material for key material: the
+                # file stays as it is, and a tracked store gains no
+                # commit for an unchanged host
+                details.append('the scanned keys match the entries the '
+                               'store already holds')
+        append_keys = [line for line in (store_keys or [])
+                       if line_identifier.get(line) in changed]
+
         # The stored entries of a host are only removed when the scan
         # produced keys to store, or when the removal was requested
         # explicitly without a scan phase. A failed scan and keys
         # which were refused keep the old trust intact: the removal
-        # never leaves a host without its known entries.
+        # never leaves a host without its known entries. The entries
+        # of the identifiers whose keys did not change stay untouched,
+        # their hashed host names and all.
         if scan_ok is None:
             remove_entries = 'remove' in phases
         else:
-            remove_entries = bool(scan_ok and store_keys)
+            remove_entries = bool(scan_ok and changed)
         # The cycle of removals and appends works on a copy of the
         # store which replaces it atomically: a crash between the
         # removals and the append leaves the operator's store as it
@@ -880,12 +959,11 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
             # client configuration is: the target the operator's
             # dotfiles manage keeps receiving the entries
             store = os.path.realpath(store)
-        store_existed = os.path.exists(store)
         work_store = store
         temp_path = None
         backup = None
         try:
-            if (store_existed and remove_entries) or store_keys:
+            if (store_existed and remove_entries) or append_keys:
                 ensure_store_dir(store, store_project)
                 # The store is created with the private mode from the
                 # start, without the world-readable window between the
@@ -914,14 +992,10 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                     if phase != 'remove':
                         continue
                     if 'scan' in phases:
-                        # Only the identifiers which answered the scan
-                        # have their entries replaced; the entries of
-                        # the identifiers which did not respond stay
-                        # until they do
                         bare = argv[2]
                         if bare.startswith('[') and ']' in bare:
                             bare = bare[1:bare.index(']')]
-                        if bare not in scanned:
+                        if bare not in changed:
                             continue
                     process = subprocess.run(
                         argv[:-1] + [work_store],
@@ -932,9 +1006,9 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                                   or [''])[-1]
                         details.append('cannot remove the entries of '
                                        + argv[2] + ': ' + detail)
-            if store_keys:
+            if append_keys:
                 with open(work_store, 'ab') as handle:
-                    handle.write(('\n'.join(store_keys) + '\n').encode())
+                    handle.write(('\n'.join(append_keys) + '\n').encode())
             if work_store is not store:
                 # The private mode is the store's mode, established or
                 # created
@@ -951,10 +1025,26 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
         message = '; '.join(details)
         results.append((host, succeeded, message))
         if succeeded:
-            logger.notice(
-                'Refreshed the known_hosts entries of the host '
-                '"' + host + '" in ' + store,
-                extra={'allow': ['stderr', 'syslog']})
+            if 'scan' not in phases:
+                # The removal ran without a scan; the action was a
+                # removal, and the notice says so
+                logger.notice(
+                    'Removed the known_hosts entries of the host '
+                    '"' + host + '" from ' + store,
+                    extra={'allow': ['stderr', 'syslog']})
+            else:
+                logger.notice(
+                    'Refreshed the known_hosts entries of the host '
+                    '"' + host + '" in ' + store,
+                    extra={'allow': ['stderr', 'syslog']})
+            if message:
+                # The details of the refresh carry the trust decisions
+                # of the run: the verification verdicts and the entries
+                # which were left alone. They belong next to the host
+                # they describe
+                logger.notice(
+                    '  ' + message,
+                    extra={'allow': ['stderr', 'syslog']})
         else:
             logger.error(
                 'Cannot refresh the known_hosts entries of the host '
