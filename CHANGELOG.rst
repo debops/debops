@@ -85,6 +85,20 @@ General
   top of the project directory environment. The file is ignored by
   git and holds variables specific to one view.
 
+:ref:`debops.zabbix_agent` role
+'''''''''''''''''''''''''''''''
+
+- The connection encryption mode can now be selected: a pre-shared key
+  (the previous behaviour), an X.509 certificate from a PKI realm managed
+  by the :ref:`debops.pki` role, or unencrypted connections. In the
+  certificate mode the role installs a PKI hook which restarts the agent
+  when its certificate is renewed.
+
+- The role can register the host in Zabbix through the JSON-RPC API, with
+  host groups, templates, macros, tags and encryption settings defined in
+  the Ansible inventory. Objects added to the host in Zabbix by other means
+  are preserved.
+
 Changed
 ~~~~~~~
 
