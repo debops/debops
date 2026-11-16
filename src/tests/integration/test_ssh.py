@@ -177,6 +177,28 @@ def test_ssh_rescan_writes_the_local_host_keys(run_debops, tmp_path,
     assert " ssh-" in content, "the store holds no SSH host key"
 
 
+def test_ssh_rescan_of_an_unchanged_host_rewrites_nothing(
+        run_debops, tmp_path, debops_env):
+    """The salted host-name hashes of a real keyscan change on every
+    run; the rescan compares the key material, so scanning an
+    unchanged host twice leaves the store byte-identical."""
+    if not sshd_listens():
+        pytest.skip("no sshd listening on localhost")
+    project_dir = make_project(run_debops, tmp_path, debops_env)
+    store = tmp_path / "known_hosts"
+
+    result = run_debops("ssh", "rescan", "-f", str(store), "testhost",
+                        cwd=str(project_dir), env=debops_env)
+    assert result.returncode == 0
+    first = store.read_bytes()
+    assert first.strip()
+
+    result = run_debops("ssh", "rescan", "-f", str(store), "testhost",
+                        cwd=str(project_dir), env=debops_env)
+    assert result.returncode == 0
+    assert store.read_bytes() == first
+
+
 def test_ssh_config_prints_the_managed_block(run_debops, tmp_path,
                                              debops_env):
     project_dir = make_project(run_debops, tmp_path, debops_env)

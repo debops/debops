@@ -240,8 +240,22 @@ Three properties of the store matter:
   permissions of a real :file:`~/.ssh` directory.
 - The store files are tracked in the git repository of the project:
   the history records how the trust of the project changed, which
-  keys were accepted and when they were replaced. The rest of the
-  :file:`.debops/ssh/` tree stays available for other uses.
+  keys were accepted and when they were replaced. The store holds
+  the public keys of your hosts together with their identifiers, so
+  a repository others can read shows them the shape of your fleet;
+  the ``HashKnownHosts`` option of your ssh client configuration
+  decides how readable the identifiers are.
+
+- The rescan rewrites only the entries of the hosts whose keys
+  changed: it compares the keys it scans with the entries the store
+  holds, key by key, and a rescan of an unchanged host leaves the
+  store file alone. With the automatic commits of the project, a new
+  commit appears when the keys of a host change: the host serves a
+  different key than the store holds, a host enters the store for
+  the first time, an identifier of a host is added to or removed
+  from the store, or the operator accepts a different set of keys
+  than the store already holds. The rest of the :file:`.debops/ssh/`
+  tree stays available for other uses.
 
 The ``user`` mode and the ``project`` mode can be active at the same time
 in different views. The ssh suite commands refuse a view whose ``project``

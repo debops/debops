@@ -20,7 +20,7 @@ HOST_VARS = ('{"ansible_host": "192.0.2.10", "ansible_user": "admin", '
              ' "ansible_ssh_common_args": "-J jump@bastion",'
              ' "ansible_ssh_extra_args": "-o Foo=1"}')
 
-FAKE_KEY = "|1|hashed|key| ssh-ed25519 AAAAfakekey"
+FAKE_KEY = "ssh-ed25519 AAAAfakekey"
 
 
 def write_fake_binary(path, body):
@@ -126,19 +126,52 @@ def fake_tools(tmp_path):
                                   "    ;;\n"
                                   "esac\n"
                                   "fi\n")
+    # The key removal logs its arguments and removes the entries it
+    # was asked to remove, the way the real ssh-keygen -R does for
+    # the plain-line entries the fake key scan writes; the '-F'
+    # lookup of the rescan's change detection is answered with a
+    # plain-line search
     keygen = write_fake_binary(tmp_path / "fake-ssh-keygen",
                                "#!/bin/sh\n"
                                "printf '%s\\n' \"$*\" >> "
-                               + shlex.quote(str(log)) + "\n")
+                               + shlex.quote(str(log)) + "\n"
+                               'if [ "$1" = "-R" ] && [ "$3" = "-f" ]; '
+                               'then\n'
+                               "    awk -v id=\"$2\" '$1 != id' \"$4\" "
+                               "> \"$4.filtered\" 2>/dev/null "
+                               "&& mv \"$4.filtered\" \"$4\"\n"
+                               "fi\n"
+                               'if [ "$1" = "-F" ] && [ "$3" = "-f" ]; '
+                               'then\n'
+                               "    grep -F -- \"$2\" \"$4\" 2>/dev/null "
+                               "|| true\n"
+                               "fi\n")
+    # The key scan answers the way the real ssh-keyscan does: the
+    # identifier it was asked for names the entry, qualified with the
+    # scanned port when one was given, so the entries of the two
+    # identifiers of a host stay distinct
     keyscan = write_fake_binary(tmp_path / "fake-ssh-keyscan",
                                 "#!/bin/sh\n"
+                                'port=""\n'
+                                'prev=""\n'
+                                'for arg in "$@"; do\n'
+                                '    if [ "$prev" = "-p" ]; then\n'
+                                '        port="$arg"\n'
+                                '    fi\n'
+                                '    prev="$arg"\n'
+                                'done\n'
                                 'for name in "$@"; do\n'
                                 '    if [ "$name" = "web" ] || '
                                 '[ "$name" = "192.0.2.10" ]; then\n'
-                                "        printf '%s\\n' '" + FAKE_KEY
-                                + "'\n"
-                                "    fi\n"
-                                "done\n")
+                                '        if [ -n "$port" ]; then\n'
+                                "            printf '%s\\n' "
+                                '"[$name]:$port ' + FAKE_KEY + '"\n'
+                                '        else\n'
+                                "            printf '%s\\n' "
+                                "\"$name " + FAKE_KEY + "\"\n"
+                                '        fi\n'
+                                '    fi\n'
+                                'done\n')
     ansible = write_fake_binary(tmp_path / "fake-ansible",
                                 "#!/bin/sh\n"
                                 'if [ "$1" = "none" ]; then\n'
