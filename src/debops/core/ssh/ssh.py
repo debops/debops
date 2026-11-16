@@ -29,8 +29,8 @@ import tempfile
 
 from .dns import (blob_fingerprint, is_ip_address, is_link_local,
                   key_fingerprint, lookup_sshfp, ssh_fingerprint)
-from .store import (USER_KNOWN_HOSTS_STORE, ensure_store_dir,
-                    known_hosts_mode, known_hosts_option,
+from .store import (USER_KNOWN_HOSTS_STORE, entry_key_material,
+                    ensure_store_dir, known_hosts_mode, known_hosts_option,
                     known_hosts_store, quote_store_path, require_store)
 from .utils import (JumpRewriter, resolve_host, ssh_executable,
                     transfer_executable, translate_ssh_args,
@@ -688,30 +688,6 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
         details, 'unsigned'
 
 
-def _entry_key_material(lines):
-    """Return the '(key type, key blob)' pairs of known_hosts entry
-    lines.
-
-    The comparison of a scanned key against the stored entries runs on
-    the key material alone: the hashed form of a host name carries a
-    fresh salt on every scan, so the text of an unchanged entry
-    changes while its key does not. The marker lines ('@cert-authority',
-    '@revoked') carry their material one field later.
-    """
-    material = set()
-    for line in lines:
-        if line.startswith('#'):
-            continue
-        fields = line.split()
-        if fields and fields[0].startswith('@'):
-            if len(fields) < 4:
-                continue
-            material.add((fields[2], fields[3]))
-        elif len(fields) >= 3:
-            material.add((fields[1], fields[2]))
-    return material
-
-
 def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                  timeout=10, dns_mode='dns', confirm=None, variables=None):
     """Cycle the known_hosts entries of the given hosts.
@@ -923,13 +899,13 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                         [binaries['ssh-keygen'], '-F', qualified,
                          '-f', store],
                         capture_output=True, text=True)
-                    stored_material[identifier] = _entry_key_material(
+                    stored_material[identifier] = entry_key_material(
                         probe.stdout.splitlines())
             for identifier, lines in keys_by_identifier.items():
                 for line in lines:
                     line_identifier.setdefault(line, identifier)
             for identifier in scanned:
-                accepted = _entry_key_material(
+                accepted = entry_key_material(
                     [line for line in store_keys
                      if line_identifier.get(line) == identifier])
                 if accepted != stored_material.get(identifier, set()):

@@ -289,6 +289,7 @@ class AnsiblePlaybookRunner(AnsibleProjectRunner):
 
     def execute(self):
         unlocked = False
+        snapshot = self._snapshot_accepted_keys()
         if not self._found_playbooks:
             raise ValueError('No playbooks specified, aborting')
 
@@ -341,6 +342,7 @@ class AnsiblePlaybookRunner(AnsibleProjectRunner):
         finally:
             if unlocked:
                 self._lock_secrets()
+            self._report_accepted_keys(snapshot)
 
         post_hook_name = 'post-' + run_check_mode
         run_hooks(self.project.path, post_hook_name,

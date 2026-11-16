@@ -235,6 +235,39 @@ def test_accept_option_composes_the_environment(stub_project):
          "-C -o ControlMaster=auto -o ControlPersist=60s")
 
 
+def test_accept_option_reports_the_key_count_in_the_plural(
+        stub_project, monkeypatch, stub_project_secrets, tmp_path, caplog):
+    """The report of the keys the store gained during the run counts
+    them in the plural from two up."""
+    store = tmp_path / "store"
+    runner = AnsibleRunner(
+        stub_project(cfg_options={
+            "inventory": "ansible/inventory",
+            "collections_path": "",
+            "ssh_args": "-o UserKnownHostsFile=" + str(store)}),
+        ansible_args=["all"], accept=True)
+
+    executor = mock.Mock(returncode=0)
+    executor.communicate.return_value = (b"", b"")
+
+    def accept_two_keys(*args, **kwargs):
+        with open(store, 'a') as handle:
+            handle.write('web.example.org ssh-ed25519 AAAAnewkey\n')
+            handle.write('192.0.2.10 ssh-rsa AAAAoldkey\n')
+        return executor
+
+    monkeypatch.setattr(runner_module.subprocess, "Popen", accept_two_keys)
+    monkeypatch.setattr(runner_module, "run_hooks",
+                        mock.Mock(return_value=True))
+    stub_project_secrets.unlock.return_value = False
+
+    with caplog.at_level(logging.NOTICE):
+        assert runner.execute() == 0
+    messages = [record.getMessage() for record in caplog.records]
+    assert any(message == 'Ansible auto-accepted 2 SSH host keys during '
+               'the run' for message in messages)
+
+
 def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch,
                                            stub_project_secrets):
     runner = AnsibleRunner(stub_project(), ansible_args=["all"])
