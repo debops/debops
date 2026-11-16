@@ -96,12 +96,15 @@ which the inventory defines.
 .. warning::
 
    The composed SSH options apply to both connections of the command. When
-   the two operands resolve to hosts with different ports or different
-   private keys, the command reports the difference and applies none of the
-   conflicting values. The jump hosts are not resolved per connection: one
-   jump chain serves both connections. Copy between such hosts with two
-   :command:`debops scp` runs through a temporary file, or configure the
-   connections in the :file:`~/.ssh/config` file.
+   the two operands resolve to hosts with different private keys, the
+   command reports the difference and applies none of the conflicting
+   values. The jump hosts are not resolved per connection: one jump chain
+   serves both connections. When the operands resolve to different ssh
+   ports, each remote operand carries its own port in the ``scp://`` URI
+   form, since the plain grammar applies one port to both connections.
+   Copy between hosts with different jump chains with two :command:`debops
+   scp` runs through a temporary file, or configure the connections in the
+   :file:`~/.ssh/config` file.
 
 
 File transfer sessions
