@@ -434,6 +434,15 @@ class JumpRewriter:
         self._jump_rewritten = False
         self._proxy_seen = False
 
+    @staticmethod
+    def _option_keyword(value):
+        """Return the lowercase keyword of an '-o' option value.
+
+        The keywords of the ssh options are case-insensitive: ssh
+        honors 'proxyjump=x', 'ProxyJump=x' and 'PROXYJUMP=x' alike.
+        """
+        return value.split('=', 1)[0].lower()
+
     def rewrite_tokens(self, tokens):
         """Return the token list with the structured jumps rewritten.
 
@@ -447,8 +456,9 @@ class JumpRewriter:
             token = tokens[index]
             if token == '-o':
                 value = tokens[index + 1] if index + 1 < len(tokens) else None
-                if value is not None and value.startswith('ProxyJump='):
-                    hop = value[len('ProxyJump='):]
+                keyword = self._option_keyword(value) if value else None
+                if keyword == 'proxyjump' and '=' in value:
+                    hop = value.split('=', 1)[1]
                     if hop and ',' not in hop:
                         self._jump_rewritten = True
                         result.append('-o')
@@ -456,7 +466,7 @@ class JumpRewriter:
                             proxy_jump_command(hop, self.option_pairs))
                         index += 2
                         continue
-                if value is not None and value.startswith('ProxyCommand='):
+                if keyword == 'proxycommand':
                     self._proxy_seen = True
                 result.append(token)
                 if value is not None:
@@ -473,10 +483,14 @@ class JumpRewriter:
                 hop = token[2:] if attached else (
                     tokens[index + 1] if index + 1 < len(tokens) else None)
                 consumed = 2 if (not attached and hop is not None) else 1
-            elif attached and letter == 'o' \
-                    and token[2:].startswith('ProxyJump='):
-                hop = token[2:][len('ProxyJump='):]
-            elif token.startswith('ProxyCommand='):
+            elif attached and letter == 'o':
+                value = token[2:]
+                keyword = self._option_keyword(value)
+                if keyword == 'proxyjump' and '=' in value:
+                    hop = value.split('=', 1)[1]
+                elif keyword == 'proxycommand' and '=' in value:
+                    self._proxy_seen = True
+            elif self._option_keyword(token) == 'proxycommand':
                 self._proxy_seen = True
             if hop is None:
                 result.append(token)
@@ -496,18 +510,20 @@ class JumpRewriter:
         rewritten."""
         result = []
         for pair in pairs:
-            if isinstance(pair, tuple) and pair[0] == '-o' \
-                    and pair[1].startswith('ProxyJump='):
-                hop = pair[1][len('ProxyJump='):]
-                if hop and ',' not in hop:
-                    self._jump_rewritten = True
-                    result.append(
-                        ('-o', proxy_jump_command(hop, self.option_pairs)))
-                    continue
-            if isinstance(pair, tuple) and pair[0] == '-o' \
-                    and pair[1].startswith('ProxyCommand='):
-                self._proxy_seen = True
-            elif isinstance(pair, str) and pair.startswith('ProxyCommand='):
+            if isinstance(pair, tuple) and pair[0] == '-o':
+                keyword = self._option_keyword(pair[1])
+                if keyword == 'proxyjump' and '=' in pair[1]:
+                    hop = pair[1].split('=', 1)[1]
+                    if hop and ',' not in hop:
+                        self._jump_rewritten = True
+                        result.append(
+                            ('-o',
+                             proxy_jump_command(hop, self.option_pairs)))
+                        continue
+                if keyword == 'proxycommand':
+                    self._proxy_seen = True
+            elif isinstance(pair, str) \
+                    and self._option_keyword(pair) == 'proxycommand':
                 self._proxy_seen = True
             result.append(pair)
         return result
