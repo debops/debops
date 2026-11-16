@@ -42,6 +42,20 @@ The destination accepts the forms which :command:`ssh` accepts:
 ``[user@]hostname`` and the ``ssh://[user@]hostname[:port]`` URI. The user
 and the port written in the destination override the inventory values.
 
+The jump host of the connection, declared through the ``-J`` option of
+the ``ansible_ssh_common_args`` variable or of your own arguments, is
+rewritten into an explicit ``ProxyCommand``: the process which opens the
+connection through the jump host runs with the trust configuration of
+the session -- the known_hosts store of the view in the project mode,
+the ``--accept`` mode and the connection timeout -- which the implicit
+form of :command:`ssh` does not carry into the jump process. A jump
+chain, ``-J bastion1,bastion2``, is passed to :command:`ssh` unchanged:
+the options do not reach the chained hops, and their host keys are
+verified the way plain :command:`ssh` verifies them, against your own
+:file:`~/.ssh/known_hosts` file. A connection which declares both a
+``ProxyCommand`` and a jump host is refused, because the
+``ProxyCommand`` would shadow the jump handling of DebOps.
+
 A remote command written after the destination runs on the host, the same
 way as in :command:`ssh`:
 
@@ -264,7 +278,10 @@ the keys of the jump must be known before a connection through it can
 be verified. When the direct scan of such a host reaches nothing and
 the resolved connection options carry a ``ProxyJump`` whose key the
 store knows, the keys are collected through the connection itself.
-A bastion hidden inside a ``ProxyCommand`` cannot be discovered.
+The connection runs with the rewritten jump options, so the
+collection completes without prompts and verifies the jump against
+the entries of the scan. A bastion hidden inside a ``ProxyCommand``
+cannot be discovered.
 
 .. note::
 

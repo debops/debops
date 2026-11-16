@@ -96,7 +96,7 @@ def test_build_scp_command_translates_the_jump(stub_project, fake_tools):
     command = build_scp_command(project, ["web:/tmp/source"],
                                 "/tmp/local-copy")
 
-    assert "ProxyJump=jump@bastion" in command
+    assert "ProxyCommand=ssh -W '[%h]:%p' jump@bastion" in command
 
 
 def test_build_scp_command_adds_the_accept_option(stub_project,
@@ -303,7 +303,8 @@ def test_build_scp_command_carries_the_resolved_ssh_args(
 
     command = build_scp_command(project, ["/etc/hostname"], "web:/tmp/x")
 
-    assert in_sequence(command, ["-o", "ProxyJump=bastion@jump"])
+    assert in_sequence(command, ["-o", "ProxyCommand=ssh "
+                                 "-W '[%h]:%p' bastion@jump"])
 
 
 def test_build_scp_command_passes_the_transfer_flags_through(
@@ -351,7 +352,9 @@ def test_build_scp_command_carries_the_store_once(stub_project,
 
     command = build_scp_command(project, ["/etc/hostname"], "web:/tmp/x")
 
-    assert sum("UserKnownHostsFile=" in token
+    # The jump process carries the store inside the ProxyCommand as
+    # well; the top-level declaration stays the only one
+    assert sum(token.startswith("UserKnownHostsFile=")
                for token in command) == 1
     assert command[command.index("-o") + 1].startswith(
         "UserKnownHostsFile=")

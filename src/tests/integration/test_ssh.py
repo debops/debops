@@ -427,3 +427,110 @@ def test_jump_pair_daemons_authenticate(jump_pair):
              "-o", "UserKnownHostsFile=" + jump_pair.throwaway,
              "-o", "StrictHostKeyChecking=no",
              "-p", str(port), "127.0.0.1", "true"], check=True)
+
+
+def test_ssh_session_through_the_jump_verifies_against_the_store(
+        run_debops, tmp_path, debops_env, jump_pair):
+    """A session behind a jump host verifies the jump host against the
+    store of the view, not against the operator's own known_hosts."""
+    project_dir = make_jump_project(run_debops, tmp_path, debops_env,
+                                    jump_pair.bastion_port,
+                                    jump_pair.target_port)
+    store = jump_store(project_dir)
+    before = user_known_hosts_snapshot()
+
+    result = run_debops("ssh", "rescan", "all", cwd=str(project_dir),
+                        env=debops_env)
+    assert result.returncode == 0, result.stderr
+
+    assert store_has_entry(store, "[127.0.0.1]:"
+                           + str(jump_pair.bastion_port)), \
+        "the store holds no key of the jump host"
+    assert store_has_entry(store, "[127.0.0.1]:"
+                           + str(jump_pair.target_port)), \
+        "the store holds no key of the host behind the jump"
+    assert user_known_hosts_snapshot() == before, \
+        "the rescan wrote into the operator's own known_hosts file"
+
+    result = run_debops("ssh", "behind", "--", "true",
+                        cwd=str(project_dir), env=debops_env)
+    assert result.returncode == 0, result.stderr
+    assert user_known_hosts_snapshot() == before, \
+        "the session wrote into the operator's own known_hosts file"
+
+
+def test_ssh_accept_through_the_jump_stores_both_keys(
+        run_debops, tmp_path, debops_env, jump_pair):
+    """'--accept' covers the jump host as well: the first contact
+    through an untrusted bastion stores the keys of both legs of the
+    connection in the store of the view."""
+    project_dir = make_jump_project(run_debops, tmp_path, debops_env,
+                                    jump_pair.bastion_port,
+                                    jump_pair.target_port)
+    store = jump_store(project_dir)
+    before = user_known_hosts_snapshot()
+
+    result = run_debops("ssh", "--accept", "behind", "--", "true",
+                        cwd=str(project_dir), env=debops_env)
+
+    assert result.returncode == 0, result.stderr
+    assert store_has_entry(store, "[127.0.0.1]:"
+                           + str(jump_pair.bastion_port)), \
+        "the accepted connection stored no key of the jump host"
+    assert store_has_entry(store, "[127.0.0.1]:"
+                           + str(jump_pair.target_port)), \
+        "the accepted connection stored no key of the host behind it"
+    assert user_known_hosts_snapshot() == before, \
+        "the accepted connection wrote into the operator's known_hosts"
+
+
+def test_connection_scan_through_the_jump_collects_the_target_key(
+        run_debops, tmp_path, debops_env, jump_pair, monkeypatch):
+    """The connection-based scan behind a jump host verifies the jump
+    against the entries it carries and completes without a prompt.
+
+    The direct keyscan of the hermetic pair always answers, so the
+    fallback of the rescan cannot be driven through the command line;
+    the scan function itself runs against the real daemons and the
+    real ssh client instead.
+    """
+    import debops.core.ssh.ssh as ssh_module
+
+    project_dir = make_jump_project(run_debops, tmp_path, debops_env,
+                                    jump_pair.bastion_port,
+                                    jump_pair.target_port)
+    store = jump_store(project_dir)
+
+    result = run_debops("ssh", "rescan", "bastion", cwd=str(project_dir),
+                        env=debops_env)
+    assert result.returncode == 0, result.stderr
+    assert store_has_entry(store, "[127.0.0.1]:"
+                           + str(jump_pair.bastion_port))
+
+    monkeypatch.setattr(ssh_module, "ssh_executable", lambda project: None)
+    binaries = {name: shutil.which(name)
+                for name in ("ssh", "ssh-keygen", "ssh-keyscan")}
+    project_stub = types.SimpleNamespace(config=types.SimpleNamespace(
+        raw={"binaries": binaries}))
+    parameters = {
+        "destination": "127.0.0.1",
+        "port": str(jump_pair.target_port),
+        "ssh_args": "-J 127.0.0.1:" + str(jump_pair.bastion_port),
+        "common_args": None,
+        "extra_args": None,
+    }
+    details = []
+    keys = ssh_module._collect_through_connection(
+        project_stub, parameters, str(store), 5, details)
+
+    assert keys, details
+    # The accepted entries are hashed by the client configuration, so
+    # the identity of the collected key is probed the way the suite
+    # probes stores, with 'ssh-keygen -F'
+    scanned = tmp_path / "scanned-keys"
+    scanned.write_text("\n".join(keys) + "\n")
+    probe = subprocess.run(
+        ["ssh-keygen", "-F", "[127.0.0.1]:" + str(jump_pair.target_port),
+         "-f", str(scanned)], capture_output=True, text=True)
+    assert probe.returncode == 0 and probe.stdout.strip(), \
+        "the collected keys carry no entry of the host behind the jump"

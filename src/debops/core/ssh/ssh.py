@@ -32,8 +32,9 @@ from .dns import (is_ip_address, is_link_local, key_fingerprint,
 from .store import (USER_KNOWN_HOSTS_STORE, ensure_store_dir,
                     known_hosts_mode, known_hosts_option,
                     known_hosts_store, quote_store_path, require_store)
-from .utils import (resolve_host, ssh_executable, transfer_executable,
-                    translate_ssh_args, without_known_hosts_options)
+from .utils import (JumpRewriter, resolve_host, ssh_executable,
+                    transfer_executable, translate_ssh_args,
+                    without_known_hosts_options)
 from ..utils import unexpanduser
 
 logger = logging.getLogger(__name__)
@@ -99,6 +100,11 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
     an option, so no resolved argument can bypass the store of the
     view. The 'UserKnownHostsFile' options of the resolved arguments
     are dropped, so the command carries the store declaration once.
+    The structured jump options of the connection are rewritten into
+    explicit 'ProxyCommand' options which carry the store, the host
+    key checking mode and the connection timeout into the jump
+    process, which OpenSSH builds without inheriting the options of
+    the parent; a comma-separated jump chain is left to ssh unchanged.
 
     Without a user from the options or the inventory, no '-l' is
     composed: ssh picks the user from the operator's SSH client
@@ -118,12 +124,24 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
         # arguments
         command.extend(['-o', 'StrictHostKeyChecking=accept-new'])
 
+    # The options the jump process runs with: the same trust and mode
+    # options the destination leg carries, and the connection timeout
+    # of the resolution, which bounds the connect of the jump leg
+    child_pairs = []
+    if inject:
+        child_pairs.append(('-o', known_hosts_option(store)))
+    if accept:
+        child_pairs.append(('-o', 'StrictHostKeyChecking=accept-new'))
+    child_pairs.append(
+        ('-o', 'ConnectTimeout=' + str(parameters.get('timeout') or 10)))
+    rewriter = JumpRewriter(child_pairs)
+
     if options:
         # The options the operator typed directly precede everything
         # DebOps derives: ssh applies the first obtained value of an
         # option, and an '-l' or '-o' the operator typed must not be
         # defeated by the inventory or the view
-        command.extend(options)
+        command.extend(rewriter.rewrite_tokens(options))
     effective_user = user or parameters.get('user')
     if effective_user:
         command.extend(['-l', effective_user])
@@ -138,11 +156,11 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
         if configured_args else []
     if inject:
         configured_tokens = without_known_hosts_options(configured_tokens)
-    command.extend(configured_tokens)
+    command.extend(rewriter.rewrite_tokens(configured_tokens))
     for key in ('common_args', 'extra_args'):
         value = parameters.get(key)
         if value:
-            command.extend(shlex.split(value))
+            command.extend(rewriter.rewrite_tokens(shlex.split(value)))
 
     timeout = parameters.get('timeout')
     if timeout is None:
@@ -151,6 +169,7 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
                or token.startswith('-oConnectTimeout=')
                for token in command):
         command.extend(['-o', 'ConnectTimeout=' + str(timeout)])
+    rewriter.check()
     command.append(parameters.get('destination') or host)
     command.extend(ssh_args or [])
     return command
@@ -319,6 +338,17 @@ def _collect_through_connection(project, parameters, store, timeout,
         handle.write('\n'.join(jump_entries) + '\n')
     os.chmod(throwaway, 0o600)
     try:
+        # The options the jump process runs with are the ones of the
+        # parent command: the throwaway known_hosts file with the
+        # pre-seeded entries of the jump, the BatchMode which keeps the
+        # scan from stopping at a prompt, and the connection timeout
+        # which bounds the connect of the jump leg
+        rewriter = JumpRewriter([
+            ('-o', 'UserKnownHostsFile=' + quote_store_path(throwaway)),
+            ('-o', 'BatchMode=yes'),
+            ('-o', 'StrictHostKeyChecking=accept-new'),
+            ('-o', 'ConnectTimeout=' + str(timeout)),
+        ])
         command = [(parameters.get('ssh_executable')
                     or ssh_executable(project)
                     or binaries['ssh']),
@@ -332,7 +362,12 @@ def _collect_through_connection(project, parameters, store, timeout,
                       parameters.get('common_args'),
                       parameters.get('extra_args')):
             if value:
-                command.extend(shlex.split(value))
+                command.extend(rewriter.rewrite_tokens(shlex.split(value)))
+        try:
+            rewriter.check()
+        except ValueError as error:
+            details.append(str(error))
+            return None
         command.append(parameters.get('destination') or '')
         command.append('true')
         try:
