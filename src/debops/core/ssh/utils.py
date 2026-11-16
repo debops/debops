@@ -623,6 +623,17 @@ def resolve_host(project, host):
             raise ValueError(
                 'The "' + key + '" of the host "' + host + '" is not '
                 'a usable value: ' + repr(value))
+    for key, value in parameters.items():
+        if isinstance(value, str) and ('{{' in value or '{%' in value):
+            # The '--host' dump of 'ansible-inventory' does not render
+            # the templates of the inventory variables; a value which
+            # still carries the delimiters would reach the command
+            # line literally
+            raise ValueError(
+                'The "' + key + '" connection parameter of the host "'
+                + host + '" carries an unrendered Ansible template ('
+                + value + '); the ssh suite does not render the '
+                'inventory templates -- define the value literally')
     return parameters
 
 
