@@ -12,6 +12,7 @@ parameters, the jump arguments and the known_hosts store of
 
 import logging
 import shlex
+import urllib.parse
 
 from .store import known_hosts_option, require_store
 from .utils import (JumpRewriter, bracket_ipv6, compose_options,
@@ -19,6 +20,28 @@ from .utils import (JumpRewriter, bracket_ipv6, compose_options,
                     without_known_hosts_options)
 
 logger = logging.getLogger(__name__)
+
+
+def _uri_operand(user, host, port, path):
+    """Return a remote operand in the 'scp://' URI form, which carries
+    the port of its own connection.
+
+    The plain grammar of scp applies one '-P' port to every connection
+    of the command; the URI form carries one port per operand, which
+    is how remote operands with different ports stay expressible in
+    one command. The path is percent-encoded; in the URI grammar a
+    single slash after the authority addresses a path relative to the
+    remote home directory and a double slash an absolute path, which
+    the composition produces from the shape of the operand path
+    itself.
+    """
+    authority = (user + '@' if user else '') + bracket_ipv6(host)
+    if port:
+        authority += ':' + str(port)
+    encoded = urllib.parse.quote(path, safe='/')
+    if not encoded:
+        return 'scp://' + authority
+    return 'scp://' + authority + '/' + encoded
 
 
 def build_scp_command(project, sources, destination_operand,
@@ -31,11 +54,14 @@ def build_scp_command(project, sources, destination_operand,
     parameters, the jump arguments and the known_hosts store of
     'debops ssh' apply to the file transfers alike. Both sides may be
     remote; the composed ssh options then apply to both connections,
-    which is the behavior of modern scp. Raises ValueError when a host
-    part is not defined in the inventory.
+    which is the behavior of modern scp. Remote operands which resolve
+    to different ssh ports compose in the 'scp://' URI form, which
+    carries a port per connection -- the plain grammar applies one
+    port to all of them. Raises ValueError when a host part is not
+    defined in the inventory.
     """
     binary = None
-    operands = []
+    operand_specs = []
     translated = []
     dropped = []
     store, inject = require_store(project)
@@ -47,14 +73,14 @@ def build_scp_command(project, sources, destination_operand,
     for operand in (*sources, destination_operand):
         user, host, path = split_operand(operand)
         if host is None:
-            operands.append(operand)
+            operand_specs.append(('local', operand))
             continue
         parameters = resolve_destination(project, host)
         side_user = user or parameters.get('user')
         destination_host = parameters.get('destination')
-        operands.append((side_user + '@' if side_user else '')
-                        + bracket_ipv6(destination_host) + ':' + path)
         port = parameters.get('port')
+        operand_specs.append(('remote', (side_user, destination_host,
+                                         port, path)))
         if port:
             ports.append(str(port))
         side_identity = parameters.get('identity')
@@ -97,6 +123,24 @@ def build_scp_command(project, sources, destination_operand,
 
     unique_ports = set(ports)
 
+    # The operands compose in the order they were given. When the
+    # resolved ports differ, each remote operand carries its own port
+    # in the 'scp://' URI form -- the plain grammar applies one port
+    # to every connection of the command, the URI form one per
+    # operand; the local operands are local paths in both cases
+    operands = []
+    for kind, value in operand_specs:
+        if kind == 'local':
+            operands.append(value)
+            continue
+        side_user, destination_host, port, path = value
+        if len(unique_ports) > 1:
+            operands.append(_uri_operand(side_user, destination_host,
+                                         port, path))
+        else:
+            operands.append((side_user + '@' if side_user else '')
+                            + bracket_ipv6(destination_host) + ':' + path)
+
     unique_executables = set(executables)
     if len(unique_executables) == 1:
         binary = unique_executables.pop()
@@ -125,8 +169,8 @@ def build_scp_command(project, sources, destination_operand,
     elif len(unique_ports) > 1:
         logger.notice(
             'The operands resolve to hosts with different ssh ports; '
-            'scp applies one port to both connections and none was '
-            'added', extra={'allow': 'stderr'})
+            'each remote operand carries its own port in the scp:// '
+            'URI form', extra={'allow': 'stderr'})
     if identity:
         ssh_options.append(('-i', identity))
     elif len(unique_identities) == 1:
