@@ -53,6 +53,21 @@ def key_fingerprint(key_type, key_blob):
                        2: hashlib.sha256(blob).hexdigest()}
 
 
+def blob_fingerprint(key_blob):
+    """Return the SHA-256 fingerprint of a key blob in lowercase hex,
+    regardless of the key type the blob belongs to.
+
+    Every SSH public key carries a fingerprint of its blob, the types
+    without SSHFP algorithm numbers among them; None when the blob is
+    not valid base64.
+    """
+    try:
+        blob = base64.b64decode(key_blob)
+    except (ValueError, TypeError):
+        return None
+    return hashlib.sha256(blob).hexdigest()
+
+
 def ssh_fingerprint(fingerprint):
     """Render a hex fingerprint in the 'SHA256:...' form used by ssh.
 
