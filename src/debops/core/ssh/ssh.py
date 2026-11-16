@@ -489,6 +489,10 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
     The confirmation callback never overrides the refusal of the keys
     which contradict the published records of the host.
 
+    A lookup failure of the resolver other than the absence of records
+    refuses the host: a SERVFAIL of a validating resolver, a timeout
+    or a broken installation must not read as 'no records'.
+
     Returns the list of keys to store, or None when the host must not
     be stored. The details list receives the report lines for the
     result.
@@ -544,8 +548,16 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
     for identifier in candidates:
         try:
             authenticated, found = lookup_sshfp(identifier)
-        except Exception:
-            continue
+        except Exception as error:
+            # Only the absence of records falls back to the operator's
+            # decision; a resolver which cannot answer the question --
+            # SERVFAIL of a validating resolver, a timeout, a broken
+            # installation -- must not read as 'no records', or the
+            # keys of a signed zone would be stored on the failure
+            details.append('the SSHFP lookup of ' + identifier
+                           + ' failed: ' + str(error)
+                           + '; the host was not stored')
+            return None, details
         if not found:
             continue
         if authenticated:
