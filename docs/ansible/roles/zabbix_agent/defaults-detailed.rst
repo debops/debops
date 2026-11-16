@@ -37,6 +37,19 @@ Enable the Zabbix agent to allow all Zabbix servers on the 192.168.1.0/24 networ
       value: '127.0.0.1,192.168.1.0/24'
       state: 'present'
 
+Define a custom ``UserParameter`` check. The ``name`` parameter has to be
+unique for each check, and the ``option`` parameter sets the actual name of
+the configuration option:
+
+.. code-block:: yaml
+
+   zabbix_agent__configuration:
+
+     - name: 'UserParameter_example_uptime_days'
+       option: 'UserParameter'
+       value: "example.uptime_days,awk '{print int($1/86400)}' /proc/uptime"
+       comment: 'System uptime in days'
+
 You can see more examples in the :envvar:`default set of configuration options
 defined by the role <zabbix_agent__default_configuration>`.
 
