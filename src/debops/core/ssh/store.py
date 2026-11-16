@@ -153,6 +153,31 @@ def known_hosts_option(store):
     return 'UserKnownHostsFile=' + quote_store_path(store)
 
 
+def entry_key_material(lines):
+    """Return the '(key type, key blob)' pairs of known_hosts entry
+    lines.
+
+    The comparison of a scanned key against the stored entries runs on
+    the key material alone: the hashed form of a host name carries a
+    fresh salt on every scan, so the text of an unchanged entry
+    changes while its key does not. The marker lines
+    ('@cert-authority', '@revoked') carry their material one field
+    later.
+    """
+    material = set()
+    for line in lines:
+        if line.startswith('#'):
+            continue
+        fields = line.split()
+        if fields and fields[0].startswith('@'):
+            if len(fields) < 4:
+                continue
+            material.add((fields[2], fields[3]))
+        elif len(fields) >= 3:
+            material.add((fields[1], fields[2]))
+    return material
+
+
 def declared_known_hosts_store(project):
     """Return the known_hosts store declared in the view's ansible.cfg.
 

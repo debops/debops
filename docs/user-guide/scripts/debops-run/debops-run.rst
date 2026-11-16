@@ -54,7 +54,8 @@ The options below need to be specified before any playbooks to take effect.
   the ``project`` known_hosts mode of the view the key lands in the
   store of the view, otherwise in the operator's own
   :file:`~/.ssh/known_hosts` file. A key which changes later is
-  refused.
+  refused. The command announces the acceptance before the run and
+  reports the entries the store gained afterwards.
 
 ``--debug``
   Run with debugging output: increase the Ansible verbosity, enable the
