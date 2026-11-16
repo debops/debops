@@ -222,8 +222,9 @@ Three properties of the store matter:
   carried over.
 - The :file:`.debops/ssh/` directory is private, with the ``0700``
   permissions of a real :file:`~/.ssh` directory.
-- The store is runtime state. The :file:`.gitignore` of the project ignores
-  the :file:`known_hosts` files, and the rest of the
+- The store files are tracked in the git repository of the project:
+  the history records how the trust of the project changed, which
+  keys were accepted and when they were replaced. The rest of the
   :file:`.debops/ssh/` tree stays available for other uses.
 
 The ``user`` mode and the ``project`` mode can be active at the same time
