@@ -95,15 +95,18 @@ def test_sftp_batch_session_transfers_a_file(run_debops, tmp_path,
     project_dir = make_project(run_debops, tmp_path, debops_env)
     local_file = tmp_path / "source.txt"
     local_file.write_text("sftp batch\n")
+    # The remote path derives from the test's own temporary directory,
+    # so the runs do not share or litter fixed /tmp names
+    remote_upload = "/tmp/" + tmp_path.name + "-remote-sftp"
     batch = tmp_path / "batch"
-    batch.write_text("put " + str(local_file) + " /tmp/remote-sftp\n")
+    batch.write_text("put " + str(local_file) + " " + remote_upload + "\n")
 
     result = run_debops("sftp", "-b", str(batch), "testhost",
                         cwd=str(project_dir), env=debops_env)
 
     assert result.returncode == 0
 
-    back = run_debops("ssh", "testhost", "cat", "/tmp/remote-sftp",
+    back = run_debops("ssh", "testhost", "cat", remote_upload,
                       cwd=str(project_dir), env=debops_env)
     assert back.stdout == "sftp batch\n"
 
