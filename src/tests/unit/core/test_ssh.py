@@ -33,6 +33,7 @@ from debops.core.ssh import (SCP_OPTIONS_WITH_VALUE, SFTP_OPTIONS_WITH_VALUE,
                              render_config_snippet,
                              rescan_actions, resolve_destination,
                              build_scp_command, build_sftp_command,
+                             connection_jump_names,
                              require_store, resolve_host, resolve_patterns,
                              rescan_hosts, scan_command, split_destination,
                              split_operand, without_known_hosts_options,
@@ -2169,3 +2170,138 @@ def test_rescan_hosts_writes_through_a_symlinked_store(
     assert store.is_symlink()
     assert "ssh-ed25519" in target.read_text()
     assert "old entry" in target.read_text()
+
+
+def test_connection_jump_names_extracts_the_hops(stub_project,
+                                                 fake_tools,
+                                                 fake_binary):
+    """The jump hosts come from the '-J' and 'ProxyJump=' options of
+    the resolved connection options, in traversal order."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "jumps-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_ssh_args\": \"-J bastion,bastion2\","
+        " \"ansible_ssh_extra_args\": "
+        "\"-o ProxyJump=third@bastion3:2222\"}'\n")
+    project = stub_project(raw={"binaries": binaries})
+    parameters = resolve_host(project, "web")
+
+    assert connection_jump_names(parameters) == \
+        ["bastion", "bastion2", "third@bastion3:2222"]
+
+
+def test_rescan_hosts_scans_the_jump_before_its_dependents(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """A host whose connection traverses a jump host of the run scans
+    after the jump, whatever order the patterns named them in."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "jumped-inventory",
+        "#!/bin/sh\n"
+        'if [ "$2" = "web" ]; then\n'
+        "    printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_ssh_args\": \"-J jump\"}'\n"
+        "else\n"
+        "    printf '%s' '{\"ansible_host\": \"192.0.2.20\"}'\n"
+        "fi\n")
+    binaries["ssh-keyscan"] = fake_binary(
+        "jump-keyscan",
+        "#!/bin/sh\n"
+        'for name in "$@"; do\n'
+        '    if [ "$name" = "192.0.2.20" ]; then\n'
+        "        printf '%s\\n' '192.0.2.20 ssh-ed25519 AAAAjumpkey'\n"
+        "    fi\n"
+        "done\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    def fake_getaddrinfo(name, *args, **kwargs):
+        if name in ("192.0.2.10", "192.0.2.20", "jump"):
+            return [(2, 1, 6, "", ("192.0.2.10", 0))]
+        raise socket.gaierror("no DNS")
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_getaddrinfo)
+
+    store = tmp_path / "store"
+
+    results = rescan_hosts(project, ["web", "jump"], store=str(store),
+                           dns_mode='no-dns')
+
+    # The jump is scanned first, its dependents after it
+    assert [host for host, _, _ in results] == ["jump", "web"]
+    assert results[0][1]
+    assert "AAAAjumpkey" in store.read_text()
+
+
+def test_rescan_hosts_collects_the_keys_through_the_jump(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """When the direct scan of a host behind a jump produces no keys,
+    the keys are collected through the connection itself: a throwaway
+    known_hosts file pre-seeded with the jump's entries receives the
+    key of the negotiated exchange, and the classified keys enter the
+    store."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "jumped-inventory",
+        "#!/bin/sh\n"
+        'if [ "$2" = "web" ]; then\n'
+        "    printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_port\": 2222,"
+        " \"ansible_ssh_args\": \"-J jump\"}'\n"
+        "else\n"
+        "    printf '%s' '{\"ansible_host\": \"192.0.2.20\"}'\n"
+        "fi\n")
+    # The keyscan answers for the jump only; the direct scan of the
+    # destination finds nothing
+    binaries["ssh-keyscan"] = fake_binary(
+        "jump-keyscan",
+        "#!/bin/sh\n"
+        'for name in "$@"; do\n'
+        '    if [ "$name" = "192.0.2.20" ]; then\n'
+        "        printf '%s\\n' '192.0.2.20 ssh-ed25519 AAAAjumpkey'\n"
+        "    fi\n"
+        "done\n")
+    # The keygen answers the '-F' lookup of the jump's entries
+    binaries["ssh-keygen"] = fake_binary(
+        "jump-keygen",
+        "#!/bin/sh\n"
+        'if [ "$1" = "-F" ]; then\n'
+        "    printf '%s\\n' '[192.0.2.20]:2222 ssh-ed25519 AAAAjumpkey'\n"
+        "    exit 0\n"
+        "fi\n"
+        "exit 0\n")
+    # The ssh of the connection-scan writes the key of the negotiated
+    # exchange into its throwaway known_hosts file and fails the
+    # authentication, the way a pre-provisioned host behaves
+    binaries["ssh"] = fake_binary(
+        "collecting-ssh",
+        "#!/bin/sh\n"
+        'for name in "$@"; do\n'
+        '    case "$name" in\n'
+        '        UserKnownHostsFile=*)\n'
+        '            printf "%s\\n" "192.0.2.10 ssh-ed25519 '
+        'AAAAthroughkey" > "${name#UserKnownHostsFile=}" ;;\n'
+        "    esac\n"
+        "done\n"
+        "exit 255\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    def fake_getaddrinfo(name, *args, **kwargs):
+        if name in ("192.0.2.10", "192.0.2.20", "jump"):
+            return [(2, 1, 6, "", ("192.0.2.10", 0))]
+        raise socket.gaierror("no DNS")
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_getaddrinfo)
+
+    store = tmp_path / "store"
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           dns_mode='no-dns')
+
+    host, succeeded, message = results[0]
+    assert succeeded
+    assert "collected through the connection" in message
+    content = store.read_text()
+    assert "AAAAthroughkey" in content
+    assert "AAAAjumpkey" not in content
