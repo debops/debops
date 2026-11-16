@@ -44,11 +44,9 @@ Options
 
 ``--accept``
   Accept an unseen SSH host key on the first contact and store it in the
-  active known_hosts store. Without the option, :command:`ssh` refuses an
-  unseen key and the connection fails. A key which changes later is refused
-  either way. The short ``-a`` belongs to :command:`ssh`, which disables
-  the authentication agent forwarding with it, and passes through
-  unchanged.
+  active known_hosts store. Without the option, :command:`ssh` asks about
+  an unseen key the way it normally does. A key which changes later is
+  refused either way.
 
 ``--eval``
   Do not connect; instead print the composed :command:`ssh` command to
@@ -125,7 +123,9 @@ Options
   resolver authenticated are stored without confirmation; keys which
   contradict the records are refused with a report. Matches which the
   resolver did not authenticate follow the
-  ``ssh.rescan.trust_unsigned_records`` option.
+  ``ssh.rescan.trust_unsigned_records`` option. Without one of the
+  three options, the mode comes from the ``ssh.rescan.resolver_mode``
+  option of the configuration.
 
 ``--no-dns``
   Do not check the SSH host keys against DNS.
@@ -137,7 +137,13 @@ Options
 ``-c, --confirm``
   Show the scanned fingerprints in the form which
   :command:`ssh-keygen -l` prints and ask for each host before storing
-  them.
+  them. Without the option, the prompting follows the
+  ``ssh.rescan.confirm`` option of the configuration.
+
+``--no-confirm``
+  Do not ask for the scanned fingerprints before storing them; the
+  option overrides the ``ssh.rescan.confirm`` option of the
+  configuration for one run.
 
 ``<pattern> ...``
   One or more Ansible inventory patterns: ``all``, the group names, the
