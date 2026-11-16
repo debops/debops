@@ -84,7 +84,6 @@ jobs:
           ANSIBLE_FORCE_COLOR: 1
           CI_PLAYBOOKS: '${{ matrix.playbooks }}'
         run: |
-          source venv/bin/activate
           cd ~/src/controller
           for playbook in ${CI_PLAYBOOKS}; do
             debops run "${playbook}" --diff
@@ -96,7 +95,6 @@ jobs:
           ANSIBLE_FORCE_COLOR: 1
           CI_PLAYBOOKS: '${{ matrix.playbooks }}'
         run: |
-          source venv/bin/activate
           cd ~/src/controller
           set -o pipefail
           for playbook in ${CI_PLAYBOOKS}; do
@@ -122,6 +120,5 @@ jobs:
           ANSIBLE_FORCE_COLOR: 1
           CI_POST_SCRIPT: '${{ matrix.post_script }}'
         run: |
-          source venv/bin/activate
           cd ~/src/controller
           printf '%s' "${CI_POST_SCRIPT}" | bash -s
