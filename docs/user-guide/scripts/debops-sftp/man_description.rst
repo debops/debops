@@ -6,26 +6,7 @@ Description
 ===========
 
 The :command:`debops sftp` command runs an interactive file transfer
-session with a host of the Ansible inventory. The destination follows the
-grammar of :command:`sftp`: ``[user@]host[:path]``. The host name resolves
-through the inventory of the active view, which supplies the address, the
-user, the port, the private key and the jump hosts. The optional path is
-the directory in which the session starts.
-
-The options of DebOps are parsed in front of the destination. The options
-which DebOps does not interpret are passed to :command:`sftp` unchanged,
-in front of the destination or after it, in the place they were written.
-
-The option which accepts an unseen SSH host key is the long ``--accept``
-form. The short ``-a`` belongs to :command:`sftp`, which resumes
-interrupted transfers with it, and passes through unchanged:
-
-.. code-block:: console
-
-   alice@controller:~$ debops sftp web-1 -a
-
-The ``--`` marker before the destination hands the rest of the arguments
-to :command:`sftp` verbatim. The inventory is not consulted; the options
-of DebOps still apply in front of the marker, ``--accept`` among them --
-with it, the known_hosts store of the project is applied to the handoff
-as well.
+session with a host of the Ansible inventory. The host name of the
+destination resolves through the inventory of the active view. The view
+supplies the address, the user, the port, the private key and the jump
+hosts. The optional path is the directory in which the session starts.

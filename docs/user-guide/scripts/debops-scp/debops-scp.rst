@@ -15,7 +15,7 @@ Copy a file back and accept an unseen host key on the first contact:
 
 .. code-block:: console
 
-   alice@controller:~$ debops scp -a web-1:/var/log/syslog ./syslog
+   alice@controller:~$ debops scp --accept web-1:/var/log/syslog ./syslog
 
 Options
 ~~~~~~~
@@ -40,7 +40,10 @@ Options
   them.
 
 ``--accept``
-  Accept an unseen SSH host key on the first contact, for both connections.
+  Accept an unseen SSH host key on the first contact, for both
+  connections. In the ``project`` known_hosts mode of the view the key
+  lands in the store of the view, otherwise in the operator's own
+  :file:`~/.ssh/known_hosts` file.
 
 ``--eval``
   Do not copy; instead print the composed :command:`scp` command to stdout.
@@ -53,11 +56,12 @@ Options
   is the destination, the ones before it are the sources, as in
   :command:`scp`. A local path copies from or to the controller; a host
   name in an operand resolves through the inventory of the active view.
-  The composed SSH options apply to both connections: when the operands
-  resolve to different ports or different private keys, the command
-  reports the difference and applies none of the conflicting values. The
-  jump hosts are not resolved per connection: one jump chain serves both
-  connections.
+  The composed SSH options apply to both connections. When the operands
+  resolve to different ports, each remote operand carries its own port
+  in the ``scp://`` URI form; when they resolve to different private
+  keys, the command reports the difference and applies none of the
+  conflicting values. The jump hosts are not resolved per connection:
+  one jump chain serves both connections.
 
 The forwards and the stream options which the inventory defines for a host
 do not apply to a file transfer. The command drops them and reports the
