@@ -762,11 +762,21 @@ def resolve_host(project, host, variables=None):
             'option instead of an account name: ' + user)
     for key in ('port', 'timeout'):
         value = parameters[key]
-        if value is not None and not isinstance(value, (str, int)):
+        if value is None:
+            continue
+        if not isinstance(value, (str, int)):
             # A list or a mapping would compose into garbage argv
             raise ValueError(
                 'The "' + key + '" of the host "' + host + '" is not '
                 'a usable value: ' + repr(value))
+        if key == 'timeout' and not str(value).isdigit():
+            # The value composes into the ConnectTimeout option, also
+            # inside the rewritten jump process; a value carrying
+            # anything but digits is refused here with the reason
+            # named, instead of surfacing as a malformed ssh option
+            raise ValueError(
+                'The "timeout" of the host "' + host + '" is not a '
+                'usable value: ' + repr(value))
     for key, value in parameters.items():
         if isinstance(value, str) and ('{{' in value or '{%' in value):
             # The '--host' dump of 'ansible-inventory' does not render

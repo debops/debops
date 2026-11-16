@@ -35,8 +35,28 @@ def _uri_operand(user, host, port, path):
     the composition produces from the shape of the operand path
     itself.
     """
-    authority = (user + '@' if user else '') + bracket_ipv6(host)
+    host_form = bracket_ipv6(host)
+    if not host_form.startswith('['):
+        # The authority of the URI re-splits at these characters; a
+        # host name which carries one would retarget the connection to
+        # a prefix of itself while the trust entries were computed for
+        # the whole name
+        for character in '/?#@:':
+            if character in host_form:
+                raise ValueError(
+                    'The host name "' + host + '" cannot be represented '
+                    'in the scp:// URI form: the "' + character + '" '
+                    'character would re-split the connection target')
+    if user and ('/' in user or '@' in user):
+        raise ValueError(
+            'The account name "' + user + '" cannot be represented in '
+            'the scp:// URI form')
+    authority = (user + '@' if user else '') + host_form
     if port:
+        if not str(port).isdigit():
+            raise ValueError(
+                'The port ' + repr(port) + ' of the host "' + host
+                + '" is not a usable port for the scp:// URI form')
         authority += ':' + str(port)
     encoded = urllib.parse.quote(path, safe='/')
     if not encoded:
