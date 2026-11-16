@@ -38,13 +38,7 @@ Options
 
 ``--accept``
   Accept an unseen SSH host key on the first contact and store it in the
-  active known_hosts store. This option is not related to the ``-a`` option
-  of :command:`sftp`, which resumes an interrupted transfer; the ``resume``
-  option of :command:`sftp` works when written after the destination:
-
-  .. code-block:: console
-
-     alice@controller:~$ debops sftp web-1 -a
+  active known_hosts store.
 
 ``--eval``
   Do not connect; instead print the composed :command:`sftp` command to
@@ -65,5 +59,7 @@ Options
 
 ``--``
   Before the destination, the marker hands the rest of the arguments to
-  :command:`sftp` verbatim: the inventory is not consulted and the
-  known_hosts store of the project is not applied.
+  :command:`sftp` verbatim: the inventory is not consulted. The options of
+  DebOps still apply in front of the marker, ``--accept`` among them --
+  with it, the known_hosts store of the project is applied to the handoff
+  as well.
