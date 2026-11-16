@@ -207,6 +207,91 @@ def test_build_scp_command_keeps_local_operands_plain_on_conflict(
     assert "scp://admin2@192.0.2.11:2223//dst" in command
 
 
+def test_build_scp_command_composes_the_default_port_mix_as_uris(
+        stub_project, fake_tools, fake_binary):
+    """A host without an inventory port connects on the default port
+    effectively: the mix with an explicit port is a port conflict, and
+    the default-port operand composes without a port of its own, so
+    its ssh client configuration decides."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "mixed-port-inventory",
+        "#!/bin/sh\n"
+        'if [ "$1" = "--host" ]; then\n'
+        'if [ "$2" = "web" ]; then\n'
+        "    printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_port\": \"2222\", \"ansible_user\": \"admin\"}'\n"
+        'elif [ "$2" = "web2" ]; then\n'
+        "    printf '%s' '{\"ansible_host\": \"192.0.2.11\","
+        " \"ansible_user\": \"admin2\"}'\n"
+        "fi\n"
+        'elif [ "$1" = "--list" ]; then\n'
+        'if [ "$3" = "web" ]; then\n'
+        "    printf '%s' '{\"all\": {\"hosts\": [\"web\"]}, "
+        "\"_meta\": {\"hostvars\": {\"web\": "
+        "{\"ansible_host\": \"192.0.2.10\", \"ansible_port\": \"2222\","
+        " \"ansible_user\": \"admin\"}}}}'\n"
+        'elif [ "$3" = "web2" ]; then\n'
+        "    printf '%s' '{\"all\": {\"hosts\": [\"web2\"]}, "
+        "\"_meta\": {\"hostvars\": {\"web2\": "
+        "{\"ansible_host\": \"192.0.2.11\","
+        " \"ansible_user\": \"admin2\"}}}}'\n"
+        "else\n"
+        "    printf '%s' '{\"_meta\": {\"hostvars\": {}}}'\n"
+        "fi\n"
+        "fi\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    command = build_scp_command(project, ["web:/src"], "web2:/dst")
+
+    assert "-P" not in command
+    assert "scp://admin@192.0.2.10:2222//src" in command
+    assert "scp://admin2@192.0.2.11//dst" in command
+
+
+def test_build_scp_command_keeps_the_default_ports_plain(
+        stub_project, fake_tools, fake_binary, caplog):
+    """Operands without inventory ports carry no port option at all:
+    a '-P 22' would override the Port entries of the operator's own
+    ssh client configuration."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "default-port-inventory",
+        "#!/bin/sh\n"
+        'if [ "$1" = "--host" ]; then\n'
+        'if [ "$2" = "web" ]; then\n'
+        "    printf '%s' '{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_user\": \"admin\"}'\n"
+        'elif [ "$2" = "web2" ]; then\n'
+        "    printf '%s' '{\"ansible_host\": \"192.0.2.11\","
+        " \"ansible_user\": \"admin2\"}'\n"
+        "fi\n"
+        'elif [ "$1" = "--list" ]; then\n'
+        'if [ "$3" = "web" ]; then\n'
+        "    printf '%s' '{\"all\": {\"hosts\": [\"web\"]}, "
+        "\"_meta\": {\"hostvars\": {\"web\": "
+        "{\"ansible_host\": \"192.0.2.10\","
+        " \"ansible_user\": \"admin\"}}}}'\n"
+        'elif [ "$3" = "web2" ]; then\n'
+        "    printf '%s' '{\"all\": {\"hosts\": [\"web2\"]}, "
+        "\"_meta\": {\"hostvars\": {\"web2\": "
+        "{\"ansible_host\": \"192.0.2.11\","
+        " \"ansible_user\": \"admin2\"}}}}'\n"
+        "else\n"
+        "    printf '%s' '{\"_meta\": {\"hostvars\": {}}}'\n"
+        "fi\n"
+        "fi\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    command = build_scp_command(project, ["web:/src"], "web2:/dst")
+
+    assert "-P" not in command
+    assert "admin@192.0.2.10:/src" in command
+    assert "admin2@192.0.2.11:/dst" in command
+    assert not any("different ssh ports" in record.message
+                   for record in caplog.records)
+
+
 def test_uri_operand_encodes_the_path_and_carries_the_parts():
     """The URI operand percent-encodes the path, brackets the IPv6
     authority and addresses the absolute paths behind a double
