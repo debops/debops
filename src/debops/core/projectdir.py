@@ -864,7 +864,7 @@ class ProjectDir(object):
         logger.debug('Initializing new "modern" project directory')
         self.project_type = 'modern'
         default_view = default_view or 'system'
-        filename_view = default_view.replace('/', '-')
+        self._validate_view_name(default_view)
         venv = bool(venv)
 
         # Create modern project directory structure
@@ -967,7 +967,7 @@ class ProjectDir(object):
 
         # Create .debops/conf.d/view-<name>.yml
         self._write_file(os.path.join(path, '.debops', 'conf.d',
-                                      'view-' + filename_view + '.yml'),
+                                      'view-' + default_view + '.yml'),
                          default_view_yml.render(
                              env=self.environment(),
                              view_name=default_view,
@@ -1379,6 +1379,28 @@ class ProjectDir(object):
                                          self.path)
         return store_dir
 
+    @staticmethod
+    def _validate_view_name(view):
+        """Refuse the view names which cannot name every context the
+        view appears in.
+
+        The MCP server of DebOps implements systemd instances
+        recognized by '<project>-<view>' and passed to
+        'debops-mcp@<project>-<view>.service'; the instance name
+        splits at its last dash, so a dash inside a view name would
+        make two different (project, view) pairs produce the same
+        instance name. The view name lands in the configuration tree
+        keys, the drop-in file names and the store paths of the view
+        as well, where the other characters outside of the letters,
+        the digits and the underscores parse differently than the
+        tree lookup does.
+        """
+        if not re.match(r'^[A-Za-z0-9][A-Za-z0-9_]*$', view or ''):
+            raise ValueError(
+                'The view name can carry only letters, digits and '
+                'underscores, and must not start with an underscore: '
+                + str(view))
+
     def mkview(self, view, ssh=False):
 
         # Make sure that users are not trying to nest the view inside of
@@ -1402,17 +1424,7 @@ class ProjectDir(object):
                 raise ValueError(f"The '{view}' view cannot be placed inside "
                                  "another view")
 
-        filename_view = view.replace('/', '-')
-        if not re.match(r'^[A-Za-z0-9][A-Za-z0-9_-]*$', view):
-            # The view name lands in the configuration tree keys, the
-            # drop-in file names and the store paths of the view; a
-            # name outside of the letters, the digits, the dashes and
-            # the underscores reaches contexts which parse it
-            # differently than the tree lookup does
-            raise ValueError(
-                'The view name can carry only letters, digits, dashes '
-                'and underscores, and must not start with a dash or an '
-                'underscore: ' + view)
+        self._validate_view_name(view)
         if self.project_type == 'modern':
             if view:
                 if self.encrypt == 'git-crypt' and not os.path.exists(
@@ -1483,7 +1495,7 @@ class ProjectDir(object):
                 # Create .debops/conf.d/view-<name>.yml
                 self._write_file(
                         os.path.join(self.path, '.debops', 'conf.d',
-                                     'view-' + filename_view + '.yml'),
+                                     'view-' + view + '.yml'),
                         default_view_yml.render(
                             env=self.environment(),
                             view_name=view,
