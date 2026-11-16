@@ -823,14 +823,13 @@ Connection of a host:""")
                                  '10)')
         group = parser.add_mutually_exclusive_group()
         group.add_argument('--dns', dest='dns_mode', action='store_const',
-                           const='dns', default='dns',
+                           const='dns', default=None,
                            help='verify the scanned host keys against '
                                 'the SSHFP records of the DNS; '
                                 'DNSSEC-validated records are stored '
                                 'automatically, unsigned matches follow '
                                 'the ssh.rescan.'
-                                'trust_unsigned_records option '
-                                '(default)')
+                                'trust_unsigned_records option')
         group.add_argument('--no-dns', dest='dns_mode',
                            action='store_const', const='no-dns',
                            help='do not check the SSH host keys against '
@@ -840,10 +839,22 @@ Connection of a host:""")
                            help='store keys automatically only when a '
                                 'DNSSEC-validating resolver '
                                 'authenticated the SSHFP records')
-        parser.add_argument('-c', '--confirm', default=False,
-                            help='show the scanned fingerprints and ask '
-                                 'for each host before storing them',
-                            action='store_true')
+        # Without one of the options the mode comes from the
+        # 'ssh.rescan.resolver_mode' option of the configuration
+        confirm_group = parser.add_mutually_exclusive_group()
+        confirm_group.add_argument('-c', '--confirm', dest='confirm',
+                                   default=None, action='store_true',
+                                   help='show the scanned fingerprints '
+                                        'and ask for each host before '
+                                        'storing them; without the '
+                                        'option the prompting follows '
+                                        'the ssh.rescan.confirm option '
+                                        'of the configuration')
+        confirm_group.add_argument('--no-confirm', dest='confirm',
+                                   default=None, action='store_false',
+                                   help='do not ask for the scanned '
+                                        'fingerprints before storing '
+                                        'them')
         parser.add_argument('hosts', nargs='+', metavar='pattern',
                             help='hosts, groups or the other Ansible '
                                  'inventory patterns to refresh the '

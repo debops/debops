@@ -229,6 +229,19 @@
             "trust_unsigned_records": {
               "type": "boolean",
               "description": "What to do when the scanned keys of a host match the SSHFP records of the DNS but the answer was not authenticated by DNSSEC. With 'true', the match grants no trust and the keys are handled like the keys of hosts without SSHFP records: stored as scanned, or confirmed by the operator with '--confirm'. With 'false', such hosts are not stored; run the rescan with '--confirm' to accept the keys after checking the fingerprints. RFC 4255 forbids trusting unauthenticated SSHFP records."
+            },
+            "resolver_mode": {
+              "type": "string",
+              "enum": [
+                "dns",
+                "no-dns",
+                "dns-verify"
+              ],
+              "description": "The DNS verification mode the rescan runs with when the '--dns', '--no-dns' and '--dns-verify' options do not name one. The modes are the ones of the options: 'dns' verifies the scanned keys against the SSHFP records of the DNS, 'no-dns' skips the DNS check and 'dns-verify' requires a DNSSEC-validating resolver to authenticate the records before a match is trusted."
+            },
+            "confirm": {
+              "type": "boolean",
+              "description": "Ask for the scanned fingerprints before every store of a rescan, the way the '--confirm' option does. The '--no-confirm' option turns the prompting off for one invocation."
             }
           }
         }

@@ -437,6 +437,22 @@ class Interpreter(object):
             print_error(errmsg)
             sys.exit(1)
 
+        # The defaults of the DNS mode and the confirmation come from
+        # the configuration; the options of the command line override
+        # them
+        rescan_config = project.config.raw.get('ssh', {}).get(
+            'rescan', {})
+        dns_mode = args.dns_mode or rescan_config.get('resolver_mode',
+                                                      'dns')
+        if dns_mode not in ('dns', 'no-dns', 'dns-verify'):
+            print_error('The ssh.rescan.resolver_mode option of the '
+                        'configuration carries an unknown DNS '
+                        'verification mode: ' + str(dns_mode))
+            sys.exit(1)
+        confirm = args.confirm
+        if confirm is None:
+            confirm = rescan_config.get('confirm', False)
+
         phases = ('remove', 'scan')
         if args.remove and not args.scan:
             phases = ('remove',)
@@ -517,8 +533,8 @@ class Interpreter(object):
             results = ssh.rescan_hosts(
                 project, hosts, store=args.known_hosts_file,
                 phases=phases, timeout=args.timeout,
-                dns_mode=args.dns_mode, variables=variables,
-                confirm=confirm_host if args.confirm else None)
+                dns_mode=dns_mode, variables=variables,
+                confirm=confirm_host if confirm else None)
         except (ValueError, OSError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
