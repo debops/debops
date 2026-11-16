@@ -291,8 +291,8 @@ jobs:
           grep -qF "$(cat ~/.ssh/id_ed25519.pub)" ~/.ssh/authorized_keys \
             || cat ~/.ssh/id_ed25519.pub >> ~/.ssh/authorized_keys
           chmod 600 ~/.ssh/authorized_keys
-          ssh-keyscan -H 127.0.0.1 2>/dev/null >> ~/.ssh/known_hosts
           sudo systemctl start ssh
+          ssh-keyscan -H 127.0.0.1 2>/dev/null >> ~/.ssh/known_hosts
 
       - name: Prepare test environment
         run: |
