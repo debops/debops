@@ -2105,6 +2105,39 @@ def test_jump_rewriter_recognizes_the_mix_across_the_groups():
         rewriter.check()
 
 
+def test_jump_rewriter_rewrites_the_lowercase_and_attached_forms():
+    """The option keywords are case-insensitive and the '-o' value can
+    be attached to the flag; ssh honors all of the spellings, so the
+    rewrite must see them all."""
+    for tokens in (["-o", "proxyjump=hop"], ["-oProxyjump=hop"],
+                   ["-o", "PROXYJUMP=hop"]):
+        rewriter = JumpRewriter([])
+        rewritten = rewriter.rewrite_tokens(list(tokens))
+        assert rewritten == ["-o", "ProxyCommand=ssh -W '[%h]:%p' hop"], \
+            tokens
+
+
+def test_jump_rewriter_sees_the_attached_proxycommand():
+    """The attached '-oProxyCommand=...' form is recognized as the
+    operator's own proxy, so the ambiguity refusal fires for it."""
+    rewriter = JumpRewriter([])
+    rewriter.rewrite_tokens(["-oProxyCommand=nc %h %p", "-J", "hop"])
+
+    with pytest.raises(ValueError):
+        rewriter.check()
+
+
+def test_jump_rewriter_pairs_recognize_the_spellings():
+    rewriter = JumpRewriter([])
+    rewritten = rewriter.rewrite_pairs([("-o", "Proxyjump=hop")])
+
+    assert rewritten == [("-o", "ProxyCommand=ssh -W '[%h]:%p' hop")]
+
+    rewriter.rewrite_pairs([("-o", "ProxyCommand=nc x")])
+    with pytest.raises(ValueError):
+        rewriter.check()
+
+
 def test_jump_rewriter_rewrites_the_pairs():
     """The pair form of the file-transfer builders is rewritten
     alike."""
