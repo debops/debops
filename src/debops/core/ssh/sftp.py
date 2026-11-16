@@ -11,7 +11,6 @@ known_hosts store of 'debops ssh'.
 """
 
 import logging
-import os
 import shlex
 
 from .store import known_hosts_option, require_store
