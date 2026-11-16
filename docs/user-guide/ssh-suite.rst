@@ -353,9 +353,8 @@ Using plain ssh outside of DebOps
 ---------------------------------
 
 The connection parameters of the inventory work inside of DebOps commands.
-To make a plain :command:`ssh` outside of DebOps reach the same hosts, the
-``config`` subcommand prints an SSH client configuration block for the
-hosts of the project:
+To make a plain :command:`ssh` outside of DebOps trust the same hosts, the
+``config`` subcommand prints an SSH client configuration block:
 
 .. code-block:: console
 
@@ -366,8 +365,12 @@ With the ``--write`` option, the block is written into your
 managed block markers and leaves the rest of the file alone. The block
 adds the known_hosts store of the project as an additional host key source
 next to your own, so both sources are trusted and the new keys of foreign
-hosts still land in your own file. In the ``user`` mode there is nothing
-to configure and the command prints a note instead.
+hosts still land in your own file. The block carries the store and
+nothing else: the account, the port and the jump hosts of the inventory
+hosts stay in the inventory, and a plain :command:`ssh` which needs them
+needs its own configuration in the :file:`~/.ssh/config` file you manage
+yourself. In the ``user`` mode there is nothing to configure and the
+command prints a note instead.
 
 
 See also
