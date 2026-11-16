@@ -1771,8 +1771,9 @@ def test_init_detects_an_encrypted_inventory(tmp_path, monkeypatch):
 
 def test_mkview_refuses_the_hostile_view_names(tmp_path):
     """The view name lands in the configuration tree keys, the drop-in
-    file names and the store paths of the view; a name outside of the
-    letters, the digits, the dashes and the underscores is refused."""
+    file names and the store paths of the view, and it is part of the
+    MCP instance names; a name outside of the letters, the digits and
+    the underscores is refused."""
     project = ProjectDir(str(tmp_path / "example"), create=True,
                          project_type="modern",
                          config=make_configuration())
@@ -1781,9 +1782,23 @@ def test_mkview_refuses_the_hostile_view_names(tmp_path):
     with pytest.raises(ValueError):
         project.mkview(view="my.view")
     with pytest.raises(ValueError):
+        project.mkview(view="has-dash")
+    with pytest.raises(ValueError):
         project.mkview(view="-leading")
     with pytest.raises(ValueError):
         project.mkview(view="has space")
+
+
+def test_create_refuses_a_dash_in_the_default_view(tmp_path):
+    """'debops project init --default-view' validates the view name
+    the same way 'debops project mkview' does."""
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="modern",
+                         config=make_configuration())
+
+    with pytest.raises(ValueError):
+        project.create(git_repo=False, default_view="has-dash")
+    assert not (tmp_path / "example" / "ansible").exists()
 
 
 def test_the_project_machinery_imports_without_dnspython():
