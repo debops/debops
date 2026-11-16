@@ -1769,6 +1769,23 @@ def test_init_detects_an_encrypted_inventory(tmp_path, monkeypatch):
             "enabled": True, "mounted": False, "type": "encfs"}
 
 
+def test_mkview_refuses_the_hostile_view_names(tmp_path):
+    """The view name lands in the configuration tree keys, the drop-in
+    file names and the store paths of the view; a name outside of the
+    letters, the digits, the dashes and the underscores is refused."""
+    project = ProjectDir(str(tmp_path / "example"), create=True,
+                         project_type="modern",
+                         config=make_configuration())
+    project.create(git_repo=False)
+
+    with pytest.raises(ValueError):
+        project.mkview(view="my.view")
+    with pytest.raises(ValueError):
+        project.mkview(view="-leading")
+    with pytest.raises(ValueError):
+        project.mkview(view="has space")
+
+
 def test_the_project_machinery_imports_without_dnspython():
     """The runners and the project directory import the ssh store
     substrate; the DNS resolver of the SSHFP verification stays out
