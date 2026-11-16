@@ -111,7 +111,7 @@ def _free_port():
         return probe.getsockname()[1]
 
 
-def _spawn_sshd(tmp_path, tag, port):
+def _spawn_sshd(tmp_path, tag, port, allow_forwarding):
     """Spawn one unprivileged ssh daemon on the given loopback port.
 
     The daemon runs as the account running the tests, with a fresh
@@ -120,8 +120,9 @@ def _spawn_sshd(tmp_path, tag, port):
     the localhost tests do without following the live auth state of
     the operator's own daemon. The fresh host key is trusted by
     neither the operator's own known_hosts file nor any store of the
-    tests; forwarding and TTY allocation are disabled, which the tests
-    do not need.
+    tests. TTY allocation is disabled, which the tests do not need;
+    the forwarding is disabled on the target daemon only -- the
+    bastion's job is the stdio forwarding the jump connections use.
     """
     host_key = tmp_path / ("sshd-" + tag + "-hostkey")
     subprocess.run(
@@ -140,14 +141,23 @@ def _spawn_sshd(tmp_path, tag, port):
         "PasswordAuthentication no\n"
         "KbdInteractiveAuthentication no\n"
         "PubkeyAuthentication yes\n"
-        "DisableForwarding yes\n"
+        "{forwarding}"
         "PermitTTY no\n"
+        # The authorized keys live under the pytest temporary
+        # directory, whose ancestors carry the sticky bit of /tmp; the
+        # strict ownership walk of sshd would refuse the keys there.
+        # The daemon is ours, listens on the loopback alone and
+        # carries a key no store trusts, so the strictness has
+        # nothing to enforce
+        "StrictModes no\n"
         "UsePAM no\n"
         "LogLevel ERROR\n"
         "Subsystem sftp internal-sftp\n".format(
             port=port, host_key=host_key,
             pid=tmp_path / ("sshd-" + tag + ".pid"),
-            keys=keys_copy))
+            keys=keys_copy,
+            forwarding="" if allow_forwarding
+            else "DisableForwarding yes\n"))
     log = tmp_path / ("sshd-" + tag + ".log")
     return subprocess.Popen(
         [_sshd_binary(), "-D", "-f", str(config), "-E", str(log)],
@@ -190,7 +200,8 @@ def _start_daemon(tmp_path, tag, throwaway):
         port = _free_port()
         process = None
         try:
-            process = _spawn_sshd(tmp_path, tag + "-" + str(attempt), port)
+            process = _spawn_sshd(tmp_path, tag + "-" + str(attempt), port,
+                                  allow_forwarding=(tag == "bastion"))
             _await_daemon(process, port, throwaway)
         except subprocess.SubprocessError as error:
             # The daemon could not be spawned; an environment problem
