@@ -84,15 +84,15 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
                       options=None):
     """Build the ssh command line for 'debops ssh <host>'.
 
-    The resolved inventory parameters fill the command, with the
-    explicit options and the destination's own 'user@host' or URI parts
-    taking precedence over the inventory values, the way ssh precedence
+    The resolved inventory parameters fill the command. The explicit
+    options and the destination's own 'user@host' or URI parts take
+    precedence over the inventory values, the way ssh precedence
     works. The resolved 'ssh_args' and the connection extras of the
-    host are composed before the destination; the caller's 'ssh_args'
-    follow the destination, exactly where ssh itself places them -- the
-    remote command and its arguments. The flags DebOps composes come
-    before the resolved arguments, so an explicit '-p' beats a port
-    inside 'ssh_args' -- the opposite order of the ssh connection
+    host are composed before the destination. The caller's 'ssh_args'
+    follow the destination, exactly where ssh itself places them --
+    the remote command and its arguments. The flags DebOps composes
+    come before the resolved arguments, so an explicit '-p' beats a
+    port inside 'ssh_args' -- the opposite order of the ssh connection
     plugin, which places its '-o' options after 'ssh_args'.
 
     In the project known_hosts mode the store of the view is injected
@@ -100,17 +100,19 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
     an option, so no resolved argument can bypass the store of the
     view. The 'UserKnownHostsFile' options of the resolved arguments
     are dropped, so the command carries the store declaration once.
+
     The structured jump options of the connection are rewritten into
     explicit 'ProxyCommand' options which carry the store, the host
     key checking mode and the connection timeout into the jump
     process, which OpenSSH builds without inheriting the options of
-    the parent; a comma-separated jump chain is left to ssh unchanged.
+    the parent. A comma-separated jump chain is left to ssh
+    unchanged.
 
     Without a user from the options or the inventory, no '-l' is
     composed: ssh picks the user from the operator's SSH client
     configuration, the way plain ssh does. The connection timeout of
-    the resolution applies like it does for the Ansible connections;
-    an earlier '-o ConnectTimeout' of the composed command wins.
+    the resolution applies like it does for the Ansible connections.
+    An earlier '-o ConnectTimeout' of the composed command wins.
     """
     command = [(parameters.get('ssh_executable') or ssh_executable(project)
                 or project.config.raw['binaries']['ssh'])]
@@ -692,35 +694,19 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
                  timeout=10, dns_mode='dns', confirm=None, variables=None):
     """Cycle the known_hosts entries of the given hosts.
 
-    For each host, its current host keys are scanned first and held in
-    memory. With the 'dns' mode (the default), keys whose fingerprints
-    match the DNSSEC-validated SSHFP records of the host are accepted
-    automatically, keys which contradict the published records are
-    refused with a report, and hosts without usable DNS records fall
-    back to the 'confirm' callback, when one is given, or to the plain
-    store operation. A match which the resolver did not authenticate
-    grants no trust: the keys follow the
-    'ssh.rescan.trust_unsigned_records' option of the configuration,
-    handled like the hosts without DNS records ('true', the default)
-    or refused ('false'). The 'dns-verify' mode additionally requires
-    that a DNSSEC-validating resolver marked the DNS answer as
-    authenticated.
-
-    After the keys are accepted, the stored entries of the identifiers
-    which answered the scan are replaced: the store is copied to a
-    temporary file, the stale entries are removed from the copy and
-    the accepted keys are appended, and the copy replaces the store
-    atomically -- a crash in the middle leaves the operator's store as
-    it was. The entries of the identifiers which did not answer stay
-    until they do. The stored entries of a host whose keys were
-    refused stay as they are, so a rescan never leaves a host without
-    its known entries. The connections use the port of the host's
-    resolution; the entries of the hosts on non-default ports carry
-    the '[host]:port' form of the identifiers.
-
-    A host which fails a phase is reported and the remaining
-    hosts continue, so one host without a running sshd does not mask
-    the results of the others.
+    For each host, the current host keys are scanned and classified.
+    The stored entries of the identifiers which answered the scan are
+    then replaced: the store is copied to a temporary file, the stale
+    entries of those identifiers are removed from the copy, and the
+    accepted keys are appended. The copy swaps in atomically, so a
+    crash in the middle leaves the operator's store as it was. The
+    entries of the identifiers which did not answer, and of a host
+    whose keys were refused, stay as they are. The connections use the
+    port of the host's resolution; the entries of the hosts on
+    non-default ports carry the '[host]:port' form of the identifiers.
+    A host which fails a phase is reported and the remaining hosts
+    continue, so one host without a running sshd does not mask the
+    results of the others.
 
     The scanned keys are compared with the entries the store holds,
     key by key, and only the entries of the identifiers whose key
@@ -729,7 +715,7 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
     entries carry a fresh salt on every scan, so the comparison runs
     on the key material and not on the text of the lines.
 
-    A host whose connection traverses a jump host scans after the
+    The hosts whose connections traverse a jump host scan after the
     jump: the keys of the jump must be in the store before a
     connection through it can be verified. When the direct scan of
     such a host produces no keys and the resolved connection options
@@ -737,34 +723,28 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
     collected through the connection itself: the connection runs
     with a throwaway known_hosts file, so only the keys which pass
     the verification of this run enter the store. A bastion hidden
-    inside a 'ProxyCommand' cannot be discovered.
+    inside a 'ProxyCommand' cannot be discovered. The ordering covers
+    the hosts which depend on another host of the run: a chain
+    scanned in one run keeps the order it was given, and the
+    connection-scan of the outermost host fails when an intermediate
+    hop's key is not in the store yet. The failure is reported and a
+    second run collects the host.
 
-    The ordering covers the hosts which depend on another host of
-    the run: a chain scanned in one run, A through B to C, scans in
-    the order given, and the connection-scan of A fails when B's key
-    is not in the store yet. The failure is reported; run the rescan
-    again and A is collected once B is known.
+    The classification of the scanned keys against the SSHFP records
+    of the DNS follows the contract documented in
+    `_classify_scanned_keys`: the modes select which keys are stored
+    automatically, the trust policy handles the matches the resolver
+    did not authenticate, and the 'confirm' callback, when given,
+    gates every store of the run on the operator's decision. The keys
+    which contradict the published records of a host are refused with
+    or without the callback.
 
-    The 'confirm' callback, when given, is called with the host name
-    and the list of '(fingerprint, key_type)' pairs of the keys which
-    are about to be stored, and returns whether they should be stored.
-    With the callback, every store of the run is gated on the
-    operator's decision: the keys the mode would refuse on its own --
-    the unsigned matches of the 'dns' mode without the
-    'trust_unsigned_records' option, the unverified hosts of the
-    'dns-verify' mode -- are offered like the hosts without records,
-    the raw keys of the 'no-dns' mode are offered as scanned, and the
-    DNSSEC-validated matches are offered too, so an operator who
-    wants to eyeball every store can. The keys which contradict the
-    published SSHFP records of a host are refused with or without the
-    callback.
-
+    The 'variables' parameter carries the host variables a pattern
+    expansion already fetched, keyed by host name -- the hosts it
+    covers resolve without a second invocation of the inventory.
     Returns a list of '(host, succeeded, message)' tuples, one per
     host; the message is empty when the host completed the requested
-    phases. The 'variables' parameter carries the host variables a
-    pattern expansion already fetched, keyed by host name -- the hosts
-    it covers resolve without a second invocation of the inventory.
-    Raises ValueError when no store can be determined.
+    phases. Raises ValueError when no store can be determined.
     """
     store_project = None
     if store:
