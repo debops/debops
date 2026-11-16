@@ -546,11 +546,15 @@ def test_debug_mode_adds_verbosity_and_env(stub_project):
 
 
 def test_accept_option_composes_the_ssh_arguments(stub_project):
+    """Without configured ssh_args, the composed value restates the
+    default of the connection plugin, which the variable would
+    otherwise replace: the connections keep their multiplexing."""
     runner = AnsiblePlaybookRunner(stub_project(), ansible_args=["site.yml"],
                                    accept=True)
 
     assert runner._ansible_env["ANSIBLE_SSH_ARGS"] == \
-        "-o StrictHostKeyChecking=accept-new"
+        ("-o StrictHostKeyChecking=accept-new "
+         "-C -o ControlMaster=auto -o ControlPersist=60s")
 
 
 def test_accept_option_carries_the_configured_ssh_args(stub_project):
