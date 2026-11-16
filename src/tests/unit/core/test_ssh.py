@@ -1165,6 +1165,18 @@ def test_rescan_hosts_stores_into_the_user_store(monkeypatch,
     assert (tmp_path / ".ssh" / "known_hosts").read_text().strip()
 
 
+def test_resolve_host_refuses_a_non_numeric_timeout(
+        monkeypatch, stub_project, fake_tools):
+    """The connection timeout composes into the ConnectTimeout option,
+    also inside the jump process; a value which is not a number is
+    refused with the reason named."""
+    monkeypatch.setenv("ANSIBLE_TIMEOUT", "10;rm")
+    project = stub_project(raw={"binaries": dict(fake_tools["binaries"])})
+
+    with pytest.raises(ValueError, match="not a usable value"):
+        resolve_host(project, "web")
+
+
 def test_resolve_host_falls_back_to_the_remote_user_config(
         monkeypatch, stub_project, fake_tools, fake_binary):
     """With no user in the inventory, the remote_user option of the
