@@ -17,6 +17,7 @@ import os
 import re
 import subprocess
 import sys
+from fnmatch import fnmatch
 from types import SimpleNamespace
 from unittest import mock
 
@@ -941,8 +942,13 @@ def test_create_ssh_writes_the_known_hosts_configuration(tmp_path):
 
     gitignore = (tmp_path / "example" / ".gitignore").read_text()
     # The store files are tracked in the project repository, so the
-    # history records the changes of the host trust
-    assert "/.debops/ssh" not in gitignore
+    # history records the changes of the host trust; the transient
+    # copies and the scan throwaways of the rescan are not
+    assert "/.debops/ssh/views/*/known_hosts.*" in gitignore
+    assert not fnmatch("known_hosts", "known_hosts.*")
+    assert fnmatch("known_hosts.1baqveun", "known_hosts.*")
+    assert fnmatch("known_hosts.1baqveun.old", "known_hosts.*")
+    assert fnmatch("known_hosts.scan.1baqveun", "known_hosts.*")
     assert not (tmp_path / "example" / ".debops" / "ssh" /
                 ".gitignore").exists()
 
