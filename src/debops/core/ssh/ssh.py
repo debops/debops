@@ -136,12 +136,28 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
         ('-o', 'ConnectTimeout=' + str(parameters.get('timeout') or 10)))
     rewriter = JumpRewriter(child_pairs)
 
-    if options:
+    option_tokens = list(options or [])
+    configured_args = parameters.get('ssh_args')
+    configured_tokens = shlex.split(configured_args) \
+        if configured_args else []
+    if inject:
+        configured_tokens = without_known_hosts_options(configured_tokens)
+    common_tokens = shlex.split(parameters.get('common_args') or '')
+    extra_tokens = shlex.split(parameters.get('extra_args') or '')
+    # The scan of every argument group runs before the rewriting: the
+    # config file and the verbosity flags of the parent command line
+    # must be known when the first ProxyCommand value is built, no
+    # matter which group carries them
+    for group in (option_tokens, configured_tokens, common_tokens,
+                  extra_tokens):
+        rewriter.scan(group)
+
+    if option_tokens:
         # The options the operator typed directly precede everything
         # DebOps derives: ssh applies the first obtained value of an
         # option, and an '-l' or '-o' the operator typed must not be
         # defeated by the inventory or the view
-        command.extend(rewriter.rewrite_tokens(options))
+        command.extend(rewriter.rewrite_tokens(option_tokens))
     effective_user = user or parameters.get('user')
     if effective_user:
         command.extend(['-l', effective_user])
@@ -151,16 +167,9 @@ def build_ssh_command(project, host, parameters, user=None, port=None,
     effective_identity = identity or parameters.get('identity')
     if effective_identity:
         command.extend(['-i', effective_identity])
-    configured_args = parameters.get('ssh_args')
-    configured_tokens = shlex.split(configured_args) \
-        if configured_args else []
-    if inject:
-        configured_tokens = without_known_hosts_options(configured_tokens)
     command.extend(rewriter.rewrite_tokens(configured_tokens))
-    for key in ('common_args', 'extra_args'):
-        value = parameters.get(key)
-        if value:
-            command.extend(rewriter.rewrite_tokens(shlex.split(value)))
+    command.extend(rewriter.rewrite_tokens(common_tokens))
+    command.extend(rewriter.rewrite_tokens(extra_tokens))
 
     timeout = parameters.get('timeout')
     if timeout is None:
@@ -358,11 +367,15 @@ def _collect_through_connection(project, parameters, store, timeout,
         port = parameters.get('port')
         if port:
             command.extend(['-p', str(port)])
-        for value in (parameters.get('ssh_args'),
-                      parameters.get('common_args'),
-                      parameters.get('extra_args')):
-            if value:
-                command.extend(rewriter.rewrite_tokens(shlex.split(value)))
+        groups = [shlex.split(value)
+                  for value in (parameters.get('ssh_args'),
+                                parameters.get('common_args'),
+                                parameters.get('extra_args'))
+                  if value]
+        for group in groups:
+            rewriter.scan(group)
+        for group in groups:
+            command.extend(rewriter.rewrite_tokens(group))
         try:
             rewriter.check()
         except ValueError as error:

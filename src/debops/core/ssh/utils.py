@@ -413,16 +413,20 @@ class JumpRewriter:
     into explicit ProxyCommand options.
 
     The '-J hop', '-Jhop', '-o ProxyJump=hop' and '-oProxyJump=hop'
-    forms of a single hop become '-o ProxyCommand=...' options which
-    run the jump connection with the option pairs given at the
-    construction -- the trust and mode options of the parent command.
-    The rewriting instance accumulates its state across the argument
-    groups of one command, so a 'ProxyCommand' of the operator in one
-    group and a structured jump in another are recognized as the
-    ambiguity they are: 'check' raises ValueError when both appear,
-    because the ProxyCommand would shadow the jump handling of DebOps
-    and the discovered jump would not be the bastion the connection
-    actually traverses.
+    forms of a single hop -- and the same options hidden in a
+    short-option cluster like '-4J hop' -- become
+    '-o ProxyCommand=...' options which run the jump connection with
+    the option pairs given at the construction -- the trust and mode
+    options of the parent command -- plus the '-F' config file and the
+    '-v' verbosity flags of the parent command line, which the
+    implicit ProxyJump child of ssh inherits and the explicit one must
+    carry. The rewriting instance accumulates its state across the
+    argument groups of one command, so a 'ProxyCommand' of the
+    operator in one group and a structured jump in another are
+    recognized as the ambiguity they are: 'check' raises ValueError
+    when both appear, because the ProxyCommand would shadow the jump
+    handling of DebOps and the discovered jump would not be the
+    bastion the connection actually traverses.
 
     A comma-separated hop list, a jump chain, is left unchanged: every
     additional hop would need another nested ProxyCommand layer with
@@ -432,6 +436,7 @@ class JumpRewriter:
 
     def __init__(self, option_pairs):
         self.option_pairs = list(option_pairs)
+        self.child_extras = []
         self._jump_rewritten = False
         self._proxy_seen = False
 
@@ -444,12 +449,56 @@ class JumpRewriter:
         """
         return value.split('=', 1)[0].lower()
 
+    def child_pairs(self):
+        """Return the option pairs and flags the jump process runs
+        with: the constructed pairs plus the config file and the
+        verbosity flags collected from the parent command line."""
+        return self.option_pairs + self.child_extras
+
+    def scan(self, tokens):
+        """Collect the '-F' config file and the '-v' verbosity of the
+        argument tokens for the jump process.
+
+        The scan runs over every argument group of the command before
+        the rewriting starts, so a config file carried by a later
+        group is known by the time the first ProxyCommand value is
+        built.
+        """
+        index = 0
+        while index < len(tokens):
+            token = tokens[index]
+            index += 1
+            if not token.startswith('-') or len(token) == 1 \
+                    or token.startswith('--'):
+                continue
+            letters = token[1:]
+            position = 0
+            while position < len(letters):
+                letter = letters[position]
+                position += 1
+                if letter == 'F':
+                    remainder = letters[position:]
+                    if remainder:
+                        self.child_extras.append(('-F', remainder))
+                    elif index < len(tokens):
+                        self.child_extras.append(('-F', tokens[index]))
+                        index += 1
+                    break
+                if letter == 'v':
+                    self.child_extras.append('-v')
+                if letter in SSH_OPTIONS_WITH_VALUE:
+                    # A value-taking option ends the cluster; its
+                    # value, attached or separate, is none of our
+                    # business
+                    break
+
     def rewrite_tokens(self, tokens):
         """Return the token list with the structured jumps rewritten.
 
         The '-o' options are consumed together with their value token,
-        so a value which resembles a jump option is never inspected on
-        its own.
+        and the short-option clusters are walked letter by letter, so
+        a jump or an '-o' option hidden in a cluster ('-4J hop') is
+        rewritten the same way a standalone one is.
         """
         result = []
         index = 0
@@ -458,13 +507,13 @@ class JumpRewriter:
             if token == '-o':
                 value = tokens[index + 1] if index + 1 < len(tokens) else None
                 keyword = self._option_keyword(value) if value else None
-                if keyword == 'proxyjump' and '=' in value:
+                if keyword == 'proxyjump' and value and '=' in value:
                     hop = value.split('=', 1)[1]
                     if hop and ',' not in hop:
                         self._jump_rewritten = True
                         result.append('-o')
                         result.append(
-                            proxy_jump_command(hop, self.option_pairs))
+                            proxy_jump_command(hop, self.child_pairs()))
                         index += 2
                         continue
                 if keyword == 'proxycommand':
@@ -476,34 +525,102 @@ class JumpRewriter:
                 else:
                     index += 1
                 continue
-            letter = token[1] if len(token) > 1 else ''
-            attached = len(token) > 2
-            hop = None
-            consumed = 1
-            if token == '-J' or (letter == 'J' and attached):
-                hop = token[2:] if attached else (
-                    tokens[index + 1] if index + 1 < len(tokens) else None)
-                consumed = 2 if (not attached and hop is not None) else 1
-            elif attached and letter == 'o':
-                value = token[2:]
-                keyword = self._option_keyword(value)
-                if keyword == 'proxyjump' and '=' in value:
-                    hop = value.split('=', 1)[1]
-                elif keyword == 'proxycommand' and '=' in value:
+            if not token.startswith('-') or len(token) == 1 \
+                    or token.startswith('--'):
+                if self._option_keyword(token) == 'proxycommand':
                     self._proxy_seen = True
-            elif self._option_keyword(token) == 'proxycommand':
-                self._proxy_seen = True
-            if hop is None:
                 result.append(token)
-                index += consumed
+                index += 1
                 continue
-            if not hop or ',' in hop:
-                result.extend(tokens[index:index + consumed])
-                index += consumed
-                continue
-            self._jump_rewritten = True
-            result.extend(['-o', proxy_jump_command(hop, self.option_pairs)])
-            index += consumed
+            letters = token[1:]
+            position = 0
+            handled = False
+            while position < len(letters):
+                letter = letters[position]
+                prefix = '-' + letters[:position]
+                if letter == 'J':
+                    remainder = letters[position + 1:]
+                    hop = remainder if remainder else (
+                        tokens[index + 1]
+                        if index + 1 < len(tokens) else None)
+                    consumed = 1 if remainder else (
+                        2 if hop is not None else 1)
+                    if prefix != '-':
+                        result.append(prefix)
+                    if not hop or ',' in hop:
+                        # A chain or an empty hop: pass the option
+                        # through for ssh to handle
+                        result.append('-J')
+                        if hop is not None:
+                            result.append(hop)
+                    else:
+                        self._jump_rewritten = True
+                        result.extend(['-o', proxy_jump_command(
+                            hop, self.child_pairs())])
+                    index += consumed
+                    handled = True
+                    break
+                if letter == 'o':
+                    remainder = letters[position + 1:]
+                    if remainder:
+                        value = remainder
+                        consumed = 1
+                    else:
+                        value = (tokens[index + 1]
+                                 if index + 1 < len(tokens) else None)
+                        consumed = 2 if value is not None else 1
+                    if prefix != '-':
+                        result.append(prefix)
+                    keyword = self._option_keyword(value) if value else None
+                    hop = None
+                    if keyword == 'proxyjump' and value and '=' in value:
+                        candidate = value.split('=', 1)[1]
+                        if candidate and ',' not in candidate:
+                            hop = candidate
+                    if hop is not None:
+                        self._jump_rewritten = True
+                        result.extend(['-o', proxy_jump_command(
+                            hop, self.child_pairs())])
+                    else:
+                        if keyword == 'proxycommand':
+                            self._proxy_seen = True
+                        if remainder:
+                            # Nothing changed about the option; the
+                            # attached form stays attached
+                            result.append(token)
+                        else:
+                            result.append('-o')
+                            if value is not None:
+                                result.append(value)
+                    index += consumed
+                    handled = True
+                    break
+                if letter == 'F':
+                    remainder = letters[position + 1:]
+                    if prefix != '-':
+                        result.append(prefix)
+                    result.append('-F')
+                    if remainder:
+                        result.append(remainder)
+                        index += 1
+                    elif index + 1 < len(tokens):
+                        result.append(tokens[index + 1])
+                        index += 2
+                    else:
+                        index += 1
+                    handled = True
+                    break
+                if letter in SSH_OPTIONS_WITH_VALUE:
+                    # A value-taking option which is none of our
+                    # business ends the cluster; the token passes
+                    # through and ssh parses its value itself
+                    break
+                if letter == 'v':
+                    pass
+                position += 1
+            if not handled:
+                result.append(token)
+                index += 1
         return result
 
     def rewrite_pairs(self, pairs):
@@ -519,7 +636,7 @@ class JumpRewriter:
                         self._jump_rewritten = True
                         result.append(
                             ('-o',
-                             proxy_jump_command(hop, self.option_pairs)))
+                             proxy_jump_command(hop, self.child_pairs())))
                         continue
                 if keyword == 'proxycommand':
                     self._proxy_seen = True
