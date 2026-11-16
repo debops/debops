@@ -2037,6 +2037,16 @@ def test_quote_store_path_quotes_the_whitespace():
     assert quote_store_path('/plain/store') == '/plain/store'
 
 
+def test_the_ssh_drop_in_quotes_the_view_name():
+    """A dotted view name would become nested TOML tables and the
+    flat lookup of the known_hosts mode would miss it; the quoted key
+    keeps the tree flat."""
+    content = ssh_module.render_ssh_drop_in("my.view")
+
+    assert '[views."my.view".ssh]' in content
+    assert '[views."my.view".ansible.ssh_connection]' in content
+
+
 def test_proxy_jump_command_carries_the_options_and_the_port():
     """The ProxyCommand value runs the jump connection with the given
     option pairs of the parent, and the port of the hop is carried as

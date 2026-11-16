@@ -500,10 +500,18 @@ class Interpreter(object):
                     sys.exit(1)
             for host in hosts:
                 # The variables of the pattern expansion resolve the
-                # host without a second invocation
-                parameters = None if host not in variables else \
-                    ssh.resolve_host(project, host,
-                                     variables=variables[host])
+                # host without a second invocation; a host whose
+                # resolution fails is reported like a failed scan and
+                # the remaining hosts continue
+                try:
+                    parameters = None if host not in variables else \
+                        ssh.resolve_host(project, host,
+                                         variables=variables[host])
+                except (ValueError, ChildProcessError) as errmsg:
+                    print_error('Cannot refresh the known_hosts entries '
+                                'of the host "' + host + '": '
+                                + str(errmsg))
+                    continue
                 actions, _ = ssh.rescan_actions(
                     project, host, store, phases, args.timeout,
                     parameters=parameters)
