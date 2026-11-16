@@ -35,9 +35,6 @@ jobs:
 
     steps:
 
-      - name: 'Add ~/.local/bin to $PATH'
-        run: 'printf "%s/.local/bin\n" "${HOME}" >> "${GITHUB_PATH}"'
-
       - name: 'Clone the repository'
         uses: 'actions/checkout@v7'
         with:
@@ -47,10 +44,12 @@ jobs:
         run: |
           sudo apt-get -qq update
           sudo apt-get -yq install pandoc pandoc-data graphviz
-          pip3 install --user -c requirements-ci.txt \
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -c requirements-ci.txt \
             wheel setuptools sphinx sphinx-autobuild \
             sphinx-rtd-theme pypandoc
-          pip3 check
+          "${RUNNER_TEMP}/venv/bin/pip" check
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
 
       - name: 'Build and check the DebOps Python packages'
         run: |

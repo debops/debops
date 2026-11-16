@@ -10,10 +10,12 @@
 # Core Python packaging tools
 #
 # 'pip' is intentionally not listed: the CI jobs install the rest of the
-# packages into the user site while the interpreter keeps its own pip.
-# Installing a pip pin into the user site shadows the interpreter's pip and
-# breaks 'pip3 check' when the interpreter pip is newer (script/package
-# version skew).
+# packages into a virtual environment, and the Python version matrix job
+# into the user site of the 'setup-python' interpreter, which is isolated
+# from the runner image. In both cases the interpreter keeps its own pip.
+# Installing a pip pin would shadow the interpreter's pip and break
+# 'pip check' when the interpreter pip is newer (script/package version
+# skew).
 wheel==0.48.0
 setuptools==84.2.1
 
