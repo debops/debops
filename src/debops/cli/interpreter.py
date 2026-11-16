@@ -526,16 +526,17 @@ class Interpreter(object):
                 print('  ' + fingerprint + '  ' + key_type)
             try:
                 answer = input('  Accept these keys and store them? '
-                               '[Enter=yes, n=no, Ctrl-C=abort] ')
+                               '[y=yes, Enter=no, Ctrl-C=abort] ')
             except EOFError:
                 # The input ended; without an answer the keys are not
                 # stored
                 print('  The input ended; the keys were not stored')
                 return False
-            # Only an affirmative answer stores the keys: a typo or
-            # an unknown word declines, the way a trust prompt should
-            # behave
-            return answer.strip().lower() in ('', 'y', 'yes')
+            # Only an explicit affirmative answer stores the keys: a
+            # bare Enter, a typo or an unknown word declines, the way
+            # a trust prompt should behave -- the keys of a host are
+            # worth their two characters
+            return answer.strip().lower() in ('y', 'yes')
 
         try:
             results = ssh.rescan_hosts(
