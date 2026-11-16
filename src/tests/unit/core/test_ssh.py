@@ -1813,6 +1813,43 @@ def test_rescan_hosts_confirmation_cannot_override_a_contradiction(
     assert store.read_text() == "old\n"
 
 
+def test_rescan_hosts_refuses_when_the_lookup_fails(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """A resolver which cannot answer -- SERVFAIL of a validating
+    resolver, a timeout, a broken installation -- refuses the host;
+    only the absence of records falls back to the operator's
+    decision."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    monkeypatch.setattr('socket.getaddrinfo',
+                        lambda host, *args, **kwargs: [
+                            (2, 1, 6, '', ('192.0.2.10', 0))])
+
+    def failing_lookup(hostname):
+        raise RuntimeError('all nameservers failed')
+
+    monkeypatch.setattr(ssh_module.ssh, 'lookup_sshfp', failing_lookup)
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",))
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    assert "the SSHFP lookup of web failed" in message
+    assert "all nameservers failed" in message
+    assert store.read_text() == "old\n"
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",),
+                           confirm=lambda host, offered: True)
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    assert "the SSHFP lookup" in message
+    assert store.read_text() == "old\n"
+
+
 def test_resolve_host_refuses_a_dash_leading_user(
         stub_project, fake_tools, fake_binary):
     """A user which carries an ssh option would be parsed as one by

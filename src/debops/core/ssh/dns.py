@@ -109,13 +109,19 @@ def lookup_sshfp(hostname):
     marked the answer with the authenticated-data flag, and the set of
     '(algorithm, fingerprint_type, fingerprint)' triples the zone
     publishes; the fingerprint types are limited to the SHA-1 and
-    SHA-256 digests the comparison knows. Lookup failures raise the
-    dnspython exceptions.
+    SHA-256 digests the comparison knows. A host without records --
+    NXDOMAIN or an empty answer -- returns an empty set. The other
+    lookup failures raise: a resolver which reports the answers
+    unverifiable, a timeout and a broken installation are conditions
+    the callers must distinguish from the absence of records.
     """
     import dns.flags
     import dns.resolver
 
-    answer = dns.resolver.resolve(hostname, 'SSHFP', want_dnssec=True)
+    try:
+        answer = dns.resolver.resolve(hostname, 'SSHFP', want_dnssec=True)
+    except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
+        return False, set()
     authenticated = bool(answer.response.flags & dns.flags.AD)
     records = set()
     for rdata in answer:
