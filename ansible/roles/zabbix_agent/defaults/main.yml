@@ -703,6 +703,300 @@ zabbix_agent__combined_configuration: '{{ zabbix_agent__original_configuration
                                       + zabbix_agent__host_configuration }}'
                                                                    # ]]]
                                                                    # ]]]
+# API self-registration [[[
+# -------------------------
+
+# These variables configure optional self-registration of the current host
+# in Zabbix Server via its JSON-RPC API, as an alternative to the built-in
+# Zabbix "active agent auto-registration" mechanism (which cannot assign
+# a TLS certificate to a newly created host, and therefore does not work
+# well together with :envvar:`zabbix_agent__tls_mode` set to ``cert``). This
+# requires Zabbix Server 6.4 or newer, network access from
+# :envvar:`zabbix_agent__api_delegate_to` to the Zabbix API, and an API
+# token created in Zabbix beforehand and stored in the DebOps ``secret/``
+# directory on the Ansible Controller (see
+# :envvar:`zabbix_agent__api_token_path`).
+
+# .. envvar:: zabbix_agent__api_register [[[
+#
+# Enable or disable self-registration of the current host in Zabbix Server
+# via its API.
+zabbix_agent__api_register: False
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_url [[[
+#
+# URL of the Zabbix Server API endpoint, for example
+# ``https://zabbix.example.org/api_jsonrpc.php``. Required when
+# :envvar:`zabbix_agent__api_register` is enabled.
+zabbix_agent__api_url: ''
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_delegate_to [[[
+#
+# Host on which the Ansible tasks that communicate with the Zabbix API will
+# be executed. By default this is the Ansible Controller (``localhost``),
+# since the API is reachable over the network and the managed host itself
+# might not have (or need) outgoing access to it. Change this if the API
+# should be reached through a specific jump host instead.
+zabbix_agent__api_delegate_to: 'localhost'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_validate_certs [[[
+#
+# Verify the TLS certificate of the Zabbix API endpoint when set to ``True``.
+zabbix_agent__api_validate_certs: True
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_token_path [[[
+#
+# Relative path, within the DebOps ``secret/`` directory, to the file which
+# holds the Zabbix API token used for authentication.
+zabbix_agent__api_token_path: 'zabbix/api_token'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_token [[[
+#
+# Zabbix API token read from the DebOps ``secret/`` directory. See
+# :envvar:`zabbix_agent__api_token_path` for the file location.
+zabbix_agent__api_token: '{{ (lookup("file", secret + "/" + zabbix_agent__api_token_path))
+                              | trim }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_host_name [[[
+#
+# Technical name of the host object created in Zabbix. Should match the
+# ``Hostname`` configuration option, if it's defined.
+zabbix_agent__api_host_name: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_visible_name [[[
+#
+# Human readable name of the host object created in Zabbix, shown in the web
+# interface.
+zabbix_agent__api_visible_name: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_status [[[
+#
+# Status of the created host: ``0`` - monitored, ``1`` - unmonitored.
+zabbix_agent__api_status: 0
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_interface_useip [[[
+#
+# Whether the Zabbix Server should connect to the agent using its IP address
+# (``1``) or DNS name (``0``) for passive checks.
+zabbix_agent__api_interface_useip: 0
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_interface_ip [[[
+#
+# IP address used in the host interface definition: the default IPv4 address
+# of the host, or the default IPv6 address on a host without IPv4. If neither
+# is known, the ``ansible_host`` variable from the inventory is used when it
+# contains an IP address (it is read through ``hostvars``, because the API
+# tasks are delegated to another host); otherwise the address is left empty,
+# which Zabbix accepts for interfaces that use the DNS name. With
+# :envvar:`zabbix_agent__api_interface_useip` enabled the address cannot be
+# empty, and on a host with only IPv6 the Zabbix Server connects to the agent
+# over IPv6.
+zabbix_agent__api_interface_ip: '{{ ansible_default_ipv4.address
+                                     if (ansible_default_ipv4.address | d())
+                                     else (ansible_default_ipv6.address
+                                           if (ansible_default_ipv6.address | d())
+                                           else (hostvars[inventory_hostname].ansible_host
+                                                 if (hostvars[inventory_hostname].ansible_host | d()
+                                                     | ansible.utils.ipaddr)
+                                                 else "")) }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_interface_dns [[[
+#
+# DNS name used in the host interface definition.
+zabbix_agent__api_interface_dns: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_interface_port [[[
+#
+# Port used in the host interface definition, for passive checks.
+zabbix_agent__api_interface_port: '10050'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_default_host_groups [[[
+#
+# List of Zabbix host groups the host should be a member of, defined by the
+# role. Missing host groups will be created automatically. See
+# :ref:`zabbix_agent__ref_api_lists` for more details.
+zabbix_agent__api_default_host_groups: [ 'Linux servers' ]
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_host_groups [[[
+#
+# List of Zabbix host groups, defined on all hosts in the Ansible inventory.
+zabbix_agent__api_host_groups: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_group_host_groups [[[
+#
+# Additional list of Zabbix host group names, defined on hosts in a specific
+# Ansible inventory group.
+zabbix_agent__api_group_host_groups: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_host_host_groups [[[
+#
+# Additional list of Zabbix host group names, defined on specific hosts in
+# the Ansible inventory.
+zabbix_agent__api_host_host_groups: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_combined_host_groups [[[
+#
+# Variable which combines all of the Zabbix host group lists together and is
+# used in role tasks.
+zabbix_agent__api_combined_host_groups: '{{ zabbix_agent__api_default_host_groups
+                                           + zabbix_agent__api_host_groups
+                                           + zabbix_agent__api_group_host_groups
+                                           + zabbix_agent__api_host_host_groups }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_default_link_templates [[[
+#
+# List of Zabbix templates linked to the host, defined by the role. Templates
+# which do not exist in Zabbix are skipped with a warning. See
+# :ref:`zabbix_agent__ref_api_lists` for more details.
+zabbix_agent__api_default_link_templates: [ 'Linux by Zabbix agent' ]
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_link_templates [[[
+#
+# List of Zabbix templates linked to the host, defined on all hosts in the
+# Ansible inventory.
+zabbix_agent__api_link_templates: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_group_link_templates [[[
+#
+# Additional list of Zabbix template names, defined on hosts in a specific
+# Ansible inventory group.
+zabbix_agent__api_group_link_templates: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_host_link_templates [[[
+#
+# Additional list of Zabbix template names, defined on specific hosts in the
+# Ansible inventory.
+zabbix_agent__api_host_link_templates: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_combined_link_templates [[[
+#
+# Variable which combines all of the Zabbix template lists together and is
+# used in role tasks. Template names here must match the technical
+# ``template`` name (Zabbix API ``host`` field), not the human-readable
+# ``name`` shown in the web interface, if the two differ.
+zabbix_agent__api_combined_link_templates: '{{ zabbix_agent__api_default_link_templates
+                                              + zabbix_agent__api_link_templates
+                                              + zabbix_agent__api_group_link_templates
+                                              + zabbix_agent__api_host_link_templates }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_default_macros [[[
+#
+# List of user macros configured on the host object, defined by the role. See
+# :ref:`zabbix_agent__ref_api_lists` for more details.
+zabbix_agent__api_default_macros: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_macros [[[
+#
+# List of user macros configured on the host object, defined on all hosts in
+# the Ansible inventory.
+zabbix_agent__api_macros: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_group_macros [[[
+#
+# Additional list of user macros, defined on hosts in a specific Ansible
+# inventory group.
+zabbix_agent__api_group_macros: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_host_macros [[[
+#
+# Additional list of user macros, defined on specific hosts in the Ansible
+# inventory.
+zabbix_agent__api_host_macros: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_combined_macros [[[
+#
+# Variable which combines all of the user macro lists together and is used
+# in role tasks.
+zabbix_agent__api_combined_macros: '{{ zabbix_agent__api_default_macros
+                                     + zabbix_agent__api_macros
+                                     + zabbix_agent__api_group_macros
+                                     + zabbix_agent__api_host_macros }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_default_tags [[[
+#
+# List of tags configured on the host object, defined by the role. See
+# :ref:`zabbix_agent__ref_api_lists` for more details.
+zabbix_agent__api_default_tags: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_tags [[[
+#
+# List of tags configured on the host object, defined on all hosts in the
+# Ansible inventory.
+zabbix_agent__api_tags: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_group_tags [[[
+#
+# Additional list of tags, defined on hosts in a specific Ansible inventory
+# group.
+zabbix_agent__api_group_tags: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_host_tags [[[
+#
+# Additional list of tags, defined on specific hosts in the Ansible
+# inventory.
+zabbix_agent__api_host_tags: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_combined_tags [[[
+#
+# Variable which combines all of the tag lists together and is used in role
+# tasks. Tags without a ``value`` get an empty one, as stored by Zabbix, so
+# that they match the tags of an existing host object.
+zabbix_agent__api_combined_tags: '{{ [{"value": ""}]
+                                     | product(zabbix_agent__api_default_tags
+                                               + zabbix_agent__api_tags
+                                               + zabbix_agent__api_group_tags
+                                               + zabbix_agent__api_host_tags)
+                                     | map("combine") | list }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_tls_subject [[[
+#
+# Expected Distinguished Name of the agent's own TLS certificate, checked by
+# the Zabbix Server when :envvar:`zabbix_agent__tls_mode` is ``cert``. If
+# empty, the check is skipped. Example: ``CN=host.example.org``.
+zabbix_agent__api_tls_subject: ''
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__api_tls_issuer [[[
+#
+# Expected issuer of the agent's own TLS certificate, checked by the Zabbix
+# Server when :envvar:`zabbix_agent__tls_mode` is ``cert``. If empty, the
+# check is skipped.
+zabbix_agent__api_tls_issuer: ''
+                                                                   # ]]]
+                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
