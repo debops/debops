@@ -980,7 +980,8 @@ def test_rescan_hosts_dns_verify_requires_authentication(monkeypatch,
 
     host, succeeded, message = results[0]
     assert not succeeded
-    assert "could not be verified through DNS" in message
+    assert "not DNSSEC-validated" in message
+    assert "--confirm" in message
     assert store.read_text() == "old\n"
 
 
@@ -1681,6 +1682,135 @@ def test_rescan_hosts_refuses_unsigned_matches_when_configured(
 
     assert results[0][1]
     assert FQDN_KEY_LINE in store.read_text()
+
+
+def test_rescan_hosts_no_dns_asks_for_confirmation(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """With '--no-dns --confirm', every store is gated on the
+    operator's decision, and a confirmation stores the keys as
+    scanned -- the types without SSHFP algorithm numbers among them."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "fqdn-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '{\"ansible_host\": \"" + FQDN + "\"}'\n")
+    binaries["ssh-keyscan"] = fake_binary(
+        "mixed-keyscan",
+        "#!/bin/sh\n"
+        "printf '%s\\n' \"$4 ssh-ed25519 " + FQDN_KEY_BLOB + "\"\n"
+        "printf '%s\\n' \"$4 sk-ssh-ed25519@openssh.com "
+        + base64.b64encode(b'\x22' * 32).decode('ascii') + "\"\n")
+    project = stub_project(raw={"binaries": binaries})
+    # The no-dns mode does not consult DNS; the identifiers still
+    # resolve through the stubbed getaddrinfo
+    monkeypatch.setattr('socket.getaddrinfo',
+                        lambda host, *args, **kwargs: [
+                            (2, 1, 6, '', ('192.0.2.10', 0))])
+    store = tmp_path / "store"
+    offered_seen = []
+
+    def confirm(host, offered):
+        offered_seen.append(offered)
+        return True
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",), dns_mode='no-dns',
+                           confirm=confirm)
+
+    assert results[0][1]
+    content = store.read_text()
+    assert FQDN_KEY_LINE in content
+    assert 'sk-ssh-ed25519@openssh.com' in content
+    # The offer carries the fingerprints of all the scanned keys, the
+    # FIDO type among them
+    offered = offered_seen[0]
+    assert ('SHA256:' + base64.b64encode(bytes.fromhex(FQDN_FINGERPRINT))
+            .decode('ascii').rstrip('='), 'ssh-ed25519') in offered
+    assert any(key_type == 'sk-ssh-ed25519@openssh.com'
+               for fingerprint, key_type in offered
+               if fingerprint.startswith('SHA256:'))
+
+    declined = rescan_hosts(project, ["web"], store=str(store),
+                            phases=("scan",), dns_mode='no-dns',
+                            confirm=lambda host, offered: False)
+
+    assert not declined[0][1]
+    assert 'rejected by the operator' in declined[0][2]
+
+
+def test_rescan_hosts_dns_verify_asks_for_confirmation_on_unsigned(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """In the strict mode, an unauthenticated match is offered through
+    the 'confirm' callback; a decline keeps the host unstored."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    stub_dns(monkeypatch, {(4, 2, FQDN_FINGERPRINT)}, authenticated=False)
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",), dns_mode='dns-verify',
+                           confirm=lambda host, offered: False)
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    assert "rejected by the operator" in message
+    assert store.read_text() == "old\n"
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",), dns_mode='dns-verify',
+                           confirm=lambda host, offered: True)
+
+    host, succeeded, message = results[0]
+    assert succeeded
+    assert "not DNSSEC-validated" in message
+    assert "by the operator's decision" in message
+    assert FQDN_KEY_LINE in store.read_text()
+
+
+def test_rescan_hosts_dns_verify_asks_for_confirmation_without_records(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """In the strict mode, a host without verified records is offered
+    through the 'confirm' callback as well."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    stub_dns(monkeypatch, set(), authenticated=True)
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",), dns_mode='dns-verify',
+                           confirm=lambda host, offered: False)
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    assert store.read_text() == "old\n"
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",), dns_mode='dns-verify',
+                           confirm=lambda host, offered: True)
+
+    host, succeeded, message = results[0]
+    assert succeeded
+    assert "by the operator's decision" in message
+    assert FQDN_KEY_LINE in store.read_text()
+
+
+def test_rescan_hosts_confirmation_cannot_override_a_contradiction(
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+    """Keys which contradict the published records are refused with
+    and without the 'confirm' callback."""
+    project = fqdn_project(stub_project, fake_tools, fake_binary)
+    stub_dns(monkeypatch, {(4, 2, 'ab' * 32)}, authenticated=True)
+    store = tmp_path / "store"
+    store.write_text("old\n")
+
+    results = rescan_hosts(project, ["web"], store=str(store),
+                           phases=("scan",),
+                           confirm=lambda host, offered: True)
+
+    host, succeeded, message = results[0]
+    assert not succeeded
+    assert "do not match the SSHFP records" in message
+    assert store.read_text() == "old\n"
 
 
 def test_resolve_host_refuses_a_dash_leading_user(
