@@ -259,6 +259,13 @@ When the verification refuses the keys of a host, its stored entries
 stay as they are. A host without a running SSH daemon is reported; the
 remaining hosts continue.
 
+A host whose connection traverses a jump host scans after the jump:
+the keys of the jump must be known before a connection through it can
+be verified. When the direct scan of such a host reaches nothing and
+the resolved connection options carry a ``ProxyJump`` whose key the
+store knows, the keys are collected through the connection itself.
+A bastion hidden inside a ``ProxyCommand`` cannot be discovered.
+
 .. note::
 
    The scan trusts the key which the SSH daemon serves at the time of the
