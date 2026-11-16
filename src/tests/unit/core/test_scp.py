@@ -31,6 +31,11 @@ def in_sequence(command, arguments):
     ("root@[2001:db8::1]:/tmp/file", "root", "2001:db8::1", "/tmp/file"),
     ("/tmp/local-file", None, None, "/tmp/local-file"),
     ("relative/path", None, None, "relative/path"),
+    # A slash before the separating colon makes the operand local,
+    # the way scp reads it: the name of the file carries a colon
+    ("/tmp/backup-2026-11-16T00:10.tar", None, None,
+     "/tmp/backup-2026-11-16T00:10.tar"),
+    ("relative/path:with:colon", None, None, "relative/path:with:colon"),
 ])
 def test_split_operand_covers_the_scp_grammar(operand, user, host, path):
     assert split_operand(operand) == (user, host, path)

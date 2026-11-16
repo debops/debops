@@ -167,8 +167,11 @@ def split_host_path(operand):
 
     The operand grammar: '[[user@]host:]path'; the colon which
     separates the host from the path is the first colon, or the first
-    colon after the closing bracket of a bracketed address. Returns
-    '(None, operand)' when the operand carries no colon.
+    colon after the closing bracket of a bracketed address. An operand
+    which carries a slash before that colon is a local path, the way
+    scp itself reads it -- '/tmp/backup-2026-11-16T00:10.tar' is a
+    local file whose name carries a colon. Returns '(None, operand)'
+    when the operand is local or carries no colon.
     """
     bracket_end = operand.find(']')
     if bracket_end != -1:
@@ -176,6 +179,8 @@ def split_host_path(operand):
     else:
         candidate = operand.find(':')
     if candidate == -1:
+        return None, operand
+    if '/' in operand[:candidate]:
         return None, operand
     return operand[:candidate], operand[candidate + 1:]
 
