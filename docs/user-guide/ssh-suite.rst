@@ -353,13 +353,14 @@ a matter of policy:
 
 With the ``-c|--confirm`` option, rescan shows the fingerprints of the
 scanned keys in the form which ``ssh-keygen -l`` prints and asks for
-each host before storing them - press Enter to accept, Ctrl-C to abort
-the whole run. Every store of the run is gated on the decision: the
-keys of the ``--no-dns`` mode and the hosts the DNS modes would
-refuse are offered the same way, and the fingerprints cover every key
-type the scan produced, the types without SSHFP algorithm numbers
-among them. The keys which contradict the published records of a
-host are refused with or without the option.
+each host before storing them - press ``y`` to accept, ``Enter``
+declines, ``Ctrl-C`` aborts the whole run. Every store of the run is
+gated on the decision: the keys of the ``--no-dns`` mode, the hosts
+the DNS modes would refuse and the DNSSEC-validated matches are
+offered the same way, and the fingerprints cover every key type the
+scan produced, the types without SSHFP algorithm numbers among them.
+The keys which contradict the published records of a host are
+refused with or without the option.
 
 Run ``rescan`` when a host was provisioned or recreated, before the first
 connection to it.
