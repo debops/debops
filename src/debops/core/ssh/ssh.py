@@ -342,7 +342,7 @@ def _collect_through_connection(project, parameters, store, timeout,
         return None
     store_dir = os.path.dirname(store) or '.'
     descriptor, throwaway = tempfile.mkstemp(
-        dir=store_dir, prefix='known_hosts-scan.')
+        dir=store_dir, prefix='known_hosts.scan.')
     with os.fdopen(descriptor, 'w') as handle:
         handle.write('\n'.join(jump_entries) + '\n')
     os.chmod(throwaway, 0o600)
@@ -507,8 +507,12 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
     or a broken installation must not read as 'no records'.
 
     Returns the list of keys to store, or None when the host must not
-    be stored. The details list receives the report lines for the
-    result.
+    be stored, with the DNS verdict of the classification: 'validated'
+    for the DNSSEC-authenticated match, 'unsigned' for a match the
+    resolver did not authenticate, 'no-records' for a host without
+    records and 'not-checked' for the 'no-dns' mode; None accompanies
+    a refused host. The details list receives the report lines for
+    the result.
     """
     fingerprints = []
     unparsable = set()
@@ -525,23 +529,23 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
 
     if dns_mode == 'no-dns':
         if confirm is None:
-            return keys, details
+            return keys, details, 'not-checked'
         # The raw store contract of the mode stays: the confirmation
         # gates the store, and a confirmation stores the keys as
         # scanned, the fingerprints of the offer being the operator's
         # thing to check
         if confirm(host, _offered_fingerprints(keys)):
-            return keys, details
+            return keys, details, 'not-checked'
         details.append('the scanned keys of the host were rejected by '
                        'the operator')
-        return None, details
+        return None, details, None
     if not fingerprints:
         # Keys of the types without SSHFP algorithm numbers -- the
         # FIDO key types among them, which OpenSSH does not map
         # either -- are refused, not stored without verification.
         details.append('the scanned keys could not be fingerprinted; '
                        'the host was not stored')
-        return None, details
+        return None, details, None
     if unparsable:
         # A scan which offers unverifiable keys alongside verifiable
         # ones cannot be trusted for the unverifiable part: the key
@@ -552,7 +556,7 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
                        'SSHFP algorithm numbers ('
                        + ', '.join(sorted(unparsable))
                        + '); the host was not stored')
-        return None, details
+        return None, details, None
 
     candidates = [identifier for identifier in resolvable
                   if not is_ip_address(identifier)]
@@ -570,7 +574,7 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
             details.append('the SSHFP lookup of ' + identifier
                            + ' failed: ' + str(error)
                            + '; the host was not stored')
-            return None, details
+            return None, details, None
         if not found:
             continue
         if authenticated:
@@ -597,16 +601,16 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
                 details.append('the SSHFP records of the host could not '
                                'be verified through DNS; the host was '
                                'not stored')
-                return None, details
+                return None, details, None
             stored = _confirmed_keys(host, fingerprints, confirm, details)
             if stored is not None:
                 details.append('no DNSSEC-validated SSHFP records were '
                                'found; the keys are stored by the '
                                'operator\'s decision')
-            return stored, details
+            return stored, details, 'no-records'
         details.append('no SSHFP records found for the host')
         return _confirmed_keys(host, fingerprints, confirm, details), \
-            details
+            details, 'no-records'
 
     record_algorithms = {algorithm for algorithm, _, _ in records}
 
@@ -626,12 +630,12 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
     if contradicted:
         details.append('the host keys do not match the SSHFP records of '
                        + hostname + '; the host was not stored')
-        return None, details
+        return None, details, None
     if not matched:
         details.append('none of the scanned keys matches the SSHFP '
                        'records of ' + hostname + '; the host was not '
                        'stored')
-        return None, details
+        return None, details, None
     strict = dns_mode == 'dns-verify' or not trust_unsigned
     if not authenticated and strict:
         # The policy refuses the unsigned match; the confirmation
@@ -645,18 +649,18 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
                            'not DNSSEC-validated; the host was not '
                            'stored (rerun with \'--confirm\' to accept '
                            'the keys after checking the fingerprints)')
-            return None, details
+            return None, details, None
         stored = _confirmed_keys(host, fingerprints, confirm, details)
         if stored is None:
             if unverified:
                 details.append(str(len(unverified)) + ' of the scanned '
                                'keys have no SSHFP records and were '
                                'not stored')
-            return None, details
+            return None, details, None
         details.append('the SSHFP records of ' + hostname + ' are not '
                        'DNSSEC-validated; the keys are stored as '
                        'scanned by the operator\'s decision')
-        return stored, details
+        return stored, details, 'unsigned'
     if authenticated:
         if confirm is None:
             if unverified:
@@ -665,7 +669,7 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
                                'not stored')
             details.append('the host keys match the SSHFP records of '
                            + hostname + ' (DNSSEC-validated)')
-            return matched, details
+            return matched, details, 'validated'
         # The operator asked to decide every store: the offer carries
         # every scanned key, and the acceptance stores them as
         # scanned, the same contract the other paths give
@@ -675,13 +679,13 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
                            + hostname + ' (DNSSEC-validated); the keys '
                            'are stored as scanned by the operator\'s '
                            'decision')
-        return stored, details
+        return stored, details, 'validated'
     # The unsigned match grants no trust of its own: the keys are
     # handled like the keys of a host without SSHFP records
     details.append('the SSHFP match of ' + hostname + ' is not '
                    'DNSSEC-validated; the keys are stored as scanned')
     return _confirmed_keys(host, fingerprints, confirm, details), \
-        details
+        details, 'unsigned'
 
 
 def _entry_key_material(lines):
@@ -839,6 +843,7 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
         details = []
         store_keys = None
         scan_ok = None
+        verdict = None
         keys_by_identifier = {}
 
         if 'scan' in phases:
@@ -885,9 +890,10 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
             if keys:
                 trust_unsigned = project.config.raw.get('ssh', {}).get(
                     'rescan', {}).get('trust_unsigned_records', True)
-                store_keys, scan_details = _classify_scanned_keys(
-                    host, keys, resolvable, dns_mode, confirm, details,
-                    trust_unsigned)
+                store_keys, scan_details, verdict = \
+                    _classify_scanned_keys(
+                        host, keys, resolvable, dns_mode, confirm, details,
+                        trust_unsigned)
                 if store_keys is None:
                     succeeded = False
             elif resolvable:
@@ -1025,26 +1031,33 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
         message = '; '.join(details)
         results.append((host, succeeded, message))
         if succeeded:
+            # The notice names what happened to the store, so the
+            # lines stay greppable: the entries were added on the
+            # first contact, refreshed when the keys changed, kept
+            # when they did not, and removed by a removal-only run
             if 'scan' not in phases:
-                # The removal ran without a scan; the action was a
-                # removal, and the notice says so
-                logger.notice(
-                    'Removed the known_hosts entries of the host '
-                    '"' + host + '" from ' + store,
-                    extra={'allow': ['stderr', 'syslog']})
+                notice = ('Removed the known_hosts entries of the host '
+                          '"' + host + '" from ' + store)
+            elif not changed:
+                notice = ('Kept the known_hosts entries of the host '
+                          '"' + host + '" in ' + store)
+            elif any(stored_material.get(identifier)
+                     for identifier in scanned):
+                notice = ('Refreshed the known_hosts entries of the '
+                          'host "' + host + '" in ' + store)
             else:
-                logger.notice(
-                    'Refreshed the known_hosts entries of the host '
-                    '"' + host + '" in ' + store,
-                    extra={'allow': ['stderr', 'syslog']})
-            if message:
-                # The details of the refresh carry the trust decisions
-                # of the run: the verification verdicts and the entries
-                # which were left alone. They belong next to the host
-                # they describe
-                logger.notice(
-                    '  ' + message,
-                    extra={'allow': ['stderr', 'syslog']})
+                notice = ('Added the known_hosts entries of the host '
+                          '"' + host + '" in ' + store)
+            # The verdict rides the line only when it says something:
+            # a host without SSHFP records is the ordinary case, and
+            # the '--no-dns' mode made no lookup to report on
+            suffix = {
+                'validated': '(SSHFP validated)',
+                'unsigned': '(SSHFP unsigned)',
+            }.get(verdict)
+            if suffix:
+                notice += ' ' + suffix
+            logger.notice(notice, extra={'allow': ['stderr', 'syslog']})
         else:
             logger.error(
                 'Cannot refresh the known_hosts entries of the host '
