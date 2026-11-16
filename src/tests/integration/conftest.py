@@ -115,15 +115,21 @@ def _spawn_sshd(tmp_path, tag, port):
     """Spawn one unprivileged ssh daemon on the given loopback port.
 
     The daemon runs as the account running the tests, with a fresh
-    host key and the authorized keys of the operator's own account, so
-    the connections authenticate the way the localhost tests do. The
-    fresh host key is trusted by neither the operator's own
-    known_hosts file nor any store of the tests.
+    host key and a private copy of the authorized keys of the
+    operator's own account, so the connections authenticate the way
+    the localhost tests do without following the live auth state of
+    the operator's own daemon. The fresh host key is trusted by
+    neither the operator's own known_hosts file nor any store of the
+    tests; forwarding and TTY allocation are disabled, which the tests
+    do not need.
     """
     host_key = tmp_path / ("sshd-" + tag + "-hostkey")
     subprocess.run(
         ["ssh-keygen", "-q", "-t", "ed25519", "-N", "", "-f", str(host_key)],
         check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    keys_copy = tmp_path / ("authorized-keys-" + tag)
+    shutil.copyfile(os.path.expanduser("~/.ssh/authorized_keys"), keys_copy)
+    os.chmod(keys_copy, 0o600)
     config = tmp_path / ("sshd-" + tag + ".conf")
     config.write_text(
         "Port {port}\n"
@@ -134,12 +140,14 @@ def _spawn_sshd(tmp_path, tag, port):
         "PasswordAuthentication no\n"
         "KbdInteractiveAuthentication no\n"
         "PubkeyAuthentication yes\n"
+        "DisableForwarding yes\n"
+        "PermitTTY no\n"
         "UsePAM no\n"
         "LogLevel ERROR\n"
         "Subsystem sftp internal-sftp\n".format(
             port=port, host_key=host_key,
             pid=tmp_path / ("sshd-" + tag + ".pid"),
-            keys=os.path.expanduser("~/.ssh/authorized_keys")))
+            keys=keys_copy))
     log = tmp_path / ("sshd-" + tag + ".log")
     return subprocess.Popen(
         [_sshd_binary(), "-D", "-f", str(config), "-E", str(log)],
@@ -172,23 +180,38 @@ def _await_daemon(process, port, throwaway, deadline=15.0):
 
 
 def _start_daemon(tmp_path, tag, throwaway):
-    """Start one daemon, retrying the transient port collisions."""
-    for _ in range(3):
+    """Start one daemon, retrying the transient port collisions.
+
+    Every attempt regenerates the daemon's files under a unique tag,
+    so a retry never collides with the files of the attempt before it.
+    """
+    last_error = None
+    for attempt in range(3):
         port = _free_port()
-        process = _spawn_sshd(tmp_path, tag, port)
+        process = None
         try:
+            process = _spawn_sshd(tmp_path, tag + "-" + str(attempt), port)
             _await_daemon(process, port, throwaway)
-        except RuntimeError:
+        except subprocess.SubprocessError as error:
+            # The daemon could not be spawned; an environment problem
+            raise
+        except RuntimeError as error:
+            last_error = error
+            if process.poll() is None:
+                process.terminate()
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
             if process.poll() is not None:
                 # The daemon exited on its own; a likely collision with
                 # another listener -- the next attempt may win the port
-                process.wait()
                 continue
-            process.terminate()
-            process.wait()
             raise
         return process, port
-    raise RuntimeError("the ssh daemon of the jump pair did not come up")
+    raise RuntimeError("the ssh daemon of the jump pair did not come up: "
+                       + str(last_error))
 
 
 @pytest.fixture
@@ -209,19 +232,15 @@ def jump_pair(tmp_path, localhost_ssh):
     throwaway = tmp_path / "throwaway-known-hosts"
     throwaway.write_text("")
     daemons = []
-    ports = []
     try:
-        for tag in ("bastion", "target"):
-            process, port = _start_daemon(tmp_path, tag, throwaway)
-            daemons.append(process)
-            ports.append(port)
-    except RuntimeError:
-        for process in daemons:
-            process.terminate()
-        for process in daemons:
-            process.wait()
-        pytest.skip("the ssh daemons of the jump pair did not come up")
-    try:
+        ports = []
+        try:
+            for tag in ("bastion", "target"):
+                process, port = _start_daemon(tmp_path, tag, throwaway)
+                daemons.append(process)
+                ports.append(port)
+        except (RuntimeError, subprocess.SubprocessError):
+            pytest.skip("the ssh daemons of the jump pair did not come up")
         yield JumpPair(ports[0], ports[1], throwaway)
     finally:
         for process in daemons:
