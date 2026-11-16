@@ -130,14 +130,18 @@ def quote_store_path(store):
     A path which carries whitespace would be split into fragment
     paths by the option parsing of ssh, both in the '-o' option value
     and in the 'ssh_config' file; the double-quoted form survives
-    both. Paths which carry quotes, backslashes or newlines cannot be
-    represented and raise ValueError.
+    both. Paths which carry quotes, apostrophes, backslashes or
+    newlines cannot be represented: the value lands inside contexts
+    which the shell executes as well -- the ProxyCommand of a jump
+    host, the single-quoted composition of the runners -- and an
+    apostrophe would break their quoting. Such paths raise ValueError.
     """
-    if '"' in store or '\\' in store or '\n' in store or '\r' in store:
+    if ('"' in store or "'" in store or '\\' in store
+            or '\n' in store or '\r' in store):
         raise ValueError(
-            'The known_hosts store path carries quotes, backslashes '
-            'or newlines and cannot be written into an SSH option: '
-            + store)
+            'The known_hosts store path carries quotes, apostrophes, '
+            'backslashes or newlines and cannot be written into an '
+            'SSH option: ' + store)
     if any(character.isspace() for character in store):
         return '"' + store + '"'
     return store
