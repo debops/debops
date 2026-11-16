@@ -13,8 +13,8 @@ import logging
 
 import pytest
 
-from debops.core.ssh.scp import build_scp_command, split_operand, \
-    translate_ssh_args
+from debops.core.ssh.scp import _uri_operand, build_scp_command, \
+    split_operand, translate_ssh_args
 
 
 def in_sequence(command, arguments):
@@ -173,15 +173,42 @@ def two_host_project(stub_project, fake_tools, fake_binary):
     return stub_project(raw={"binaries": binaries})
 
 
-def test_build_scp_command_reports_the_differing_ports(
+def test_build_scp_command_composes_the_conflicting_ports_as_uris(
         stub_project, fake_tools, fake_binary):
-    """Two operands which resolve to different ssh ports get no port
-    option; scp applies one port to both connections."""
+    """Two operands which resolve to different ssh ports compose in
+    the 'scp://' URI form, which carries a port per connection."""
     project = two_host_project(stub_project, fake_tools, fake_binary)
 
     command = build_scp_command(project, ["web:/src"], "web2:/dst")
 
     assert "-P" not in command
+    assert "scp://admin@192.0.2.10:2222//src" in command
+    assert "scp://admin2@192.0.2.11:2223//dst" in command
+
+
+def test_build_scp_command_keeps_local_operands_plain_on_conflict(
+        stub_project, fake_tools, fake_binary):
+    """A local operand stays a local path when the remote operands
+    carry their own ports."""
+    project = two_host_project(stub_project, fake_tools, fake_binary)
+
+    command = build_scp_command(project, ["/etc/hostname", "web:/src"],
+                                "web2:/dst")
+
+    assert "/etc/hostname" in command
+    assert "scp://admin@192.0.2.10:2222//src" in command
+    assert "scp://admin2@192.0.2.11:2223//dst" in command
+
+
+def test_uri_operand_encodes_the_path_and_carries_the_parts():
+    """The URI operand percent-encodes the path, brackets the IPv6
+    authority and addresses the absolute paths behind a double
+    slash."""
+    assert _uri_operand(None, "web", "2222", "/tmp/with space") == \
+        "scp://web:2222//tmp/with%20space"
+    assert _uri_operand("admin", "2001:db8::1", None, "relative/dir") == \
+        "scp://admin@[2001:db8::1]/relative/dir"
+    assert _uri_operand("admin", "web", 22, "") == "scp://admin@web:22"
 
 
 def test_build_scp_command_reports_the_differing_identities(
