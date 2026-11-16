@@ -28,7 +28,8 @@ from .utils import (CONNECTION_OPTIONS, SCP_OPTIONS_WITH_VALUE,
                     translate_ssh_args, value_options_of,
                     without_known_hosts_options)
 from .ssh import (build_handoff_command, build_ssh_command,
-                  host_identifiers, parse_config_stores,
+                  connection_jump_names, host_identifiers,
+                  parse_config_stores,
                   remove_command, render_config_snippet, rescan_actions,
                   rescan_hosts, scan_command, split_destination,
                   write_config_snippet)

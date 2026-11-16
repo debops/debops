@@ -53,7 +53,10 @@ entirely. After the keys are accepted, the stored entries of the
 identifiers which answered the scan are removed from the store and the
 accepted keys are appended; the entries of the other identifiers, and
 of a host whose keys were refused, stay as they are. A host which
-fails a phase is reported; the remaining hosts continue. The
+fails a phase is reported; the remaining hosts continue. A host whose
+connection traverses a jump host scans after the jump, and when its
+direct scan reaches nothing, the keys are collected through the
+connection itself. The
 ``--remove`` and ``--scan`` options limit the run to one phase. The
 ``-c|--confirm`` option shows the scanned fingerprints in the form
 which :command:`ssh-keygen -l` prints and asks for each host before
