@@ -1927,12 +1927,26 @@ def test_rescan_hosts_refuses_the_mixed_unfingerprintable_scan(
     binaries["ssh-keyscan"] = fake_binary(
         "mixed-keyscan",
         "#!/bin/sh\n"
-        "printf '%s\\n' \"$4 ssh-ed25519 " + FQDN_KEY_BLOB + "\"\\n"
+        "printf '%s\\n' \"$4 ssh-ed25519 " + FQDN_KEY_BLOB + "\"\n"
         "printf '%s\\n' \"$4 sk-ssh-ed25519@openssh.com AAAAskkey\"\n")
     project = stub_project(raw={"binaries": binaries})
     stub_dns(monkeypatch, {(4, 2, FQDN_FINGERPRINT)}, authenticated=True)
     store = tmp_path / "store"
     store.write_text("old\n")
+
+    import debops.core.ssh.ssh as ssh_module
+    original = ssh_module._classify_scanned_keys
+
+    def spy(host, keys, resolvable, dns_mode, confirm, details,
+            trust_unsigned=True):
+        print('SPY keys:', keys)
+        print('SPY resolvable:', resolvable)
+        result = original(host, keys, resolvable, dns_mode, confirm,
+                          details, trust_unsigned)
+        print('SPY result:', result[0], result[1])
+        return result
+
+    monkeypatch.setattr(ssh_module, '_classify_scanned_keys', spy)
 
     results = rescan_hosts(project, ["web"], store=str(store))
 
