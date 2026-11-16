@@ -566,6 +566,47 @@ def test_do_ssh_rescan_reports_an_unknown_resolver_mode(
     assert "unknown DNS verification mode" in capsys.readouterr().err
 
 
+def test_do_ssh_rescan_eval_reports_the_resolution_failures(
+        monkeypatch, stub_project, fake_tools, fake_binary, capsys):
+    """A host whose connection parameters do not resolve is reported
+    like a failed scan; the remaining hosts continue."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "bad-host-inventory",
+        "#!/bin/sh\n"
+        'if [ "$1" = "--list" ]; then\n'
+        'if [ "$3" = "bad" ]; then\n'
+        "    printf '%s' '{\"all\": {\"hosts\": [\"bad\"]}, "
+        "\"_meta\": {\"hostvars\": {\"bad\": "
+        "{\"ansible_host\": \"192.0.2.99\","
+        " \"ansible_user\": \"-oProxyCommand=evil\"}}}}'\n"
+        "else\n"
+        "    printf '%s' '{\"all\": {\"hosts\": [\"web\"]}, "
+        "\"_meta\": {\"hostvars\": {\"web\": "
+        "{\"ansible_host\": \"192.0.2.10\"}}}}'\n"
+        "fi\n"
+        "else\n"
+        'if [ "$2" = "bad" ]; then\n'
+        "    printf '%s' '{\"ansible_host\": \"192.0.2.99\","
+        " \"ansible_user\": \"-oProxyCommand=evil\"}'\n"
+        "else\n"
+        "    printf '%s' '{\"ansible_host\": \"192.0.2.10\"}'\n"
+        "fi\n"
+        "fi\n")
+    project_stub = stub_project(raw={"binaries": binaries})
+    stub_the_project(monkeypatch, project_stub)
+
+    with pytest.raises(SystemExit) as exit_info:
+        Interpreter.do_ssh_rescan(
+            make_interpreter(), rescan_args(hosts=["bad", "web"]))
+
+    assert exit_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "Cannot refresh the known_hosts entries of the host " \
+           "\"bad\"" in captured.err
+    assert "ssh-keyscan" in captured.out
+
+
 def test_do_ssh_config_write_reports_the_error(monkeypatch, stub_project,
                                                capsys, tmp_path):
     """A write which the filesystem refuses aborts with the error; the
