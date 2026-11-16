@@ -1360,9 +1360,10 @@ class ProjectDir(object):
         known_hosts mode and the view's isolated known_hosts store
         through the Ansible configuration, so that the generated
         'ansible.cfg' carries the store once the project configuration
-        is merged. The store directory is created and the project
-        '.gitignore' learns to ignore the '.debops/ssh/' tree. Returns
-        the path of the store directory.
+        is merged. The store directory is created; the store files are
+        tracked in the git repository of the project, so the history
+        records how the trust of the project changed. Returns the path
+        of the store directory.
         """
         if self.project_type != 'modern':
             raise ValueError('The SSH known_hosts configuration is '
@@ -1376,39 +1377,6 @@ class ProjectDir(object):
 
         store_dir = ssh.ensure_store_dir(ssh.ssh_store_file(self.path, view),
                                          self.path)
-
-        # The known_hosts files are runtime state: the project
-        # '.gitignore' learns to ignore them, and the operator stays
-        # in control of the entry
-        gitignore_path = os.path.join(self.path, '.gitignore')
-        if os.path.exists(gitignore_path):
-            # The 'known_hosts*' pattern covers the 'known_hosts.old'
-            # backups which 'ssh-keygen -R' leaves next to the store
-            ignore_line = '/.debops/ssh/views/*/known_hosts*'
-            previous_line = '/.debops/ssh/views/*/known_hosts'
-            with open(gitignore_path) as handle:
-                lines = handle.read().splitlines()
-            if previous_line in lines and ignore_line not in lines:
-                # The pattern of the earlier revision ignored only the
-                # store itself
-                lines = [ignore_line if line == previous_line
-                         else line for line in lines]
-                with open(gitignore_path, 'w') as handle:
-                    handle.write('\n'.join(lines) + '\n')
-            elif ignore_line not in lines:
-                if '/.debops/ssh/' in lines:
-                    # A broad ignore of the '.debops/ssh/' tree is
-                    # narrowed to the known_hosts files, so the tree
-                    # stays usable for other state
-                    lines = [ignore_line if line == '/.debops/ssh/'
-                             else line for line in lines]
-                    with open(gitignore_path, 'w') as handle:
-                        handle.write('\n'.join(lines) + '\n')
-                else:
-                    with open(gitignore_path, 'a') as handle:
-                        handle.write('\n#-- SSH known_hosts stores of '
-                                     'the project views\n'
-                                     + ignore_line + '\n')
         return store_dir
 
     def mkview(self, view, ssh=False):
