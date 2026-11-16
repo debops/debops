@@ -226,10 +226,13 @@ def test_execute_aborts_when_the_pre_hook_fails(stub_project, monkeypatch):
 
 
 def test_accept_option_composes_the_environment(stub_project):
+    """Without configured ssh_args, the composed value restates the
+    default of the connection plugin."""
     runner = AnsibleRunner(stub_project(), ansible_args=["all"], accept=True)
 
     assert runner._ansible_env["ANSIBLE_SSH_ARGS"] == \
-        "-o StrictHostKeyChecking=accept-new"
+        ("-o StrictHostKeyChecking=accept-new "
+         "-C -o ControlMaster=auto -o ControlPersist=60s")
 
 
 def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch,
