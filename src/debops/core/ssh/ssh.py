@@ -27,8 +27,8 @@ import socket
 import subprocess
 import tempfile
 
-from .dns import (is_ip_address, is_link_local, key_fingerprint,
-                  lookup_sshfp, ssh_fingerprint)
+from .dns import (blob_fingerprint, is_ip_address, is_link_local,
+                  key_fingerprint, lookup_sshfp, ssh_fingerprint)
 from .store import (USER_KNOWN_HOSTS_STORE, ensure_store_dir,
                     known_hosts_mode, known_hosts_option,
                     known_hosts_store, quote_store_path, require_store)
@@ -425,6 +425,30 @@ def rescan_actions(project, host, store, phases=('remove', 'scan'),
     return actions, resolvable
 
 
+def _offered_fingerprints(keys):
+    """Return the '(fingerprint, key_type)' pairs of the scanned keys
+    for a confirmation offer.
+
+    Every key whose blob decodes is offered, the types without SSHFP
+    algorithm numbers among them: their fingerprints exist the same
+    way, only the DNS comparison does not apply to them. The first
+    key of each digest wins, so a scan which reports the same key
+    under several identifiers offers it once.
+    """
+    offered = []
+    seen = set()
+    for key in keys:
+        fields = key.split()
+        if len(fields) < 3:
+            continue
+        digest = blob_fingerprint(fields[2])
+        if digest is None or digest in seen:
+            continue
+        seen.add(digest)
+        offered.append((ssh_fingerprint(digest), fields[1]))
+    return offered
+
+
 def _confirmed_keys(host, fingerprints, confirm, details):
     """Return the keys to store after the confirmation callback.
 
@@ -435,13 +459,8 @@ def _confirmed_keys(host, fingerprints, confirm, details):
     """
     if confirm is None:
         return [key for algorithm, fingerprint, key in fingerprints]
-    offered = []
-    seen = set()
-    for algorithm, digests, key in fingerprints:
-        if digests[2] in seen:
-            continue
-        seen.add(digests[2])
-        offered.append((ssh_fingerprint(digests[2]), key.split()[1]))
+    offered = _offered_fingerprints(
+        [key for algorithm, digest, key in fingerprints])
     if confirm(host, offered):
         return [key for algorithm, fingerprint, key in fingerprints]
     details.append('the scanned keys of the host were rejected by the '
@@ -461,7 +480,14 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
     back to the 'confirm' callback, when one is given, or to the plain
     store operation, and without it the host is not stored. The
     'dns-verify' mode requires a DNSSEC-validating resolver to mark the
-    answer as authenticated before a DNS match is trusted.
+    answer as authenticated before a DNS match is trusted; an
+    unauthenticated match and a host without records are refused
+    unless the 'confirm' callback accepts them. The 'no-dns' mode
+    stores the keys as scanned; with the 'confirm' callback every
+    store is gated on the operator's decision.
+
+    The confirmation callback never overrides the refusal of the keys
+    which contradict the published records of the host.
 
     Returns the list of keys to store, or None when the host must not
     be stored. The details list receives the report lines for the
@@ -481,7 +507,17 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
             unparsable.add(fields[1])
 
     if dns_mode == 'no-dns':
-        return keys, details
+        if confirm is None:
+            return keys, details
+        # The raw store contract of the mode stays: the confirmation
+        # gates the store, and a confirmation stores the keys as
+        # scanned, the fingerprints of the offer being the operator's
+        # thing to check
+        if confirm(host, _offered_fingerprints(keys)):
+            return keys, details
+        details.append('the scanned keys of the host were rejected by '
+                       'the operator')
+        return None, details
     if not fingerprints:
         # Keys of the types without SSHFP algorithm numbers -- the
         # FIDO key types among them, which OpenSSH does not map
@@ -503,30 +539,46 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
 
     candidates = [identifier for identifier in resolvable
                   if not is_ip_address(identifier)]
-    records = None
-    authenticated = False
-    hostname = None
+    verified = None
+    unsigned = None
     for identifier in candidates:
         try:
-            authenticated, records = lookup_sshfp(identifier)
+            authenticated, found = lookup_sshfp(identifier)
         except Exception:
             continue
-        if not records:
+        if not found:
             continue
-        if dns_mode == 'dns-verify' and not authenticated:
-            continue
-        hostname = identifier
-        break
-    if hostname is None:
+        if authenticated:
+            # An authenticated answer is the strongest evidence the
+            # resolver can offer; a later candidate cannot improve on
+            # it
+            verified = (identifier, found)
+            break
+        if unsigned is None:
+            unsigned = (identifier, found)
+    if verified is not None:
+        hostname, records = verified
+        authenticated = True
+    elif unsigned is not None:
+        hostname, records = unsigned
+        authenticated = False
+    else:
         # No candidate produced usable SSHFP records.
-        records = None
+        hostname, records, authenticated = None, None, False
 
     if records is None:
         if dns_mode == 'dns-verify':
-            details.append('the SSHFP records of the host could not be '
-                           'verified through DNS; the host was not '
-                           'stored')
-            return None, details
+            if confirm is None:
+                details.append('the SSHFP records of the host could not '
+                               'be verified through DNS; the host was '
+                               'not stored')
+                return None, details
+            stored = _confirmed_keys(host, fingerprints, confirm, details)
+            if stored is not None:
+                details.append('no DNSSEC-validated SSHFP records were '
+                               'found; the keys are stored by the '
+                               'operator\'s decision')
+            return stored, details
         details.append('no SSHFP records found for the host')
         return _confirmed_keys(host, fingerprints, confirm, details), \
             details
@@ -555,7 +607,8 @@ def _classify_scanned_keys(host, keys, resolvable, dns_mode, confirm,
                        'records of ' + hostname + '; the host was not '
                        'stored')
         return None, details
-    if not authenticated and not trust_unsigned:
+    strict = dns_mode == 'dns-verify' or not trust_unsigned
+    if not authenticated and strict:
         # The policy refuses the unsigned match; the confirmation
         # callback is the operator's explicit override of it
         if confirm is None:
@@ -641,6 +694,14 @@ def rescan_hosts(project, hosts, store=None, phases=('remove', 'scan'),
     The 'confirm' callback, when given, is called with the host name
     and the list of '(fingerprint, key_type)' pairs of the keys which
     are about to be stored, and returns whether they should be stored.
+    With the callback, every store of the run is gated on the
+    operator's decision: the keys the mode would refuse on its own --
+    the unsigned matches of the 'dns' mode without the
+    'trust_unsigned_records' option, the unverified hosts of the
+    'dns-verify' mode -- are offered like the hosts without records,
+    and the raw keys of the 'no-dns' mode are offered as scanned. The
+    keys which contradict the published SSHFP records of a host are
+    refused with or without the callback.
 
     Returns a list of '(host, succeeded, message)' tuples, one per
     host; the message is empty when the host completed the requested
