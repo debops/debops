@@ -2148,6 +2148,54 @@ def test_jump_rewriter_pairs_recognize_the_spellings():
         rewriter.check()
 
 
+def test_jump_rewriter_rewrites_the_clustered_jump():
+    """A jump option hidden in a short-option cluster is rewritten the
+    same way a standalone one is; the flag letters of the cluster
+    stay."""
+    rewriter = JumpRewriter([])
+    rewritten = rewriter.rewrite_tokens(["-4J", "hop"])
+
+    assert rewritten == ["-4", "-o", "ProxyCommand=ssh -W '[%h]:%p' hop"]
+
+    rewriter = JumpRewriter([])
+    rewritten = rewriter.rewrite_tokens(["-4Jhop"])
+
+    assert rewritten == ["-4", "-o", "ProxyCommand=ssh -W '[%h]:%p' hop"]
+
+
+def test_jump_rewriter_rewrites_the_clustered_option():
+    rewriter = JumpRewriter([])
+    rewritten = rewriter.rewrite_tokens(["-4o", "ProxyJump=hop"])
+
+    assert rewritten == ["-4", "-o", "ProxyCommand=ssh -W '[%h]:%p' hop"]
+
+
+def test_jump_rewriter_carries_the_config_and_verbosity():
+    """The '-F' config file and the '-v' verbosity of the parent
+    command line reach the jump process, the way the implicit
+    ProxyJump child of ssh inherits them."""
+    rewriter = JumpRewriter([("-o", "UserKnownHostsFile=/s")])
+    rewriter.scan(["-F", "/cfg", "-v", "-J", "hop"])
+    rewritten = rewriter.rewrite_tokens(["-F", "/cfg", "-v", "-J", "hop"])
+
+    assert rewritten == [
+        "-F", "/cfg", "-v",
+        "-o", "ProxyCommand=ssh -o UserKnownHostsFile=/s "
+              "-F /cfg -v -W '[%h]:%p' hop"]
+
+
+def test_jump_rewriter_scans_the_later_groups_before_the_rewrite():
+    """The config file of a later argument group is known when the
+    first jump is rewritten."""
+    rewriter = JumpRewriter([])
+    rewriter.scan(["-J", "hop"])
+    rewriter.scan(["-F", "/cfg"])
+    rewritten = rewriter.rewrite_tokens(["-J", "hop"])
+
+    assert rewritten == ["-o", "ProxyCommand=ssh -F /cfg "
+                         "-W '[%h]:%p' hop"]
+
+
 def test_jump_rewriter_rewrites_the_pairs():
     """The pair form of the file-transfer builders is rewritten
     alike."""
