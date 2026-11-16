@@ -557,6 +557,50 @@ def test_accept_option_composes_the_ssh_arguments(stub_project):
          "-C -o ControlMaster=auto -o ControlPersist=60s")
 
 
+def test_accept_option_announces_and_reports_the_accepted_keys(
+        stub_project, monkeypatch, stub_project_secrets, tmp_path, caplog):
+    """With '--accept', the runner announces the acceptance before the
+    run and reports the keys the store gained afterwards, in the
+    singular for one key and not at all when the store gained
+    nothing."""
+    store = tmp_path / "store"
+    with caplog.at_level(logging.NOTICE):
+        runner = AnsiblePlaybookRunner(
+            stub_project(cfg_options={
+                "inventory": "ansible/inventory",
+                "collections_path": "",
+                "ssh_args": "-o UserKnownHostsFile=" + str(store)}),
+            ansible_args=["site.yml"], accept=True)
+    assert any(record.getMessage() == 'Ansible will auto-accept new '
+               'SSH host keys' for record in caplog.records)
+
+    executor = mock.Mock(returncode=0)
+    executor.communicate.return_value = (b"", b"")
+
+    def accept_one_key(*args, **kwargs):
+        with open(store, 'a') as handle:
+            handle.write('web.example.org ssh-ed25519 AAAAnewkey\n')
+        return executor
+
+    monkeypatch.setattr(runner_module.subprocess, "Popen", accept_one_key)
+    monkeypatch.setattr(runner_module, "run_hooks",
+                        mock.Mock(return_value=True))
+    stub_project_secrets.unlock.return_value = False
+
+    with caplog.at_level(logging.NOTICE):
+        assert runner.execute() == 0
+    messages = [record.getMessage() for record in caplog.records]
+    assert any(message == 'Ansible auto-accepted 1 SSH host key during '
+               'the run' for message in messages)
+
+    caplog.clear()
+    with caplog.at_level(logging.NOTICE):
+        assert runner.execute() == 0
+    assert not any(message.startswith('Ansible auto-accepted')
+                   for message in
+                   [record.getMessage() for record in caplog.records])
+
+
 def test_accept_option_carries_the_configured_ssh_args(stub_project):
     project = stub_project(cfg_options={
         "inventory": "ansible/inventory",
