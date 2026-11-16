@@ -110,8 +110,9 @@ General
   host keys of the hosts: the ``rescan`` subcommand refreshes the
   known_hosts entries, optionally verifying the keys against the
   SSHFP records published in DNS, and the ``config`` subcommand
-  prints an SSH client configuration which makes the hosts
-  reachable using plain :command:`ssh`.
+  prints an SSH client configuration block which makes plain
+  :command:`ssh` trust the same hosts through the known_hosts store
+  of the project.
 
 Changed
 ~~~~~~~
