@@ -130,6 +130,30 @@ def test_resolve_host_reports_an_unknown_host(stub_project, fake_tools):
         resolve_host(project, "no-such-host")
 
 
+@pytest.mark.parametrize("variables,key", [
+    ('{"ansible_host": "{{ real_addr }}"}', "destination"),
+    ('{"ansible_host": "192.0.2.10",'
+     ' "ansible_ssh_common_args": "-J {{ bastion }}"}', "common_args"),
+])
+def test_resolve_host_refuses_unrendered_templates(
+        stub_project, fake_tools, fake_binary, variables, key):
+    """The '--host' dump of 'ansible-inventory' does not render the
+    templates of the inventory variables; a value which still carries
+    the delimiters is refused instead of reaching the command line."""
+    binaries = dict(fake_tools["binaries"])
+    binaries["ansible-inventory"] = fake_binary(
+        "templated-inventory",
+        "#!/bin/sh\n"
+        "printf '%s' '" + variables + "'\n")
+    project = stub_project(raw={"binaries": binaries})
+
+    with pytest.raises(ValueError) as error:
+        resolve_host(project, "web")
+    message = str(error.value)
+    assert "unrendered Ansible template" in message
+    assert '"' + key + '" connection parameter' in message
+
+
 def test_build_ssh_command_prefers_the_explicit_options(
         stub_project, fake_tools):
     """The explicit options and the destination's own 'user@host' parts
