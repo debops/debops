@@ -120,6 +120,13 @@ Changed
 General
 '''''''
 
+- View names of DebOps projects no longer accept dashes or other
+  characters outside of the letters, the digits and the underscores.
+  The names are validated when the views are created, by
+  :command:`debops project init --default-view` and
+  :command:`debops project mkview`; the views which already exist
+  keep working.
+
 - Drop support for the end-of-life Python releases 3.8, 3.9 and 3.10;
   Python 3.11 or newer is required to run the :command:`debops`
   command and its development environment.
