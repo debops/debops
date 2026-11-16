@@ -1841,7 +1841,8 @@ def test_rescan_hosts_dns_verify_asks_for_confirmation_without_records(
 
 
 def test_rescan_hosts_rewrites_nothing_when_the_keys_match(
-        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path):
+        monkeypatch, stub_project, fake_tools, fake_binary, tmp_path,
+        caplog):
     """A rescan of an unchanged host leaves the store file alone: the
     scanned keys are compared with the entries the store holds, key
     by key, and the fresh salt of a hashed host name does not count
@@ -1850,17 +1851,30 @@ def test_rescan_hosts_rewrites_nothing_when_the_keys_match(
     stub_dns(monkeypatch, set(), authenticated=True)
     store = tmp_path / "store"
 
-    first = rescan_hosts(project, ["web"], store=str(store))
+    with caplog.at_level(logging.NOTICE):
+        first = rescan_hosts(project, ["web"], store=str(store))
 
     assert first[0][1]
     content = store.read_bytes()
     assert content.strip()
 
-    second = rescan_hosts(project, ["web"], store=str(store))
+    with caplog.at_level(logging.NOTICE):
+        second = rescan_hosts(project, ["web"], store=str(store))
 
     assert second[0][1]
     assert 'match the entries the store already holds' in second[0][2]
     assert store.read_bytes() == content
+
+    # The notices name the outcome, so the lines stay greppable; a
+    # host without SSHFP records carries no verdict suffix, for there
+    # is nothing to report
+    notices = [record.getMessage() for record in caplog.records
+               if 'known_hosts entries of the host' in record.getMessage()]
+    assert any(message.startswith('Added the known_hosts entries of '
+                                  'the host "web"') for message in notices)
+    assert any(message.startswith('Kept the known_hosts entries of '
+                                  'the host "web"') for message in notices)
+    assert not any('SSHFP' in message for message in notices)
 
 
 def test_rescan_hosts_rewrites_the_entries_of_a_changed_key(
