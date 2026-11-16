@@ -37,8 +37,9 @@ jobs:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
-          python3 -c 'import yaml' 2> /dev/null || \
-            pip3 install --break-system-packages pyyaml
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -c requirements-ci.txt pyyaml
+          "${RUNNER_TEMP}/venv/bin/pip" check
           if [ "${GITHUB_EVENT_NAME}" = 'pull_request' ]; then
             git diff --name-only "origin/${BASE_REF}...HEAD" \
               > "${RUNNER_TEMP}/changed-files.txt"
@@ -46,7 +47,8 @@ jobs:
           else
             args=(--all)
           fi
-          python3 lib/tests/gh-ci-pipeline/matrix.py "${args[@]}" \
+          "${RUNNER_TEMP}/venv/bin/python3" \
+            lib/tests/gh-ci-pipeline/matrix.py "${args[@]}" \
             --output "${RUNNER_TEMP}/matrix.json"
           {
             echo 'matrix<<EOF'
