@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+# Restart Zabbix agent on a certificate state change. The agent reads its
+# certificate and private key only at startup.
+
+set -o nounset -o pipefail -o errexit
+
+zabbix_agent_config="{{ zabbix_agent__conf_file_path }}"
+zabbix_agent_service="{{ 'zabbix-agent' if (zabbix_agent__flavor == 'C') else 'zabbix-agent2' }}"
+
+# Check if current PKI realm is used by the Zabbix agent
+certificate=""
+if [ -n "${PKI_SCRIPT_DEFAULT_CRT:-}" ] && [ -r "${zabbix_agent_config}" ] ; then
+    certificate=$(grep -Fx "TLSCertFile=${PKI_SCRIPT_DEFAULT_CRT}" "${zabbix_agent_config}" || true)
+fi
+
+# Get list of current realm states
+read -r -a states <<< "$(echo "${PKI_SCRIPT_STATE:-}" | tr "," " ")"
+
+if [ -n "${certificate}" ] && [[ ${states[*]} ]] ; then
+
+    for state in "${states[@]}" ; do
+
+        if [ "${state}" = "changed-certificate" ] ; then
+
+            # Check if current init is systemd
+            if pidof systemd > /dev/null 2>&1 ; then
+
+                zabbix_agent_state="$(systemctl is-active "${zabbix_agent_service}.service" || true)"
+                if [ "${zabbix_agent_state}" = "active" ] ; then
+                    systemctl restart "${zabbix_agent_service}.service"
+                fi
+            fi
+
+            break
+        fi
+
+    done
+
+fi

@@ -14,6 +14,13 @@
   ansible.builtin.import_role:
     name: 'secret'
 
+- name: Validate Zabbix agent configuration
+  ansible.builtin.assert:
+    that:
+      - zabbix_agent__tls_mode in [ 'psk', 'cert', 'unencrypted' ]
+    quiet: True
+  when: zabbix_agent__deploy_state != 'absent'
+
 # Package installation [[[1
 - name: Install Zabbix agent packages
   ansible.builtin.apt:
@@ -27,7 +34,7 @@
 - name: Add Zabbix UNIX account to required groups
   ansible.builtin.user:
     name: '{{ zabbix_agent__user }}'
-    groups: '{{ zabbix_agent__additional_groups | flatten | join(",") }}'
+    groups: '{{ zabbix_agent__combined_additional_groups | join(",") }}'
     state: 'present'
     append: True
   notify: [ 'Check zabbix-agent and restart', 'Check zabbix-agent2 and restart' ]
@@ -61,7 +68,34 @@
     mode: '0640'
   no_log: '{{ debops__no_log | d(True) }}'
   notify: [ 'Check zabbix-agent and restart', 'Check zabbix-agent2 and restart' ]
-  when: zabbix_agent__deploy_state != 'absent'
+  when: zabbix_agent__deploy_state != 'absent' and
+        zabbix_agent__tls_mode == 'psk'
+
+- name: Remove unused PSK secret key
+  ansible.builtin.file:
+    path: '/etc/zabbix/secret.key'
+    state: 'absent'
+  when: zabbix_agent__deploy_state == 'absent' or
+        zabbix_agent__tls_mode != 'psk'
+
+- name: Install PKI hook which restarts Zabbix agent on certificate change
+  ansible.builtin.template:
+    src: 'etc/pki/hooks/zabbix-agent.j2'
+    dest: '{{ (ansible_local.pki.hooks | d("/etc/pki/hooks")) + "/zabbix-agent" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: zabbix_agent__deploy_state != 'absent' and
+        zabbix_agent__tls_mode == 'cert' and
+        (ansible_local.pki.enabled | d()) | bool
+
+- name: Remove unused Zabbix agent PKI hook
+  ansible.builtin.file:
+    path: '{{ (ansible_local.pki.hooks | d("/etc/pki/hooks")) + "/zabbix-agent" }}'
+    state: 'absent'
+  when: not (zabbix_agent__deploy_state != 'absent' and
+             zabbix_agent__tls_mode == 'cert' and
+             (ansible_local.pki.enabled | d()) | bool)
 
 - name: Ensure configuration folder exists
   ansible.builtin.file:

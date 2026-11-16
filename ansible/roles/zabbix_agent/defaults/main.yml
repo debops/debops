@@ -101,7 +101,10 @@ zabbix_agent__group: 'zabbix'
                                                                    # ]]]
 # .. envvar:: zabbix_agent__additional_groups [[[
 #
-# List of additional UNIX groups which should include the Zabbix agent account.
+# List of additional UNIX groups which should include the Zabbix agent
+# account, defined by the role itself. See
+# :envvar:`zabbix_agent__combined_additional_groups` for the variable used in
+# role tasks.
 zabbix_agent__additional_groups:
 
   # Integration with the 'debops.proc_hidepid' role to provide system-wide
@@ -110,6 +113,42 @@ zabbix_agent__additional_groups:
         if (ansible_local.proc_hidepid.enabled | d()) | bool
         else [] }}'
 
+  # Integration with the 'debops.pki' role. In 'cert' TLS mode the Zabbix
+  # Agent needs read access to the private key stored in a PKI realm, owned
+  # by the group configured in 'zabbix_agent__tls_pki_group' (usually
+  # 'ssl-cert'). Without this, 'zabbix-agent2' fails to start with
+  # "failed to initialize encryption" / permission denied on the key file.
+  #
+  # The membership is not revoked after switching to a different TLS mode,
+  # see "Known limitations" in the role documentation.
+  - '{{ zabbix_agent__tls_pki_group
+        if (zabbix_agent__tls_mode == "cert")
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__group_additional_groups [[[
+#
+# List of additional UNIX groups which should include the Zabbix agent
+# account, defined on hosts in a specific Ansible inventory group.
+zabbix_agent__group_additional_groups: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__host_additional_groups [[[
+#
+# List of additional UNIX groups which should include the Zabbix agent
+# account, defined on specific hosts in the Ansible inventory.
+zabbix_agent__host_additional_groups: []
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__combined_additional_groups [[[
+#
+# Variable which combines the lists of additional UNIX groups and is used in
+# role tasks. Hosts and groups only need to specify additional entries,
+# instead of repeating the role defaults.
+zabbix_agent__combined_additional_groups: '{{ (zabbix_agent__additional_groups
+                                             + zabbix_agent__group_additional_groups
+                                             + zabbix_agent__host_additional_groups)
+                                             | flatten | unique }}'
                                                                    # ]]]
 # .. envvar:: zabbix_agent__conf_file_path [[[
 #
@@ -125,21 +164,125 @@ zabbix_agent__conf_file_path: '{{ "/etc/zabbix/zabbix_agentd.conf"
 # These variables define the contents of the main Zabbix Agent configuration
 # file.
 
+# .. envvar:: zabbix_agent__tls_mode [[[
+#
+# Selects how the Zabbix Agent encrypts and authenticates its connections to
+# and from the Zabbix Server or Proxy. This defines the ``TLSConnect`` and
+# ``TLSAccept`` configuration options, and the related certificate/PSK
+# parameters. Available choices:
+#
+# - ``psk``: use a pre-shared key generated and stored using the DebOps
+#   :command:`secret` mechanism. This is the default, kept for backwards
+#   compatibility with existing installations.
+#
+# - ``cert``: use a host certificate managed by the :ref:`debops.pki` Ansible
+#   role. The role will look up the certificate, private key and CA bundle
+#   paths in the PKI realm selected by
+#   :envvar:`zabbix_agent__tls_pki_realm`, and will automatically add the
+#   :envvar:`zabbix_agent__user` UNIX account to the UNIX group that owns the
+#   PKI realm private files (see :envvar:`zabbix_agent__tls_pki_group`), so
+#   that the agent daemon can read its private key at startup. Without this,
+#   ``zabbix-agent2`` fails to start with a permission error while trying to
+#   initialize encryption.
+#
+# - ``unencrypted``: disable TLS support and use plain-text connections.
+zabbix_agent__tls_mode: 'psk'
+
+                                                                   # ]]]
 # .. envvar:: zabbix_agent__tls_psk_identity [[[
 #
-# Unique, case sensitive string used to identify the pre-shared key.
+# Unique, case sensitive string used to identify the pre-shared key. Used
+# only when :envvar:`zabbix_agent__tls_mode` is ``psk``; in other modes the
+# value is empty and nothing is stored in the ``secret/`` directory.
 zabbix_agent__tls_psk_identity: '{{ lookup("password", secret
                                     + "/zabbix/identities/" + inventory_hostname
-                                    + "/identity.key length=32 chars=ascii_letters,digits") }}'
+                                    + "/identity.key length=32 chars=ascii_letters,digits")
+                                    if (zabbix_agent__tls_mode == "psk") else "" }}'
 
                                                                    # ]]]
 # .. envvar:: zabbix_agent__tls_psk_secret [[[
 #
 # Case sensitive secret key stored in a file and used
-# with the pre-shared key.
+# with the pre-shared key. Used only when :envvar:`zabbix_agent__tls_mode` is
+# ``psk``; in other modes the value is empty and nothing is stored in the
+# ``secret/`` directory.
 zabbix_agent__tls_psk_secret: '{{ lookup("password", secret
                                   + "/zabbix/identities/" + inventory_hostname
-                                  + "/secret.key length=64 chars=abcdef,digits") }}'
+                                  + "/secret.key length=64 chars=abcdef,digits")
+                                  if (zabbix_agent__tls_mode == "psk") else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_pki_realm [[[
+#
+# Name of the PKI realm configured by the :ref:`debops.pki` Ansible role
+# which will be used to look up the host certificate files when
+# :envvar:`zabbix_agent__tls_mode` is ``cert``. By default the role will use
+# the system-wide PKI realm detected via Ansible local facts.
+zabbix_agent__tls_pki_realm: '{{ ansible_local.pki.realm
+                                  if (ansible_local.pki.realm | d())
+                                  else (pki_system_realm | d("domain")) }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_pki_path [[[
+#
+# Base path to the directory which holds the PKI realms, as configured by
+# the :ref:`debops.pki` Ansible role.
+zabbix_agent__tls_pki_path: '{{ ansible_local.pki.base_path
+                                 if (ansible_local.pki.base_path | d())
+                                 else ((pki_root | d("/etc/pki")) + "/realms") }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_pki_group [[[
+#
+# Name of the UNIX group which owns the private files of the PKI realm
+# selected above (usually ``ssl-cert``). The Zabbix Agent UNIX account is
+# added to this group automatically when :envvar:`zabbix_agent__tls_mode` is
+# ``cert``, see :envvar:`zabbix_agent__additional_groups`.
+zabbix_agent__tls_pki_group: '{{ pki_private_group | d("ssl-cert") }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_cert_file [[[
+#
+# Full path to the file with the host certificate or certificate chain, used
+# when :envvar:`zabbix_agent__tls_mode` is ``cert``.
+zabbix_agent__tls_cert_file: '{{ zabbix_agent__tls_pki_path + "/"
+                                  + zabbix_agent__tls_pki_realm + "/"
+                                  + (ansible_local.pki.crt | d("default.crt")) }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_key_file [[[
+#
+# Full path to the file with the host private key, used when
+# :envvar:`zabbix_agent__tls_mode` is ``cert``.
+zabbix_agent__tls_key_file: '{{ zabbix_agent__tls_pki_path + "/"
+                                 + zabbix_agent__tls_pki_realm + "/"
+                                 + (ansible_local.pki.key | d("default.key")) }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_ca_file [[[
+#
+# Full path to the file with the top-level CA certificate(s) used to verify
+# the Zabbix Server/Proxy certificate, used when
+# :envvar:`zabbix_agent__tls_mode` is ``cert``.
+zabbix_agent__tls_ca_file: '{{ zabbix_agent__tls_pki_path + "/"
+                                + zabbix_agent__tls_pki_realm + "/"
+                                + (ansible_local.pki.ca | d("CA.crt")) }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_server_cert_subject [[[
+#
+# Expected TLS certificate subject of the Zabbix Server/Proxy, checked by the
+# agent when :envvar:`zabbix_agent__tls_mode` is ``cert``. If empty, the
+# check is skipped. Example: ``CN=zabbix.example.org``.
+zabbix_agent__tls_server_cert_subject: ''
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_server_cert_issuer [[[
+#
+# Expected TLS certificate issuer of the Zabbix Server/Proxy, checked by the
+# agent when :envvar:`zabbix_agent__tls_mode` is ``cert``. If empty, the
+# check is skipped.
+zabbix_agent__tls_server_cert_issuer: ''
 
                                                                    # ]]]
 # .. envvar:: zabbix_agent__original_configuration [[[
@@ -487,25 +630,45 @@ zabbix_agent__original_configuration:
 # List of the default configuration options defined by the role.
 zabbix_agent__default_configuration:
 
-  - name: 'TLSPSKIdentity'
-    value: '{{ zabbix_agent__tls_psk_identity | d() }}'
-    state: 'present'
-
-  - name: 'TLSPSKFile'
-    value: '/etc/zabbix/secret.key'
-    state: 'present'
-
   - name: 'User'
     value: '{{ zabbix_agent__user }}'
     state: '{{ "present" if zabbix_agent__flavor == "C" else "ignore" }}'
 
   - name: 'TLSConnect'
-    value: 'psk'
-    state: 'present'
+    value: '{{ zabbix_agent__tls_mode }}'
+    state: '{{ "comment" if (zabbix_agent__tls_mode == "unencrypted") else "present" }}'
 
   - name: 'TLSAccept'
-    value: 'psk'
-    state: 'present'
+    value: '{{ zabbix_agent__tls_mode }}'
+    state: '{{ "comment" if (zabbix_agent__tls_mode == "unencrypted") else "present" }}'
+
+  - name: 'TLSPSKIdentity'
+    value: '{{ zabbix_agent__tls_psk_identity if (zabbix_agent__tls_mode == "psk") else "" }}'
+    state: '{{ "present" if (zabbix_agent__tls_mode == "psk") else "comment" }}'
+
+  - name: 'TLSPSKFile'
+    value: '/etc/zabbix/secret.key'
+    state: '{{ "present" if (zabbix_agent__tls_mode == "psk") else "comment" }}'
+
+  - name: 'TLSCAFile'
+    value: '{{ zabbix_agent__tls_ca_file }}'
+    state: '{{ "present" if (zabbix_agent__tls_mode == "cert") else "comment" }}'
+
+  - name: 'TLSCertFile'
+    value: '{{ zabbix_agent__tls_cert_file }}'
+    state: '{{ "present" if (zabbix_agent__tls_mode == "cert") else "comment" }}'
+
+  - name: 'TLSKeyFile'
+    value: '{{ zabbix_agent__tls_key_file }}'
+    state: '{{ "present" if (zabbix_agent__tls_mode == "cert") else "comment" }}'
+
+  - name: 'TLSServerCertSubject'
+    value: '{{ zabbix_agent__tls_server_cert_subject }}'
+    state: '{{ "present" if (zabbix_agent__tls_mode == "cert" and zabbix_agent__tls_server_cert_subject | d()) else "comment" }}'
+
+  - name: 'TLSServerCertIssuer'
+    value: '{{ zabbix_agent__tls_server_cert_issuer }}'
+    state: '{{ "present" if (zabbix_agent__tls_mode == "cert" and zabbix_agent__tls_server_cert_issuer | d()) else "comment" }}'
 
                                                                    # ]]]
 # .. envvar:: zabbix_agent__configuration [[[
