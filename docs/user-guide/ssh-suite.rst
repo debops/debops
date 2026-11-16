@@ -298,7 +298,9 @@ store knows, the keys are collected through the connection itself.
 The connection runs with the rewritten jump options, so the
 collection completes without prompts and verifies the jump against
 the entries of the scan. A bastion hidden inside a ``ProxyCommand``
-cannot be discovered.
+cannot be discovered. A jump chain scanned in one run follows the
+order you gave; scan the chain in order, or run the rescan again
+after the first pass stored the intermediate hops.
 
 .. note::
 
