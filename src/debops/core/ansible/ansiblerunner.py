@@ -39,6 +39,7 @@ class AnsibleRunner(AnsibleProjectRunner):
 
     def execute(self):
         unlocked = False
+        snapshot = self._snapshot_accepted_keys()
 
         if not run_hooks(self.project.path, 'pre-exec',
                          env=self._subprocess_env(self._ansible_env)):
@@ -67,6 +68,7 @@ class AnsibleRunner(AnsibleProjectRunner):
         finally:
             if unlocked:
                 self._lock_secrets()
+            self._report_accepted_keys(snapshot)
 
         run_hooks(self.project.path, 'post-exec',
                   extra_env={'DEBOPS_RETURN_CODE': rc},

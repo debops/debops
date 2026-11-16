@@ -17,8 +17,8 @@ import os
 import shlex
 import textwrap
 
-from ..ssh.store import (declared_known_hosts_store, ensure_store_dir,
-                         quote_store_path)
+from ..ssh.store import (USER_KNOWN_HOSTS_STORE, declared_known_hosts_store,
+                         ensure_store_dir, quote_store_path)
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +27,7 @@ class AnsibleProjectRunner(Runner):
 
     def __init__(self, project, bell=False):
         super().__init__(project, bell=bell, secrets_name='ansible')
+        self._accept_armed = False
 
         try:
             self._inventory_paths = (
@@ -83,6 +84,10 @@ class AnsibleProjectRunner(Runner):
         the view is carried as well when the composed value does not
         declare one: without it, an operator's environment variable
         would store the accepted keys outside of the project store.
+
+        The acceptance itself happens inside the ssh connections of
+        the run; the runner announces it up front, and reports what
+        the store gained after the run finished.
         """
         try:
             ssh_args = self.project.ansible_cfg.get_option(
@@ -121,6 +126,62 @@ class AnsibleProjectRunner(Runner):
             composed += (' -o \'UserKnownHostsFile='
                          + quote_store_path(store) + '\'')
         env['ANSIBLE_SSH_ARGS'] = composed
+        self._accept_armed = True
+        logger.notice('Ansible will auto-accept new SSH host keys',
+                      extra={'allow': ['stderr', 'syslog']})
+
+    def _accept_store(self):
+        """Return the known_hosts file the connections accept new keys
+        into: the store the view declares, or the operator's own
+        known_hosts file in the user mode."""
+        return (declared_known_hosts_store(self.project)
+                or os.path.expanduser(USER_KNOWN_HOSTS_STORE))
+
+    def _snapshot_accepted_keys(self):
+        """Return the known_hosts entries the store holds before the
+        run, as a set of lines, or None when the acceptance is not
+        armed.
+
+        The entries are compared as lines, not as key material: the
+        acceptance of Ansible's connections appends lines and never
+        rewrites the existing ones, so a new line is a new entry even
+        when its key is already trusted under another name of the
+        host -- and that is exactly the event worth reporting.
+        """
+        if not self._accept_armed:
+            return None
+        try:
+            with open(self._accept_store(), 'rb') as handle:
+                content = handle.read().decode('utf-8', 'replace')
+        except OSError:
+            return set()
+        return {line for line in content.splitlines() if line}
+
+    def _report_accepted_keys(self, snapshot):
+        """Report the host keys Ansible accepted during the run.
+
+        The report names Ansible as the acceptor, because the
+        acceptance happens inside its ssh connections; it is skipped
+        when the store gained no entries, and the singular form is
+        used for one entry.
+        """
+        if snapshot is None:
+            return
+        try:
+            with open(self._accept_store(), 'rb') as handle:
+                content = handle.read().decode('utf-8', 'replace')
+        except OSError:
+            return
+        added = ({line for line in content.splitlines() if line}
+                 - snapshot)
+        if not added:
+            return
+        count = len(added)
+        logger.notice(
+            'Ansible auto-accepted {} {} during the run'.format(
+                count, 'SSH host key' if count == 1
+                else 'SSH host keys'),
+            extra={'allow': ['stderr', 'syslog']})
 
     def _quote_spaces(self, string):
         if ' ' in string:
