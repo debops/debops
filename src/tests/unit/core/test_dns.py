@@ -14,6 +14,7 @@ from types import SimpleNamespace
 from unittest import mock
 
 import dns.flags
+import dns.resolver
 
 import debops.core.ssh.dns as dns_module
 from debops.core.ssh.dns import (is_ip_address, is_link_local,
@@ -71,15 +72,34 @@ def test_lookup_sshfp_parses_records_and_the_authenticated_flag():
         mock.Mock(to_text=mock.Mock(return_value='4 2 ' + KEY_FINGERPRINT)),
         mock.Mock(to_text=mock.Mock(return_value='1 1 deadbeef')),
     ])
-    resolver = mock.Mock(return_value=answer)
+    resolver = mock.Mock()
+    resolver.resolve.return_value = answer
 
-    with mock.patch('dns.resolver.resolve', resolver):
+    with mock.patch('dns.resolver.Resolver',
+                    mock.Mock(return_value=resolver)):
         authenticated, records = lookup_sshfp('web.example.org')
 
     assert authenticated
     assert records == {(4, 2, KEY_FINGERPRINT), (1, 1, 'deadbeef')}
-    resolver.assert_called_once_with('web.example.org', 'SSHFP',
-                                     want_dnssec=True)
+    resolver.resolve.assert_called_once_with('web.example.org', 'SSHFP')
+
+
+def test_lookup_sshfp_reads_the_absence_of_records():
+    """NXDOMAIN and the empty answer are the absence of records, not
+    failures; the other lookup conditions raise."""
+    resolver = mock.Mock()
+    resolver.resolve.side_effect = dns.resolver.NXDOMAIN()
+
+    with mock.patch('dns.resolver.Resolver',
+                    mock.Mock(return_value=resolver)):
+        assert lookup_sshfp('no-such.example.org') == (False, set())
+
+    resolver = mock.Mock()
+    resolver.resolve.side_effect = dns.resolver.NoAnswer()
+
+    with mock.patch('dns.resolver.Resolver',
+                    mock.Mock(return_value=resolver)):
+        assert lookup_sshfp('empty.example.org') == (False, set())
 
 
 def test_lookup_sshfp_skips_records_without_comparable_digests():
@@ -93,9 +113,11 @@ def test_lookup_sshfp_skips_records_without_comparable_digests():
         mock.Mock(to_text=mock.Mock(return_value='4 x notanumber')),
         mock.Mock(to_text=mock.Mock(return_value='4 2')),
     ])
-    resolver = mock.Mock(return_value=answer)
+    resolver = mock.Mock()
+    resolver.resolve.return_value = answer
 
-    with mock.patch('dns.resolver.resolve', resolver):
+    with mock.patch('dns.resolver.Resolver',
+                    mock.Mock(return_value=resolver)):
         _, records = lookup_sshfp('web.example.org')
 
     assert records == {(4, 2, KEY_FINGERPRINT)}
