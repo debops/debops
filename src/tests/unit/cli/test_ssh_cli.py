@@ -405,7 +405,7 @@ def test_do_ssh_rescan_reports_the_expansion_error(monkeypatch, stub_project,
             make_interpreter(), rescan_args(hosts=["broken"]))
 
     assert exit_info.value.code == 1
-    assert "Cannot expand" in capsys.readouterr().err
+    assert "Cannot resolve the pattern" in capsys.readouterr().err
 
 
 def test_do_ssh_rescan_fails_when_nothing_matches(monkeypatch, stub_project,
