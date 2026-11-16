@@ -90,6 +90,14 @@ class AnsibleProjectRunner(Runner):
         except (configparser.NoOptionError, configparser.NoSectionError):
             ssh_args = None
         base = os.environ.get('ANSIBLE_SSH_ARGS') or ssh_args
+        if not base:
+            # Neither the environment nor the configuration carries the
+            # ssh_args: the connection plugin applies its own default,
+            # which the composed variable would replace -- restate it,
+            # the way the ssh configuration drop-in of the project mode
+            # does. The default of the plugin is restated here by
+            # value; a change of the plugin default must be mirrored
+            base = '-C -o ControlMaster=auto -o ControlPersist=60s'
         # The accept-new option leads the composed value: ssh applies
         # the first obtained value of an option, and an explicit
         # '--accept' must not be defeated by a StrictHostKeyChecking
