@@ -16,7 +16,9 @@ state lock pre-check and the missing-state refusal.
 from ..runner import Runner
 from ..hooks import run_hooks
 from ..utils import path_key
-from .view import create_view, view_drop_in_path, view_tofu_root
+from .providers import resolve_providers
+from .registry import view_drop_in_path, view_tofu_root
+from .view import create_view
 import dotenv
 import fcntl
 import json
@@ -140,21 +142,6 @@ class TofuRunner(Runner):
     def _view_tofu_root(self):
         """Return the view's tofu directory the operation runs in."""
         return view_tofu_root(self.project, self.project.view)
-
-    def _resolve_providers(self, providers):
-        """Return the provider set which a new view is created with.
-
-        The '--provider' options of the command line replace the
-        'tofu.default_providers' configuration option, which itself
-        defaults to an empty list: a providerless view. The resolution
-        applies when a view is created -- the 'tofu.default_providers'
-        option is consulted only there; the provider set of an
-        existing view lives in its configuration drop-in, which the
-        user owns.
-        """
-        if providers:
-            return providers
-        return self.project.config.raw['tofu']['default_providers']
 
     def _resolve_workspace(self, workspace):
         """Return the workspace the operations run against.
@@ -500,7 +487,8 @@ class TofuRunner(Runner):
         """
         if not os.path.exists(os.path.join(self._view_root, 'main.tf')):
             create_view(self.project, self.project.view,
-                        providers=self._resolve_providers(self._providers))
+                        providers=resolve_providers(self.project,
+                                                    self._providers))
 
         hook_env = self._subprocess_env(self._tofu_env)
         if not run_hooks(self.project.path, 'pre-' + self._operation,
