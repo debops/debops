@@ -21,6 +21,7 @@ import fcntl
 import json
 import logging
 import os
+import re
 import subprocess
 import sys
 
@@ -86,6 +87,10 @@ class TofuRunner(Runner):
                 ". A project gains its 'tofu/' tree when the view "
                 'template is applied to it.')
         self._operation = tofu_args[0]
+        if not re.fullmatch(r'[a-z]+(-[a-z]+)*', self._operation):
+            raise ValueError(
+                "The token '{}' is not an OpenTofu operation.".format(
+                    self._operation))
         self._workspace = self._resolve_workspace(workspace)
         self._state_path = self._resolve_state_path()
         self._data_dir = os.path.join(xdg_cache_home, 'debops', 'tofu',
