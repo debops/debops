@@ -31,8 +31,15 @@
   groups: [ 'debops_service_garage' ]
   idempotency: 'advisory'
   excluded: True
-  reason: 'The debops.nginx role used by the playbook does not work with
-    ansible-core 2.21 yet'
+  reason: 'Temporarily excluded until the fix of the debops.nginx role for
+    ansible-core 2.19 and newer is merged; the playbook applies nginx'
+  # The domain of the GitHub runners is too long for the default size of the
+  # nginx server names hash with the '*.s3.<domain>' wildcard names.
+  inventoryspec:
+    files:
+      group_vars/debops_service_garage/garage.yml: |
+        ---
+        garage__domain: 'example.com'
   post_script: |
     garage --version
     systemctl is-active garage.service
