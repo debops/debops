@@ -89,6 +89,10 @@ General
   usable in CI pipelines. The ``--strict`` option also fails the
   check on unknown options.
 
+- The new :command:`debops tofu` section runs OpenTofu in the project
+  environment. Each view keeps its state in the encrypted store; the
+  wrapper refuses unsafe invocations and gates destructive operations.
+
 - The ``debops.core.config.Configuration`` class can now build a
   standalone configuration from caller-provided sources: defaults,
   configuration files and directories, a JSON Schema, an
