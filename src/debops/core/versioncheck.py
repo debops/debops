@@ -149,17 +149,40 @@ class VersionCheck(object):
             return False
 
     def _is_pipx(self):
-        pipx_home = os.environ.get(
-                'PIPX_HOME',
-                os.path.join(os.path.expanduser('~'), '.local', 'pipx'))
-        try:
-            if os.path.commonpath([pipx_home,
-                                   os.path.realpath(sys.argv[0])]) == pipx_home:
-                return True
-            if os.path.commonpath([pipx_home, self._pkg_dir]) == pipx_home:
-                return True
-        except ValueError:
-            return False
+        """Is DebOps installed in a virtual environment managed by pipx?
+
+        Every pipx-managed environment carries a 'pipx_metadata.json' file
+        in its root, which is independent of where the pipx home directory
+        lives. Path comparison is the fallback for environments without
+        the marker. pipx defaults to the XDG data directory
+        ('~/.local/share/pipx') on Linux and keeps the legacy
+        '~/.local/pipx' as a fallback for environments created by older
+        releases.
+        """
+        if os.path.exists(os.path.join(sys.prefix, 'pipx_metadata.json')):
+            return True
+
+        pipx_homes = []
+        pipx_home = os.environ.get('PIPX_HOME')
+        if pipx_home:
+            # Expand '~' in $PIPX_HOME the way pipx itself does; a literal
+            # tilde is a relative path, which os.path.commonpath() rejects
+            pipx_homes.append(os.path.expanduser(pipx_home))
+        pipx_homes.extend([
+            os.path.join(os.path.expanduser('~'),
+                         '.local', 'share', 'pipx'),
+            os.path.join(os.path.expanduser('~'), '.local', 'pipx'),
+        ])
+
+        for home in pipx_homes:
+            try:
+                if os.path.commonpath(
+                        [home, os.path.realpath(sys.argv[0])]) == home:
+                    return True
+                if os.path.commonpath([home, self._pkg_dir]) == home:
+                    return True
+            except ValueError:
+                continue
         return False
 
     def _git_repo(self):
