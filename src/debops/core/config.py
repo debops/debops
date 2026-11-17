@@ -135,6 +135,36 @@ def _resolve_schema_node(schema, segments):
     return node
 
 
+# The prefix which marks a configuration string value as a raw HCL
+# expression: the prefix is consumed once and the remainder is emitted
+# verbatim by the consumer which renders the value. A value which
+# carries the prefix twice is an escaped literal -- 'hcl:hcl:hello'
+# means the literal string 'hcl:hello'.
+HCL_PREFIX = 'hcl:'
+
+
+def hcl_value(value):
+    """Split a string value against the 'hcl:' prefix.
+
+    Returns None when the value is not a string which carries the
+    prefix. Otherwise returns a tuple of the kind and the payload:
+    'raw' when the value carries the prefix once -- the payload is
+    the HCL expression which the consumer emits verbatim -- and
+    'literal' when the value carries the prefix twice -- the payload
+    is the literal string. A prefix with an empty payload is a
+    mistake and is refused: an empty expression renders nothing.
+    """
+    if not isinstance(value, str) or not value.startswith(HCL_PREFIX):
+        return None
+    payload = value[len(HCL_PREFIX):]
+    if payload.startswith(HCL_PREFIX):
+        return 'literal', payload
+    if not payload:
+        raise ValueError("The '{}' prefix carries an empty HCL "
+                         'expression'.format(HCL_PREFIX))
+    return 'raw', payload
+
+
 class Configuration(object):
 
     def __init__(self, defaults=None, paths=None, schema=None,
