@@ -310,33 +310,43 @@ garage__web_port: 3902
 garage__admin_port: 3903
 
                                                                    # ]]]
+# .. envvar:: garage__bind_any [[[
+#
+# The "any" address used by the Garage endpoints which accept connections
+# from other hosts. The dual-stack ``[::]`` address accepts both IPv4 and
+# IPv6 connections, but cannot be used on a host without IPv6, so on such
+# hosts the role uses ``0.0.0.0`` instead.
+garage__bind_any: '{{ "[::]"
+                      if (ansible_all_ipv6_addresses | d([]) | length > 0)
+                      else "0.0.0.0" }}'
+
+                                                                   # ]]]
 # .. envvar:: garage__s3_bind_addr [[[
 #
 # Listen address of the S3 API. Loopback, where nginx connects to it, until
-# :envvar:`garage__s3_allow` grants direct access; then the dual-stack
-# any-address ``[::]``. Without nginx and without the allow list, the S3 API
-# is available only on the host itself. On a host without IPv6, set an IPv4
-# address here and in :envvar:`garage__rpc_bind_addr`.
+# :envvar:`garage__s3_allow` grants direct access; then
+# :envvar:`garage__bind_any`. Without nginx and without the allow list, the
+# S3 API is available only on the host itself.
 garage__s3_bind_addr: '{{ "127.0.0.1"
                           if (garage__s3_allow | length == 0)
-                          else "[::]" }}:{{ garage__s3_port }}'
+                          else garage__bind_any }}:{{ garage__s3_port }}'
 
                                                                    # ]]]
 # .. envvar:: garage__rpc_bind_addr [[[
 #
-# Listen address of the RPC endpoint. Dual-stack any-address so that other
-# nodes can connect.
-garage__rpc_bind_addr: '[::]:{{ garage__rpc_port }}'
+# Listen address of the RPC endpoint. Uses :envvar:`garage__bind_any`, so
+# that other nodes can connect.
+garage__rpc_bind_addr: '{{ garage__bind_any }}:{{ garage__rpc_port }}'
 
                                                                    # ]]]
 # .. envvar:: garage__web_bind_addr [[[
 #
 # Listen address of the website endpoint. Loopback, where nginx connects
-# to it, until :envvar:`garage__web_allow` grants direct access; then the
-# dual-stack any-address ``[::]``.
+# to it, until :envvar:`garage__web_allow` grants direct access; then
+# :envvar:`garage__bind_any`.
 garage__web_bind_addr: '{{ "127.0.0.1"
                            if (garage__web_allow | length == 0)
-                           else "[::]" }}:{{ garage__web_port }}'
+                           else garage__bind_any }}:{{ garage__web_port }}'
                                                                    # ]]]
                                                                    # ]]]
 # garage.toml configuration [[[
