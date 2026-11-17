@@ -394,7 +394,9 @@ class SecretManager:
         # Imported lazily: the tool subpackages import this module for
         # the SecretStore base
         from .ansible.secrets import AnsibleSecretStore
-        return {'ansible': AnsibleSecretStore}
+        from .tofu.secrets import TofuSecretStore
+        return {'ansible': AnsibleSecretStore,
+                'tofu': TofuSecretStore}
 
     def store(self, name='ansible'):
         """Return the secret store of a tool, constructing it on demand."""
