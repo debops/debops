@@ -230,6 +230,27 @@ class StubConfig:
         self.raw = raw if raw is not None else {}
         self._env_vars = env_vars if env_vars is not None else {}
 
+    def merge(self, data, scope=None, origin=None):
+        """Merge a dictionary into the raw tree, the way the real
+        ``Configuration._merge_dict`` does for a dict: nested
+        dictionaries merge recursively, every other value replaces the
+        recorded one."""
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if (isinstance(self.raw.get(key), dict)
+                        and isinstance(value, dict)):
+                    self._merge_dict(self.raw[key], value)
+                else:
+                    self.raw[key] = value
+
+    def _merge_dict(self, d1, d2):
+        for key, value in d2.items():
+            if (isinstance(d1.get(key), dict)
+                    and isinstance(value, dict)):
+                self._merge_dict(d1[key], value)
+            else:
+                d1[key] = value
+
 
 class StubAnsibleConfig:
     """A stand-in for ``debops.core.ansible.ansibleconfig.AnsibleConfig``.

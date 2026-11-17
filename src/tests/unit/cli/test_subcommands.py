@@ -55,6 +55,17 @@ def test_tofu_section_stops_at_the_first_operation():
     assert subcommands.args.tofu_args == ["plan", "-w", "feature"]
 
 
+def test_tofu_section_accumulates_the_provider_options():
+    """The '--provider' option is repeatable and takes the '-p'
+    short form; both spellings accumulate in order."""
+    subcommands = parse_cli("tofu", "-p", "lxc/incus", "--provider",
+                            "hashicorp/tfcoremock=1.2.0", "init")
+
+    assert subcommands.args.provider == ["lxc/incus",
+                                         "hashicorp/tfcoremock=1.2.0"]
+    assert subcommands.args.tofu_args == ["init"]
+
+
 def test_unknown_project_command_exits_with_an_error(capsys):
     with pytest.raises(SystemExit) as exc:
         parse_cli("project", "bogus")
