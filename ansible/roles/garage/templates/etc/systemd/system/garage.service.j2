@@ -45,8 +45,7 @@ SystemCallArchitectures=native
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
 CapabilityBoundingSet=
 AmbientCapabilities=
-ReadWritePaths={{ garage__home }} {{ garage__metadata_dir }} {{ garage__data_dir }}{% if garage__metadata_snapshots_dir | length > 0 %} {{ garage__metadata_snapshots_dir }}{% endif %}
-
+ReadWritePaths={{ garage__writable_paths | join(" ") }}
 
 [Install]
 WantedBy=multi-user.target

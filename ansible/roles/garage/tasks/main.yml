@@ -100,6 +100,24 @@
           the replication factor or set garage__single_node: False.
       when: garage__single_node | bool
 
+    - name: Assert garage configuration matches the role parameters
+      ansible.builtin.assert:
+        that:
+          - garage__effective_configuration.metadata_dir | d('') | length > 0
+          - garage__effective_configuration.data_dir | d('') | length > 0
+          - garage__effective_configuration.replication_factor | d('') is number
+          - (garage__effective_configuration.replication_factor | d(0) | int)
+            == (garage__replication_factor | int)
+        quiet: True
+        fail_msg: >-
+          The Garage configuration needs metadata_dir and data_dir, and its
+          replication_factor ({{
+          garage__effective_configuration.replication_factor | d('unset') }})
+          must be a number equal to garage__replication_factor
+          ({{ garage__replication_factor }}), which the role uses in its
+          cluster checks. Set the replication factor only with
+          garage__replication_factor, as an integer.
+
     - name: Assert default-bucket bootstrap is used with single-node mode
       ansible.builtin.assert:
         that:
@@ -141,8 +159,7 @@
         owner: '{{ garage__user }}'
         group: '{{ garage__group }}'
         mode: '0750'
-      loop: '{{ [garage__home, garage__metadata_dir, garage__data_dir,
-                 garage__metadata_snapshots_dir] | select | list }}'
+      loop: '{{ garage__writable_paths }}'
 
     - name: Install garage binary
       ansible.builtin.include_tasks: 'install_binary.yml'

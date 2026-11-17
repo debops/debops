@@ -20,6 +20,104 @@ documentation and examples for them.
       :depth: 1
 
 
+.. _garage__ref_configuration:
+
+garage__configuration
+---------------------
+
+The ``garage__*_configuration`` variables define the contents of the
+:file:`/etc/garage.toml` configuration file. The role uses the
+:ref:`universal_configuration` system: the configuration is a list of YAML
+dictionaries, which are merged into one dictionary and converted to TOML.
+Any option from the `Garage configuration reference`__ can be set this way,
+including tables like ``[s3_api]`` and arrays like a ``data_dir`` with
+several disks. The generated file does not keep comments.
+
+.. __: https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/
+
+The default configuration is defined in the
+:envvar:`garage__default_configuration` variable. It uses the network and
+cluster parameters of the role, for example :envvar:`garage__s3_port` and
+:envvar:`garage__replication_factor`, which are also used by other roles
+in the playbook. Change these values with the role variables, not in the
+configuration lists. The role checks that ``replication_factor`` in the
+final configuration is equal to :envvar:`garage__replication_factor`.
+
+Syntax
+~~~~~~
+
+Each entry of the list is a YAML dictionary with specific parameters:
+
+``name``
+  Required. Name of the configuration entry, not used in the configuration
+  file. An entry with the same name as an earlier entry replaces it, together
+  with its whole ``config`` dictionary. Entries with different names are
+  merged.
+
+``config``
+  Required. YAML dictionary with Garage configuration options. The ``config``
+  dictionaries of all entries are merged recursively in the order of the
+  entries, so an entry can add options to a table defined by an earlier
+  entry. Lists are not merged, a later list replaces an earlier one.
+
+``state``
+  Optional. If not specified or ``present``, the entry is included in the
+  configuration file. If ``absent``, the entry is not included, which removes
+  an entry with the same name defined earlier. If ``ignore``, the entry is
+  not evaluated by the role.
+
+Examples
+~~~~~~~~
+
+Store object data on several disks, as shown in the upstream
+`real-world deployment guide`__. The entry replaces the default
+``data_dir`` entry; the role creates the listed directories and allows the
+daemon to write to them:
+
+.. __: https://garagehq.deuxfleurs.fr/documentation/cookbook/real-world/
+
+.. code-block:: yaml
+
+   garage__host_configuration:
+
+     - name: 'data_dir'
+       config:
+         data_dir:
+           - path: '/srv/garage/hdd1'
+             capacity: '2T'
+           - path: '/srv/garage/hdd2'
+             capacity: '4T'
+
+Add options to the existing tables, for example the public endpoint used
+in presigned URLs behind a reverse proxy and the index document of
+websites:
+
+.. code-block:: yaml
+
+   garage__configuration:
+
+     - name: 'public_endpoints'
+       config:
+         s3_api:
+           public_endpoint: 'https://s3.example.com'
+         s3_web:
+           index: 'index.html'
+
+Set top-level options which the role does not define, and turn off the
+automatic metadata snapshots:
+
+.. code-block:: yaml
+
+   garage__configuration:
+
+     - name: 'compression'
+       config:
+         compression_level: 2
+
+     - name: 'metadata_auto_snapshot_interval'
+       state: 'absent'
+
+
 .. _garage__ref_binary_source:
 
 Binary source

@@ -23,7 +23,9 @@ API.
 
 The ``debops.garage`` role installs Garage from the official static musl
 binary, writes :file:`/etc/garage.toml`, and manages a single
-:file:`garage.service` unit. There is one Garage instance per host.
+:file:`garage.service` unit. There is one Garage instance per host. The
+configuration file is generated from lists of options in the inventory,
+see :ref:`garage__ref_configuration`.
 
 .. __: https://garagehq.deuxfleurs.fr/
 

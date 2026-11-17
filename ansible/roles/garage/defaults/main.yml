@@ -249,8 +249,13 @@ garage__cluster_name: 'default'
 garage__domain: '{{ ansible_domain if (ansible_domain | d()) else ansible_fqdn }}'
                                                                    # ]]]
                                                                    # ]]]
-# garage.toml parameters [[[
-# --------------------------
+# Network and cluster parameters [[[
+# ----------------------------------
+
+# The variables below are used in the default Garage configuration defined
+# in :envvar:`garage__default_configuration`, but also by the role itself
+# and in the configuration of other roles (firewall, nginx,
+# :file:`/etc/services`). Change them here, not in the configuration lists.
 
 # .. envvar:: garage__replication_factor [[[
 #
@@ -258,60 +263,9 @@ garage__domain: '{{ ansible_domain if (ansible_domain | d()) else ansible_fqdn }
 # every host in :envvar:`garage__cluster_hosts`; the role asserts this.
 # Default ``1`` is required for the ``--single-node`` bootstrap used by a
 # one-host install. Do not use ``1`` for anything other than a single-node
-# or test deployment.
+# or test deployment. Set the replication factor only with this variable;
+# the role checks that the generated configuration uses the same value.
 garage__replication_factor: 1
-
-                                                                   # ]]]
-# .. envvar:: garage__consistency_mode [[[
-#
-# Read/write quorum behaviour. ``consistent`` is the upstream default and
-# preserves read-after-write semantics. See the Garage configuration
-# reference for ``degraded`` and ``dangerous``.
-garage__consistency_mode: 'consistent'
-
-                                                                   # ]]]
-# .. envvar:: garage__db_engine [[[
-#
-# Metadata database engine. ``lmdb`` is the upstream default and the
-# recommended choice.
-garage__db_engine: 'lmdb'
-
-                                                                   # ]]]
-# .. envvar:: garage__metadata_dir [[[
-#
-# Directory for Garage metadata (node id, layout, bucket and object
-# index). Prefer a fast SSD.
-garage__metadata_dir: '{{ garage__home }}/meta'
-
-                                                                   # ]]]
-# .. envvar:: garage__data_dir [[[
-#
-# Directory for object data blocks. Can live on HDD.
-garage__data_dir: '{{ garage__home }}/data'
-
-                                                                   # ]]]
-# .. envvar:: garage__metadata_snapshots_dir [[[
-#
-# Directory for metadata snapshots created by
-# :command:`garage meta snapshot` and by
-# :envvar:`garage__metadata_auto_snapshot_interval`. Empty string leaves
-# the upstream default (``snapshots/`` under
-# :envvar:`garage__metadata_dir`).
-garage__metadata_snapshots_dir: ''
-
-                                                                   # ]]]
-# .. envvar:: garage__metadata_auto_snapshot_interval [[[
-#
-# How often Garage snapshots the metadata database. Upstream recommends a
-# non-empty value with LMDB because an unclean shutdown can corrupt the
-# database. Set to an empty string to disable automatic snapshots.
-garage__metadata_auto_snapshot_interval: '6h'
-
-                                                                   # ]]]
-# .. envvar:: garage__s3_region [[[
-#
-# S3 region name advertised by the API. Clients must send the same value.
-garage__s3_region: 'garage'
 
                                                                    # ]]]
 # .. envvar:: garage__s3_root_domain [[[
@@ -349,8 +303,10 @@ garage__web_port: 3902
                                                                    # ]]]
 # .. envvar:: garage__admin_port [[[
 #
-# TCP port of the admin API (``/health``, ``/metrics``, layout). Bound to
-# loopback by default.
+# TCP port of the admin API (``/health``, ``/metrics``, layout). The admin
+# API listens on loopback; ``/metrics`` can be scraped by a metrics agent
+# running on the same host, using the token from
+# :envvar:`garage__metrics_token`.
 garage__admin_port: 3903
 
                                                                    # ]]]
@@ -373,13 +329,6 @@ garage__s3_bind_addr: '{{ "127.0.0.1"
 garage__rpc_bind_addr: '[::]:{{ garage__rpc_port }}'
 
                                                                    # ]]]
-# .. envvar:: garage__rpc_public_addr [[[
-#
-# Address this node advertises to the rest of the cluster. Defaults to the
-# host's primary IPv4 address.
-garage__rpc_public_addr: '{{ ansible_default_ipv4.address | d("127.0.0.1") }}:{{ garage__rpc_port }}'
-
-                                                                   # ]]]
 # .. envvar:: garage__web_bind_addr [[[
 #
 # Listen address of the website endpoint. Loopback, where nginx connects
@@ -388,33 +337,129 @@ garage__rpc_public_addr: '{{ ansible_default_ipv4.address | d("127.0.0.1") }}:{{
 garage__web_bind_addr: '{{ "127.0.0.1"
                            if (garage__web_allow | length == 0)
                            else "[::]" }}:{{ garage__web_port }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# garage.toml configuration [[[
+# -----------------------------
+
+# The variables below define the contents of the :file:`/etc/garage.toml`
+# configuration file, using the :ref:`universal_configuration` system.
+# See :ref:`garage__ref_configuration` for more details.
+
+# .. envvar:: garage__default_configuration [[[
+#
+# The default Garage configuration defined by the role. Each option, or
+# a group of related options, is a separate entry, so that it can be
+# replaced or removed by name without repeating the other options.
+garage__default_configuration:
+
+  - name: 'replication'
+    config:
+      replication_factor: '{{ garage__replication_factor }}'
+      consistency_mode: 'consistent'
+
+  - name: 'metadata_dir'
+    config:
+      metadata_dir: '{{ garage__home + "/meta" }}'
+
+  - name: 'data_dir'
+    config:
+      data_dir: '{{ garage__home + "/data" }}'
+
+  - name: 'db_engine'
+    config:
+      db_engine: 'lmdb'
+
+  - name: 'metadata_auto_snapshot_interval'
+    config:
+      metadata_auto_snapshot_interval: '6h'
+
+  - name: 'rpc'
+    config:
+      rpc_secret_file: '{{ garage__secret_dir + "/rpc_secret" }}'
+      rpc_bind_addr: '{{ garage__rpc_bind_addr }}'
+      rpc_public_addr: '{{ (ansible_default_ipv4.address | d("127.0.0.1"))
+                           + ":" + garage__rpc_port | string }}'
+
+  - name: 's3_api'
+    config:
+      s3_api:
+        api_bind_addr: '{{ garage__s3_bind_addr }}'
+        s3_region: 'garage'
+        root_domain: '{{ garage__s3_root_domain }}'
+
+  - name: 's3_web'
+    config:
+      s3_web:
+        bind_addr: '{{ garage__web_bind_addr }}'
+        root_domain: '{{ garage__web_root_domain }}'
+
+  - name: 'admin'
+    config:
+      admin:
+        api_bind_addr: '{{ "127.0.0.1:" + garage__admin_port | string }}'
+        admin_token_file: '{{ garage__secret_dir + "/admin_token" }}'
+        metrics_token_file: '{{ garage__secret_dir + "/metrics_token" }}'
 
                                                                    # ]]]
-# .. envvar:: garage__admin_bind_addr [[[
+# .. envvar:: garage__configuration [[[
 #
-# Listen address of the admin API. Loopback only; ``/metrics`` can be
-# scraped by a metrics agent running on the same host, using the token from
-# :envvar:`garage__metrics_token`.
-garage__admin_bind_addr: '127.0.0.1:{{ garage__admin_port }}'
+# Garage configuration defined on all hosts in the Ansible inventory.
+garage__configuration: []
 
                                                                    # ]]]
-# .. envvar:: garage__bootstrap_peers [[[
+# .. envvar:: garage__group_configuration [[[
 #
-# List of ``nodeid@host:port`` strings written to ``bootstrap_peers``.
-# Empty by default; a single-node install does not need any. Multi-node
-# clusters currently connect peers by hand, see
-# :ref:`garage__ref_getting_started`.
-garage__bootstrap_peers: []
+# Garage configuration defined on hosts in a specific Ansible inventory
+# group.
+garage__group_configuration: []
 
                                                                    # ]]]
-# .. envvar:: garage__configuration_extra [[[
+# .. envvar:: garage__host_configuration [[[
 #
-# Optional extra TOML added to :file:`/etc/garage.toml` before the first
-# table, so that top-level keys work. Use this for rarely needed keys
-# (``compression_level``, ``lmdb_map_size``, Consul discovery, ...)
-# without forking the template. Tables added here must come after the
-# top-level keys.
-garage__configuration_extra: ''
+# Garage configuration defined on specific hosts in the Ansible inventory.
+garage__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: garage__combined_configuration [[[
+#
+# Variable which combines all of the Garage configuration lists and is used
+# in role tasks and templates. This list defines the order in which the
+# entries from different variables are processed.
+garage__combined_configuration: '{{ garage__default_configuration
+                                    + garage__configuration
+                                    + garage__group_configuration
+                                    + garage__host_configuration }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__effective_configuration [[[
+#
+# The Garage configuration merged from :envvar:`garage__combined_configuration`
+# and written to :file:`/etc/garage.toml`. The role also reads the data and
+# metadata directories and the replication factor from it. Do not change this
+# variable, use the configuration lists instead.
+garage__effective_configuration: '{{ {} | combine(garage__combined_configuration
+                                                   | debops.debops.parse_kv_config
+                                                   | rejectattr("state", "in", ["absent", "init", "ignore"])
+                                                   | selectattr("config", "defined")
+                                                   | map(attribute="config") | list,
+                                                   recursive=True) }}'
+
+                                                                   # ]]]
+# .. envvar:: garage__writable_paths [[[
+#
+# Directories created by the role and writable by :file:`garage.service`:
+# the home directory, the metadata directory, the metadata snapshot
+# directory if it is set, and every data directory from ``data_dir``, also
+# when it is a list of disks.
+garage__writable_paths: '{{ ([garage__home,
+                              garage__effective_configuration.metadata_dir | d(""),
+                              garage__effective_configuration.metadata_snapshots_dir | d("")]
+                             + ([garage__effective_configuration.data_dir | d("")]
+                                if (garage__effective_configuration.data_dir | d("") is string)
+                                else (garage__effective_configuration.data_dir
+                                      | map(attribute="path") | list)))
+                            | select | unique | list }}'
                                                                    # ]]]
                                                                    # ]]]
 # Single-node bootstrap [[[

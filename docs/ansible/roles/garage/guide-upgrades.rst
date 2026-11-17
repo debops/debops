@@ -121,7 +121,7 @@ version next to the new one:
 
    Garage keeps only the two most recent snapshots, and a snapshot does
    not include the cluster layout. Copy the new snapshot, together with
-   the :file:`cluster_layout` file from :envvar:`garage__metadata_dir`,
+   the :file:`cluster_layout` file from the metadata directory,
    off every node until the upgrade is confirmed.
 
 2. Stop :file:`garage.service` on every node of the cluster being
