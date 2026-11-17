@@ -661,6 +661,23 @@ Actions:
                                  'provider set of a new view comes from '
                                  "the 'tofu.default_providers' "
                                  'configuration option')
+        parser.add_argument('-m', '--module', type=str, action='append',
+                            default=None,
+                            help='the OpenTofu module which the view '
+                                 'instantiates, as a registry source '
+                                 "'namespace/name' or "
+                                 "'hostname/namespace/name', optionally "
+                                 "with a '//subdir' suffix and a version "
+                                 'pin separated by "="; repeatable, '
+                                 'recorded in the view configuration '
+                                 'drop-in when the view is created, '
+                                 'with the local module name derived '
+                                 'from the source address; without this '
+                                 'option, the module set of a new view '
+                                 "comes from the 'tofu.default_modules' "
+                                 'configuration option, which also '
+                                 'carries the inputs of the module '
+                                 'instances')
         parser.add_argument('--eval', default=False,
                             help='print the OpenTofu command and exit',
                             action='store_true')

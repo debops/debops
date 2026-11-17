@@ -109,6 +109,34 @@ operations = []
 # 'debops tofu update' command reconciles into the generated files.
 default_providers = []
 
+# The OpenTofu modules which the tofu views of the project
+# instantiate. The table is written into the generated 'modules.tf'
+# file of a view when it is created; the '--module' options of the
+# 'debops tofu init' command replace it for one invocation. The table
+# keys are the local module names which the generated file
+# instantiates; each entry carries the module source address in the
+# OpenTofu registry notation -- 'namespace/name[/submodule]', or
+# 'hostname/...' for modules outside the public registry -- an
+# optional version pin and the inputs of the module instance:
+#
+#     [tofu.default_modules.consul]
+#     source = "hashicorp/consul/aws"
+#     version = "5.0.0"
+#
+#     [tofu.default_modules.consul.inputs]
+#     datacenter = "dc1"
+#
+# The input values are configuration values: the literals render as
+# the HCL literals of the generated file, and strings which carry the
+# 'hcl:' prefix carry raw HCL expressions which the file emits
+# verbatim -- 'image = "hcl:var.image_name"' instantiates the module
+# with 'image = var.image_name'. An empty table creates views without
+# modules. The option is consulted only when a view is created: the
+# module set of an existing view is changed by editing the view's
+# configuration drop-in, which the 'debops tofu update' command
+# reconciles into the generated files.
+default_modules = {}
+
 # How many plan files the DebOps flows keep in the state directory. The
 # plan files which DebOps itself saves are pruned to the newest ones;
 # plan files which the user saves with the '-out' option are never

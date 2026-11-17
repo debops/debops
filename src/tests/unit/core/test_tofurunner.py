@@ -49,7 +49,8 @@ def tofu_project(stub_project):
         raw = {"binaries": {"tofu": "tofu"},
                "tofu": {"state_path": "secret/terraform.tfstate",
                         "operations": [], "plan_retention": 3,
-                        "default_providers": []}}
+                        "default_providers": [],
+                        "default_modules": {}}}
         if "raw" in kwargs:
             for key, value in kwargs.pop("raw").items():
                 if key in raw and isinstance(raw[key], dict):
@@ -862,3 +863,306 @@ def test_eval_never_creates_the_view(tofu_project):
 
     assert 'tofu plan' in command
     assert not os.path.exists(view_dir)
+
+
+def test_modules_come_from_the_configuration(tofu_project,
+                                             stub_tofu_subprocess):
+    """The 'tofu.default_modules' option is the default module set of
+    new views, recorded in the view's configuration drop-in."""
+    project = tofu_project(project_type="modern",
+                           raw={"tofu": {"default_modules": {
+                               "consul": {
+                                   "source": "hashicorp/consul/aws"}}}})
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    TofuRunner(project, ["plan"]).execute()
+
+    modules_tf = open(os.path.join(view_dir, "modules.tf")).read()
+    assert 'module "consul" {' in modules_tf
+    assert 'source = "hashicorp/consul/aws"' in modules_tf
+
+    drop_in = os.path.join(project.path, ".debops", "conf.d",
+                           "view-" + project.view + "-tofu.toml")
+    content = open(drop_in).read()
+    assert 'tofu.modules."consul"' in content
+    assert "source = 'hashicorp/consul/aws'" in content
+
+
+def test_module_options_replace_the_configuration(tofu_project,
+                                                  stub_tofu_subprocess):
+    """The '--module' options of the command line replace the
+    configured default module set for one invocation."""
+    project = tofu_project(project_type="modern",
+                           raw={"tofu": {"default_modules": {
+                               "consul": {
+                                   "source": "hashicorp/consul/aws"}}}})
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    TofuRunner(project, ["plan"], modules=["terraform-aws-modules/"
+                                           "vpc/aws=5.16.0"]
+               ).execute()
+
+    modules_tf = open(os.path.join(view_dir, "modules.tf")).read()
+    assert 'module "vpc" {' in modules_tf
+    assert 'source  = "terraform-aws-modules/vpc/aws"' in modules_tf
+    assert 'version = "5.16.0"' in modules_tf
+    assert 'consul' not in modules_tf
+
+    drop_in = os.path.join(project.path, ".debops", "conf.d",
+                           "view-" + project.view + "-tofu.toml")
+    content = open(drop_in).read()
+    assert 'tofu.modules."vpc"' in content
+    assert 'consul' not in content
+
+
+def test_moduleless_view_writes_no_modules_file(tofu_project,
+                                                stub_tofu_subprocess):
+    """An empty module set writes no 'modules.tf' file: the view is
+    moduleless by default."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    TofuRunner(project, ["plan"]).execute()
+
+    assert not os.path.exists(os.path.join(view_dir, "modules.tf"))
+
+
+def test_module_version_pin_is_written(tofu_project,
+                                       stub_tofu_subprocess):
+    """A '--module' argument with a version pin carries the pin into
+    the generated module block."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    TofuRunner(project, ["plan"], modules=["hashicorp/consul/aws=5.0.0"]
+               ).execute()
+
+    modules_tf = open(os.path.join(view_dir, "modules.tf")).read()
+    assert 'source  = "hashicorp/consul/aws"' in modules_tf
+    assert 'version = "5.0.0"' in modules_tf
+
+
+def test_module_local_name_is_derived_from_the_source(
+        tofu_project, stub_tofu_subprocess):
+    """The '--module' arguments derive the local module name from the
+    source address: the package name of the registry path."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    TofuRunner(project, ["plan"],
+               modules=["hashicorp/consul/aws",
+                        "git.example.com/ns/name//subdir"]).execute()
+
+    modules_tf = open(os.path.join(view_dir, "modules.tf")).read()
+    assert 'module "consul" {' in modules_tf
+    assert 'module "name" {' in modules_tf
+    assert 'source = "git.example.com/ns/name//subdir"' in modules_tf
+
+
+def test_module_collision_is_refused(tofu_project):
+    """Two '--module' arguments which derive the same local name are a
+    mistake: OpenTofu refuses the same collision."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    with pytest.raises(ValueError, match='more than one module source'):
+        TofuRunner(project, ["plan"],
+                   modules=["hashicorp/consul/aws",
+                            "hashicorp/consul/other"]).execute()
+
+
+def test_module_inputs_render_from_the_recorded_table(
+        tofu_project, stub_tofu_subprocess):
+    """The inputs of a recorded module render as the HCL attributes of
+    the generated module block."""
+    project = tofu_project(project_type="modern",
+                           raw={"tofu": {"default_modules": {
+                               "consul": {
+                                   "source": "hashicorp/consul/aws",
+                                   "version": "5.0.0",
+                                   "inputs": {
+                                       "datacenter": "dc1",
+                                       "server_count": 3,
+                                       "replicas": True,
+                                       "cidrs": ["10.0.1.0/24",
+                                                 "10.0.2.0/24"],
+                                       "net": {"host": "x",
+                                               "port": 8300}}}}}})
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    TofuRunner(project, ["plan"]).execute()
+
+    modules_tf = open(os.path.join(view_dir, "modules.tf")).read()
+    assert 'datacenter   = "dc1"' in modules_tf
+    assert 'server_count = 3' in modules_tf
+    assert 'replicas     = true' in modules_tf
+    assert 'cidrs        = ["10.0.1.0/24", "10.0.2.0/24"]' in modules_tf
+    assert 'net          = { host = "x", port = 8300 }' in modules_tf
+
+
+def test_module_inputs_render_raw_hcl_expressions(
+        tofu_project, stub_tofu_subprocess):
+    """A string input which carries the 'hcl:' prefix carries a raw
+    HCL expression which the generated block emits verbatim; the
+    prefix is consumed once, and a doubled prefix is an escaped
+    literal."""
+    project = tofu_project(project_type="modern",
+                           raw={"tofu": {"default_modules": {
+                               "consul": {
+                                   "source": "hashicorp/consul/aws",
+                                   "inputs": {
+                                       "image": "hcl:var.image_name",
+                                       "cidrs": "hcl:module.network.cidrs",
+                                       "count": "hcl:var.autoscaling "
+                                                '? var.max_count '
+                                                ": var.min_count",
+                                       "nothing": "hcl:null",
+                                       "escaped": "hcl:hcl:hello",
+                                       "text": "hcl:hello"}}}}})
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    TofuRunner(project, ["plan"]).execute()
+
+    modules_tf = open(os.path.join(view_dir, "modules.tf")).read()
+    assert 'image   = var.image_name' in modules_tf
+    assert 'cidrs   = module.network.cidrs' in modules_tf
+    assert ('count   = var.autoscaling ? var.max_count : '
+            'var.min_count' in modules_tf)
+    assert 'nothing = null' in modules_tf
+    assert 'escaped = "hcl:hello"' in modules_tf
+    assert 'text    = hello' in modules_tf
+
+
+def test_module_options_refused_on_an_existing_view(tofu_project):
+    """The '--module' options apply when a view is created: an
+    existing view's module set is recorded in its configuration
+    drop-in, which the user owns."""
+    project = tofu_project(project_type="modern")
+
+    with pytest.raises(ValueError,
+                       match="The '--module' options apply when a view "
+                             'is created'):
+        TofuRunner(project, ["plan"], modules=["hashicorp/consul/aws"])
+
+
+def test_modules_follow_the_recorded_set(tofu_project,
+                                         stub_tofu_subprocess):
+    """An existing view's generated 'modules.tf' follows the
+    'views.<view>.tofu.modules' option of its configuration drop-in,
+    reconciled by the 'update' operation."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    drop_in = os.path.join(project.path, ".debops", "conf.d",
+                           "view-" + project.view + "-tofu.toml")
+    shutil.rmtree(view_dir)
+
+    # A view created without modules has no generated file
+    TofuRunner(project, ["plan"]).execute()
+    assert not os.path.exists(os.path.join(view_dir, "modules.tf"))
+
+    # The user edits the drop-in to record the module set; the
+    # reconcile creates the generated file from it
+    with open(drop_in, "w") as handle:
+        handle.write('[views."{}"].tofu\nproviders = []\n'
+                     '\n[views."{}".tofu.modules."consul"]\n'
+                     "source = 'hashicorp/consul/aws'\n"
+                     .format(project.view, project.view))
+    project.config.merge({'views': {project.view: {'tofu': {
+        'providers': [],
+        'modules': {'consul': {'source': 'hashicorp/consul/aws'}}}}}})
+    changes = reconcile_view(project, project.view)
+    assert [change['action'] for change in changes] == ['create']
+
+    modules_tf = open(os.path.join(view_dir, "modules.tf")).read()
+    assert 'module "consul" {' in modules_tf
+
+    # The same set keeps the file as it is
+    before = os.path.getmtime(os.path.join(view_dir, "modules.tf"))
+    changes = reconcile_view(project, project.view)
+    assert changes == []
+    assert os.path.getmtime(os.path.join(view_dir, "modules.tf")) == before
+
+    # An empty recorded set removes the generated file
+    with open(drop_in, "w") as handle:
+        handle.write('[views."{}"].tofu\nproviders = []\n'
+                     .format(project.view))
+    try:
+        del project.config.raw['views'][project.view]['tofu']['modules']
+    except KeyError:
+        pass
+    project.config.merge({'views': {project.view: {'tofu': {
+        'providers': [],
+        'modules': {}}}}})
+    changes = reconcile_view(project, project.view)
+    assert [change['action'] for change in changes] == ['remove']
+    assert not os.path.exists(os.path.join(view_dir, "modules.tf"))
+
+
+def test_reconcile_refuses_a_user_owned_modules_file(tofu_project):
+    """A 'modules.tf' file without the DebOps marker is user-owned:
+    the reconcile refuses to touch it unless '--force' is given."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    modules_path = os.path.join(view_dir, "modules.tf")
+    with open(modules_path, "w") as handle:
+        handle.write("# The user's own modules\n")
+    write_drop_in(project, [])
+    project.config.merge({'views': {project.view: {'tofu': {
+        'modules': {'consul': {'source': 'hashicorp/consul/aws'}}}}}})
+
+    with pytest.raises(ValueError, match='was not generated by DebOps'):
+        reconcile_view(project, project.view)
+    assert open(modules_path).read() == "# The user's own modules\n"
+
+
+def test_reconcile_force_replaces_a_user_owned_modules_file(
+        tofu_project):
+    """'--force' hands the management of a user-owned 'modules.tf'
+    back to DebOps."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    modules_path = os.path.join(view_dir, "modules.tf")
+    with open(modules_path, "w") as handle:
+        handle.write("# The user's own modules\n")
+    write_drop_in(project, [])
+    project.config.merge({'views': {project.view: {'tofu': {
+        'modules': {'consul': {'source': 'hashicorp/consul/aws'}}}}}})
+
+    changes = reconcile_view(project, project.view, force=True)
+
+    assert [change['action'] for change in changes] == ['update']
+    assert 'module "consul" {' in open(modules_path).read()
+
+
+def test_generated_modules_file_is_fmt_clean(tofu_project,
+                                             stub_tofu_subprocess):
+    """The generated 'modules.tf' is fmt-clean: running 'tofu fmt' in
+    the view does not churn the generated file."""
+    project = tofu_project(project_type="modern",
+                           raw={"tofu": {"default_modules": {
+                               "consul": {
+                                   "source": "hashicorp/consul/aws",
+                                   "version": "5.0.0",
+                                   "inputs": {
+                                       "datacenter": "dc1",
+                                       "server_count": 3,
+                                       "image": "hcl:var.image_name"}}}}})
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    TofuRunner(project, ["plan"]).execute()
+
+    modules_tf = open(os.path.join(view_dir, "modules.tf")).read()
+    assert 'source  = "hashicorp/consul/aws"' in modules_tf
+    assert 'version = "5.0.0"' in modules_tf
+    assert 'datacenter   = "dc1"' in modules_tf
+    assert 'server_count = 3' in modules_tf
+    assert 'image        = var.image_name' in modules_tf

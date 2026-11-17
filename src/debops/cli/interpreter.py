@@ -326,7 +326,8 @@ class Interpreter(object):
             runner = TofuRunner(project, args.tofu_args, bell=args.bell,
                                 no_color=args.no_color,
                                 workspace=args.workspace,
-                                providers=args.provider)
+                                providers=args.provider,
+                                modules=args.module)
         except (NoDefaultViewException, ValueError,
                 FileNotFoundError) as errmsg:
             print_error(errmsg)
@@ -380,6 +381,14 @@ class Interpreter(object):
             print_error("The '--provider' options apply when a view is "
                         'created: run \'debops tofu init\' to create '
                         'the view with the provider set, or edit the '
+                        'view configuration drop-in to change the '
+                        'recorded set.')
+            sys.exit(2)
+
+        if args.module:
+            print_error("The '--module' options apply when a view is "
+                        'created: run \'debops tofu init\' to create '
+                        'the view with the module set, or edit the '
                         'view configuration drop-in to change the '
                         'recorded set.')
             sys.exit(2)

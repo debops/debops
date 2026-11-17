@@ -17,6 +17,7 @@ import difflib
 import logging
 import os
 import pkgutil
+import re
 
 import jinja2
 
@@ -27,6 +28,10 @@ logger = logging.getLogger(__name__)
 # The path of the templates relative to the DebOps package data
 TEMPLATE_ROOT = os.path.join('_data', 'templates', 'projectdir', 'modern',
                              'tofu')
+
+# The shape of a bare TOML key: a key which matches it is emitted
+# unquoted in the generated drop-ins
+_TOML_BARE_KEY = re.compile(r'[A-Za-z0-9_-]+\Z')
 
 # The marker in the generated files which separates the files DebOps
 # owns from the files the user wrote: the reconcile touches only the
@@ -56,22 +61,24 @@ def view_drop_in_path(project, view):
                         'view-' + filename_view + '-tofu.toml')
 
 
-def write_view_drop_in(project, view, providers):
-    """Record the provider set of a view in its configuration drop-in.
+def write_view_drop_in(project, view, providers, modules=None):
+    """Record the dependency set of a view in its configuration drop-in.
 
-    The drop-in declares the 'views.<view>.tofu.providers' option,
-    which drives the generated 'providers.tf' file of the view. The
-    drop-in is written once, when the view is created: it is the
-    user's file from then on, and the provider set is changed by
-    editing it. The option is merged into the live configuration of
-    the project, so that the same process reads the recorded set
-    without reloading it; a fresh process reads it through the
-    ordinary configuration loading.
+    The drop-in declares the 'views.<view>.tofu.providers' and
+    'views.<view>.tofu.modules' options, which drive the generated
+    'providers.tf' and 'modules.tf' files of the view. The drop-in is
+    written once, when the view is created: it is the user's file from
+    then on, and the dependency set is changed by editing it. The
+    options are merged into the live configuration of the project, so
+    that the same process reads the recorded sets without reloading
+    it; a fresh process reads them through the ordinary configuration
+    loading.
 
-    The option is replace-semantics: the recorded set is the whole
-    provider list, not an addition to it. The configuration merge
-    extends lists by design, so the recorded option is cleared from
-    the live tree first and the merge lands as the replacement.
+    The options are replace-semantics: the recorded sets are the whole
+    provider list and the whole module table, not an addition to them.
+    The configuration merge extends lists and merges tables by design,
+    so the recorded options are cleared from the live tree first and
+    the merge lands as the replacement.
 
     Returns True when the drop-in was written, False when it already
     existed and was kept.
@@ -80,7 +87,9 @@ def write_view_drop_in(project, view, providers):
     written = write_file(
         drop_in,
         render_template('view-tofu.toml.j2', view_name=view,
-                        providers=providers or []) + '\n',
+                        providers=providers or [],
+                        modules=render_drop_in_modules(modules or {}))
+        + '\n',
         project=project.path)
     if not written:
         return False
@@ -88,10 +97,107 @@ def write_view_drop_in(project, view, providers):
         del project.config.raw['views'][view]['tofu']['providers']
     except (KeyError, TypeError):
         pass
-    project.config.merge({'views': {view: {'tofu': {'providers':
-                                                    providers or []}}}},
-                         scope='project', origin=drop_in)
+    try:
+        del project.config.raw['views'][view]['tofu']['modules']
+    except (KeyError, TypeError):
+        pass
+    project.config.merge({'views': {view: {'tofu': {
+        'providers': providers or [],
+        'modules': modules or {}}}}},
+        scope='project', origin=drop_in)
     return True
+
+
+def _toml_string(value):
+    """Render a Python string as a TOML string literal.
+
+    The escapes cover the characters which a basic TOML string cannot
+    carry literally: the backslash, the quote and the control
+    characters, which escape as their named escapes or as the
+    '\\uXXXX' sequences.
+    """
+    escaped = []
+    for char in value:
+        if char == '\\':
+            escaped.append('\\\\')
+        elif char == '"':
+            escaped.append('\\"')
+        elif char == '\b':
+            escaped.append('\\b')
+        elif char == '\t':
+            escaped.append('\\t')
+        elif char == '\n':
+            escaped.append('\\n')
+        elif char == '\f':
+            escaped.append('\\f')
+        elif char == '\r':
+            escaped.append('\\r')
+        elif ord(char) < 0x20 or ord(char) == 0x7f:
+            escaped.append('\\u{:04x}'.format(ord(char)))
+        else:
+            escaped.append(char)
+    return '"' + ''.join(escaped) + '"'
+
+
+def _toml_key(key):
+    """Render a configuration table key as a TOML table key."""
+    if _TOML_BARE_KEY.match(key):
+        return key
+    return _toml_string(key)
+
+
+def _toml_value(value):
+    """Render a configuration value as a TOML value.
+
+    The Python literals render as their TOML equivalents: strings,
+    numbers, booleans, lists as TOML arrays and tables as TOML inline
+    tables. TOML has no null: the Python None is refused, and the
+    values which a consumer cannot express through the configuration
+    are carried through its own conventions.
+    """
+    if isinstance(value, str):
+        return _toml_string(value)
+    if value is True:
+        return 'true'
+    if value is False:
+        return 'false'
+    if value is None:
+        raise ValueError('TOML has no null: the value cannot be '
+                         'recorded in the configuration')
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        if value != value or value in (float('inf'), float('-inf')):
+            raise ValueError('The value {!r} is not a finite number '
+                             'and has no TOML equivalent'.format(value))
+        return repr(value)
+    if isinstance(value, list):
+        return '[ ' + ', '.join(_toml_value(item) for item in value) + ' ]'
+    if isinstance(value, dict):
+        if not value:
+            return '{}'
+        return '{ ' + ', '.join(
+            '{} = {}'.format(_toml_key(key), _toml_value(val))
+            for key, val in value.items()) + ' }'
+    raise ValueError('The value {!r} of type {!r} has no TOML '
+                     'equivalent'.format(value, type(value).__name__))
+
+
+def render_drop_in_modules(modules):
+    """Render the recorded module table of a drop-in.
+
+    The table keys are the local module names; each entry carries the
+    source address, the version pin and the inputs of the module
+    instance, which the drop-in template renders as the TOML tables
+    of the module.
+    """
+    return [{'name': name,
+             'source': spec.get('source', ''),
+             'version': spec.get('version', ''),
+             'inputs_toml': '\n'.join(
+                 '{} = {}'.format(_toml_key(key), _toml_value(value))
+                 for key, value in (spec.get('inputs') or {}).items())}
+            for name, spec in modules.items()]
 
 
 def _unified_diff(old_content, new_content, label):
