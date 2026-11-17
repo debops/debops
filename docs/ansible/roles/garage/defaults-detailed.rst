@@ -213,5 +213,10 @@ reach Garage intact.
 
 Website hosting is a separate server, off by default. Set
 :envvar:`garage__nginx_web_enabled` to ``True`` to publish
-``*.web.<domain>``. Without nginx, the website endpoint is reachable
-only from the addresses listed in :envvar:`garage__web_allow`.
+``*.web.<domain>``.
+
+Without nginx, the S3 API and the website endpoint listen on loopback
+and are reachable from other hosts only from the addresses listed in
+:envvar:`garage__s3_allow` and :envvar:`garage__web_allow`. Both
+endpoints then use plain HTTP, so list only the clients that need direct
+access, or ``0.0.0.0/0`` and ``::/0`` for everyone.

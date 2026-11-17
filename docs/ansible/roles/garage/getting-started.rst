@@ -170,10 +170,11 @@ Dependent role usage
   ``s3.<domain>``.
 
 - :ref:`debops.ferm` opens the RPC port (3901) to the addresses listed
-  in :envvar:`garage__rpc_allow`. The S3 port stays closed while nginx
-  is enabled and :envvar:`garage__s3_allow` is empty. The website port
-  is opened only for the addresses in :envvar:`garage__web_allow`. The
-  admin port (3903) is bound to loopback.
+  in :envvar:`garage__rpc_allow`. The S3 and website ports are opened
+  only for the addresses in :envvar:`garage__s3_allow` and
+  :envvar:`garage__web_allow`, also when nginx is disabled, so that
+  plain HTTP access to Garage is always a deliberate choice. The admin
+  port (3903) is bound to loopback.
 
 - :ref:`debops.etc_services` registers the four Garage TCP ports.
 

@@ -312,13 +312,13 @@ garage__admin_port: 3903
                                                                    # ]]]
 # .. envvar:: garage__s3_bind_addr [[[
 #
-# Listen address of the S3 API. Loopback when nginx is enabled so that
-# TLS terminates on the reverse proxy; the dual-stack any-address ``[::]``
-# otherwise, or when :envvar:`garage__s3_allow` grants direct access. On
-# a host without IPv6, set an IPv4 address here and in
-# :envvar:`garage__rpc_bind_addr`.
+# Listen address of the S3 API. Loopback, where nginx connects to it, until
+# :envvar:`garage__s3_allow` grants direct access; then the dual-stack
+# any-address ``[::]``. Without nginx and without the allow list, the S3 API
+# is available only on the host itself. On a host without IPv6, set an IPv4
+# address here and in :envvar:`garage__rpc_bind_addr`.
 garage__s3_bind_addr: '{{ "127.0.0.1"
-                          if ((garage__nginx_enabled | bool) and (garage__s3_allow | length == 0))
+                          if (garage__s3_allow | length == 0)
                           else "[::]" }}:{{ garage__s3_port }}'
 
                                                                    # ]]]
@@ -565,7 +565,9 @@ garage__metrics_token: '{{ lookup("password",
 # .. envvar:: garage__nginx_enabled [[[
 #
 # When ``True``, the role configures :ref:`debops.nginx` as a TLS reverse
-# proxy for the S3 API and binds the S3 listener to loopback.
+# proxy for the S3 API. Disabling nginx does not open the S3 port in the
+# firewall; direct access, without TLS, needs the clients listed in
+# :envvar:`garage__s3_allow`.
 garage__nginx_enabled: True
 
                                                                    # ]]]
@@ -594,20 +596,20 @@ garage__nginx_web_fqdn: 'web.{{ garage__domain }}'
 # .. envvar:: garage__s3_allow [[[
 #
 # Optional list of IP addresses or CIDR subnets allowed to reach the S3
-# port directly (bypassing nginx). Empty by default. Used by
-# :ref:`debops.ferm` when :envvar:`garage__nginx_enabled` is ``False``
-# or when this list is non-empty. A non-empty list also makes the S3 API
-# listen on all interfaces next to nginx.
+# port directly, without TLS and bypassing nginx. Empty by default. A
+# non-empty list opens the port in :ref:`debops.ferm` for these addresses
+# and makes the S3 API listen on all interfaces, also when
+# :envvar:`garage__nginx_enabled` is ``True``. To use the S3 API without
+# nginx, list the clients here (``0.0.0.0/0`` and ``::/0`` for everyone).
 garage__s3_allow: []
 
                                                                    # ]]]
 # .. envvar:: garage__web_allow [[[
 #
 # Optional list of IP addresses or CIDR subnets allowed to reach the website
-# port directly. Empty by default. Unlike the S3 port, the website port is
-# opened only by this list, also when :envvar:`garage__nginx_enabled` is
-# ``False``. To serve websites without nginx, list the clients here
-# (``0.0.0.0/0`` and ``::/0`` for everyone).
+# port directly. Empty by default. It works like :envvar:`garage__s3_allow`:
+# the website port is opened only by this list. To serve websites without
+# nginx, list the clients here (``0.0.0.0/0`` and ``::/0`` for everyone).
 garage__web_allow: []
 
                                                                    # ]]]
@@ -663,9 +665,9 @@ garage__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: garage__ferm__dependent_rules [[[
 #
-# Configuration for the :ref:`debops.ferm` Ansible role. The S3 port is
-# opened when nginx is disabled or :envvar:`garage__s3_allow` is set; the
-# website port only for the addresses in :envvar:`garage__web_allow`.
+# Configuration for the :ref:`debops.ferm` Ansible role. The S3 and website
+# ports are opened only for the addresses in :envvar:`garage__s3_allow` and
+# :envvar:`garage__web_allow`.
 garage__ferm__dependent_rules:
 
   - name: 'garage-rpc'
@@ -681,13 +683,12 @@ garage__ferm__dependent_rules:
     type: 'accept'
     dport: [ '{{ garage__s3_port | string }}' ]
     saddr: '{{ garage__s3_allow }}'
-    accept_any: '{{ not (garage__nginx_enabled | bool) }}'
+    accept_any: False
     weight: '50'
     by_role: 'debops.garage'
     rule_state: '{{ "present"
                     if (garage__deploy_state == "present" and
-                        (not (garage__nginx_enabled | bool) or
-                         garage__s3_allow | length > 0))
+                        garage__s3_allow | length > 0)
                     else "absent" }}'
 
   - name: 'garage-web'
