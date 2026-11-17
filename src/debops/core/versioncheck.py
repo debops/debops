@@ -66,9 +66,10 @@ class VersionCheck(object):
 
         if self._cache_is_fresh():
             cached = self._load_cache()
-            # Replay the cached result only if the installation method is
-            # unchanged; otherwise fall through and re-check the live source.
-            if cached and cached.get('source') == method:
+            # Replay the cached result only if the installation is
+            # unchanged since the cache was written; otherwise fall through
+            # and re-check the live source.
+            if cached and self._cache_matches_install(cached, method):
                 if cached.get('update_available'):
                     self._notify(cached.get('latest_version'),
                                  cached.get('source'))
@@ -176,6 +177,13 @@ class VersionCheck(object):
             return True
         except Exception:
             return False
+
+    def _head_ref(self):
+        """The commit the running installation was built from, or None."""
+        try:
+            return self._git_repo().commit('HEAD').hexsha
+        except Exception:
+            return None
 
     def _git_fetch(self, with_tags=False):
         timeout = self._settings.get('timeout', 5)
@@ -313,6 +321,21 @@ class VersionCheck(object):
         except Exception:
             return None
 
+    def _cache_matches_install(self, cached, method):
+        """Does the cached result describe the installation now running?
+
+        A cached decision is only valid for the installation it was
+        computed against. Replaying it after an upgrade or a pull could
+        claim that the current version is out of date; the live source is
+        re-checked instead until a new result is cached.
+        """
+        if method in ('git_master', 'git_stable', 'git_branch'):
+            head = self._head_ref()
+            if head is not None:
+                return cached.get('current_ref') == head
+            # Without the commit, fall back to the version string
+        return cached.get('current_version') == self._version
+
     def _cache_is_fresh(self):
         if not os.path.exists(self._cache_file):
             return False
@@ -337,6 +360,9 @@ class VersionCheck(object):
     def _save_cache(self, result):
         try:
             os.makedirs(self._cache_dir, mode=0o755, exist_ok=True)
+            result['current_version'] = self._version
+            if result.get('source', '').startswith('git'):
+                result['current_ref'] = self._head_ref()
             result['timestamp'] = time.time()
             with open(self._cache_file, 'w') as fp:
                 json.dump(result, fp, indent=2)
