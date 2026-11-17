@@ -481,7 +481,7 @@ garage__writable_paths: '{{ ([garage__home,
                                 if (garage__effective_configuration.data_dir | d("") is string)
                                 else (garage__effective_configuration.data_dir
                                       | map(attribute="path") | list)))
-                            | select | unique | list }}'
+                            | select | unique(case_sensitive=True) | list }}'
                                                                    # ]]]
                                                                    # ]]]
 # Single-node bootstrap [[[
