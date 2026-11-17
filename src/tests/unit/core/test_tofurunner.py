@@ -659,7 +659,7 @@ def test_provider_version_pin_is_written(tofu_project,
                ).execute()
 
     providers_tf = open(os.path.join(view_dir, "providers.tf")).read()
-    assert 'source = "lxc/incus"' in providers_tf
+    assert 'source  = "lxc/incus"' in providers_tf
     assert 'version = "1.2.1"' in providers_tf
 
 
