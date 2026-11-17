@@ -13,6 +13,8 @@ from ..core.ansible.ansiblerunner import AnsibleRunner
 from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
 from ..core.tofu.runner import TofuRunner
+from ..core.tofu.view import reconcile_view, view_drop_in_path, \
+    view_tofu_root
 from ..core import ssh
 from xdg.BaseDirectory import xdg_config_home
 import logging
@@ -313,6 +315,13 @@ class Interpreter(object):
             print_error(errmsg)
             sys.exit(1)
 
+        # The 'update' operation is a DebOps-level command: it
+        # reconciles the files DebOps owns in the view and runs 'tofu
+        # init' through the wrapper
+        if args.tofu_args[0] == 'update':
+            self._do_tofu_update(args, project)
+            return
+
         try:
             runner = TofuRunner(project, args.tofu_args, bell=args.bell,
                                 no_color=args.no_color,
@@ -323,11 +332,123 @@ class Interpreter(object):
             print_error(errmsg)
             sys.exit(1)
 
+        if args.eval:
+            self._note_pending_view_creation(project)
+            print(runner.eval())
+            sys.exit(0)
+
         try:
             sys.exit(runner.execute())
         except (ChildProcessError, ValueError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
+
+    def _note_pending_view_creation(self, project):
+        """Note on stderr when '--eval' would run before the view tree
+        is created: the printed command is the one which runs after the
+        template application."""
+        if os.path.exists(os.path.join(view_tofu_root(project,
+                                                      project.view),
+                                       'main.tf')):
+            return
+        logger.warning(
+            "The view tree of the view '{}' does not exist yet; the "
+            'printed command runs after the template is applied to '
+            'it.'.format(project.view),
+            extra={'allow': ['stderr', 'syslog']})
+
+    def _do_tofu_update(self, args, project):
+        """Run the 'debops tofu update' operation: reconcile the files
+        DebOps owns in the view, then run 'tofu init' through the
+        wrapper."""
+        diff = dry_run = force = False
+        for token in args.tofu_args[1:]:
+            if token == '--diff':
+                diff = True
+            elif token == '--dry-run':
+                dry_run = True
+            elif token == '--force':
+                force = True
+            elif token == '--':
+                continue
+            else:
+                print_error("Unknown option of the 'update' operation: "
+                            "'{}'; see 'debops tofu --help'".format(token))
+                sys.exit(2)
+
+        if args.provider:
+            print_error("The '--provider' options apply when a view is "
+                        'created: run \'debops tofu init\' to create '
+                        'the view with the provider set, or edit the '
+                        'view configuration drop-in to change the '
+                        'recorded set.')
+            sys.exit(2)
+
+        # The '--eval' option implies the dry-run behavior: the
+        # reconcile shows its changes and the printed command is the
+        # one which runs after them
+        try:
+            changes = reconcile_view(project, project.view, force=force,
+                                     dry_run=(dry_run or args.eval))
+        except ValueError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        self._render_tofu_changes(changes, diff=diff,
+                                  dry_run=(dry_run or args.eval),
+                                  color=(sys.stdout.isatty()
+                                         and not args.no_color))
+        if dry_run:
+            return
+
+        try:
+            runner = TofuRunner(project, ['init'], bell=args.bell,
+                                no_color=args.no_color,
+                                workspace=args.workspace)
+        except (NoDefaultViewException, ValueError,
+                FileNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        if args.eval:
+            self._note_pending_view_creation(project)
+            print(runner.eval())
+            sys.exit(0)
+
+        try:
+            sys.exit(runner.execute())
+        except (ChildProcessError, ValueError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+    def _render_tofu_changes(self, changes, diff=False, dry_run=False,
+                             color=False):
+        """Print the changes which the reconcile applies: the paths and
+        the actions, or the unified diffs with '--diff'."""
+        for change in changes:
+            if not diff:
+                action = change['action']
+                if dry_run:
+                    action = 'Would ' + action
+                else:
+                    action = action.capitalize()
+                print('{} {}'.format(action, change['path']))
+            else:
+                self._print_colored_diff(change['diff'], color=color)
+
+    @staticmethod
+    def _print_colored_diff(diff_text, color=False):
+        """Print a unified diff, coloring the '+' and '-' lines when
+        the output is a terminal."""
+        if not color:
+            print(diff_text, end='')
+            return
+        for line in diff_text.splitlines():
+            if line.startswith('+') and not line.startswith('+++'):
+                print('\033[32m' + line + '\033[0m')
+            elif line.startswith('-') and not line.startswith('---'):
+                print('\033[31m' + line + '\033[0m')
+            else:
+                print(line)
 
     def do_scp(self, args):
         try:
