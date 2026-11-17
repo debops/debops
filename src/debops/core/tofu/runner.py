@@ -1,0 +1,446 @@
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+"""The OpenTofu runner of the project views.
+
+The :class:`TofuRunner` executes :command:`tofu` operations in the
+context of a DebOps project directory: with the project's environment,
+the view's hook scripts around the operation and the view's secret
+store unlocked for the duration. The tool-agnostic machinery lives in
+:class:`debops.core.runner.Runner`; this module adds the tofu argument
+parsing, the runner-owned environment of the tofu subprocess, the
+state lock pre-check and the missing-state refusal.
+"""
+
+from ..runner import Runner
+from ..hooks import run_hooks
+from ..utils import path_key
+import dotenv
+import fcntl
+import logging
+import os
+import subprocess
+import sys
+
+from xdg.BaseDirectory import xdg_cache_home
+
+logger = logging.getLogger(__name__)
+
+# Flags of the tofu command line which take no value of their own.
+# Every other leading-dash token carries a value: either in the same
+# token ('-input=false', '-var=name=value') or in the token which
+# follows it.
+TOFU_FLAGS = [
+    '-auto-approve', '-compact-warnings', '-concise',
+    '-consolidate-errors', '-destroy', '-detailed-exitcode', '-dry-run',
+    '-force-copy', '-h', '--help', '-json', '-migrate-state',
+    '-no-color', '-reconfigure', '-refresh-only', '-upgrade'
+]
+
+# The operations which accept the '-input=false' option. The runner
+# adds it to the operations which could prompt for input, so that an
+# open stdin fails fast instead of blocking on a prompt; the other
+# operations do not accept the option at all.
+INPUT_OPERATIONS = frozenset([
+    'apply', 'console', 'destroy', 'import', 'init', 'plan', 'refresh'
+])
+
+# The operations which touch the state of the view: the runner checks
+# the presence of the state before them, because a missing state makes
+# OpenTofu silently re-initialize with a fresh lineage and plan to
+# create all infrastructure again. 'init' is exempt -- it is the way
+# out of the refusal -- and so are the operations which never read or
+# write state files.
+STATE_OPERATIONS = frozenset([
+    'apply', 'console', 'destroy', 'import', 'output', 'plan', 'refresh',
+    'show', 'state', 'taint', 'test', 'untaint'
+])
+
+# The operations which acquire the state lock for their duration: the
+# runner pre-checks the lock before them, so that a concurrent run
+# fails before a subprocess is spawned.
+LOCK_OPERATIONS = frozenset([
+    'apply', 'destroy', 'import', 'plan', 'refresh', 'state', 'taint',
+    'untaint'
+])
+
+# The operations which change infrastructure without applying a saved
+# plan file: the wrapper asks for their approval, because with
+# '-input=false' OpenTofu does not ask itself.
+DESTRUCTIVE_OPERATIONS = frozenset(['apply', 'destroy'])
+
+
+class TofuRunner(Runner):
+
+    def __init__(self, project, tofu_args, bell=False, no_color=False,
+                 workspace=None):
+        super().__init__(project, bell=bell, secrets_name='tofu')
+
+        self._view_root = self._view_tofu_root()
+        if not os.path.isdir(self._view_root):
+            raise FileNotFoundError(
+                'Cannot find the OpenTofu view directory at ' +
+                self._view_root +
+                ". A project gains its 'tofu/' tree when the view "
+                'template is applied to it.')
+        self._operation = tofu_args[0]
+        self._workspace = self._resolve_workspace(workspace)
+        self._state_path = self._resolve_state_path()
+        self._data_dir = os.path.join(xdg_cache_home, 'debops', 'tofu',
+                                      path_key(project.path, project.name,
+                                               project.view))
+        self._plugin_cache = os.path.join(xdg_cache_home, 'debops', 'tofu',
+                                          'plugins')
+
+        self._tofu_env = {
+            'TF_DATA_DIR': self._data_dir,
+            'TF_PLUGIN_CACHE_DIR': self._plugin_cache,
+            'TF_WORKSPACE': self._workspace,
+        }
+        cli_config = os.path.join(project.path, '.debops', 'tofu',
+                                  'cli.tfrc')
+        if os.path.isfile(cli_config):
+            self._tofu_env['TF_CLI_CONFIG_FILE'] = cli_config
+
+        self._tofu_command = self._build_command(tofu_args,
+                                                 no_color=no_color)
+
+    def _view_tofu_root(self):
+        """Return the view's tofu directory the operation runs in."""
+        if self.project.project_type == 'legacy':
+            return os.path.join(self.project.path, 'tofu')
+        return os.path.join(self.project.path, 'tofu', 'views',
+                            self.project.view)
+
+    def _resolve_workspace(self, workspace):
+        """Return the workspace the operations run against.
+
+        The command line overrides the view's configured workspace,
+        which itself defaults to the 'default' workspace of the local
+        backend: one state directory per view.
+        """
+        if workspace:
+            return workspace
+        try:
+            return self.project.config.raw['views'][self.project.view][
+                'tofu']['workspace']
+        except (KeyError, TypeError):
+            return 'default'
+
+    def _resolve_state_path(self):
+        """Return the local state path of the view.
+
+        The path is relative to the view's tofu directory, where the
+        backend block of the view configuration points as well. An
+        empty value marks a view with a remote backend: the local
+        state checks are skipped.
+        """
+        try:
+            state_path = self.project.config.raw['views'][
+                self.project.view]['tofu']['state_path']
+        except (KeyError, TypeError):
+            try:
+                state_path = self.project.config.raw['tofu']['state_path']
+            except (KeyError, TypeError):
+                state_path = 'secret/terraform.tfstate'
+        return state_path
+
+    def _build_command(self, tofu_args, no_color=False):
+        """Build the tofu command line, preserving argument order.
+
+        The runner's own options come last, where a repeated flag
+        overrides the ones the operator passed: '-input=false' is the
+        non-interactive contract of the wrapper on the operations
+        which accept it, and '-no-color' is added when the output
+        streams are consumed by a program rather than shown on a
+        terminal -- OpenTofu emits ANSI color codes even when the
+        output is not a terminal.
+        """
+        command = [
+            self.project.config.raw['binaries']['tofu']
+        ]
+        parsed_args = self._parse_tofu_args(tofu_args)
+        command.extend(parsed_args)
+        if self._operation not in ('state', 'workspace') and no_color:
+            command.append('-no-color')
+        if self._operation in INPUT_OPERATIONS:
+            command.append('-input=false')
+        return command
+
+    def _parse_tofu_args(self, tofu_args):
+        """Parse the arguments meant for tofu, preserving their order.
+
+        A leading-dash token which carries a value inside itself
+        ('-input=false', '-var=name=value') is self-contained; the
+        flags without a value of their own are named in
+        :var:`TOFU_FLAGS`; every other leading-dash token consumes the
+        token which follows it as its value. Positional arguments --
+        the operation name and, for 'apply', the plan file -- pass
+        through unchanged; their indexes in the original arguments
+        are recorded in :attr:`_positional_indexes`.
+        """
+        parsed_args = []
+        consumed = set()
+        self._positional_indexes = []
+        arg_length = len(tofu_args)
+        for index, argument in enumerate(tofu_args):
+            if argument == '--':
+                continue
+            if index in consumed:
+                continue
+            if (argument.startswith('-') and argument != '-'):
+                if '=' in argument or argument in TOFU_FLAGS:
+                    parsed_args.append(argument)
+                    continue
+                if (index + 1 < arg_length
+                        and not tofu_args[index + 1].startswith('-')):
+                    parsed_args.extend([argument, tofu_args[index + 1]])
+                    consumed.update([index, index + 1])
+                    continue
+            parsed_args.append(argument)
+            self._positional_indexes.append(index)
+        return parsed_args
+
+    def _secret_dir(self):
+        """Return the view's secret directory, the store's mount point."""
+        return os.path.join(self._view_root, 'secret')
+
+    def _extra_env(self):
+        """Return the runner's own additions to the subprocess
+        environment.
+
+        The environment file inside the unlocked store carries the
+        state passphrase and the provider credentials of the view;
+        their values compose into the subprocess environment last, so
+        that a rotated value in the store wins over a stale one
+        exported in the operator's session. The variables reach the
+        tofu subprocess only, never the hook scripts.
+        """
+        env = dict(self._tofu_env)
+        store_env = os.path.join(self._secret_dir(), '.env')
+        if os.path.isfile(store_env):
+            env.update({key: value
+                        for key, value in dotenv.dotenv_values(
+                            store_env).items()
+                        if value is not None})
+        return env
+
+    def _state_file(self):
+        """Return the state file the operation reads and writes.
+
+        The default workspace keeps its state at the configured state
+        path; the named workspaces keep theirs in the workspaces
+        directory beside it, the layout the shipped view template
+        points the backend's 'workspace_dir' option at.
+        """
+        if self._workspace == 'default':
+            return os.path.join(self._view_root, self._state_path)
+        return os.path.join(self._view_root,
+                            os.path.dirname(self._state_path),
+                            'workspaces', self._workspace,
+                            'terraform.tfstate')
+
+    def _state_checks_enabled(self):
+        """Whether the local state checks apply to the view.
+
+        A view with a remote backend has no local state file to
+        check; the configuration says so with an empty state path.
+        """
+        return bool(self._state_path)
+
+    def _initialized_before(self):
+        """Whether the view was initialized on this machine before.
+
+        The relocated data directory holds the backend metadata of
+        the initialization; its presence separates a view whose state
+        is missing from a view which never had one.
+        """
+        return os.path.exists(os.path.join(self._data_dir,
+                                           'terraform.tfstate'))
+
+    def _check_state_presence(self):
+        """Refuse the operation when the state the view should have is
+        not there.
+
+        With the state file missing, tofu silently re-initializes
+        with a fresh lineage and plans to create all infrastructure
+        again. A view which was initialized on this machine before
+        must hold a state file in its unlocked store; the missing
+        state means the store is locked, empty or mounted empty. A
+        named workspace which does not exist is refused as well: tofu
+        would silently create it on selection and plan against empty
+        state. Both are the one hard refusal of the wrapper; a view
+        without a state file yet passes, its first operation is the
+        legitimate creation.
+        """
+        if not self._state_checks_enabled():
+            return
+
+        state_file = self._state_file()
+        if os.path.exists(state_file):
+            return
+
+        if self._workspace != 'default':
+            raise ChildProcessError(
+                "The workspace '{}' of the view does not exist. "
+                'OpenTofu would silently create it and plan against '
+                'empty state; create it explicitly with '
+                "'debops tofu workspace new {}'.".format(
+                    self._workspace, self._workspace))
+
+        if self._initialized_before():
+            raise ChildProcessError(
+                'The state file of the view ({}) is missing, but the '
+                'view was initialized on this machine before. The '
+                'secret store may be locked, empty or mounted empty: '
+                'OpenTofu would silently re-initialize the state and '
+                'plan to create all infrastructure again. If the loss '
+                'is deliberate, remove {} and run the operation '
+                'again.'.format(state_file, self._data_dir))
+
+    def _check_state_lock(self):
+        """Refuse the operation while another process holds the state.
+
+        OpenTofu excludes concurrent runs with a POSIX record lock on
+        the state file itself; the metadata file it writes afterwards
+        proves nothing about the liveness of a lock. The pre-check
+        attempts the same record lock and releases it again -- tofu
+        re-acquires the lock for the duration of the operation, and a
+        window between the release and the re-acquisition is benign.
+        """
+        if not self._state_checks_enabled():
+            return
+
+        state_file = self._state_file()
+        if not os.path.exists(state_file):
+            return
+
+        try:
+            handle = os.open(state_file, os.O_RDWR)
+        except OSError as error:
+            raise ChildProcessError(
+                'Cannot open the state file of the view for the lock '
+                'pre-check: ' + str(error))
+
+        try:
+            fcntl.lockf(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            raise ChildProcessError(
+                'The state of the view is locked by another process; '
+                'wait for the running operation to finish.')
+        finally:
+            os.close(handle)
+
+    def _operation_allowed(self):
+        """Whether the wrapper is configured to run the operation.
+
+        The 'operations' list of the tofu section names the operations
+        the wrapper runs; an empty list runs every one of them. The
+        raw tofu command is not affected by the option.
+        """
+        try:
+            operations = self.project.config.raw['tofu']['operations']
+        except (KeyError, TypeError):
+            return True
+        if not operations:
+            return True
+        return self._operation in operations
+
+    def _plan_file_given(self):
+        """Whether the 'apply' operation applies a saved plan file.
+
+        A plan file is pre-approved by construction: the operation
+        which produced it carried the review, and OpenTofu applies it
+        without asking again.
+        """
+        if self._operation != 'apply':
+            return False
+        return any(index > 0 for index in self._positional_indexes)
+
+    def _check_approval(self):
+        """Refuse a destructive one-step operation without approval.
+
+        With '-input=false' OpenTofu does not ask for the approval of
+        a one-step 'apply' or 'destroy' -- it fails the operation
+        with an end-of-input error. The wrapper asks instead: an
+        explicit '-auto-approve' on the command line is the decision,
+        on a terminal the wrapper confirms the operation, and without
+        a terminal the operation is refused with the way out.
+        """
+        if self._operation not in DESTRUCTIVE_OPERATIONS:
+            return
+        if '-auto-approve' in self._tofu_command:
+            return
+        if self._plan_file_given():
+            return
+
+        if sys.stdin.isatty():
+            answer = input(
+                "Run 'tofu {}' against the view '{}'? Only 'yes' "
+                'approves: '.format(self._operation, self.project.view))
+            if answer.strip().lower() in ('y', 'yes'):
+                self._tofu_command.append('-auto-approve')
+                return
+            raise SystemExit('... aborted by user')
+
+        raise ChildProcessError(
+            "The one-step 'tofu {}' needs an approval which the "
+            'non-interactive operation cannot ask for. Pass '
+            "'-auto-approve' to accept the operation explicitly, or "
+            'save a plan first and apply the plan file.'.format(
+                self._operation))
+
+    def execute(self):
+        """Run the operation with the hooks around it and the store
+        cycled for the duration.
+
+        Returns the exit code of the tofu subprocess.
+        """
+        hook_env = self._subprocess_env(self._tofu_env)
+        if not run_hooks(self.project.path, 'pre-' + self._operation,
+                         env=hook_env):
+            raise ChildProcessError('Hook pre-{} aborted, not executing '
+                                    'the OpenTofu command'.format(
+                                        self._operation))
+
+        rc = 0
+        unlocked = False
+        try:
+            unlocked = self._unlock_secrets()
+
+            if not self._operation_allowed():
+                raise ChildProcessError(
+                    "The operation '{}' is not among the operations "
+                    "the 'operations' option of the 'tofu' section "
+                    'allows the wrapper to run.'.format(self._operation))
+
+            if self._operation in STATE_OPERATIONS:
+                self._check_state_presence()
+            if self._operation in LOCK_OPERATIONS:
+                self._check_state_lock()
+            self._check_approval()
+
+            executor = subprocess.Popen(
+                self._tofu_command, cwd=self._view_root,
+                env=self._subprocess_env(self._extra_env()))
+            std_out, std_err = executor.communicate()
+            rc = executor.returncode
+
+        except KeyboardInterrupt:
+            logger.notice('OpenTofu execution interrupted by user',
+                          extra={'allow': 'syslog'})
+            raise SystemExit('... aborted by user')
+
+        else:
+            self._ring_bell()
+
+        finally:
+            if unlocked:
+                self._lock_secrets()
+
+        run_hooks(self.project.path, 'post-' + self._operation,
+                  extra_env={'DEBOPS_RETURN_CODE': rc},
+                  env=self._subprocess_env(self._tofu_env))
+
+        return rc
