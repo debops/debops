@@ -16,6 +16,8 @@ state lock pre-check and the missing-state refusal.
 from ..runner import Runner
 from ..hooks import run_hooks
 from ..utils import path_key
+from .view import create_view, sync_providers, view_tofu_root, \
+    write_view_drop_in
 import dotenv
 import fcntl
 import json
@@ -76,16 +78,28 @@ DESTRUCTIVE_OPERATIONS = frozenset(['apply', 'destroy'])
 class TofuRunner(Runner):
 
     def __init__(self, project, tofu_args, bell=False, no_color=False,
-                 workspace=None):
+                 workspace=None, providers=None):
         super().__init__(project, bell=bell, secrets_name='tofu')
 
         self._view_root = self._view_tofu_root()
-        if not os.path.isdir(self._view_root):
-            raise FileNotFoundError(
-                'Cannot find the OpenTofu view directory at ' +
-                self._view_root +
-                ". A project gains its 'tofu/' tree when the view "
-                'template is applied to it.')
+        if not os.path.exists(os.path.join(self._view_root, 'main.tf')):
+            # The view tree is created lazily: the first command in a
+            # project without it applies the template and proceeds. The
+            # resolved provider set is recorded in the view's
+            # configuration drop-in, which drives the generated
+            # 'providers.tf' from then on
+            create_view(self.project, self.project.view,
+                        providers=self._resolve_providers(providers))
+        else:
+            # The '--provider' options of the command line are the
+            # operator's decision about the view's provider set: they
+            # update the recorded set, which the generated file follows
+            if providers:
+                write_view_drop_in(self.project, self.project.view,
+                                   providers)
+            # The generated 'providers.tf' follows the recorded set of
+            # the view's configuration drop-in
+            sync_providers(self.project, self.project.view)
         self._operation = tofu_args[0]
         if not re.fullmatch(r'[a-z]+(-[a-z]+)*', self._operation):
             raise ValueError(
@@ -120,10 +134,21 @@ class TofuRunner(Runner):
 
     def _view_tofu_root(self):
         """Return the view's tofu directory the operation runs in."""
-        if self.project.project_type == 'legacy':
-            return os.path.join(self.project.path, 'tofu')
-        return os.path.join(self.project.path, 'tofu', 'views',
-                            self.project.view)
+        return view_tofu_root(self.project, self.project.view)
+
+    def _resolve_providers(self, providers):
+        """Return the provider set which a new view is created with.
+
+        The '--provider' options of the command line replace the
+        'tofu.default_providers' configuration option, which itself
+        defaults to an empty list: a providerless view. The resolution
+        applies when a view is created -- the 'tofu.default_providers'
+        option is consulted only there; the provider set of an
+        existing view lives in its configuration drop-in.
+        """
+        if providers:
+            return providers
+        return self.project.config.raw['tofu']['default_providers']
 
     def _resolve_workspace(self, workspace):
         """Return the workspace the operations run against.

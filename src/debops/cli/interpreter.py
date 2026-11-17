@@ -316,7 +316,8 @@ class Interpreter(object):
         try:
             runner = TofuRunner(project, args.tofu_args, bell=args.bell,
                                 no_color=args.no_color,
-                                workspace=args.workspace)
+                                workspace=args.workspace,
+                                providers=args.provider)
         except (NoDefaultViewException, ValueError,
                 FileNotFoundError) as errmsg:
             print_error(errmsg)

@@ -1,0 +1,41 @@
+{# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# OpenTofu configuration of the '{{ view_name }}' view
+#
+# The state of the view lives in the encrypted 'secret/' directory of
+# the store; the passphrase comes from the store's '.env' file through
+# the 'debops tofu' wrapper. The provider requirements of the view are
+# managed by DebOps in the 'providers.tf' file.
+
+terraform {
+  backend "local" {
+    path          = "secret/terraform.tfstate"
+    workspace_dir = "secret/workspaces"
+  }
+
+  encryption {
+    key_provider "pbkdf2" "state" {
+      passphrase = var.state_passphrase
+    }
+
+    method "aes_gcm" "state" {
+      keys = key_provider.pbkdf2.state
+    }
+
+    state {
+      method   = method.aes_gcm.state
+      enforced = true
+    }
+
+    plan {
+      method = method.aes_gcm.state
+    }
+  }
+}
+
+variable "state_passphrase" {
+  type      = string
+  sensitive = true
+}

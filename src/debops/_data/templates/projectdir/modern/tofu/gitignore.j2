@@ -1,0 +1,26 @@
+{# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+#-- DebOps project environment
+# See https://docs.debops.org/en/master/user-guide/project-directories.html
+
+#-- OpenTofu working data, relocated by the 'debops tofu' wrapper
+/.terraform/
+
+#-- OpenTofu state files, encrypted at rest by OpenTofu itself
+# The '.terraform.lock.hcl' file is committed: it pins the provider
+# versions which the view was initialized with.
+
+# EncFS mount targets
+# Uncomment this line if you want to use EncFS as secret storage
+{% if encrypted_secrets == 'encfs' %}
+/{{ secret_name }}
+{% else %}
+#/{{ secret_name }}
+{% endif %}
+
+# EncFS encrypted folders
+# Uncomment this line if you don't want to use EncFS filesystem in the git
+# repository
+#/{{ encfs_prefix }}{{ secret_name }}
