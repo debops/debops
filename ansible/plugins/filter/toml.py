@@ -38,14 +38,18 @@ def _to_native(obj):
     match and would otherwise serialize such values incorrectly, for example
     as an array of characters instead of a string.
     """
-    if isinstance(obj, dict):
+    if isinstance(obj, Mapping):
         return {_to_native(k): _to_native(v) for k, v in obj.items()}
     if isinstance(obj, (list, tuple)):
         return [_to_native(v) for v in obj]
     if isinstance(obj, bool) or obj is None:
         return obj
     if isinstance(obj, str):
-        return str(obj)
+        # 'str()' keeps the type of some subclasses, for example of the
+        # 'AnsibleUnsafeText' strings used by ansible-core v2.18 and older
+        # for values from host facts and lookups; 'str.__str__()' always
+        # returns a plain string.
+        return str.__str__(obj)
     if isinstance(obj, int):
         return int(obj)
     if isinstance(obj, float):
