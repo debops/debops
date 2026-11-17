@@ -256,3 +256,47 @@ def test_verify_gpg_recipients_requires_recipients(gpg_stub):
     with pytest.raises(ValueError,
                        match="List of GPG recipients not specified"):
         utils.verify_gpg_recipients(gpg, None)
+
+
+def test_wrap_message_wraps_a_long_error():
+    line = ("Cannot find the OpenTofu view directory at "
+            "/home/drybjed/src/projects/containers/tofu/views/system. "
+            "A project gains its 'tofu/' tree when the view template is "
+            "applied to it.")
+    message = utils.wrap_message('Error: ' + line, width=72)
+
+    assert message.startswith('Error: Cannot find the OpenTofu view '
+                              'directory at')
+    assert '~' in message
+    assert '/home/drybjed' not in message
+    # Continuation lines hang under the first one
+    for line in message.splitlines()[1:]:
+        assert line.startswith('    ')
+
+
+def test_wrap_message_keeps_home_paths_of_other_users():
+    message = utils.wrap_message(
+        "Error: Cannot find /home/drybjed/src/project but "
+        "/home/drybjed2/src/project is present", width=72)
+
+    assert '~/src/project' in message
+    assert '/home/drybjed2/src/project' in message
+
+
+def test_wrap_message_leaves_short_and_structured_lines_alone():
+    text = ("Error: The GPG key \"key\" cannot be used for encryption:\n"
+            "  first detail line\n"
+            "  second detail line")
+    message = utils.wrap_message(text, width=72)
+
+    assert message == text
+
+
+def test_wrap_message_clamps_the_width():
+    # A narrow terminal still gets the 72-column floor
+    message = utils.wrap_message('Error: ' + 'x' * 100, width=40)
+    assert len(message.splitlines()[0]) <= 72
+
+    # Piped output without a size gets the deterministic default
+    message = utils.wrap_message('Error: ' + 'x' * 100, width=None)
+    assert len(message.splitlines()[0]) <= 80
