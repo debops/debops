@@ -8,8 +8,8 @@ The :command:`debops tofu` wrapper creates a view's ``tofu/`` tree
 lazily: the first command in a project without the tree applies the
 template, announces what it created and proceeds. The template carries
 the local backend whose state files live in the view's encrypted
-store, the OpenTofu-native state and plan encryption and the provider
-requirements selected through the configuration or the command line.
+store, the OpenTofu-native state and plan encryption and the
+dependencies selected through the configuration or the command line.
 
 The registry-addressed dependencies of the view are managed by the
 shared engine in :mod:`debops.core.tofu.registry`; this module carries
@@ -23,6 +23,8 @@ import os
 import secrets as secrets_module
 import string
 
+from .modules import module_entries, render_modules, \
+    reconcile_modules
 from .providers import provider_entries, render_providers, \
     reconcile_providers
 from .registry import render_template, view_drop_in_path, view_tofu_root, \
@@ -60,23 +62,23 @@ def _random_passphrase():
     return ''.join(secrets_module.choice(alphabet) for _ in range(64))
 
 
-def create_view(project, view, providers=None):
+def create_view(project, view, providers=None, modules=None):
     """Create the OpenTofu view of a project when it does not exist.
 
     The view's tree is created from the template shipped with DebOps:
     the OpenTofu configuration with the local backend and the
     encryption stanza, the gitignore and gitattributes which route
-    the store, the generated 'providers.tf' file with the selected
-    providers and the store's '.env' file with the generated state
-    passphrase. An existing view is left alone.
+    the store, the generated 'providers.tf' and 'modules.tf' files
+    with the selected dependencies and the store's '.env' file with
+    the generated state passphrase. An existing view is left alone.
 
     The store type follows the project's convention: git-crypt when
     the repository is set up for it, EncFS when the Ansible views use
-    it, a plain store otherwise. The resolved provider set is recorded
-    in the view's configuration drop-in, which drives the generated
-    'providers.tf' file from then on. A view whose tree is broken --
+    it, a plain store otherwise. The resolved dependency sets are
+    recorded in the view's configuration drop-in, which drives the
+    generated files from then on. A view whose tree is broken --
     'main.tf' deleted but the drop-in present -- keeps its recorded
-    provider set: the drop-in is the user's decision, repair does not
+    sets: the drop-in is the user's decision, repair does not
     rewrite it. Returns True when the view was created, False when it
     already existed.
     """
@@ -86,13 +88,16 @@ def create_view(project, view, providers=None):
         return False
 
     # A view whose drop-in already exists is a broken tree: the
-    # recorded provider set is authoritative for the regenerated files
+    # recorded sets are authoritative for the regenerated files
     try:
-        providers = project.config.raw['views'][view]['tofu']['providers']
+        recorded = project.config.raw['views'][view]['tofu']
+        providers = recorded['providers']
+        modules = recorded['modules']
     except (KeyError, TypeError):
         pass
     encrypted_secrets = detect_store_type(project)
-    entries = provider_entries(providers or [])
+    provider_entries_list = provider_entries(providers or [])
+    module_entries_list = module_entries(modules or {})
     context = {
         'view_name': view,
         'secret_name': 'secret',
@@ -110,12 +115,16 @@ def create_view(project, view, providers=None):
     write_file(os.path.join(view_root, '.gitattributes'),
                render_template('gitattributes.j2', **context) + '\n',
                project=project.path)
-    if entries:
+    if provider_entries_list:
         write_file(os.path.join(view_root, 'providers.tf'),
-                   render_providers(entries),
+                   render_providers(provider_entries_list),
+                   project=project.path)
+    if module_entries_list:
+        write_file(os.path.join(view_root, 'modules.tf'),
+                   render_modules(module_entries_list),
                    project=project.path)
 
-    write_view_drop_in(project, view, providers or [])
+    write_view_drop_in(project, view, providers or [], modules or [])
 
     env_path = os.path.join(view_root, 'secret', '.env')
     write_file(env_path,
@@ -160,7 +169,7 @@ def reconcile_view(project, view, force=False, dry_run=False):
     or passes '--force' to hand the management back to DebOps.
 
     A view without a drop-in -- a hand-made one -- manages its own
-    provider requirements entirely: the reconcile leaves all of its
+    dependency requirements entirely: the reconcile leaves all of its
     files alone and announces it.
 
     Returns the list of proposed changes; with 'dry_run' nothing is
@@ -174,10 +183,11 @@ def reconcile_view(project, view, force=False, dry_run=False):
         if os.path.exists(os.path.join(view_root, 'main.tf')):
             logger.notice(
                 'The view {!r} in project {!r} manages its own OpenTofu '
-                'provider requirements; DebOps does not touch its '
+                'dependency requirements; DebOps does not touch its '
                 'files'.format(view, project.name),
                 extra={'allow': ['stderr', 'syslog']})
         return []
 
     return reconcile_providers(project, view, force=force,
-                               dry_run=dry_run)
+                               dry_run=dry_run) + reconcile_modules(
+        project, view, force=force, dry_run=dry_run)

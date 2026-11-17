@@ -344,6 +344,30 @@
                   "type": "string"
                 },
                 "description": "The OpenTofu provider sources which the view requires, in the 'namespace/name' or 'hostname/namespace/name' notation, optionally with a version pin separated by '='. The generated 'providers.tf' file of the view is derived from this option; an empty list marks a providerless view. The option is recorded in the view's configuration drop-in, which the user owns: the 'debops tofu update' command reconciles the generated files with it."
+              },
+              "modules": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "type": "string",
+                      "description": "The module source address in the OpenTofu registry notation: 'namespace/name[/submodule]', or 'hostname/namespace/name[/submodule]' for modules outside the public registry."
+                    },
+                    "version": {
+                      "type": "string",
+                      "description": "The version of the module which the view instantiates."
+                    },
+                    "inputs": {
+                      "type": "object",
+                      "description": "The inputs of the module instance. The values are configuration values: the literals render as the HCL literals of the generated file, and strings which carry the 'hcl:' prefix carry raw HCL expressions which the file emits verbatim."
+                    }
+                  },
+                  "required": [
+                    "source"
+                  ]
+                },
+                "description": "The OpenTofu modules which the view instantiates. The table keys are the local module names which the generated 'modules.tf' file instantiates; each entry carries the module source address, an optional version pin and the inputs of the module instance. The generated file is derived from this option; an empty table marks a view without modules. The option is recorded in the view's configuration drop-in, which the user owns: the 'debops tofu update' command reconciles the generated files with it."
               }
             }
           }
@@ -376,6 +400,30 @@
             "type": "string"
           },
           "description": "The OpenTofu provider sources which new views of the project are created with, recorded in the view's configuration drop-in at creation. Each entry is a provider source address in the OpenTofu registry notation, optionally with a version pin separated by \"=\". An empty list creates providerless views. The option is consulted only when a view is created; the provider set of an existing view is changed by editing the 'views.<view>.tofu.providers' option of its configuration drop-in."
+        },
+        "default_modules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "The module source address in the OpenTofu registry notation: 'namespace/name[/submodule]', or 'hostname/namespace/name[/submodule]' for modules outside the public registry."
+              },
+              "version": {
+                "type": "string",
+                "description": "The version of the module which the view instantiates."
+              },
+              "inputs": {
+                "type": "object",
+                "description": "The inputs of the module instance. The values are configuration values: the literals render as the HCL literals of the generated file, and strings which carry the 'hcl:' prefix carry raw HCL expressions which the file emits verbatim."
+              }
+            },
+            "required": [
+              "source"
+            ]
+          },
+          "description": "The OpenTofu modules which new views of the project instantiate, recorded in the view's configuration drop-in at creation. The table keys are the local module names which the generated 'modules.tf' file instantiates; each entry carries the module source address, an optional version pin and the inputs of the module instance. An empty table creates views without modules. The option is consulted only when a view is created; the module set of an existing view is changed by editing the 'views.<view>.tofu.modules' option of its configuration drop-in."
         }
       }
     }
