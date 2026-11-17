@@ -648,6 +648,20 @@ Actions:
                             help='run the operation against the named '
                                  'workspace of the view, overriding '
                                  'the workspace configured for the view')
+        parser.add_argument('-p', '--provider', type=str, action='append',
+                            default=None,
+                            help='the OpenTofu provider which the view '
+                                 'requires, as a source address '
+                                 "'namespace/name' or "
+                                 "'hostname/namespace/name', optionally "
+                                 'with a version pin separated by "="; '
+                                 'repeatable, recorded in the view '
+                                 "configuration drop-in and reflected in "
+                                 "the generated 'providers.tf' file; "
+                                 'without this option, the provider set '
+                                 'of a new view comes from the '
+                                 "'tofu.default_providers' configuration "
+                                 'option')
         parser.add_argument('tofu_args', type=str, nargs=argparse.REMAINDER,
                             help='the OpenTofu operation to run and its '
                                  'arguments')

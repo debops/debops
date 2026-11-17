@@ -5,6 +5,7 @@
 import fcntl
 import logging
 import os
+import shutil
 import subprocess
 import sys
 from unittest import mock
@@ -46,7 +47,8 @@ def tofu_project(stub_project):
     def _make(**kwargs):
         raw = {"binaries": {"tofu": "tofu"},
                "tofu": {"state_path": "secret/terraform.tfstate",
-                        "operations": [], "plan_retention": 3}}
+                        "operations": [], "plan_retention": 3,
+                        "default_providers": []}}
         if "raw" in kwargs:
             for key, value in kwargs.pop("raw").items():
                 if key in raw and isinstance(raw[key], dict):
@@ -59,7 +61,11 @@ def tofu_project(stub_project):
         else:
             view_dir = os.path.join(project.path, "tofu", "views",
                                     project.view)
-        os.makedirs(view_dir, exist_ok=True)
+        os.makedirs(os.path.join(view_dir, "secret"), exist_ok=True)
+        # A view whose template is applied: the runner finds it in
+        # place and does not re-create it
+        with open(os.path.join(view_dir, "main.tf"), "w") as handle:
+            handle.write("terraform { backend \"local\" {} }\n")
         return project
     return _make
 
@@ -445,3 +451,184 @@ def test_failed_hook_aborts_the_operation(tofu_project,
     runner = TofuRunner(project, ["plan"])
     with pytest.raises(ChildProcessError, match="aborted"):
         runner.execute()
+
+
+def test_missing_view_tree_is_created_lazily(tofu_project, tmp_path):
+    """The first command in a project without the view tree applies
+    the template and proceeds."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    runner = TofuRunner(project, ["plan"])
+
+    assert os.path.isfile(os.path.join(view_dir, "main.tf"))
+    assert os.path.isfile(os.path.join(view_dir, "secret", ".env"))
+    # The operation runs against the created view
+    assert runner._view_root == view_dir
+
+
+def test_existing_view_is_left_alone(tofu_project):
+    """An existing view is not re-created: its files are the user's."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    marker = os.path.join(view_dir, "main.tf")
+    content = open(marker).read()
+
+    TofuRunner(project, ["plan"])
+
+    assert open(marker).read() == content
+
+
+def test_broken_view_tree_is_completed(tofu_project):
+    """A view directory without its configuration gains the template
+    files; existing files are never overwritten."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    os.remove(os.path.join(view_dir, "main.tf"))
+    custom = os.path.join(view_dir, "my-own.tf")
+    with open(custom, "w") as handle:
+        handle.write("# The user's own file\n")
+
+    TofuRunner(project, ["plan"])
+
+    assert os.path.isfile(os.path.join(view_dir, "main.tf"))
+    assert open(custom).read() == "# The user's own file\n"
+
+
+def test_providers_come_from_the_configuration(tofu_project):
+    """The 'tofu.default_providers' option is the default provider
+    set of new views, recorded in the view's configuration drop-in."""
+    project = tofu_project(project_type="modern",
+                           raw={"tofu": {"default_providers":
+                                         ["lxc/incus"]}})
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    TofuRunner(project, ["plan"])
+
+    providers_tf = open(os.path.join(view_dir, "providers.tf")).read()
+    assert 'source = "lxc/incus"' in providers_tf
+
+    drop_in = os.path.join(project.path, ".debops", "conf.d",
+                           "view-" + project.view + "-tofu.toml")
+    assert "providers = ['lxc/incus']" in open(drop_in).read()
+
+
+def test_provider_options_replace_the_configuration(tofu_project):
+    """The '--provider' options of the command line replace the
+    configured default provider set for one invocation."""
+    project = tofu_project(project_type="modern",
+                           raw={"tofu": {"default_providers":
+                                         ["lxc/incus"]}})
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    TofuRunner(project, ["plan"], providers=["hashicorp/tfcoremock"])
+
+    providers_tf = open(os.path.join(view_dir, "providers.tf")).read()
+    assert 'source = "hashicorp/tfcoremock"' in providers_tf
+    assert "lxc/incus" not in providers_tf
+
+    drop_in = os.path.join(project.path, ".debops", "conf.d",
+                           "view-" + project.view + "-tofu.toml")
+    assert "providers = ['hashicorp/tfcoremock']" in open(drop_in).read()
+
+
+def test_providerless_view_writes_no_providers_file(tofu_project):
+    """An empty provider set writes no 'providers.tf' file: the view
+    is providerless by default."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    TofuRunner(project, ["plan"])
+
+    assert not os.path.exists(os.path.join(view_dir, "providers.tf"))
+
+
+def test_existing_view_follows_the_recorded_set(tofu_project):
+    """An existing view's generated 'providers.tf' follows the
+    'views.<view>.tofu.providers' option of its configuration
+    drop-in."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+
+    TofuRunner(project, ["plan"])
+    assert not os.path.exists(os.path.join(view_dir, "providers.tf"))
+
+    # The '--provider' options record the new set in the drop-in, which
+    # the generated file follows
+    TofuRunner(project, ["plan"], providers=["lxc/incus"])
+    providers_tf = open(os.path.join(view_dir, "providers.tf")).read()
+    assert 'source = "lxc/incus"' in providers_tf
+
+    # The same set keeps the file as it is
+    before = os.path.getmtime(os.path.join(view_dir, "providers.tf"))
+    TofuRunner(project, ["plan"])
+    assert os.path.getmtime(os.path.join(view_dir, "providers.tf")) == before
+
+
+def test_existing_view_drops_the_file_with_an_empty_set(tofu_project):
+    """An empty recorded set removes the generated 'providers.tf' of
+    an existing view."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+
+    TofuRunner(project, ["plan"], providers=["lxc/incus"])
+    assert os.path.exists(os.path.join(view_dir, "providers.tf"))
+
+    project.config.raw['views'][project.view]['tofu']['providers'] = []
+    TofuRunner(project, ["plan"])
+    assert not os.path.exists(os.path.join(view_dir, "providers.tf"))
+
+
+def test_hand_made_view_keeps_its_own_providers(tofu_project):
+    """A view without a configuration drop-in -- a hand-made one --
+    keeps its own provider requirements: the sync leaves the view
+    alone."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    main_tf = os.path.join(view_dir, "main.tf")
+    with open(main_tf) as handle:
+        template_view = handle.read()
+    with open(main_tf, "w") as handle:
+        handle.write(template_view + "\n# The view's own providers\n")
+
+    TofuRunner(project, ["plan"])
+
+    assert not os.path.exists(os.path.join(view_dir, "providers.tf"))
+    assert "The view's own providers" in open(main_tf).read()
+
+
+def test_provider_version_pin_is_written(tofu_project):
+    """A '--provider' argument with a version pin carries the pin
+    into the generated provider block."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    TofuRunner(project, ["plan"], providers=["lxc/incus=1.2.1"])
+
+    providers_tf = open(os.path.join(view_dir, "providers.tf")).read()
+    assert 'source = "lxc/incus"' in providers_tf
+    assert 'version = "1.2.1"' in providers_tf
+
+
+def test_state_passphrase_is_generated_into_the_store(tofu_project):
+    """The store's '.env' carries the state passphrase which the
+    runner composes into the environment."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    runner = TofuRunner(project, ["plan"])
+    dotenv_content = open(os.path.join(view_dir, "secret", ".env")).read()
+
+    assert dotenv_content.startswith("TF_VAR_state_passphrase=")
+    passphrase = dotenv_content.split("=", 1)[1].rstrip("\n")
+    assert len(passphrase) == 64
+    # The store's environment composes into the subprocess environment
+    # at execution time, after the store is unlocked
+    env = runner._extra_env()
+    assert env["TF_VAR_state_passphrase"] == passphrase

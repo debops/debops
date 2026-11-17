@@ -93,6 +93,22 @@ state_path = "secret/terraform.tfstate"
 # The raw 'tofu' command is not affected by this option.
 operations = []
 
+# The OpenTofu providers which the tofu views of the project use. The
+# list is written into the generated 'providers.tf' file of a view when
+# it is created; the '--provider' options of the 'debops tofu init'
+# command replace it for one invocation. Each entry is a provider
+# source address in the OpenTofu registry notation -- 'namespace/name',
+# or 'hostname/namespace/name' for providers outside the public
+# registry -- optionally with a version pin separated by '=':
+#
+#     default_providers = ["lxc/incus=1.2.1", "hashicorp/tfcoremock"]
+#
+# An empty list creates providerless views. The option is consulted
+# only when a view is created: the provider set of an existing view is
+# changed through the '--provider' options of the 'debops tofu init'
+# command, which updates the view's configuration drop-in.
+default_providers = []
+
 # How many plan files the DebOps flows keep in the state directory. The
 # plan files which DebOps itself saves are pruned to the newest ones;
 # plan files which the user saves with the '-out' option are never
