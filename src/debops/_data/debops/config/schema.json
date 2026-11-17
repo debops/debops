@@ -343,7 +343,7 @@
                 "items": {
                   "type": "string"
                 },
-                "description": "The OpenTofu provider sources which the view requires, in the 'namespace/name' or 'hostname/namespace/name' notation, optionally with a version pin separated by '='. The generated 'providers.tf' file of the view is derived from this option; an empty list marks a providerless view. The '--provider' options of the 'debops tofu init' command update this option in the view's configuration drop-in."
+                "description": "The OpenTofu provider sources which the view requires, in the 'namespace/name' or 'hostname/namespace/name' notation, optionally with a version pin separated by '='. The generated 'providers.tf' file of the view is derived from this option; an empty list marks a providerless view. The option is recorded in the view's configuration drop-in, which the user owns: the 'debops tofu update' command reconciles the generated files with it."
               }
             }
           }
@@ -375,7 +375,7 @@
           "items": {
             "type": "string"
           },
-          "description": "The OpenTofu provider sources which new views of the project are created with, recorded in the view's configuration drop-in at creation. Each entry is a provider source address in the OpenTofu registry notation, optionally with a version pin separated by \"=\". An empty list creates providerless views. The option is consulted only when a view is created; the provider set of an existing view is changed through the '--provider' options of the 'debops tofu init' command or the 'views.<view>.tofu.providers' option."
+          "description": "The OpenTofu provider sources which new views of the project are created with, recorded in the view's configuration drop-in at creation. Each entry is a provider source address in the OpenTofu registry notation, optionally with a version pin separated by \"=\". An empty list creates providerless views. The option is consulted only when a view is created; the provider set of an existing view is changed by editing the 'views.<view>.tofu.providers' option of its configuration drop-in."
         }
       }
     }

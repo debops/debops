@@ -13,8 +13,8 @@ from ..core.ansible.ansiblerunner import AnsibleRunner
 from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
 from ..core.tofu.runner import TofuRunner
-from ..core.tofu.view import reconcile_view, view_drop_in_path, \
-    view_tofu_root
+from ..core.tofu.registry import view_drop_in_path, view_tofu_root
+from ..core.tofu.view import reconcile_view
 from ..core import ssh
 from xdg.BaseDirectory import xdg_config_home
 import logging
