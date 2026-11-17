@@ -18,6 +18,7 @@ from ..hooks import run_hooks
 from ..utils import path_key
 import dotenv
 import fcntl
+import json
 import logging
 import os
 import subprocess
@@ -98,6 +99,12 @@ class TofuRunner(Runner):
             'TF_PLUGIN_CACHE_DIR': self._plugin_cache,
             'TF_WORKSPACE': self._workspace,
         }
+        # Creating or selecting a workspace requires the environment
+        # variable to carry the name of the workspace the command
+        # targets: OpenTofu refuses the mismatch
+        if (self._operation == 'workspace' and len(tofu_args) > 2
+                and tofu_args[1] in ('new', 'select')):
+            self._tofu_env['TF_WORKSPACE'] = tofu_args[2]
         cli_config = os.path.join(project.path, '.debops', 'tofu',
                                   'cli.tfrc')
         if os.path.isfile(cli_config):
@@ -229,17 +236,52 @@ class TofuRunner(Runner):
     def _state_file(self):
         """Return the state file the operation reads and writes.
 
-        The default workspace keeps its state at the configured state
-        path; the named workspaces keep theirs in the workspaces
-        directory beside it, the layout the shipped view template
-        points the backend's 'workspace_dir' option at.
+        The paths come from the backend configuration OpenTofu
+        recorded at initialization, so that the checks look where the
+        view's own configuration points: the default workspace keeps
+        its state at the backend's path, the named workspaces in the
+        backend's workspace directory, and without an initialization
+        the layout of the shipped view template applies.
         """
+        backend = self._backend_metadata()
         if self._workspace == 'default':
-            return os.path.join(self._view_root, self._state_path)
+            state_path = self._state_path
+            if backend and backend.get('path'):
+                state_path = backend['path']
+            return os.path.join(self._view_root, state_path)
+
+        if backend:
+            if backend.get('workspace_dir'):
+                return os.path.join(self._view_root,
+                                    backend['workspace_dir'],
+                                    self._workspace, 'terraform.tfstate')
+            return os.path.join(self._view_root, 'terraform.tfstate.d',
+                                self._workspace, 'terraform.tfstate')
         return os.path.join(self._view_root,
                             os.path.dirname(self._state_path),
                             'workspaces', self._workspace,
                             'terraform.tfstate')
+
+    def _backend_metadata(self):
+        """Return the effective local backend configuration of the
+        view, as OpenTofu recorded it at initialization.
+
+        The relocated data directory holds the metadata of the
+        initialization; its backend section carries the state path and
+        the workspace directory the view's configuration is effective
+        with. Views with a remote backend and views which were never
+        initialized on this machine have none.
+        """
+        try:
+            with open(os.path.join(self._data_dir,
+                                   'terraform.tfstate')) as handle:
+                backend = json.load(handle)['backend']
+        except (OSError, ValueError, KeyError, TypeError):
+            return None
+        if backend.get('type') != 'local':
+            return None
+        config = backend.get('config')
+        return config if isinstance(config, dict) else {}
 
     def _state_checks_enabled(self):
         """Whether the local state checks apply to the view.
@@ -282,22 +324,39 @@ class TofuRunner(Runner):
             return
 
         if self._workspace != 'default':
-            raise ChildProcessError(
-                "The workspace '{}' of the view does not exist. "
-                'OpenTofu would silently create it and plan against '
-                'empty state; create it explicitly with '
-                "'debops tofu workspace new {}'.".format(
-                    self._workspace, self._workspace))
+            if not self._initialized_before():
+                raise ChildProcessError(
+                    'The view is not initialized; run '
+                    "'debops tofu init' before the operations which "
+                    'touch its state.')
+            if not os.path.isdir(os.path.dirname(state_file)):
+                raise ChildProcessError(
+                    "The workspace '{}' of the view does not exist. "
+                    'OpenTofu would silently create it and plan against '
+                    'empty state; create it explicitly with '
+                    "'debops tofu workspace new {}'.".format(
+                        self._workspace, self._workspace))
+            # The workspace directory exists: an absent state file is
+            # a fresh workspace, its first operation is the
+            # legitimate creation
+            return
 
         if self._initialized_before():
-            raise ChildProcessError(
-                'The state file of the view ({}) is missing, but the '
-                'view was initialized on this machine before. The '
-                'secret store may be locked, empty or mounted empty: '
-                'OpenTofu would silently re-initialize the state and '
-                'plan to create all infrastructure again. If the loss '
-                'is deliberate, remove {} and run the operation '
-                'again.'.format(state_file, self._data_dir))
+            # The state file is missing on an initialized view: a
+            # fresh view holds none until its first operation, but a
+            # lost store looks the same. OpenTofu would silently
+            # re-initialize the state and plan to create all
+            # infrastructure -- the operator sees the plan, and the
+            # approval gate of the destructive operations shows it
+            # before the change runs
+            logger.warning(
+                'The state file of the view ({}) is missing while the '
+                'view was initialized on this machine before. If the '
+                'state was lost, OpenTofu will plan to create all of '
+                'the infrastructure again; the operations which '
+                'change state show the plan before '
+                'applying it.'.format(state_file),
+                extra={'allow': ['stderr', 'syslog']})
 
     def _check_state_lock(self):
         """Refuse the operation while another process holds the state.
