@@ -12,6 +12,7 @@ from ..core.projectvenv import ProjectVenv
 from ..core.ansible.ansiblerunner import AnsibleRunner
 from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
+from ..core.tofu.runner import TofuRunner
 from ..core import ssh
 from xdg.BaseDirectory import xdg_config_home
 import logging
@@ -77,6 +78,9 @@ class Interpreter(object):
 
         elif self.parsed_args.section == 'env':
             self.do_env(self.parsed_args.args)
+
+        elif self.parsed_args.section == 'tofu':
+            self.do_tofu(self.parsed_args.args)
 
         elif self.parsed_args.section == 'ssh':
             if self.parsed_args.command == 'rescan':
@@ -294,6 +298,35 @@ class Interpreter(object):
             for line in runner.show_env(scope=args.scope):
                 print(line)
             sys.exit(0)
+
+    def do_tofu(self, args):
+        if not args.tofu_args:
+            print_error('At least one operand is required: the OpenTofu '
+                        'operation to run; see \'debops tofu --help\'')
+            sys.exit(2)
+
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd, view=args.view)
+        except (IsADirectoryError, NotADirectoryError,
+                ViewNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        try:
+            runner = TofuRunner(project, args.tofu_args, bell=args.bell,
+                                no_color=args.no_color,
+                                workspace=args.workspace)
+        except (NoDefaultViewException, ValueError,
+                FileNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        try:
+            sys.exit(runner.execute())
+        except (ChildProcessError, ValueError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
 
     def do_scp(self, args):
         try:

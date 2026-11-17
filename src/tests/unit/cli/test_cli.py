@@ -102,6 +102,21 @@ def test_init_dispatches_the_env_section(monkeypatch):
     method.assert_called_once_with(args)
 
 
+def test_init_dispatches_the_tofu_section(monkeypatch):
+    args = make_args(project_dir=".")
+    monkeypatch.setattr(cli_module, "Configuration",
+                        mock.Mock(return_value=SimpleNamespace()))
+    monkeypatch.setattr(cli_module, "Subcommands",
+                        mock.Mock(return_value=make_parsed("tofu", None,
+                                                           args)))
+    method = mock.Mock()
+    monkeypatch.setattr(cli_module.Interpreter, "do_tofu", method)
+
+    Interpreter(["debops"])
+
+    method.assert_called_once_with(args)
+
+
 @pytest.mark.parametrize("command", ["list", "get", "set", "check"])
 def test_init_dispatches_the_config_commands(monkeypatch, command):
     args = make_args(project_dir=".")
