@@ -125,7 +125,7 @@ garage__skip_install: False
 # .. envvar:: garage__bin_path [[[
 #
 # Absolute path to the installed :command:`garage` binary.
-garage__bin_path: '/usr/local/bin/garage'
+garage__bin_path: '{{ (ansible_local.fhs.bin | d("/usr/local/bin")) + "/garage" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Upgrade policy [[[
@@ -509,27 +509,30 @@ garage__default_bucket: ''
                                                                    # ]]]
 # .. envvar:: garage__default_access_key_id [[[
 #
-# Access key identifier used by ``--default-bucket``. Generated in the
-# native Garage form (``GK`` plus 24 hex characters) and stored under
-# :file:`secret/garage/clusters/<name>/` so it stays stable across runs.
-# A different value makes the daemon create an additional key; the previous
-# key is kept in Garage until it is removed by hand.
+# Access key identifier used by ``--default-bucket``, in the native Garage
+# form: ``GK`` plus 24 lowercase hex characters. The hex part is stored in
+# the :file:`default_access_key_id` file under
+# :file:`secret/garage/clusters/<name>/` so it stays stable across runs;
+# the ``GK`` prefix is not stored, and the stored value is converted to
+# lowercase. A different value makes the daemon create an additional key;
+# the previous key is kept in Garage until it is removed by hand.
 garage__default_access_key_id: '{{ "GK" + lookup("password",
                                    secret + "/garage/clusters/"
                                    + garage__cluster_name
-                                   + "/default_access_key_id chars=hexdigits length=24")
+                                   + "/default_access_key_id chars=digits,abcdef length=24")
                                    | lower }}'
 
                                                                    # ]]]
 # .. envvar:: garage__default_secret_key [[[
 #
 # Secret key used by ``--default-bucket``. 64 lowercase hex characters,
-# stored next to the access key id. Changing the secret of an existing
-# access key id makes the daemon refuse to start.
+# stored in the :file:`default_secret_key` file next to the access key id
+# and converted to lowercase. Changing the secret of an existing access key
+# id makes the daemon refuse to start.
 garage__default_secret_key: '{{ lookup("password",
                                  secret + "/garage/clusters/"
                                  + garage__cluster_name
-                                 + "/default_secret_key chars=hexdigits length=64")
+                                 + "/default_secret_key chars=digits,abcdef length=64")
                                  | lower }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -544,28 +547,30 @@ garage__default_secret_key: '{{ lookup("password",
 garage__rpc_secret: '{{ lookup("password",
                          secret + "/garage/clusters/"
                          + garage__cluster_name
-                         + "/rpc_secret chars=hexdigits length=64")
+                         + "/rpc_secret chars=digits,abcdef length=64")
                          | lower }}'
 
                                                                    # ]]]
 # .. envvar:: garage__admin_token [[[
 #
 # Bearer token for the admin API. Cluster-wide, same path convention as
-# :envvar:`garage__rpc_secret`.
+# :envvar:`garage__rpc_secret`. Generated from letters and digits only, so
+# that it can be used in HTTP headers and shell commands without quoting.
 garage__admin_token: '{{ lookup("password",
                           secret + "/garage/clusters/"
                           + garage__cluster_name
-                          + "/admin_token length=32") }}'
+                          + "/admin_token chars=ascii_letters,digits length=32") }}'
 
                                                                    # ]]]
 # .. envvar:: garage__metrics_token [[[
 #
-# Bearer token for ``/metrics``. Cluster-wide. On the host it is stored in
-# the :file:`metrics_token` file in :envvar:`garage__secret_dir`.
+# Bearer token for ``/metrics``. Cluster-wide, generated like
+# :envvar:`garage__admin_token`. On the host it is stored in the
+# :file:`metrics_token` file in :envvar:`garage__secret_dir`.
 garage__metrics_token: '{{ lookup("password",
                             secret + "/garage/clusters/"
                             + garage__cluster_name
-                            + "/metrics_token length=32") }}'
+                            + "/metrics_token chars=ascii_letters,digits length=32") }}'
                                                                    # ]]]
                                                                    # ]]]
 # nginx frontends [[[

@@ -83,9 +83,12 @@ After the play the S3 API is reachable at ``https://s3.example.com``
 through :ref:`debops.nginx`, :command:`garage status` shows an assigned
 layout (not ``NO ROLE ASSIGNED``), and
 ``http://127.0.0.1:3903/health`` on the node returns HTTP 200. The
-default key pair lives on the Ansible Controller under
-:file:`secret/garage/clusters/default/` and is also written to
-:file:`/etc/garage/default-credentials.env` on the host.
+effective key pair is written to :file:`/etc/garage/default-credentials.env`
+on the host. The Ansible Controller keeps the values it is generated from
+under :file:`secret/garage/clusters/default/`: the access key id is ``GK``
+followed by the content of the :file:`default_access_key_id` file, and the
+secret key is the content of the :file:`default_secret_key` file, both
+converted to lowercase.
 
 A convenient client environment:
 
@@ -150,6 +153,15 @@ ships the rest of the upstream hardening (``LimitNOFILE=42000``,
 through ``GARAGE_LOG_TO_JOURNALD``. To change these options, add
 a drop-in file for :file:`garage.service` with the :ref:`debops.systemd`
 role.
+
+The binary is installed in the directory for local binaries defined by
+the :ref:`debops.fhs` role, :file:`/usr/local/bin/` by default. The data
+stays in :file:`/var/lib/garage/` and the configuration in
+:file:`/etc/garage.toml`, the paths used in the upstream documentation,
+so that the :command:`garage` CLI finds the configuration without the
+``-c`` option and the upstream operations guides apply as written. The
+data directories can be moved with :envvar:`garage__home` and the
+configuration lists.
 
 
 Dependent role usage

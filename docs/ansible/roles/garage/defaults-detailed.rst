@@ -167,6 +167,14 @@ metrics token and the optional default access key use the same
 directory. Changing :envvar:`garage__cluster_name` creates a new
 secret namespace; nodes with different names will not form a cluster.
 
+The files contain the values from which the role builds the secrets. The
+RPC secret and the default secret key are used converted to lowercase,
+and the default access key id is ``GK`` followed by the lowercase content
+of the :file:`default_access_key_id` file. The effective default key pair
+is also written to :file:`/etc/garage/default-credentials.env` on the
+host. The admin and metrics tokens contain only letters and digits and
+are used as they are.
+
 The role asserts that every host in :envvar:`garage__cluster_hosts`
 uses the same :envvar:`garage__cluster_name` and
 :envvar:`garage__replication_factor`.

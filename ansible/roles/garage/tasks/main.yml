@@ -162,7 +162,7 @@
         owner: '{{ garage__user }}'
         group: '{{ garage__group }}'
         mode: '0600'
-      no_log: True
+      no_log: '{{ debops__no_log | d(True) }}'
       loop:
         - dest: '{{ garage__secret_dir }}/rpc_secret'
           content: '{{ garage__rpc_secret }}'
@@ -181,7 +181,7 @@
         owner: 'root'
         group: 'root'
         mode: '0600'
-      no_log: True
+      no_log: '{{ debops__no_log | d(True) }}'
       notify: [ 'Restart garage' ]
       when:
         - garage__single_node | bool
