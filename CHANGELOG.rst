@@ -23,6 +23,21 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.3: https://github.com/debops/debops/compare/v3.3.0...stable-3.3
 
+Fixed
+~~~~~
+
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The role no longer fails with ansible-core 2.19 and later when the
+  ``nginx_default_name`` and ``nginx_default_ssl_name`` variables keep their
+  default empty values. The default server selection checked the strings
+  directly in conditions, which have to evaluate to a boolean now.
+
+- The proxy server template no longer passes custom ``proxy_headers`` text
+  through the ``bool`` filter, which ansible-core 2.19 and later report as
+  an invalid boolean value.
+
 
 `debops v3.3.4`_ - 2026-11-17
 -----------------------------
