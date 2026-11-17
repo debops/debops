@@ -134,6 +134,54 @@ class DetectionTestCase(VersionCheckTestCase):
                 unittest.mock.patch.dict(os.environ, {'PIPX_HOME': pipx_home}):
             self.assertEqual(self.detect(pkg_dir), 'pipx')
 
+    def test_pipx_xdg_default_location_detected(self):
+        """Current pipx releases keep environments in the XDG data dir."""
+        pipx_home = os.path.join(self.tmpdir, '.local', 'share', 'pipx')
+        pkg_dir = os.path.join(pipx_home, 'venvs', 'debops', 'lib',
+                               'python3.13', 'site-packages', 'debops')
+        os.makedirs(pkg_dir)
+        argv0 = os.path.join(pipx_home, 'venvs', 'debops', 'bin', 'debops')
+        with unittest.mock.patch('sys.argv', [argv0]), \
+                unittest.mock.patch.dict(os.environ,
+                                         {'HOME': self.tmpdir}, clear=True):
+            self.assertEqual(self.detect(pkg_dir), 'pipx')
+
+    def test_pipx_legacy_default_location_detected(self):
+        """Older pipx releases keep environments in '~/.local/pipx'."""
+        pipx_home = os.path.join(self.tmpdir, '.local', 'pipx')
+        pkg_dir = os.path.join(pipx_home, 'venvs', 'debops', 'lib',
+                               'python3.11', 'site-packages', 'debops')
+        os.makedirs(pkg_dir)
+        argv0 = os.path.join(pipx_home, 'venvs', 'debops', 'bin', 'debops')
+        with unittest.mock.patch('sys.argv', [argv0]), \
+                unittest.mock.patch.dict(os.environ,
+                                         {'HOME': self.tmpdir}, clear=True):
+            self.assertEqual(self.detect(pkg_dir), 'pipx')
+
+    def test_pipx_metadata_marker_detected(self):
+        """The 'pipx_metadata.json' marker is independent of the home path."""
+        venv_dir = os.path.join(self.tmpdir, 'custom-home', 'venvs', 'debops')
+        pkg_dir = os.path.join(venv_dir, 'lib', 'python3.13',
+                               'site-packages', 'debops')
+        os.makedirs(pkg_dir)
+        with open(os.path.join(venv_dir, 'pipx_metadata.json'), 'w') as fp:
+            fp.write('{}')
+        with unittest.mock.patch('sys.prefix', venv_dir):
+            self.assertEqual(self.detect(pkg_dir), 'pipx')
+
+    def test_pipx_home_with_literal_tilde_is_expanded(self):
+        """A '~' in $PIPX_HOME is expanded, not compared literally."""
+        pipx_home = os.path.join(self.tmpdir, 'pipx')
+        pkg_dir = os.path.join(pipx_home, 'venvs', 'debops', 'lib',
+                               'python3.13', 'site-packages', 'debops')
+        os.makedirs(pkg_dir)
+        argv0 = os.path.join(pipx_home, 'venvs', 'debops', 'bin', 'debops')
+        with unittest.mock.patch('sys.argv', [argv0]), \
+                unittest.mock.patch.dict(os.environ,
+                                         {'HOME': self.tmpdir,
+                                          'PIPX_HOME': '~/pipx'}):
+            self.assertEqual(self.detect(pkg_dir), 'pipx')
+
 
 class VersionComparisonTestCase(VersionCheckTestCase):
     """Version parsing and comparison behaviour."""
