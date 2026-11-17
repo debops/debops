@@ -23,6 +23,15 @@ from debops.cli.interpreter import Interpreter
 from debops.cli.subcommands import Subcommands
 
 
+def unwrapped(err):
+    """The captured error output with the message wrapping normalized.
+
+    The wrapper wraps long messages to the terminal width; the content
+    assertions check the message text, not its formatting.
+    """
+    return ' '.join(err.split())
+
+
 def make_interpreter():
     interpreter = Interpreter.__new__(Interpreter)
     interpreter.config = mock.Mock()
@@ -432,7 +441,7 @@ def test_do_ssh_rescan_eval_requires_a_store(monkeypatch, stub_project,
 
     assert exit_info.value.code == 1
     assert "does not declare a known_hosts store" \
-        in capsys.readouterr().err
+        in unwrapped(capsys.readouterr().err)
 
 
 def test_do_ssh_rescan_refreshes_the_hosts(monkeypatch, stub_project,
@@ -486,7 +495,7 @@ def test_do_ssh_rescan_reports_the_store_error(monkeypatch, stub_project,
 
     assert exit_info.value.code == 1
     assert "does not declare a known_hosts store" in \
-        capsys.readouterr().err
+        unwrapped(capsys.readouterr().err)
 
 
 def test_do_ssh_rescan_reads_the_defaults_from_the_configuration(
@@ -823,7 +832,7 @@ def test_do_ssh_connect_reports_the_builder_errors(monkeypatch,
 
     assert exit_info.value.code == 1
     assert "does not declare a known_hosts store" in \
-        capsys.readouterr().err
+        unwrapped(capsys.readouterr().err)
 
 
 def test_do_ssh_rescan_declines_when_the_input_ends(monkeypatch,
@@ -863,7 +872,7 @@ def test_ssh_handoff_reports_the_store_refusal(monkeypatch, stub_project,
 
     assert exit_info.value.code == 1
     assert "does not declare a known_hosts store" in \
-        capsys.readouterr().err
+        unwrapped(capsys.readouterr().err)
 
 
 def test_do_ssh_rescan_declines_the_word_no(monkeypatch, stub_project,
