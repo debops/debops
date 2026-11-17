@@ -69,6 +69,36 @@ scp = "{{ env['DEBOPS_CMD_SCP'] | d('scp') }}"
 # system's $PATH.
 sftp = "{{ env['DEBOPS_CMD_SFTP'] | d('sftp') }}"
 
+# Path to binary which will be used to execute 'tofu' (OpenTofu) commands.
+# By default it will rely on the system's $PATH.
+tofu = "{{ env['DEBOPS_CMD_TOFU'] | d('tofu') }}"
+
+[tofu]
+
+# Path to the state file of the local backend, relative to the view's
+# 'tofu' directory. The backend block of the view's OpenTofu
+# configuration should point at the same path: the 'debops tofu' wrapper
+# uses it for the state lock pre-check and to detect the missing-state
+# condition before state-touching operations. Set it to an empty string
+# in views which use a remote backend; the wrapper then skips the local
+# state checks.
+state_path = "secret/terraform.tfstate"
+
+# The OpenTofu operations which the 'debops tofu' wrapper is allowed to
+# run. An empty list allows every operation; a non-empty list restricts
+# the wrapper to the named operations, for example:
+#
+#     operations = ["plan", "apply", "destroy", "output"]
+#
+# The raw 'tofu' command is not affected by this option.
+operations = []
+
+# How many plan files the DebOps flows keep in the state directory. The
+# plan files which DebOps itself saves are pruned to the newest ones;
+# plan files which the user saves with the '-out' option are never
+# touched.
+plan_retention = 3
+
 [git]
 
 # The default commit message used for new git repositories.
