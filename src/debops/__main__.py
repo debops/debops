@@ -8,6 +8,7 @@ import logging
 from logging.handlers import SysLogHandler
 
 from . import ProjectContextFilter, ProjectFormatter
+from .core.utils import wrap_message
 
 from .cli.interpreter import Interpreter
 from .core.config import Configuration
@@ -15,6 +16,19 @@ from .cli.subcommands import Subcommands
 
 # Configure logging early so that it's available as soon as possible
 logger = logging.getLogger('debops')
+
+
+class TerminalFormatter(logging.Formatter):
+    """Format log records for the terminal, wrapped to its width.
+
+    The stderr handler is the terminal channel; the journal and syslog
+    records keep their single-line form. Long messages wrap to the
+    terminal width -- clamped to 72-80 columns -- so that they stay
+    readable, and paths inside the user's home directory are shortened
+    to '~'."""
+
+    def format(self, record):
+        return wrap_message(logging.Formatter.format(self, record))
 
 
 def main():
@@ -107,7 +121,7 @@ def main():
 
     stderr_handler = logging.StreamHandler()
     stderr_handler.addFilter(build_handler_filters('stderr', stderr_level))
-    stderr_format = logging.Formatter('%(message)s')
+    stderr_format = TerminalFormatter('%(message)s')
     stderr_handler.setFormatter(stderr_format)
     logger.addHandler(stderr_handler)
     logger.debug('Logging to stderr enabled')

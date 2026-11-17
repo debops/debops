@@ -10,7 +10,9 @@ import logging
 import os
 import platform
 import re
+import shutil
 import subprocess
+import textwrap
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +65,50 @@ def unexpanduser(path):
         return path.replace(DEBOPS_USER_HOME_DIR, '~', 1)
     else:
         return path
+
+
+def _unexpand_homes(text):
+    """Replace the occurrences of the home directory path with '~'.
+
+    The unexpansion applies to the whole message text: paths can appear
+    anywhere in it, not only at the start. A replacement happens when the
+    home path is followed by a path separator or by a non-word character,
+    so that '/home/<user>' and '/home/<user>/src/...' unexpand, while a
+    different user's '/home/<user2>/...' stays absolute.
+    """
+    pattern = re.escape(DEBOPS_USER_HOME_DIR) + r'(?=[^A-Za-z0-9_]|$)'
+    return re.sub(pattern, '~', text)
+
+
+def wrap_message(text, width=None):
+    """Wrap a message to the terminal width.
+
+    Lines which are longer than the terminal width are wrapped with a
+    hanging indent; shorter lines and their indentation are left alone,
+    so that multi-line messages with their own structure -- indented
+    error details, code blocks -- survive the wrapping. The home
+    directory path inside the text is unexpanded to '~' first.
+
+    The width is clamped to 72-80 columns: terminal reports without a
+    size (piped output) and narrow terminals both get a comfortable,
+    deterministic width. The wrapping is for the terminal only; journal
+    and syslog records keep their single-line form.
+    """
+    if width is None:
+        width = shutil.get_terminal_size().columns
+    width = max(72, min(80, width))
+
+    text = _unexpand_homes(text)
+    lines = []
+    for line in text.splitlines():
+        if len(line) <= width:
+            lines.append(line)
+        else:
+            lines.extend(textwrap.wrap(line, width=width,
+                                       break_long_words=False,
+                                       break_on_hyphens=False,
+                                       subsequent_indent='    '))
+    return '\n'.join(lines)
 
 
 def path_key(path, name, view=''):
