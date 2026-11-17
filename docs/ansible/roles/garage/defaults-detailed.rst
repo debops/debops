@@ -51,14 +51,18 @@ Each entry of the list is a YAML dictionary with specific parameters:
 ``name``
   Required. Name of the configuration entry, not used in the configuration
   file. An entry with the same name as an earlier entry replaces it, together
-  with its whole ``config`` dictionary. Entries with different names are
-  merged.
+  with its whole ``config`` dictionary, but keeps the position of the first
+  entry with that name. Entries with different names are merged.
 
 ``config``
   Required. YAML dictionary with Garage configuration options. The ``config``
   dictionaries of all entries are merged recursively in the order of the
   entries, so an entry can add options to a table defined by an earlier
-  entry. Lists are not merged, a later list replaces an earlier one.
+  entry. Lists are not merged, a later list replaces an earlier one. An
+  entry which replaces an earlier one is merged at the position of the
+  earlier entry, so options set by entries between them still take
+  precedence; set each option in one entry only, or change the order with
+  the ``weight`` parameter described in :ref:`universal_configuration`.
 
 ``state``
   Optional. If not specified or ``present``, the entry is included in the
@@ -88,20 +92,23 @@ daemon to write to them:
            - path: '/srv/garage/hdd2'
              capacity: '4T'
 
-Add options to the existing tables, for example the public endpoint used
-in presigned URLs behind a reverse proxy and the index document of
-websites:
+Add options to the existing tables, for example the public endpoint of the
+S3 API published behind a reverse proxy, which Garage reports to clients
+and uses in the object URLs it generates:
 
 .. code-block:: yaml
 
    garage__configuration:
 
-     - name: 'public_endpoints'
+     - name: 'public_endpoint'
        config:
          s3_api:
            public_endpoint: 'https://s3.example.com'
-         s3_web:
-           index: 'index.html'
+
+The index document of a website is not a configuration option in Garage 2.x,
+although the upstream deployment guide still shows ``index`` in the
+``[s3_web]`` table. It is set for each bucket, for example with
+:command:`garage bucket website --allow --index-document index.html <bucket>`.
 
 Set top-level options which the role does not define, and turn off the
 automatic metadata snapshots:
@@ -224,8 +231,12 @@ Website hosting is a separate server, off by default. Set
 :envvar:`garage__nginx_web_enabled` to ``True`` to publish
 ``*.web.<domain>``.
 
-Without nginx, the S3 API and the website endpoint listen on loopback
-and are reachable from other hosts only from the addresses listed in
-:envvar:`garage__s3_allow` and :envvar:`garage__web_allow`. Both
-endpoints then use plain HTTP, so list only the clients that need direct
-access, or ``0.0.0.0/0`` and ``::/0`` for everyone.
+The S3 API and the website endpoint listen on loopback, where nginx
+connects to them, while :envvar:`garage__s3_allow` and
+:envvar:`garage__web_allow` are empty, so without nginx they are reachable
+only from the host itself. When an allow list is set, the endpoint listens
+on :envvar:`garage__bind_any`, on all interfaces, and only the firewall
+rules of :ref:`debops.ferm` limit the access to the listed addresses; on
+a host without the firewall the endpoint is open to every network the host
+is connected to. Direct access uses plain HTTP, so list only the clients
+that need it, or ``0.0.0.0/0`` and ``::/0`` for everyone.
