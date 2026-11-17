@@ -269,6 +269,18 @@ General
   reported a successful creation while their secrets stayed
   unencrypted.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The role no longer fails with ansible-core 2.19 and later when the
+  ``nginx_default_name`` and ``nginx_default_ssl_name`` variables keep their
+  default empty values. The default server selection checked the strings
+  directly in conditions, which have to evaluate to a boolean now.
+
+- The proxy server template no longer passes custom ``proxy_headers`` text
+  through the ``bool`` filter, which ansible-core 2.19 and later report as
+  an invalid boolean value.
+
 Removed
 ~~~~~~~
 
