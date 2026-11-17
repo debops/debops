@@ -9,6 +9,7 @@ import os
 from unittest import mock
 
 import pytest
+import yaml
 
 from debops.core import config as config_module
 from debops.core.exceptions import OptionNotFoundError
@@ -129,6 +130,20 @@ def test_load_reads_a_single_file(configuration, tmp_path, extension):
 
     assert configuration.load(str(path)) == {"syslog": {"address": "log"}}
     assert str(path) in configuration._config_files
+
+
+def test_load_normalizes_toml_inline_tables(configuration, tmp_path):
+    """An empty inline table parses to a plain dict: the toml parser's
+    internal type does not leak into YAML dumps of the tree."""
+    path = tmp_path / "config.toml"
+    path.write_text('[syslog]\naddress = "log"\n'
+                    '[tofu]\ndefault_modules = {}\n')
+    data = configuration.load(str(path))
+
+    dumped = yaml.dump(data)
+    assert '!!python' not in dumped
+    assert data['tofu']['default_modules'] == {}
+    assert type(data['tofu']['default_modules']).__name__ == 'dict'
 
 
 def test_load_expands_environment_variables(configuration, tmp_path,
