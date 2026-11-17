@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import fcntl
+import logging
 import os
 import subprocess
 import sys
@@ -183,17 +184,17 @@ def test_empty_state_path_disables_the_checks(tofu_project):
     runner._check_state_lock()
 
 
-def test_missing_state_of_an_initialized_view_is_refused(
-        tofu_project, caplog):
-    """The one hard refusal: the view was initialized before, its
-    state is gone -- the store may be locked, empty or mounted empty;
-    OpenTofu would silently re-initialize."""
+def test_missing_state_of_an_initialized_view_warns(tofu_project, caplog):
+    """A fresh view holds no state until its first operation, which
+    looks the same as a lost store; the missing state warns instead of
+    refusing, and the plan surfaces a full recreate."""
     project = tofu_project()
     runner = TofuRunner(project, ["apply"])
     with mock.patch.object(runner_module.TofuRunner,
                            "_initialized_before", return_value=True):
-        with pytest.raises(ChildProcessError, match="missing"):
+        with caplog.at_level(logging.WARNING):
             runner._check_state_presence()
+    assert "is missing" in caplog.text
 
 
 def test_fresh_view_without_state_is_allowed(tofu_project, caplog):
@@ -210,8 +211,35 @@ def test_missing_workspace_is_refused(tofu_project, caplog):
     explicit creation."""
     project = tofu_project()
     runner = TofuRunner(project, ["plan"], workspace="typo")
-    with pytest.raises(ChildProcessError, match="workspace"):
+    with mock.patch.object(runner_module.TofuRunner,
+                           "_initialized_before", return_value=True):
+        with pytest.raises(ChildProcessError, match="workspace"):
+            runner._check_state_presence()
+
+
+def test_uninitialized_view_refuses_the_named_workspace(tofu_project):
+    """Without an initialization the view has no backend to hold the
+    workspace; the operations which touch state need 'tofu init'
+    first."""
+    project = tofu_project()
+    runner = TofuRunner(project, ["plan"], workspace="feature")
+    with pytest.raises(ChildProcessError, match="not initialized"):
         runner._check_state_presence()
+
+
+def test_fresh_named_workspace_is_allowed(tofu_project, monkeypatch):
+    """A workspace which was created explicitly holds no state yet;
+    its first operation is the legitimate creation."""
+    project = tofu_project()
+    os.makedirs(os.path.join(project.path, "tofu", "terraform.tfstate.d",
+                             "feature"))
+    runner = TofuRunner(project, ["plan"], workspace="feature")
+    with mock.patch.object(runner_module.TofuRunner,
+                           "_initialized_before", return_value=True):
+        with mock.patch.object(
+                runner_module.TofuRunner, "_backend_metadata",
+                return_value={"path": "secret/terraform.tfstate"}):
+            runner._check_state_presence()
 
 
 LOCK_HOLDER_SCRIPT = (
