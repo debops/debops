@@ -1470,3 +1470,53 @@ def test_config_set_records_its_layer(configuration):
     scope, origin, data = configuration._layers[-1]
 
     assert (scope, origin) == ("override", "config_set")
+
+
+def test_hcl_value_leaves_a_plain_string_alone():
+    assert config_module.hcl_value("dc1") is None
+
+
+def test_hcl_value_leaves_a_non_string_alone():
+    assert config_module.hcl_value(42) is None
+    assert config_module.hcl_value(None) is None
+    assert config_module.hcl_value(True) is None
+    assert config_module.hcl_value(["hcl:var.x"]) is None
+
+
+def test_hcl_value_strips_the_prefix_from_a_raw_expression():
+    assert config_module.hcl_value("hcl:var.image_name") == ("raw",
+                                                             "var.image_name")
+
+
+def test_hcl_value_keeps_the_prefix_in_an_escaped_literal():
+    """The second prefix of an escaped literal is part of the string
+    it carries: 'hcl:hcl:hello' means the literal 'hcl:hello'."""
+    assert config_module.hcl_value("hcl:hcl:hello") == ("literal",
+                                                        "hcl:hello")
+
+
+def test_hcl_value_refuses_an_empty_payload():
+    with pytest.raises(ValueError, match="empty HCL expression"):
+        config_module.hcl_value("hcl:")
+
+
+@pytest.mark.parametrize("extension", ["toml", "json", "yaml"])
+def test_load_keeps_the_hcl_prefix_through_the_formats(configuration,
+                                                       tmp_path,
+                                                       extension):
+    """A string value prefixed with 'hcl:' is a configuration value
+    like any other: the same value written in every format loads to
+    the same string, and the classifier reads the same kind from it."""
+    content = {
+        "toml": '[syslog]\naddress = "hcl:var.address"\n',
+        "json": '{"syslog": {"address": "hcl:var.address"}}\n',
+        "yaml": 'syslog:\n  address: "hcl:var.address"\n',
+    }[extension]
+    path = tmp_path / ("config." + extension)
+    path.write_text(content)
+
+    loaded = configuration.load(str(path))
+
+    assert loaded == {"syslog": {"address": "hcl:var.address"}}
+    assert config_module.hcl_value(
+        loaded["syslog"]["address"]) == ("raw", "var.address")
