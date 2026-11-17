@@ -16,14 +16,14 @@ state lock pre-check and the missing-state refusal.
 from ..runner import Runner
 from ..hooks import run_hooks
 from ..utils import path_key
-from .view import create_view, sync_providers, view_tofu_root, \
-    write_view_drop_in
+from .view import create_view, view_drop_in_path, view_tofu_root
 import dotenv
 import fcntl
 import json
 import logging
 import os
 import re
+import shlex
 import subprocess
 import sys
 
@@ -81,25 +81,23 @@ class TofuRunner(Runner):
                  workspace=None, providers=None):
         super().__init__(project, bell=bell, secrets_name='tofu')
 
+        self._providers = providers
         self._view_root = self._view_tofu_root()
-        if not os.path.exists(os.path.join(self._view_root, 'main.tf')):
-            # The view tree is created lazily: the first command in a
-            # project without it applies the template and proceeds. The
-            # resolved provider set is recorded in the view's
-            # configuration drop-in, which drives the generated
-            # 'providers.tf' from then on
-            create_view(self.project, self.project.view,
-                        providers=self._resolve_providers(providers))
-        else:
-            # The '--provider' options of the command line are the
-            # operator's decision about the view's provider set: they
-            # update the recorded set, which the generated file follows
-            if providers:
-                write_view_drop_in(self.project, self.project.view,
-                                   providers)
-            # The generated 'providers.tf' follows the recorded set of
-            # the view's configuration drop-in
-            sync_providers(self.project, self.project.view)
+        if providers and self._view_exists():
+            # The '--provider' options apply when a view is created: the
+            # provider set of an existing view is recorded in its
+            # configuration drop-in, which the user owns
+            if os.path.exists(view_drop_in_path(project, project.view)):
+                raise ValueError(
+                    "The '--provider' options apply when a view is "
+                    'created: the provider set of the view {!r} is '
+                    'already recorded in its configuration drop-in. Edit '
+                    'the drop-in and run \'debops tofu update\' to '
+                    'reconcile the generated files.'.format(project.view))
+            raise ValueError(
+                "The '--provider' options apply when a view is created: "
+                'the view {!r} already exists and manages its own '
+                'provider requirements.'.format(project.view))
         self._operation = tofu_args[0]
         if not re.fullmatch(r'[a-z]+(-[a-z]+)*', self._operation):
             raise ValueError(
@@ -132,6 +130,13 @@ class TofuRunner(Runner):
         self._tofu_command = self._build_command(tofu_args,
                                                  no_color=no_color)
 
+    def _view_exists(self):
+        """Whether the view already has its tree or its configuration
+        drop-in."""
+        return (os.path.exists(os.path.join(self._view_root, 'main.tf'))
+                or os.path.exists(view_drop_in_path(self.project,
+                                                    self.project.view)))
+
     def _view_tofu_root(self):
         """Return the view's tofu directory the operation runs in."""
         return view_tofu_root(self.project, self.project.view)
@@ -144,7 +149,8 @@ class TofuRunner(Runner):
         defaults to an empty list: a providerless view. The resolution
         applies when a view is created -- the 'tofu.default_providers'
         option is consulted only there; the provider set of an
-        existing view lives in its configuration drop-in.
+        existing view lives in its configuration drop-in, which the
+        user owns.
         """
         if providers:
             return providers
@@ -484,8 +490,18 @@ class TofuRunner(Runner):
         """Run the operation with the hooks around it and the store
         cycled for the duration.
 
+        The view tree is created lazily: the first command in a
+        project without it applies the template and proceeds. The
+        resolved provider set is recorded in the view's configuration
+        drop-in, which drives the generated 'providers.tf' from then
+        on.
+
         Returns the exit code of the tofu subprocess.
         """
+        if not os.path.exists(os.path.join(self._view_root, 'main.tf')):
+            create_view(self.project, self.project.view,
+                        providers=self._resolve_providers(self._providers))
+
         hook_env = self._subprocess_env(self._tofu_env)
         if not run_hooks(self.project.path, 'pre-' + self._operation,
                          env=hook_env):
@@ -533,3 +549,16 @@ class TofuRunner(Runner):
                   env=self._subprocess_env(self._tofu_env))
 
         return rc
+
+    def eval(self):
+        """Return the shell commands which run the tofu operation.
+
+        The runner-owned environment assignments prefix the command, so
+        that the line is shell-copyable. The store's environment file
+        carries the state passphrase of the view: its values are secret
+        and are not part of the returned line -- they reach the tofu
+        subprocess only, at execution time.
+        """
+        assignments = ['{}={}'.format(key, shlex.quote(value))
+                       for key, value in sorted(self._tofu_env.items())]
+        return ' '.join(assignments + [shlex.join(self._tofu_command)])

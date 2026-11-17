@@ -15,6 +15,7 @@ import pytest
 import debops.core.runner as runner_base_module
 import debops.core.tofu.runner as runner_module
 from debops.core.tofu.runner import TofuRunner
+from debops.core.tofu.view import reconcile_view
 from debops.core.secrets import SecretManager
 
 
@@ -68,6 +69,20 @@ def tofu_project(stub_project):
             handle.write("terraform { backend \"local\" {} }\n")
         return project
     return _make
+
+
+@pytest.fixture
+def stub_tofu_subprocess(monkeypatch):
+    """A stubbed tofu subprocess: 'execute()' runs to completion
+    without the tofu binary, the hooks pass."""
+    process = mock.Mock()
+    process.returncode = 0
+    process.communicate.return_value = (b"", b"")
+    popen = mock.Mock(return_value=process)
+    monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
+    monkeypatch.setattr(runner_module, "run_hooks",
+                        mock.Mock(return_value=True))
+    return popen
 
 
 def test_command_starts_with_the_tofu_binary(tofu_project):
@@ -453,7 +468,8 @@ def test_failed_hook_aborts_the_operation(tofu_project,
         runner.execute()
 
 
-def test_missing_view_tree_is_created_lazily(tofu_project, tmp_path):
+def test_missing_view_tree_is_created_lazily(tofu_project,
+                                             stub_tofu_subprocess):
     """The first command in a project without the view tree applies
     the template and proceeds."""
     project = tofu_project(project_type="modern")
@@ -461,6 +477,7 @@ def test_missing_view_tree_is_created_lazily(tofu_project, tmp_path):
     shutil.rmtree(view_dir)
 
     runner = TofuRunner(project, ["plan"])
+    runner.execute()
 
     assert os.path.isfile(os.path.join(view_dir, "main.tf"))
     assert os.path.isfile(os.path.join(view_dir, "secret", ".env"))
@@ -480,7 +497,7 @@ def test_existing_view_is_left_alone(tofu_project):
     assert open(marker).read() == content
 
 
-def test_broken_view_tree_is_completed(tofu_project):
+def test_broken_view_tree_is_completed(tofu_project, stub_tofu_subprocess):
     """A view directory without its configuration gains the template
     files; existing files are never overwritten."""
     project = tofu_project(project_type="modern")
@@ -490,13 +507,14 @@ def test_broken_view_tree_is_completed(tofu_project):
     with open(custom, "w") as handle:
         handle.write("# The user's own file\n")
 
-    TofuRunner(project, ["plan"])
+    TofuRunner(project, ["plan"]).execute()
 
     assert os.path.isfile(os.path.join(view_dir, "main.tf"))
     assert open(custom).read() == "# The user's own file\n"
 
 
-def test_providers_come_from_the_configuration(tofu_project):
+def test_providers_come_from_the_configuration(tofu_project,
+                                               stub_tofu_subprocess):
     """The 'tofu.default_providers' option is the default provider
     set of new views, recorded in the view's configuration drop-in."""
     project = tofu_project(project_type="modern",
@@ -505,7 +523,7 @@ def test_providers_come_from_the_configuration(tofu_project):
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"])
+    TofuRunner(project, ["plan"]).execute()
 
     providers_tf = open(os.path.join(view_dir, "providers.tf")).read()
     assert 'source = "lxc/incus"' in providers_tf
@@ -515,7 +533,8 @@ def test_providers_come_from_the_configuration(tofu_project):
     assert "providers = ['lxc/incus']" in open(drop_in).read()
 
 
-def test_provider_options_replace_the_configuration(tofu_project):
+def test_provider_options_replace_the_configuration(tofu_project,
+                                                    stub_tofu_subprocess):
     """The '--provider' options of the command line replace the
     configured default provider set for one invocation."""
     project = tofu_project(project_type="modern",
@@ -524,7 +543,8 @@ def test_provider_options_replace_the_configuration(tofu_project):
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"], providers=["hashicorp/tfcoremock"])
+    TofuRunner(project, ["plan"], providers=["hashicorp/tfcoremock"]
+               ).execute()
 
     providers_tf = open(os.path.join(view_dir, "providers.tf")).read()
     assert 'source = "hashicorp/tfcoremock"' in providers_tf
@@ -535,57 +555,82 @@ def test_provider_options_replace_the_configuration(tofu_project):
     assert "providers = ['hashicorp/tfcoremock']" in open(drop_in).read()
 
 
-def test_providerless_view_writes_no_providers_file(tofu_project):
+def test_providerless_view_writes_no_providers_file(tofu_project,
+                                                    stub_tofu_subprocess):
     """An empty provider set writes no 'providers.tf' file: the view
     is providerless by default."""
     project = tofu_project(project_type="modern")
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"])
+    TofuRunner(project, ["plan"]).execute()
 
     assert not os.path.exists(os.path.join(view_dir, "providers.tf"))
 
 
-def test_existing_view_follows_the_recorded_set(tofu_project):
+def test_existing_view_follows_the_recorded_set(tofu_project,
+                                                stub_tofu_subprocess):
     """An existing view's generated 'providers.tf' follows the
     'views.<view>.tofu.providers' option of its configuration
-    drop-in."""
+    drop-in, reconciled by the 'update' operation."""
     project = tofu_project(project_type="modern")
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    drop_in = os.path.join(project.path, ".debops", "conf.d",
+                           "view-" + project.view + "-tofu.toml")
+    shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"])
+    # A view created without providers has no generated file
+    TofuRunner(project, ["plan"]).execute()
     assert not os.path.exists(os.path.join(view_dir, "providers.tf"))
 
-    # The '--provider' options record the new set in the drop-in, which
-    # the generated file follows
-    TofuRunner(project, ["plan"], providers=["lxc/incus"])
+    # The user edits the drop-in to record the provider set; the
+    # reconcile creates the generated file from it
+    with open(drop_in, "w") as handle:
+        handle.write('[views."{}"].tofu\nproviders = [\'lxc/incus\']\n'
+                     .format(project.view))
+    project.config.merge({'views': {project.view: {'tofu': {
+        'providers': ['lxc/incus']}}}})
+    changes = reconcile_view(project, project.view)
+    assert [change['action'] for change in changes] == ['create']
+
     providers_tf = open(os.path.join(view_dir, "providers.tf")).read()
     assert 'source = "lxc/incus"' in providers_tf
 
     # The same set keeps the file as it is
     before = os.path.getmtime(os.path.join(view_dir, "providers.tf"))
-    TofuRunner(project, ["plan"])
+    changes = reconcile_view(project, project.view)
+    assert changes == []
     assert os.path.getmtime(os.path.join(view_dir, "providers.tf")) == before
 
 
-def test_existing_view_drops_the_file_with_an_empty_set(tofu_project):
+def test_existing_view_drops_the_file_with_an_empty_set(
+        tofu_project, stub_tofu_subprocess):
     """An empty recorded set removes the generated 'providers.tf' of
     an existing view."""
     project = tofu_project(project_type="modern")
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    drop_in = os.path.join(project.path, ".debops", "conf.d",
+                           "view-" + project.view + "-tofu.toml")
+    shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"], providers=["lxc/incus"])
+    TofuRunner(project, ["plan"], providers=["lxc/incus"]).execute()
     assert os.path.exists(os.path.join(view_dir, "providers.tf"))
 
-    project.config.raw['views'][project.view]['tofu']['providers'] = []
-    TofuRunner(project, ["plan"])
+    # The user edits the drop-in to record an empty set; the
+    # reconcile removes the generated file
+    with open(drop_in, "w") as handle:
+        handle.write('[views."{}"].tofu\nproviders = []\n'
+                     .format(project.view))
+    project.config.merge({'views': {project.view: {'tofu': {
+        'providers': []}}}})
+    changes = reconcile_view(project, project.view)
+    assert [change['action'] for change in changes] == ['remove']
     assert not os.path.exists(os.path.join(view_dir, "providers.tf"))
 
 
 def test_hand_made_view_keeps_its_own_providers(tofu_project):
     """A view without a configuration drop-in -- a hand-made one --
-    keeps its own provider requirements: the sync leaves the view
+    keeps its own provider requirements: the reconcile leaves the view
     alone."""
     project = tofu_project(project_type="modern")
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
@@ -595,27 +640,31 @@ def test_hand_made_view_keeps_its_own_providers(tofu_project):
     with open(main_tf, "w") as handle:
         handle.write(template_view + "\n# The view's own providers\n")
 
-    TofuRunner(project, ["plan"])
+    changes = reconcile_view(project, project.view)
 
+    assert changes == []
     assert not os.path.exists(os.path.join(view_dir, "providers.tf"))
     assert "The view's own providers" in open(main_tf).read()
 
 
-def test_provider_version_pin_is_written(tofu_project):
+def test_provider_version_pin_is_written(tofu_project,
+                                         stub_tofu_subprocess):
     """A '--provider' argument with a version pin carries the pin
     into the generated provider block."""
     project = tofu_project(project_type="modern")
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"], providers=["lxc/incus=1.2.1"])
+    TofuRunner(project, ["plan"], providers=["lxc/incus=1.2.1"]
+               ).execute()
 
     providers_tf = open(os.path.join(view_dir, "providers.tf")).read()
     assert 'source = "lxc/incus"' in providers_tf
     assert 'version = "1.2.1"' in providers_tf
 
 
-def test_state_passphrase_is_generated_into_the_store(tofu_project):
+def test_state_passphrase_is_generated_into_the_store(
+        tofu_project, stub_tofu_subprocess):
     """The store's '.env' carries the state passphrase which the
     runner composes into the environment."""
     project = tofu_project(project_type="modern")
@@ -623,6 +672,7 @@ def test_state_passphrase_is_generated_into_the_store(tofu_project):
     shutil.rmtree(view_dir)
 
     runner = TofuRunner(project, ["plan"])
+    runner.execute()
     dotenv_content = open(os.path.join(view_dir, "secret", ".env")).read()
 
     assert dotenv_content.startswith("TF_VAR_state_passphrase=")
@@ -632,3 +682,183 @@ def test_state_passphrase_is_generated_into_the_store(tofu_project):
     # at execution time, after the store is unlocked
     env = runner._extra_env()
     assert env["TF_VAR_state_passphrase"] == passphrase
+
+
+def write_drop_in(project, providers):
+    """Write the view's configuration drop-in, the way the view
+    creation does, and merge the recorded set into the live
+    configuration."""
+    drop_in = os.path.join(project.path, ".debops", "conf.d",
+                           "view-" + project.view + "-tofu.toml")
+    os.makedirs(os.path.dirname(drop_in), exist_ok=True)
+    with open(drop_in, "w") as handle:
+        handle.write('[views."{}".tofu]\nproviders = {}\n'.format(
+            project.view, providers))
+    project.config.merge({'views': {project.view: {'tofu': {
+        'providers': providers}}}})
+    return drop_in
+
+
+def test_provider_options_refused_on_an_existing_view(tofu_project):
+    """The '--provider' options apply when a view is created: an
+    existing view's provider set is recorded in its configuration
+    drop-in, which the user owns."""
+    project = tofu_project(project_type="modern")
+
+    with pytest.raises(ValueError,
+                       match="The '--provider' options apply when a view "
+                             'is created'):
+        TofuRunner(project, ["plan"], providers=["lxc/incus"])
+
+
+def test_provider_options_refused_on_a_view_with_a_drop_in(
+        tofu_project, stub_tofu_subprocess):
+    """A view whose tree is broken keeps its recorded provider set:
+    repair does not get to rewrite the user's decision."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    TofuRunner(project, ["plan"], providers=["lxc/incus"]).execute()
+    os.remove(os.path.join(view_dir, "main.tf"))
+
+    with pytest.raises(ValueError,
+                       match="The '--provider' options apply when a view "
+                             'is created'):
+        TofuRunner(project, ["plan"], providers=["lxc/incus"])
+
+
+def test_drop_in_is_written_once(tofu_project, stub_tofu_subprocess):
+    """The configuration drop-in is written when the view is created
+    and never modified by the commands again: the user owns it."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    drop_in = os.path.join(project.path, ".debops", "conf.d",
+                           "view-" + project.view + "-tofu.toml")
+    shutil.rmtree(view_dir)
+
+    TofuRunner(project, ["plan"], providers=["lxc/incus"]).execute()
+    content = open(drop_in).read()
+    assert "providers = ['lxc/incus']" in content
+
+    # A second command leaves the drop-in alone
+    TofuRunner(project, ["plan"]).execute()
+    assert open(drop_in).read() == content
+
+
+def test_reconcile_refuses_a_user_owned_file(tofu_project):
+    """A 'providers.tf' file without the DebOps marker is user-owned:
+    the reconcile refuses to touch it unless '--force' is given."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    providers_path = os.path.join(view_dir, "providers.tf")
+    with open(providers_path, "w") as handle:
+        handle.write("# The user's own providers\n")
+    write_drop_in(project, ['lxc/incus'])
+
+    with pytest.raises(ValueError, match='was not generated by DebOps'):
+        reconcile_view(project, project.view)
+    assert open(providers_path).read() == "# The user's own providers\n"
+
+
+def test_reconcile_force_replaces_a_user_owned_file(tofu_project):
+    """'--force' hands the management of a user-owned 'providers.tf'
+    back to DebOps."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    providers_path = os.path.join(view_dir, "providers.tf")
+    with open(providers_path, "w") as handle:
+        handle.write("# The user's own providers\n")
+    write_drop_in(project, ['lxc/incus'])
+
+    changes = reconcile_view(project, project.view, force=True)
+
+    assert [change['action'] for change in changes] == ['update']
+    assert 'source = "lxc/incus"' in open(providers_path).read()
+
+
+def test_reconcile_leaves_a_user_owned_file_with_an_empty_set(
+        tofu_project):
+    """An empty recorded set removes only the generated file: a
+    user-owned 'providers.tf' stays."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    providers_path = os.path.join(view_dir, "providers.tf")
+    with open(providers_path, "w") as handle:
+        handle.write("# The user's own providers\n")
+    write_drop_in(project, [])
+
+    changes = reconcile_view(project, project.view)
+
+    assert changes == []
+    assert open(providers_path).read() == "# The user's own providers\n"
+
+
+def test_reconcile_dry_run_writes_nothing(tofu_project):
+    """The dry-run reconcile shows the proposed changes without
+    writing them."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    providers_path = os.path.join(view_dir, "providers.tf")
+    write_drop_in(project, ['lxc/incus'])
+
+    changes = reconcile_view(project, project.view, dry_run=True)
+
+    assert [change['action'] for change in changes] == ['create']
+    assert not os.path.exists(providers_path)
+
+    # Without the dry-run flag the same reconcile writes the file
+    changes = reconcile_view(project, project.view)
+    assert [change['action'] for change in changes] == ['create']
+    assert 'source = "lxc/incus"' in open(providers_path).read()
+
+
+def test_reconcile_diff_carries_the_unified_diff(tofu_project):
+    """The proposed changes carry the unified diff of each file."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    providers_path = os.path.join(view_dir, "providers.tf")
+    write_drop_in(project, ['lxc/incus'])
+
+    changes = reconcile_view(project, project.view, dry_run=True)
+
+    diff = changes[0]['diff']
+    assert diff.startswith('--- a/')
+    assert 'tofu/views/' + project.view + '/providers.tf' in diff
+    assert '+++ b/' in diff
+    # A new file renders as a full-addition diff
+    assert all(line.startswith('+') for line in diff.splitlines()
+               if line.startswith(('+', '-')) and not line.startswith(
+                   ('+++', '---')))
+
+
+def test_eval_prints_the_command_without_the_store_secrets(tofu_project):
+    """'--eval' prints the command the wrapper would run, with the
+    runner-owned environment; the store's values are secret and stay
+    out of the output."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    with open(os.path.join(view_dir, "secret", ".env"), "w") as handle:
+        handle.write("TF_VAR_state_passphrase=from-the-store\n")
+
+    runner = TofuRunner(project, ["plan"])
+    command = runner.eval()
+
+    assert 'TF_WORKSPACE=default' in command
+    assert 'tofu plan' in command
+    assert 'TF_VAR_state_passphrase' not in command
+    assert 'from-the-store' not in command
+
+
+def test_eval_never_creates_the_view(tofu_project):
+    """'--eval' inspects the command without running it: the view tree
+    of a project without one is not created."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    runner = TofuRunner(project, ["plan"])
+    command = runner.eval()
+
+    assert 'tofu plan' in command
+    assert not os.path.exists(view_dir)
