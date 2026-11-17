@@ -72,6 +72,42 @@
         }
       }
     },
+    "gpg": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "debops": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "keyring": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "The GnuPG homedir of the DebOps-managed keyring, separate from the user's own GnuPG home. The keyring holds the public keys of the parties which sign the artifacts DebOps downloads and verifies; the trust anchor is the fingerprint of the expected signing key, recorded in the configuration of the party which uses it. An empty path resolves to the 'debops/gnupg' directory of the XDG data location, shared across projects."
+                },
+                "gpg_conf": {
+                  "type": "object",
+                  "description": "The options of the keyring's 'gpg.conf' file, rendered literally into the keyring: a string value renders as 'name value', a list as 'name v1 v2' -- the multi-value syntax of gpg.conf -- a boolean 'true' emits the option name alone, and 'false' omits the line, letting the option's gpg default apply.",
+                  "additionalProperties": {
+                    "type": [
+                      "string",
+                      "boolean",
+                      "array"
+                    ],
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "override_paths": {
       "type": "object",
       "additionalProperties": false,
