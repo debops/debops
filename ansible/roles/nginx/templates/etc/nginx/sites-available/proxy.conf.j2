@@ -16,7 +16,10 @@
 {%   endif %}
 {% else %}
         location {{ item.proxy_location if item.proxy_location | d() else "/" }} {
-{%   if item.proxy_headers is undefined or item.proxy_headers | bool %}
+{%   if (item.proxy_headers is undefined or
+        (item.proxy_headers is string and
+         item.proxy_headers | lower in [ 'y', 'yes', 'on', '1', 'true', 't' ]) or
+        (item.proxy_headers is not string and item.proxy_headers | bool)) %}
                 proxy_set_header Host              $host;
                 proxy_set_header X-Real-IP         $remote_addr;
                 proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
