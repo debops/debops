@@ -17,6 +17,7 @@ from ..runner import Runner
 from ..hooks import run_hooks
 from ..utils import path_key
 from .providers import resolve_providers
+from .modules import resolve_modules
 from .registry import view_drop_in_path, view_tofu_root
 from .view import create_view
 import dotenv
@@ -80,26 +81,31 @@ DESTRUCTIVE_OPERATIONS = frozenset(['apply', 'destroy'])
 class TofuRunner(Runner):
 
     def __init__(self, project, tofu_args, bell=False, no_color=False,
-                 workspace=None, providers=None):
+                 workspace=None, providers=None, modules=None):
         super().__init__(project, bell=bell, secrets_name='tofu')
 
         self._providers = providers
+        self._modules = modules
         self._view_root = self._view_tofu_root()
-        if providers and self._view_exists():
-            # The '--provider' options apply when a view is created: the
-            # provider set of an existing view is recorded in its
-            # configuration drop-in, which the user owns
+        for flag, set_name in (('--provider', 'provider set'),
+                               ('--module', 'module set')):
+            options = providers if flag == '--provider' else modules
+            if not options or not self._view_exists():
+                continue
+            # The '--provider' and '--module' options apply when a view
+            # is created: the dependency set of an existing view is
+            # recorded in its configuration drop-in, which the user owns
             if os.path.exists(view_drop_in_path(project, project.view)):
                 raise ValueError(
-                    "The '--provider' options apply when a view is "
-                    'created: the provider set of the view {!r} is '
-                    'already recorded in its configuration drop-in. Edit '
-                    'the drop-in and run \'debops tofu update\' to '
-                    'reconcile the generated files.'.format(project.view))
+                    "The '{}' options apply when a view is created: the "
+                    '{} of the view {!r} is already recorded in its '
+                    'configuration drop-in. Edit the drop-in and run '
+                    "'debops tofu update' to reconcile the generated "
+                    'files.'.format(flag, set_name, project.view))
             raise ValueError(
-                "The '--provider' options apply when a view is created: "
-                'the view {!r} already exists and manages its own '
-                'provider requirements.'.format(project.view))
+                "The '{}' options apply when a view is created: the "
+                'view {!r} already exists and manages its own '
+                'requirements.'.format(flag, project.view))
         self._operation = tofu_args[0]
         if not re.fullmatch(r'[a-z]+(-[a-z]+)*', self._operation):
             raise ValueError(
@@ -488,7 +494,9 @@ class TofuRunner(Runner):
         if not os.path.exists(os.path.join(self._view_root, 'main.tf')):
             create_view(self.project, self.project.view,
                         providers=resolve_providers(self.project,
-                                                    self._providers))
+                                                    self._providers),
+                        modules=resolve_modules(self.project,
+                                                self._modules))
 
         hook_env = self._subprocess_env(self._tofu_env)
         if not run_hooks(self.project.path, 'pre-' + self._operation,
