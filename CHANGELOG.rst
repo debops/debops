@@ -26,6 +26,15 @@ You can read information about required changes between releases in the
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- The ``debops.debops.to_toml`` filter plugin failed with a ``RecursionError``
+  with :command:`ansible-core` v2.18 and older when the configuration
+  contained values from host facts or lookups, for example in the
+  :ref:`debops.telegraf` role. Such "unsafe" strings are now converted to
+  plain strings before serialization.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
@@ -289,6 +298,18 @@ General
   lost in the refactoring of the secret store, and legacy projects
   reported a successful creation while their secrets stayed
   unencrypted.
+
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The role no longer fails with ansible-core 2.19 and later when the
+  ``nginx_default_name`` and ``nginx_default_ssl_name`` variables keep their
+  default empty values. The default server selection checked the strings
+  directly in conditions, which have to evaluate to a boolean now.
+
+- The proxy server template no longer passes custom ``proxy_headers`` text
+  through the ``bool`` filter, which ansible-core 2.19 and later report as
+  an invalid boolean value.
 
 Removed
 ~~~~~~~
