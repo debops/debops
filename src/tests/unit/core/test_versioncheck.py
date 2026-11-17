@@ -134,6 +134,54 @@ class DetectionTestCase(VersionCheckTestCase):
                 unittest.mock.patch.dict(os.environ, {'PIPX_HOME': pipx_home}):
             self.assertEqual(self.detect(pkg_dir), 'pipx')
 
+    def test_pipx_xdg_default_location_detected(self):
+        """Current pipx releases keep environments in the XDG data dir."""
+        pipx_home = os.path.join(self.tmpdir, '.local', 'share', 'pipx')
+        pkg_dir = os.path.join(pipx_home, 'venvs', 'debops', 'lib',
+                               'python3.13', 'site-packages', 'debops')
+        os.makedirs(pkg_dir)
+        argv0 = os.path.join(pipx_home, 'venvs', 'debops', 'bin', 'debops')
+        with unittest.mock.patch('sys.argv', [argv0]), \
+                unittest.mock.patch.dict(os.environ,
+                                         {'HOME': self.tmpdir}, clear=True):
+            self.assertEqual(self.detect(pkg_dir), 'pipx')
+
+    def test_pipx_legacy_default_location_detected(self):
+        """Older pipx releases keep environments in '~/.local/pipx'."""
+        pipx_home = os.path.join(self.tmpdir, '.local', 'pipx')
+        pkg_dir = os.path.join(pipx_home, 'venvs', 'debops', 'lib',
+                               'python3.11', 'site-packages', 'debops')
+        os.makedirs(pkg_dir)
+        argv0 = os.path.join(pipx_home, 'venvs', 'debops', 'bin', 'debops')
+        with unittest.mock.patch('sys.argv', [argv0]), \
+                unittest.mock.patch.dict(os.environ,
+                                         {'HOME': self.tmpdir}, clear=True):
+            self.assertEqual(self.detect(pkg_dir), 'pipx')
+
+    def test_pipx_metadata_marker_detected(self):
+        """The 'pipx_metadata.json' marker is independent of the home path."""
+        venv_dir = os.path.join(self.tmpdir, 'custom-home', 'venvs', 'debops')
+        pkg_dir = os.path.join(venv_dir, 'lib', 'python3.13',
+                               'site-packages', 'debops')
+        os.makedirs(pkg_dir)
+        with open(os.path.join(venv_dir, 'pipx_metadata.json'), 'w') as fp:
+            fp.write('{}')
+        with unittest.mock.patch('sys.prefix', venv_dir):
+            self.assertEqual(self.detect(pkg_dir), 'pipx')
+
+    def test_pipx_home_with_literal_tilde_is_expanded(self):
+        """A '~' in $PIPX_HOME is expanded, not compared literally."""
+        pipx_home = os.path.join(self.tmpdir, 'pipx')
+        pkg_dir = os.path.join(pipx_home, 'venvs', 'debops', 'lib',
+                               'python3.13', 'site-packages', 'debops')
+        os.makedirs(pkg_dir)
+        argv0 = os.path.join(pipx_home, 'venvs', 'debops', 'bin', 'debops')
+        with unittest.mock.patch('sys.argv', [argv0]), \
+                unittest.mock.patch.dict(os.environ,
+                                         {'HOME': self.tmpdir,
+                                          'PIPX_HOME': '~/pipx'}):
+            self.assertEqual(self.detect(pkg_dir), 'pipx')
+
 
 class VersionComparisonTestCase(VersionCheckTestCase):
     """Version parsing and comparison behaviour."""
@@ -386,6 +434,87 @@ class CacheTestCase(VersionCheckTestCase):
                                         return_value=True):
             check.check()
         check._logger.notice.assert_not_called()
+
+    def pypi_replay(self, check):
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = self.tmpdir
+        with unittest.mock.patch.object(check, '_detect_install_method',
+                                        return_value='pypi'), \
+                unittest.mock.patch.object(
+                    check, '_check_pypi',
+                    return_value=None) as pypi_check:
+            check.check()
+        return pypi_check
+
+    def git_master_replay(self, check):
+        with unittest.mock.patch.object(
+                check, '_check_git_master',
+                return_value=None) as master_check:
+            check.check()
+        return master_check
+
+    def test_cached_notice_after_upgrade_is_not_replayed(self):
+        """The cached result is invalid once the installation changed.
+
+        The cache records the version it was computed against. Replaying
+        it after an upgrade could claim that the new version is out of
+        date; the live source re-checks instead.
+        """
+        check = self.save_fresh_cache(
+            self.cache_result('pypi', update_available=True))
+        # Simulate an installation upgraded after the cache was written
+        check._version = next_minor_version(check._version)
+        pypi_check = self.pypi_replay(check)
+
+        pypi_check.assert_called_once()
+        check._logger.notice.assert_not_called()
+
+    def test_cached_notice_without_recorded_version_is_not_replayed(self):
+        """Caches written by older releases are re-checked, not replayed."""
+        result = self.cache_result('pypi', update_available=True)
+        check = make_check({'enabled': True})
+        os.makedirs(os.path.dirname(self.cache_file()))
+        with open(self.cache_file(), 'w') as fp:
+            json.dump(result, fp)
+        self.pypi_replay(check)
+
+        check._logger.notice.assert_not_called()
+
+    def test_cached_git_notice_after_pull_is_not_replayed(self):
+        """A cache keyed on the old HEAD is invalid after 'git pull'."""
+        repo_dir = os.path.join(self.tmpdir, 'repo-cache-pull')
+        git_fixture(repo_dir, 'master', commits=1)
+        check = make_check({'enabled': True})
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = os.path.join(repo_dir, 'src', 'debops')
+        os.makedirs(check._pkg_dir)
+        check._save_cache(self.cache_result('git_master',
+                                            update_available=True))
+        # A new commit after the cache was written changes the HEAD
+        subprocess.run(['git', '-C', repo_dir, 'commit', '-q',
+                        '--allow-empty', '-m', 'newer commit'],
+                       check=True, capture_output=True, env=GIT_ENV)
+        master_check = self.git_master_replay(check)
+
+        master_check.assert_called_once()
+        check._logger.notice.assert_not_called()
+
+    def test_cached_git_notice_with_unchanged_head_is_replayed(self):
+        """An unchanged HEAD still replays the cache without a fetch."""
+        repo_dir = os.path.join(self.tmpdir, 'repo-cache-replay')
+        git_fixture(repo_dir, 'master', commits=1)
+        check = make_check({'enabled': True})
+        check._logger = unittest.mock.Mock()
+        check._pkg_dir = os.path.join(repo_dir, 'src', 'debops')
+        os.makedirs(check._pkg_dir)
+        check._save_cache(self.cache_result('git_master',
+                                            update_available=True))
+        with unittest.mock.patch.object(check, '_git_fetch',
+                                        return_value=True) as fetch:
+            check.check()
+
+        fetch.assert_not_called()
+        self.assertIn('1.2.3', check._logger.notice.call_args[0][0])
 
     def test_stale_cache_is_rechecked(self):
         result = self.cache_result('git_master', update_available=False)

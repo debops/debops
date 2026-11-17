@@ -66,9 +66,10 @@ class VersionCheck(object):
 
         if self._cache_is_fresh():
             cached = self._load_cache()
-            # Replay the cached result only if the installation method is
-            # unchanged; otherwise fall through and re-check the live source.
-            if cached and cached.get('source') == method:
+            # Replay the cached result only if the installation is
+            # unchanged since the cache was written; otherwise fall through
+            # and re-check the live source.
+            if cached and self._cache_matches_install(cached, method):
                 if cached.get('update_available'):
                     self._notify(cached.get('latest_version'),
                                  cached.get('source'))
@@ -148,17 +149,40 @@ class VersionCheck(object):
             return False
 
     def _is_pipx(self):
-        pipx_home = os.environ.get(
-                'PIPX_HOME',
-                os.path.join(os.path.expanduser('~'), '.local', 'pipx'))
-        try:
-            if os.path.commonpath([pipx_home,
-                                   os.path.realpath(sys.argv[0])]) == pipx_home:
-                return True
-            if os.path.commonpath([pipx_home, self._pkg_dir]) == pipx_home:
-                return True
-        except ValueError:
-            return False
+        """Is DebOps installed in a virtual environment managed by pipx?
+
+        Every pipx-managed environment carries a 'pipx_metadata.json' file
+        in its root, which is independent of where the pipx home directory
+        lives. Path comparison is the fallback for environments without
+        the marker. pipx defaults to the XDG data directory
+        ('~/.local/share/pipx') on Linux and keeps the legacy
+        '~/.local/pipx' as a fallback for environments created by older
+        releases.
+        """
+        if os.path.exists(os.path.join(sys.prefix, 'pipx_metadata.json')):
+            return True
+
+        pipx_homes = []
+        pipx_home = os.environ.get('PIPX_HOME')
+        if pipx_home:
+            # Expand '~' in $PIPX_HOME the way pipx itself does; a literal
+            # tilde is a relative path, which os.path.commonpath() rejects
+            pipx_homes.append(os.path.expanduser(pipx_home))
+        pipx_homes.extend([
+            os.path.join(os.path.expanduser('~'),
+                         '.local', 'share', 'pipx'),
+            os.path.join(os.path.expanduser('~'), '.local', 'pipx'),
+        ])
+
+        for home in pipx_homes:
+            try:
+                if os.path.commonpath(
+                        [home, os.path.realpath(sys.argv[0])]) == home:
+                    return True
+                if os.path.commonpath([home, self._pkg_dir]) == home:
+                    return True
+            except ValueError:
+                continue
         return False
 
     def _git_repo(self):
@@ -176,6 +200,13 @@ class VersionCheck(object):
             return True
         except Exception:
             return False
+
+    def _head_ref(self):
+        """The commit the running installation was built from, or None."""
+        try:
+            return self._git_repo().commit('HEAD').hexsha
+        except Exception:
+            return None
 
     def _git_fetch(self, with_tags=False):
         timeout = self._settings.get('timeout', 5)
@@ -313,6 +344,21 @@ class VersionCheck(object):
         except Exception:
             return None
 
+    def _cache_matches_install(self, cached, method):
+        """Does the cached result describe the installation now running?
+
+        A cached decision is only valid for the installation it was
+        computed against. Replaying it after an upgrade or a pull could
+        claim that the current version is out of date; the live source is
+        re-checked instead until a new result is cached.
+        """
+        if method in ('git_master', 'git_stable', 'git_branch'):
+            head = self._head_ref()
+            if head is not None:
+                return cached.get('current_ref') == head
+            # Without the commit, fall back to the version string
+        return cached.get('current_version') == self._version
+
     def _cache_is_fresh(self):
         if not os.path.exists(self._cache_file):
             return False
@@ -337,6 +383,9 @@ class VersionCheck(object):
     def _save_cache(self, result):
         try:
             os.makedirs(self._cache_dir, mode=0o755, exist_ok=True)
+            result['current_version'] = self._version
+            if result.get('source', '').startswith('git'):
+                result['current_ref'] = self._head_ref()
             result['timestamp'] = time.time()
             with open(self._cache_file, 'w') as fp:
                 json.dump(result, fp, indent=2)
