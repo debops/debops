@@ -53,6 +53,9 @@
         },
         "sftp": {
           "type": "string"
+        },
+        "tofu": {
+          "type": "string"
         }
       }
     },
@@ -322,7 +325,43 @@
                 "description": "Where the SSH host keys of the view are stored: in the user's own known_hosts file ('user') or in the project's per-view store ('project')."
               }
             }
+          },
+          "tofu": {
+            "type": "object",
+            "description": "OpenTofu integration options of the view.",
+            "properties": {
+              "workspace": {
+                "type": "string",
+                "description": "The OpenTofu workspace the view targets by default. When unset, the view targets the 'default' workspace: one state directory per view."
+              },
+              "state_path": {
+                "type": "string",
+                "description": "Per-view override of the 'tofu.state_path' option."
+              }
+            }
           }
+        }
+      }
+    },
+    "tofu": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Integration options of the 'debops tofu' wrapper. The OpenTofu language itself is configured in the project's tofu files, not here.",
+      "properties": {
+        "state_path": {
+          "type": "string",
+          "description": "Path to the state file of the local backend, relative to the view's 'tofu' directory. Empty string marks a view with a remote backend: the local state checks are skipped."
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The OpenTofu operations the 'debops tofu' wrapper is allowed to run. An empty list allows every operation."
+        },
+        "plan_retention": {
+          "type": "integer",
+          "description": "How many plan files the DebOps flows keep in the state directory."
         }
       }
     }
