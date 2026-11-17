@@ -89,6 +89,21 @@ def _config_leaves(path, node, leaves):
         leaves.append((path, node))
 
 
+def _plain_tree(data):
+    """Normalize a parsed configuration tree to plain dictionaries.
+
+    The toml package parses inline tables as a dict subclass which
+    leaks into YAML dumps of the tree as a Python object tag; the
+    normalization copies the parsed tree into plain dicts, so that
+    the parser's internal types do not cross the library's boundary.
+    """
+    if isinstance(data, dict):
+        return {key: _plain_tree(value) for key, value in data.items()}
+    if isinstance(data, list):
+        return [_plain_tree(item) for item in data]
+    return data
+
+
 def _prune_empty(data, segments):
     """Remove the sections left empty by removing an option.
 
@@ -271,7 +286,7 @@ class Configuration(object):
             template = jinja2.Template(fp.read(), trim_blocks=True)
         rendered = template.render(env=os.environ)
         if path.endswith('.toml'):
-            data = toml.loads(rendered)
+            data = _plain_tree(toml.loads(rendered))
         elif path.endswith('.json'):
             data = json.loads(rendered)
         elif path.endswith('.yaml') or path.endswith('.yml'):
@@ -838,7 +853,7 @@ class Configuration(object):
             self._config_files.append(path)
             with open(path, 'r') as fp:
                 try:
-                    data = toml.loads(fp.read())
+                    data = _plain_tree(toml.loads(fp.read()))
                 except toml.TomlDecodeError as errmsg:
                     self._record_violation(
                         'parse', path, None, True,
