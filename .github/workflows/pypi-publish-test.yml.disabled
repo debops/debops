@@ -1,0 +1,102 @@
+---
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Exercise the release pipeline against the TestPyPI sandbox index, so
+# that the floating 'release/v1' branch of the
+# 'pypa/gh-action-pypi-publish' action is tested before a release tag
+# is pushed. The workflow file name is bound to the Trusted Publisher
+# configuration on test.pypi.org; the production PyPI publisher pins
+# the 'pypi-publish.yml' file name and rejects the identity minted
+# here, so nothing from this workflow can reach the production index.
+
+name: 'Test the PyPI release pipeline'
+
+on:
+  push:
+    branches: [ 'master' ]
+    paths:
+      - '.github/workflows/pypi-publish.yml'
+      - '.github/workflows/pypi-publish-test.yml'
+      - 'requirements-ci.txt'
+      - 'Makefile'
+      - 'lib/tests/**'
+  schedule:
+    # Monday 05:00 UTC
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  release_pipeline_test:
+    runs-on: 'ubuntu-latest'
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+
+      - name: 'Clone the repository'
+        uses: 'actions/checkout@v7'
+        with:
+          fetch-depth: 0
+
+      - name: 'Pin the build interpreter'
+        # Sphinx 5.3.0 is pinned for the speed of the documentation
+        # reading phase, and it imports the 'imghdr' module which the
+        # Python standard library removed in 3.13. The runner images
+        # ship Python 3.14, so the toolchain virtual environment is
+        # built from the setup-python interpreter instead.
+        uses: 'actions/setup-python@v7'
+        with:
+          python-version: '3.12'
+
+      - name: 'Prepare the build environment'
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -yq install pandoc pandoc-data graphviz
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -c requirements-ci.txt \
+            wheel setuptools pyyaml sphinx sphinx-autobuild \
+            sphinx-rtd-theme pypandoc
+          "${RUNNER_TEMP}/venv/bin/pip" check
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
+
+      - name: 'Stamp a test release version'
+        # setup.py derives the package version from 'git describe' at
+        # build time and rewrites the version files, so the local
+        # version identifier of a master build cannot be stripped
+        # between the stamp and the build. Tag the checked-out commit
+        # locally instead: 'git describe' then resolves to a clean,
+        # publishable version for the sandbox index. The tag is
+        # annotated, as 'git describe' ignores lightweight tags, and
+        # it is local to the runner checkout, never pushed;
+        # 'skip-existing' keeps the recurring runs green once the
+        # version is uploaded.
+        run: |
+          git -c user.name='DebOps CI' -c user.email='ci@debops.org' \
+            tag --annotate --message 'The pipeline test version' \
+            --force v0.0.0 "${GITHUB_SHA}"
+
+      - name: 'Build and check the DebOps Python packages'
+        run: |
+          make clean-tests
+          make check
+          make test-man sdist-quiet wheel-quiet
+          make test-metadata
+          make test-smoke
+
+      - name: 'Publish the packages on TestPyPI'
+        uses: 'pypa/gh-action-pypi-publish@release/v1'
+        with:
+          packages-dir: 'dist/pypi/'
+          repository-url: 'https://test.pypi.org/legacy/'
+          skip-existing: 'true'
