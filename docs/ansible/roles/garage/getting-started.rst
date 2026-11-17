@@ -219,6 +219,11 @@ you expand:
    use the secrets of the existing cluster instead of the default one.
 
 2. Set :envvar:`garage__single_node` to ``False`` on the existing node.
+   If it uses :envvar:`garage__default_bucket`, remove that variable as
+   well. Garage accepts ``--default-bucket`` only in the single-node mode,
+   so from now on the role does not pass the flag and removes
+   :file:`/etc/garage/default-credentials.env` from the host. The bucket
+   and its key stay in the cluster.
 
 3. Raise :envvar:`garage__replication_factor` only if you are ready to
    rebuild the layout. The value must be identical on every node; the

@@ -491,7 +491,9 @@ garage__single_node: '{{ (garage__replication_factor | int == 1) and
 # ``GARAGE_DEFAULT_ACCESS_KEY``, ``GARAGE_DEFAULT_SECRET_KEY`` and
 # ``GARAGE_DEFAULT_BUCKET`` so the first play produces a working S3
 # endpoint, a bucket and a key pair. Garage accepts this flag only with
-# ``--single-node``, so it requires :envvar:`garage__single_node`.
+# ``--single-node``, so the role uses it only when
+# :envvar:`garage__single_node` is ``True``. The bucket and the key stay in
+# the cluster when the host leaves the single-node mode.
 garage__default_bucket: ''
 
                                                                    # ]]]

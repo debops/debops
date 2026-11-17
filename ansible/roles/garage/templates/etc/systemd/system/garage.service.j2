@@ -15,10 +15,11 @@ Type=simple
 User={{ garage__user }}
 Group={{ garage__group }}
 Environment=GARAGE_LOG_TO_JOURNALD=1
-{% if garage__default_bucket | length > 0 %}
+{% set garage__tpl_default_bucket = (garage__single_node | bool and garage__default_bucket | length > 0) %}
+{% if garage__tpl_default_bucket %}
 EnvironmentFile={{ garage__secret_dir }}/default-credentials.env
 {% endif %}
-ExecStart={{ garage__bin_path }} -c {{ garage__config_file }} server{% if garage__single_node | bool %} --single-node{% endif %}{% if garage__default_bucket | length > 0 %} --default-bucket{% endif %}
+ExecStart={{ garage__bin_path }} -c {{ garage__config_file }} server{% if garage__single_node | bool %} --single-node{% endif %}{% if garage__tpl_default_bucket %} --default-bucket{% endif %}
 
 Restart=on-failure
 RestartSec=5

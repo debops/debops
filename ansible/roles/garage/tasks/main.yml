@@ -118,16 +118,6 @@
           cluster checks. Set the replication factor only with
           garage__replication_factor, as an integer.
 
-    - name: Assert default-bucket bootstrap is used with single-node mode
-      ansible.builtin.assert:
-        that:
-          - garage__single_node | bool
-        quiet: True
-        fail_msg: >-
-          Garage accepts --default-bucket only together with --single-node.
-          Clear garage__default_bucket or set garage__single_node: True.
-      when: garage__default_bucket | length > 0
-
     - name: Create garage system group
       ansible.builtin.group:
         name: '{{ garage__group }}'
@@ -193,13 +183,18 @@
         mode: '0600'
       no_log: True
       notify: [ 'Restart garage' ]
-      when: garage__default_bucket | length > 0
+      when:
+        - garage__single_node | bool
+        - garage__default_bucket | length > 0
 
+    # Garage accepts --default-bucket only together with --single-node. The
+    # bucket and its key stay in the cluster when the host leaves the
+    # single-node mode.
     - name: Remove leftover default-bucket credentials
       ansible.builtin.file:
         path: '{{ garage__secret_dir }}/default-credentials.env'
         state: 'absent'
-      when: garage__default_bucket | length == 0
+      when: not (garage__single_node | bool and garage__default_bucket | length > 0)
 
     - name: Deploy garage configuration
       ansible.builtin.template:

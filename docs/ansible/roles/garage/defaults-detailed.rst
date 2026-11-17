@@ -183,8 +183,9 @@ Single-node bootstrap
 role requires Garage 2.3.0 or newer for this mode. The systemd unit then
 starts Garage with ``--single-node``.
 
-When :envvar:`garage__default_bucket` is non-empty, the unit also
-gets ``--default-bucket`` and an ``EnvironmentFile`` with
+When :envvar:`garage__default_bucket` is non-empty and the host runs in
+the single-node mode, the unit also gets ``--default-bucket`` and an
+``EnvironmentFile`` with
 ``GARAGE_DEFAULT_ACCESS_KEY``, ``GARAGE_DEFAULT_SECRET_KEY`` and
 ``GARAGE_DEFAULT_BUCKET``. The daemon creates the bucket and key on
 first start and refreshes their permissions on later starts. If a key
