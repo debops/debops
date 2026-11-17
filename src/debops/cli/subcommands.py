@@ -622,6 +622,37 @@ Actions:
                             help='command and arguments to execute')
         self.args = parser.parse_args(self.args[2:])
 
+    def do_tofu(self):
+        parser = _argument_parser(
+                parents=[self.global_parser],
+                usage='debops tofu [<args>] [--] <operation> '
+                      '[<operation args>]',
+                description='run OpenTofu operations in the project '
+                            'environment',
+                epilog='The operation and its arguments are passed to '
+                       'the "tofu" command; the DebOps options come '
+                       'before the operation, the options of the '
+                       'operation after it.')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view '
+                                 'to use for the "tofu" command')
+        parser.add_argument('-E', '--bell', default=False,
+                            help='notify the user at the end '
+                                 'of the OpenTofu operation',
+                            action='store_true')
+        parser.add_argument('--no-color', default=False,
+                            help='strip the ANSI color codes from the '
+                                 'operation output',
+                            action='store_true')
+        parser.add_argument('-w', '--workspace', type=str,
+                            help='run the operation against the named '
+                                 'workspace of the view, overriding '
+                                 'the workspace configured for the view')
+        parser.add_argument('tofu_args', type=str, nargs=argparse.REMAINDER,
+                            help='the OpenTofu operation to run and its '
+                                 'arguments')
+        self.args = parser.parse_args(self.args[2:])
+
     def do_config(self):
         parser = _argument_parser(
                 description='manage DebOps configuration state',

@@ -36,6 +36,25 @@ def test_unknown_section_exits_with_an_error(capsys):
     assert "unrecognized section" in capsys.readouterr().err
 
 
+def test_tofu_section_parses_the_operation_and_options():
+    subcommands = parse_cli("tofu", "-w", "feature", "plan",
+                            "-var", "a=b")
+
+    assert subcommands.section == "tofu"
+    assert subcommands.args.workspace == "feature"
+    assert subcommands.args.bell is False
+    assert subcommands.args.no_color is False
+    assert subcommands.args.tofu_args == ["plan", "-var", "a=b"]
+
+
+def test_tofu_section_stops_at_the_first_operation():
+    """Options of the tofu operation belong to it: everything after
+    the first operand passes through untouched."""
+    subcommands = parse_cli("tofu", "plan", "-w", "feature")
+
+    assert subcommands.args.tofu_args == ["plan", "-w", "feature"]
+
+
 def test_unknown_project_command_exits_with_an_error(capsys):
     with pytest.raises(SystemExit) as exc:
         parse_cli("project", "bogus")
