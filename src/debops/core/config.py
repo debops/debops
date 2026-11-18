@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .constants import DEBOPS_PACKAGE_DATA
-from .exceptions import OptionNotFoundError
+from .exceptions import OptionNotFoundError, OptionRefused
 from .utils import unexpanduser, strtobool, write_file
 import copy
 import os
@@ -67,6 +67,15 @@ def _violation_reason(error):
 # JSON when it looks like JSON and kept as a string otherwise.
 _UNTYPED = object()
 
+# The '--type' choices of the 'debops config set' command, mapped to
+# the types of the configuration schema
+_OPTION_TYPES = {'bool': 'boolean', 'list': 'array', 'str': 'string',
+                 'int': 'integer', 'dict': 'object'}
+
+# The empty values which create an option without one, per the
+# '--type' choice; the boolean options carry no empty value
+_EMPTY_VALUES = {'str': '', 'int': 0, 'dict': {}, 'list': []}
+
 
 def _parse_scalar(value):
     """Parse an environment value as JSON, or keep it as a string."""
@@ -74,6 +83,18 @@ def _parse_scalar(value):
         return json.loads(value)
     except ValueError:
         return value
+
+
+def _option_schema_type_name(schema_node):
+    """Return the type name of the schema node, for the refusal
+    messages."""
+    if isinstance(schema_node, dict):
+        schema_type = schema_node.get('type')
+        if isinstance(schema_type, list):
+            schema_type = schema_type[0] if schema_type else None
+        if schema_type:
+            return schema_type
+    return 'untyped'
 
 
 def _config_leaves(path, node, leaves):
@@ -589,29 +610,52 @@ class Configuration(object):
                 + ', '.join(unexpanduser(m) for m in matches))
         return matches[0]
 
-    def write_option(self, path, key, value=None, delete=False):
+    def write_option(self, path, key, values=None, delete=False,
+                     option_type=None):
         """Set or remove a configuration option in a JSON file.
 
         The option is addressed by its dotted path in the
-        configuration tree. When set, the value is converted to the
-        type the configuration schema defines for the option, and
-        options unknown to the schema are refused, except under the
-        'custom' section, which is reserved for options defined
-        outside of DebOps. When removed, the option is deleted from
-        the file together with the sections left empty by its removal;
-        options unknown to the schema are removed as well, so that the
-        command can clean up configurations which predate the schema.
+        configuration tree. The values are raw: one value sets a
+        singular option, one or more values are appended to a list
+        option. The values are converted to the type the
+        configuration schema defines for the option, and options
+        unknown to the schema are refused, except under the sections
+        the schema leaves open -- the 'custom' section and the option
+        trees of the project views -- where the '--type' option
+        governs. A singular value is never converted to a list or the
+        other way around: the type changes through the removal of the
+        option and its re-creation.
 
-        Raises ValueError when the option cannot be set or removed;
-        the file is written only when the operation succeeds.
+        The list values are deduplicated against the effective
+        configuration: the values which the merged tree carries
+        already are skipped, the file records the values the operator
+        adds.
+
+        When values are removed from a list option, they are dropped
+        from the list of the file; a list which empties removes the
+        option together with the sections left empty, and the values
+        which stay present in the effective configuration through
+        other layers are reported through the log.
+
+        Returns the operation which the file received: 'set' for a
+        singular value, 'create' for the empty value of a new option,
+        'append' for the appended list values, 'delete' for the
+        removed option, 'prune' for the removed list elements, 'none'
+        when the effective configuration already carries the
+        requested state.
+
+        Raises OptionRefused when the operation is refused -- the
+        refusal is reported through the log -- and ValueError when
+        the option cannot be addressed; the file is written only
+        when the operation succeeds.
         """
         segments = [segment.lower() for segment in key.split('.')
                     if segment]
         if not segments:
             raise ValueError('No configuration option specified')
-        if not delete and value is None:
-            raise ValueError("No value specified for the '{}' option"
-                             .format(_dotted(segments)))
+        if isinstance(values, str):
+            values = [values]
+        values = list(values or [])
 
         data = {}
         if os.path.isfile(path):
@@ -626,6 +670,252 @@ class Configuration(object):
                              'dictionary of options'.format(path))
 
         if delete:
+            return self._remove_option(path, data, segments, values)
+
+        if not values and option_type is None:
+            raise ValueError("No value specified for the '{}' option"
+                             .format(_dotted(segments)))
+        return self._set_option(path, data, segments, values, option_type)
+
+    def _effective_option(self, segments):
+        """Return the effective value of the option in the merged
+        configuration tree, None when no layer carries one."""
+        node = self._config
+        for segment in segments:
+            if not isinstance(node, dict) or segment not in node:
+                return None
+            node = node[segment]
+        return node
+
+    def _file_option(self, data, segments):
+        """Return the value of the option in the file, None when the
+        file does not carry one."""
+        node = data
+        for segment in segments:
+            if not isinstance(node, dict) or segment not in node:
+                return None
+            node = node[segment]
+        return node
+
+    def _option_schema_node(self, segments):
+        """Return the schema node of the option, None when the schema
+        does not know it, the _UNTYPED marker when the schema leaves
+        it open."""
+        validator = self._schema()
+        if validator is None:
+            return _UNTYPED
+        return _resolve_schema_node(validator.schema, segments)
+
+    def _refuse_option(self, message):
+        """Report the refusal of an option operation through the log
+        and raise: the callers exit without reporting it again."""
+        logger.error(message, extra={'allow': ['stderr', 'syslog']})
+        raise OptionRefused(message)
+
+    def _check_option_type(self, segments, option_type, schema_node):
+        """Refuse the '--type' option when the schema types the option
+        differently: the schema is the contract of the typed options,
+        the '--type' option governs the sections the schema leaves
+        open."""
+        if not isinstance(schema_node, dict):
+            return
+        schema_type = schema_node.get('type')
+        if isinstance(schema_type, list):
+            schema_type = schema_type[0] if schema_type else None
+        if schema_type is None:
+            return
+        wanted = _OPTION_TYPES[option_type]
+        if wanted == schema_type:
+            return
+        if wanted == 'integer' and schema_type == 'number':
+            return
+        self._refuse_option(
+                "The '{}' option is typed '{}' by the configuration "
+                "schema: the '--type {}' value cannot be set.".format(
+                    _dotted(segments), schema_type, option_type))
+
+    def _option_kind(self, option_type, schema_node, effective):
+        """Return the kind of the option: 'list' when the values
+        accumulate, 'scalar' when one value replaces the current one.
+
+        The schema type of the option decides; the effective value
+        decides for the sections the schema leaves open."""
+        if option_type == 'list':
+            return 'list'
+        if option_type is not None:
+            return 'scalar'
+        if isinstance(schema_node, dict):
+            schema_type = schema_node.get('type')
+            if schema_type == 'array':
+                return 'list'
+            if schema_type in ('string', 'integer', 'number', 'boolean',
+                               'object'):
+                return 'scalar'
+        if isinstance(effective, list):
+            return 'list'
+        return 'scalar'
+
+    def _coerce_scalar(self, segments, value, option_type, schema_node):
+        """Coerce one singular value of the option."""
+        if option_type == 'str':
+            return value
+        if option_type == 'int':
+            try:
+                return int(value)
+            except ValueError:
+                self._refuse_option(
+                        "The value '{}' is not an integer.".format(value))
+        if option_type == 'bool':
+            try:
+                return bool(strtobool(value))
+            except (ValueError, TypeError):
+                self._refuse_option(
+                        "The value '{}' is not a boolean: the boolean "
+                        'options carry true or false.'.format(value))
+        if option_type == 'dict':
+            parsed = _parse_scalar(value)
+            if not isinstance(parsed, dict):
+                self._refuse_option('The value must be a JSON object.')
+            return parsed
+        try:
+            coerced = self._coerce_override(segments, value)
+        except (ValueError, TypeError):
+            self._refuse_option(
+                    "The '{}' option is typed '{}' by the configuration "
+                    'schema: the value {!r} does not fit it.'.format(
+                        _dotted(segments),
+                        _option_schema_type_name(schema_node), value))
+        if coerced is None:
+            raise ValueError(
+                self._unknown_option_message(_dotted(segments)))
+        return coerced
+
+    def _coerce_element(self, value, option_type, schema_node):
+        """Coerce one element of a list option."""
+        if option_type == 'str':
+            return value
+        if isinstance(schema_node, dict):
+            items = schema_node.get('items')
+            if isinstance(items, dict):
+                items_type = items.get('type')
+                if items_type == 'boolean':
+                    return bool(strtobool(value))
+                if items_type == 'integer':
+                    return int(value)
+                if items_type == 'number':
+                    try:
+                        return int(value)
+                    except ValueError:
+                        return float(value)
+                if items_type == 'string':
+                    return value
+        return _parse_scalar(value)
+
+    def _write_option_value(self, path, data, segments, value):
+        """Write the value of the option into the file's tree,
+        creating the parent sections on the way."""
+        node = data
+        for segment in segments[:-1]:
+            child = node.get(segment)
+            if not isinstance(child, dict):
+                child = {}
+                node[segment] = child
+            node = child
+        node[segments[-1]] = value
+        write_file(path, json.dumps(data, indent=2, sort_keys=True)
+                   + '\n', overwrite=True)
+
+    def _set_option(self, path, data, segments, values, option_type):
+        """Set the option in the file: a singular value replaces the
+        current one, a list option accumulates the values."""
+        schema_node = self._option_schema_node(segments)
+        if schema_node is None:
+            raise ValueError(
+                self._unknown_option_message(_dotted(segments)))
+        effective = self._effective_option(segments)
+        file_value = self._file_option(data, segments)
+        # The effective configuration carries the file's value; the
+        # file's value stands in when the effective tree is unknown
+        current = effective if effective is not None else file_value
+
+        if option_type is not None:
+            self._check_option_type(segments, option_type, schema_node)
+        kind = self._option_kind(option_type, schema_node, effective)
+
+        if kind == 'list':
+            if not values:
+                if current is not None:
+                    self._refuse_option(
+                            "The '{}' option is already set: the empty "
+                            'value would replace it.'.format(
+                                _dotted(segments)))
+                self._write_option_value(path, data, segments, [])
+                return 'create'
+            return self._append_option(
+                path, data, segments, values, option_type, schema_node,
+                current, file_value)
+
+        # A singular option: one value replaces the current one, the
+        # empty value creates the option when it is effectively unset
+        if len(values) > 1:
+            self._refuse_option(
+                    "The '{}' option holds a singular value: the "
+                    'multiple values cannot replace it.'.format(
+                        _dotted(segments)))
+        if not values:
+            if option_type == 'bool':
+                self._refuse_option(
+                        "The '{}' option needs a value: the boolean "
+                        'options carry no empty value.'.format(
+                            _dotted(segments)))
+            if current is not None:
+                self._refuse_option(
+                        "The '{}' option is already set: the empty "
+                        'value would replace it.'.format(
+                            _dotted(segments)))
+            value = _EMPTY_VALUES[option_type]
+        else:
+            value = self._coerce_scalar(segments, values[0], option_type,
+                                        schema_node)
+        self._write_option_value(path, data, segments,
+                                 self._expand_env_vars(value))
+        return 'set'
+
+    def _append_option(self, path, data, segments, values, option_type,
+                       schema_node, current, file_value):
+        """Append the values to the list option of the file.
+
+        The values which the effective list carries already are
+        skipped: the effective configuration decides what the list
+        contains, the file records the values the operator adds. A
+        singular value is never converted to a list: the type changes
+        through the removal of the option and its re-creation."""
+        if current is not None and not isinstance(current, list):
+            self._refuse_option(
+                    "The '{}' option holds a singular value: the type "
+                    'changes through the removal of the option and its '
+                    're-creation.'.format(_dotted(segments)))
+        base = list(file_value) if isinstance(file_value, list) else []
+        effective_list = current if isinstance(current, list) else []
+        appended = []
+        for value in values:
+            coerced = self._coerce_element(value, option_type, schema_node)
+            coerced = self._expand_env_vars(coerced)
+            if (coerced in effective_list or coerced in base
+                    or coerced in appended):
+                continue
+            appended.append(coerced)
+        if not appended:
+            return 'none'
+        self._write_option_value(path, data, segments, base + appended)
+        return 'append'
+
+    def _remove_option(self, path, data, segments, values):
+        """Remove the option or the list elements from the file.
+
+        The values which stay present in the effective configuration
+        through other layers are reported through the log."""
+        if not values:
             node = data
             for segment in segments[:-1]:
                 if not isinstance(node, dict) or segment not in node:
@@ -638,27 +928,71 @@ class Configuration(object):
                                  .format(_dotted(segments), path))
             del node[leaf]
             _prune_empty(data, segments)
+            write_file(path, json.dumps(data, indent=2, sort_keys=True)
+                       + '\n', overwrite=True)
+            return 'delete'
+
+        schema_node = self._option_schema_node(segments)
+        file_value = self._file_option(data, segments)
+        coerced = [self._coerce_element(value, None, schema_node)
+                   for value in values]
+        if file_value is None:
+            self._report_value_conflicts(segments, coerced, path)
+            return 'none'
+        if not isinstance(file_value, list):
+            self._refuse_option(
+                    "The '{}' option holds a singular value: the "
+                    'values cannot be removed from it.'.format(
+                        _dotted(segments)))
+        removed = [value for value in file_value if value in coerced]
+        if not removed:
+            self._report_value_conflicts(segments, coerced, path)
+            return 'none'
+        remaining = [value for value in file_value
+                     if value not in coerced]
+        if remaining:
+            self._write_option_value(path, data, segments, remaining)
+            action = 'prune'
         else:
-            try:
-                option_value = self._coerce_override(segments, value)
-            except (ValueError, TypeError) as errmsg:
-                raise ValueError('{}: {}'.format(_dotted(segments),
-                                                 errmsg))
-            if option_value is None:
-                raise ValueError(
-                    self._unknown_option_message(_dotted(segments)))
-            option_value = self._expand_env_vars(option_value)
             node = data
             for segment in segments[:-1]:
-                child = node.get(segment)
-                if not isinstance(child, dict):
-                    child = {}
-                    node[segment] = child
-                node = child
-            node[segments[-1]] = option_value
+                node = node[segment]
+            del node[segments[-1]]
+            _prune_empty(data, segments)
+            write_file(path, json.dumps(data, indent=2, sort_keys=True)
+                       + '\n', overwrite=True)
+            action = 'delete'
+        self._report_value_conflicts(segments, coerced, path)
+        return action
 
-        write_file(path, json.dumps(data, indent=2, sort_keys=True)
-                   + '\n', overwrite=True)
+    def _report_value_conflicts(self, segments, values, written_path):
+        """Report the values which stay present in the effective
+        configuration after the removal, through the other
+        configuration layers.
+
+        The file which the operation wrote is excluded: its
+        contribution is the one the removal changed."""
+        for value in values:
+            origins = []
+            for scope, origin, data in self._layers:
+                if origin == written_path:
+                    continue
+                node = data
+                for segment in segments:
+                    if not isinstance(node, dict) or segment not in node:
+                        node = None
+                        break
+                    node = node[segment]
+                if isinstance(node, list) and value in node:
+                    origins.append(origin or scope)
+            if origins:
+                logger.warning(
+                    "The value {!r} of the '{}' option is still "
+                    'present in the effective configuration, '
+                    'contributed by: {}'.format(
+                        value, _dotted(segments),
+                        ', '.join(sorted(set(origins)))),
+                    extra={'allow': ['stderr', 'syslog']})
 
     def config_set(self, key, value):
         """Set a configuration option in the configuration tree.

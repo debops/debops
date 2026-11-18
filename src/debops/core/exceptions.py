@@ -30,6 +30,14 @@ class OptionNotFoundError(DebOpsError):
     pass
 
 
+class OptionRefused(DebOpsError):
+    """Raised when a configuration option operation is refused.
+
+    The refusal is reported through the log before the exception is
+    raised; the callers exit without reporting it again.
+    """
+
+
 class InventorySpecError(DebOpsError):
     """Raised when an inventory file specification is invalid"""
     pass
