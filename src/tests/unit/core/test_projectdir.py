@@ -1729,6 +1729,87 @@ def test_resolve_view_defaults_to_the_system_view():
     assert ProjectDir.resolve_view("/proj", "/proj", ["system"]) == "system"
 
 
+def test_resolve_view_picks_the_view_from_the_tofu_directory(tmp_path):
+    """The complementary view trees resolve the same view: the cwd
+    inside 'tofu/views/<name>' selects it like the 'ansible/views/'
+    directory does."""
+    cwd = tmp_path / "tofu" / "views" / "web" / "site"
+    cwd.mkdir(parents=True)
+    root = tmp_path / "proj"
+    root.mkdir()
+    assert ProjectDir.resolve_view(
+        str(root), str(cwd), ["system", "web"]) == "web"
+
+
+def test_resolve_view_walks_out_of_a_tofu_view_subdirectory(tmp_path):
+    cwd = tmp_path / "tofu" / "views" / "web" / "secret" / "plans"
+    cwd.mkdir(parents=True)
+    root = tmp_path / "proj"
+    root.mkdir()
+    assert ProjectDir.resolve_view(
+        str(root), str(cwd), ["system", "web"]) == "web"
+
+
+def test_resolve_view_resolves_the_same_view_from_both_tool_trees(
+        tmp_path):
+    ansible_dir = tmp_path / "proj" / "ansible" / "views" / "web"
+    tofu_dir = tmp_path / "proj" / "tofu" / "views" / "web"
+    ansible_dir.mkdir(parents=True)
+    tofu_dir.mkdir(parents=True)
+    assert ProjectDir.resolve_view(
+        str(tmp_path / "proj"), str(ansible_dir), ["web"]) == "web"
+    assert ProjectDir.resolve_view(
+        str(tmp_path / "proj"), str(tofu_dir), ["web"]) == "web"
+
+
+def test_resolve_view_refuses_an_unregistered_tofu_view_directory(
+        tmp_path):
+    """A view directory which the project does not define refuses the
+    resolution: falling back to the default view would run the
+    operation against a different view than the directory the
+    operator stands in."""
+    cwd = tmp_path / "tofu" / "views" / "dev"
+    cwd.mkdir(parents=True)
+    root = tmp_path / "proj"
+    root.mkdir()
+    with pytest.raises(ViewNotFoundError, match="does not define"):
+        ProjectDir.resolve_view(
+            str(root), str(cwd), ["system", "web"])
+
+
+def test_resolve_view_refuses_an_unregistered_ansible_view_directory(
+        tmp_path):
+    cwd = tmp_path / "ansible" / "views" / "dev"
+    cwd.mkdir(parents=True)
+    root = tmp_path / "proj"
+    root.mkdir()
+    with pytest.raises(ViewNotFoundError, match="does not define"):
+        ProjectDir.resolve_view(
+            str(root), str(cwd), ["system", "web"])
+
+
+def test_resolve_view_is_lenient_when_not_strict(tmp_path):
+    """The project creation resolves leniently: the views of the new
+    project do not exist yet, the enclosing view directory of another
+    project does not refuse the resolution."""
+    cwd = tmp_path / "tofu" / "views" / "dev"
+    cwd.mkdir(parents=True)
+    root = tmp_path / "proj"
+    root.mkdir()
+    assert ProjectDir.resolve_view(
+        str(root), str(cwd), [], strict=False) == "system"
+
+
+def test_resolve_view_ignores_a_root_nested_in_a_view_tree(tmp_path):
+    """A project whose root lies inside the view tree of another
+    project resolves through its configuration: the enclosing view
+    directory is the project root itself, not view intent."""
+    root = tmp_path / "ansible" / "views" / "proj"
+    (root / "work").mkdir(parents=True)
+    assert ProjectDir.resolve_view(
+        str(root), str(root / "work"), ["system"]) == "system"
+
+
 def test_init_merges_the_project_environment_file(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     write_modern_project(tmp_path)

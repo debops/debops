@@ -54,18 +54,34 @@ INSPECT_CONFIG = """\
 host_pattern_mismatch = warning
 """
 
+# The tool directories which carry the complementary view trees of a
+# project: the same view names the Ansible inventory root, the Ansible
+# secrets and the OpenTofu workdir
+VIEW_TOOL_ROOTS = ('ansible', 'tofu')
+
 
 class ProjectDir(object):
 
     @staticmethod
-    def resolve_view(root, cwd, views, explicit=None, default=None):
+    def resolve_view(root, cwd, views, explicit=None, default=None,
+                     strict=True):
         """Resolve the active view of a project.
 
         An explicitly selected view wins, but must be one the project
         defines. Otherwise the working directory selects the view when
-        it lies inside the project's 'ansible/views/<name>' tree, and
-        the configured default view applies last, with 'system' as the
-        final fallback.
+        it lies inside one of the project's view trees -- the
+        'ansible/views/<name>' directory beside the 'tofu/views/<name>'
+        directory: the views of the tools are complementary, the same
+        view names the Ansible inventory root, the Ansible secrets and
+        the OpenTofu workdir. The configured default view applies
+        last, with 'system' as the final fallback.
+
+        A view directory which the project does not define is a
+        misconfiguration: the resolution refuses it instead of falling
+        back to the default view, which would run the operation
+        against a different view than the directory the operator
+        stands in. The creation of a project resolves leniently: the
+        views of the new project do not exist yet.
 
         The cwd is the directory the command runs from, passed
         explicitly: the resolution never consults the process working
@@ -77,7 +93,9 @@ class ProjectDir(object):
         explicitly or through the configuration.
 
         Raises ViewNotFoundError when the explicit selection is not a
-        view of the project.
+        view of the project, or when the working directory names a
+        view which the project does not define and the resolution is
+        strict.
         """
         if explicit:
             if explicit in views:
@@ -93,13 +111,25 @@ class ProjectDir(object):
 
             while current_dir != '/' and not view_dir:
                 view_path.insert(0, os.path.basename(current_dir))
-                if os.path.dirname(current_dir).endswith('/ansible/views'):
+                view_parent = os.path.dirname(current_dir)
+                if (os.path.basename(view_parent) == 'views'
+                        and os.path.basename(
+                            os.path.dirname(view_parent))
+                        in VIEW_TOOL_ROOTS):
                     view_dir = current_dir
                 else:
                     current_dir = os.path.dirname(current_dir)
 
-            # A single view matching the current directory wins; none
-            # or several fall through to the default view
+            # The project root itself is not a view directory: a
+            # project nested inside the view tree of another project
+            # resolves through its configuration
+            if view_dir and os.path.relpath(view_dir, root) == '.':
+                view_dir = None
+
+            # A single view matching the current directory wins; a
+            # view directory which names an undefined view refuses the
+            # resolution; several matches fall through to the default
+            # view
             if view_dir:
                 view_name = os.path.join(*view_path)
                 matching_views = ([path for path in list(views)
@@ -107,6 +137,16 @@ class ProjectDir(object):
                                        [path, view_name]) == path])
                 if len(matching_views) == 1:
                     return matching_views[0]
+                if not matching_views and strict:
+                    raise ViewNotFoundError(
+                        "The '{}' directory of the '{}' project names "
+                        "the '{}' view, which the project does not "
+                        'define: the views of the tools are '
+                        'complementary. Register the view in the '
+                        'project configuration, or remove the '
+                        'directory.'.format(
+                            os.path.relpath(view_dir, root),
+                            os.path.basename(root), view_path[0]))
 
         if default is not None:
             return default
@@ -217,7 +257,8 @@ class ProjectDir(object):
         self.view = self.resolve_view(
             root=self.path, cwd=cwd,
             views=list(self.config.raw['views'].keys()),
-            explicit=view, default=config_default_view)
+            explicit=view, default=config_default_view,
+            strict=not create)
 
         # Record the project context for the journal's correlation, and
         # set up the view environment
