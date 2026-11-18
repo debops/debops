@@ -4,9 +4,5 @@
  #}
 # {{ ansible_managed }}
 
-{# The round trip through JSON turns the unsafe strings of ansible-core 2.18
- # and older, for example values taken from host facts, into plain strings,
- # which the to_toml filter otherwise serializes as endless nested lists.
- #}
-{{ garage__effective_configuration | to_json | from_json
-   | debops.debops.to_toml | regex_replace('\n$', '') }}
+{{ garage__effective_configuration | debops.debops.to_toml
+   | regex_replace('\n$', '') }}
