@@ -123,7 +123,9 @@ def test_runner_options_come_last_and_win(tofu_project):
     operator's arguments, where a repeated flag wins."""
     runner = TofuRunner(tofu_project(),
                         ["plan", "-input=true", "-var", "a=b"])
-    assert runner._tofu_command[-3:] == ["-var", "a=b", "-input=false"]
+    without_plan = [arg for arg in runner._tofu_command
+                    if not arg.startswith("-out=")]
+    assert without_plan[-3:] == ["-var", "a=b", "-input=false"]
 
 
 def test_operations_which_accept_no_input_option_run_without_it(
@@ -356,6 +358,105 @@ def test_plan_file_apply_needs_no_approval(tofu_project, monkeypatch):
                         ["apply", "secret/plan.tfplan"])
     runner._check_approval()
     assert "-auto-approve" not in runner._tofu_command
+
+
+def test_plan_operation_saves_the_plan_file(tofu_project,
+                                            stub_tofu_subprocess):
+    """A 'plan' without the '-out' option saves the plan file into
+    the view's encrypted store: the plan file carries the planned
+    state of the view, which the native encryption covers with the
+    same key as the state."""
+    project = tofu_project(project_type="modern")
+
+    TofuRunner(project, ["plan"]).execute()
+
+    command = stub_tofu_subprocess.call_args[0][0]
+    saved = [arg for arg in command if arg.startswith("-out=")]
+    assert len(saved) == 1
+    plan_path = saved[0].split("=", 1)[1]
+    assert plan_path.startswith(
+        os.path.join("secret", "plans", "debops-"))
+    assert plan_path.endswith(".tfplan")
+    assert os.path.isdir(os.path.join(
+        project.path, "tofu", "views", project.view,
+        "secret", "plans"))
+
+
+def test_plan_retention_prunes_the_expired_plans(tofu_project,
+                                                 stub_tofu_subprocess):
+    """The retention keeps the newest 'plan_retention' of the plan
+    files DebOps saved."""
+    project = tofu_project(project_type="modern")
+    project.config.merge({'tofu': {'plan_retention': 3}})
+    plans_dir = os.path.join(project.path, "tofu", "views",
+                             project.view, "secret", "plans")
+    os.makedirs(plans_dir)
+    for stamp in ("20240101T000000", "20240102T000000",
+                  "20240103T000000", "20240104T000000",
+                  "20240105T000000"):
+        with open(os.path.join(
+                plans_dir, "debops-{}.tfplan".format(stamp)),
+                "w") as handle:
+            handle.write("plan")
+
+    TofuRunner(project, ["plan"]).execute()
+
+    assert sorted(os.listdir(plans_dir)) == [
+        "debops-20240103T000000.tfplan",
+        "debops-20240104T000000.tfplan",
+        "debops-20240105T000000.tfplan"]
+
+
+def test_plan_retention_never_touches_the_operator_plans(
+        tofu_project, stub_tofu_subprocess):
+    """The plan files the operator saves with the '-out' option are
+    never pruned."""
+    project = tofu_project(project_type="modern")
+    plans_dir = os.path.join(project.path, "tofu", "views",
+                             project.view, "secret", "plans")
+    os.makedirs(plans_dir)
+    for stamp in ("20240101T000000", "20240102T000000",
+                  "20240103T000000", "20240104T000000"):
+        with open(os.path.join(
+                plans_dir, "debops-{}.tfplan".format(stamp)),
+                "w") as handle:
+            handle.write("plan")
+    with open(os.path.join(plans_dir, "manual.tfplan"), "w") as handle:
+        handle.write("plan")
+
+    TofuRunner(project, ["plan"]).execute()
+
+    assert "manual.tfplan" in os.listdir(plans_dir)
+
+
+def test_plan_with_out_is_not_saved_by_the_runner(tofu_project,
+                                                  stub_tofu_subprocess):
+    """A 'plan' with the operator's own '-out' option is not saved
+    again by the runner: the operator's path wins."""
+    project = tofu_project(project_type="modern")
+
+    TofuRunner(project, ["plan", "-out=manual.tfplan"]).execute()
+
+    command = stub_tofu_subprocess.call_args[0][0]
+    assert command.count("-out=manual.tfplan") == 1
+    assert not os.path.isdir(os.path.join(
+        project.path, "tofu", "views", project.view,
+        "secret", "plans"))
+
+
+def test_plan_retention_zero_disables_the_saving(tofu_project,
+                                                 stub_tofu_subprocess):
+    """'plan_retention = 0' disables the plan saving."""
+    project = tofu_project(project_type="modern")
+    project.config.merge({'tofu': {'plan_retention': 0}})
+
+    TofuRunner(project, ["plan"]).execute()
+
+    command = stub_tofu_subprocess.call_args[0][0]
+    assert not any(arg.startswith("-out=") for arg in command)
+    assert not os.path.isdir(os.path.join(
+        project.path, "tofu", "views", project.view,
+        "secret", "plans"))
 
 
 def test_var_value_is_not_taken_for_the_plan_file(tofu_project,
