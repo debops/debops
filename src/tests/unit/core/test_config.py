@@ -12,7 +12,7 @@ import pytest
 import yaml
 
 from debops.core import config as config_module
-from debops.core.exceptions import OptionNotFoundError
+from debops.core.exceptions import OptionNotFoundError, OptionRefused
 from debops.core.utils import unexpanduser
 
 
@@ -1009,6 +1009,282 @@ def test_write_option_sets_a_custom_object(configuration, tmp_path):
         "custom": {"myscript": {"a": 1}}}
 
 
+def test_write_option_appends_to_a_list_option(configuration, tmp_path):
+    """A list option accumulates the values: the values are appended
+    to the list of the file."""
+    path = tmp_path / "99_config_set.json"
+
+    assert configuration.write_option(
+        str(path), "tofu.default_providers",
+        ["lxc/incus", "hashicorp/tfcoremock"]) == 'append'
+    assert configuration.write_option(
+        str(path), "tofu.default_providers", ["lxc/incus"]) == 'none'
+
+    assert json.loads(path.read_text()) == {
+        "tofu": {"default_providers": ["lxc/incus",
+                                       "hashicorp/tfcoremock"]}}
+
+
+def test_write_option_dedupes_against_the_effective_list(
+        configuration, tmp_path):
+    """A value which the effective configuration carries already is
+    skipped: the effective list decides what the option contains."""
+    configuration._config = {"tofu": {"default_providers": ["lxc/incus"]}}
+    path = tmp_path / "99_config_set.json"
+
+    assert configuration.write_option(
+        str(path), "tofu.default_providers", ["lxc/incus"]) == 'none'
+
+    assert not path.exists()
+
+
+def test_write_option_dedupes_within_the_values(configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+
+    configuration.write_option(str(path), "tofu.default_providers",
+                               ["lxc/incus", "lxc/incus"])
+
+    assert json.loads(path.read_text()) == {
+        "tofu": {"default_providers": ["lxc/incus"]}}
+
+
+def test_write_option_appends_a_single_value_to_a_list_option(
+        configuration, tmp_path):
+    """The type of the option decides between the set and the append:
+    one value on a list option appends."""
+    path = tmp_path / "99_config_set.json"
+
+    assert configuration.write_option(
+        str(path), "tofu.default_providers", ["lxc/incus"]) == 'append'
+    assert configuration.write_option(
+        str(path), "tofu.default_providers",
+        ["hashicorp/tfcoremock"]) == 'append'
+
+    assert json.loads(path.read_text()) == {
+        "tofu": {"default_providers": ["lxc/incus",
+                                       "hashicorp/tfcoremock"]}}
+
+
+def test_write_option_refuses_multiple_values_for_a_scalar(
+        configuration, tmp_path, caplog):
+    path = tmp_path / "99_config_set.json"
+
+    with pytest.raises(OptionRefused):
+        configuration.write_option(str(path), "syslog.port",
+                                   ["514", "515"])
+
+    assert not path.exists()
+    assert 'holds a singular value' in caplog.text
+
+
+def test_write_option_refuses_the_list_conversion_of_a_scalar(
+        configuration, tmp_path, caplog):
+    """A singular value is never converted to a list: the type
+    changes through the removal of the option and its re-creation."""
+    path = tmp_path / "99_config_set.json"
+    path.write_text('{"custom": {"greeting": "hello"}}\n')
+
+    with pytest.raises(OptionRefused):
+        configuration.write_option(str(path), "custom.greeting",
+                                   ["world"], option_type='list')
+
+    assert 'the type changes through the removal' in caplog.text
+
+
+def test_write_option_creates_an_empty_list_option(configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+
+    assert configuration.write_option(
+        str(path), "custom.tools", option_type='list') == 'create'
+
+    assert json.loads(path.read_text()) == {"custom": {"tools": []}}
+
+
+def test_write_option_creates_an_empty_integer_option(configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+
+    configuration.write_option(str(path), "custom.retries",
+                               option_type='int')
+
+    assert json.loads(path.read_text()) == {"custom": {"retries": 0}}
+
+
+def test_write_option_creates_an_empty_string_option(configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+
+    configuration.write_option(str(path), "custom.greeting",
+                               option_type='str')
+
+    assert json.loads(path.read_text()) == {"custom": {"greeting": ""}}
+
+
+def test_write_option_creates_an_empty_object_option(configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+
+    configuration.write_option(str(path), "custom.myscript",
+                               option_type='dict')
+
+    assert json.loads(path.read_text()) == {"custom": {"myscript": {}}}
+
+
+def test_write_option_refuses_an_empty_boolean_option(configuration, tmp_path,
+                                                      caplog):
+    with pytest.raises(OptionRefused):
+        configuration.write_option(str(tmp_path / "f.json"),
+                                   "custom.enabled", option_type='bool')
+
+    assert 'needs a value' in caplog.text
+
+
+def test_write_option_refuses_the_creation_of_a_set_option(
+        configuration, tmp_path, caplog):
+    path = tmp_path / "99_config_set.json"
+    path.write_text('{"custom": {"greeting": "hello"}}\n')
+
+    with pytest.raises(OptionRefused):
+        configuration.write_option(str(path), "custom.greeting",
+                                   option_type='str')
+
+    assert 'already set' in caplog.text
+
+
+def test_write_option_sets_a_string_verbatim(configuration, tmp_path):
+    """The '--type str' option keeps the value as a string: no
+    automatic typing."""
+    path = tmp_path / "99_config_set.json"
+
+    configuration.write_option(str(path), "custom.greeting", ["3"],
+                               option_type='str')
+
+    assert json.loads(path.read_text()) == {"custom": {"greeting": "3"}}
+
+
+def test_write_option_refuses_the_wrong_explicit_type(
+        configuration, tmp_path, caplog):
+    """The schema is the contract of the typed options: the '--type'
+    option cannot override it."""
+    path = tmp_path / "99_config_set.json"
+
+    with pytest.raises(OptionRefused):
+        configuration.write_option(str(path), "syslog.port", ["514"],
+                                   option_type='str')
+
+    assert not path.exists()
+    assert "typed 'integer' by the configuration schema" in caplog.text
+
+
+def test_write_option_types_the_options_of_an_open_section(
+        configuration, tmp_path):
+    """The sections the schema leaves open -- the 'custom' section and
+    the ansible options of the views -- are governed by the '--type'
+    option."""
+    path = tmp_path / "99_config_set.json"
+
+    configuration.write_option(str(path), "custom.port", ["514"],
+                               option_type='int')
+    configuration.write_option(
+        str(path), "views.system.ansible.defaults.timeout", ["30"],
+        option_type='int')
+
+    assert json.loads(path.read_text()) == {
+        "custom": {"port": 514},
+        "views": {"system": {"ansible": {"defaults": {"timeout": 30}}}}}
+
+
+def test_write_option_sets_a_dict_from_json(configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+
+    configuration.write_option(str(path), "custom.myscript",
+                               ['{"a": 1}'], option_type='dict')
+
+    assert json.loads(path.read_text()) == {
+        "custom": {"myscript": {"a": 1}}}
+
+
+def test_write_option_refuses_multiple_values_for_a_dict(
+        configuration, tmp_path, caplog):
+    with pytest.raises(OptionRefused):
+        configuration.write_option(str(tmp_path / "f.json"),
+                                   "custom.myscript",
+                                   ['{"a": 1}', '{"b": 2}'],
+                                   option_type='dict')
+
+    assert 'holds a singular value' in caplog.text
+
+
+def test_write_option_prunes_the_values_of_a_list_option(
+        configuration, tmp_path):
+    path = tmp_path / "99_config_set.json"
+    path.write_text('{"tofu": {"default_providers": '
+                    '["lxc/incus", "hashicorp/tfcoremock"]}}\n')
+
+    assert configuration.write_option(
+        str(path), "tofu.default_providers", ["lxc/incus"],
+        delete=True) == 'prune'
+
+    assert json.loads(path.read_text()) == {
+        "tofu": {"default_providers": ["hashicorp/tfcoremock"]}}
+
+
+def test_write_option_removes_an_emptied_list_option(configuration, tmp_path):
+    """A list which empties removes the option together with the
+    sections left empty: the lower layers show through."""
+    path = tmp_path / "99_config_set.json"
+    path.write_text('{"tofu": {"default_providers": ["lxc/incus"]}}\n')
+
+    assert configuration.write_option(
+        str(path), "tofu.default_providers", ["lxc/incus"],
+        delete=True) == 'delete'
+
+    assert json.loads(path.read_text()) == {}
+
+
+def test_write_option_delete_of_missing_values_is_clean(
+        configuration, tmp_path):
+    """The values which the list of the file does not carry are a
+    clean exit: the removal is idempotent."""
+    path = tmp_path / "99_config_set.json"
+    path.write_text('{"tofu": {"default_providers": ["lxc/incus"]}}\n')
+
+    assert configuration.write_option(
+        str(path), "tofu.default_providers", ["hashicorp/tfcoremock"],
+        delete=True) == 'none'
+
+    assert json.loads(path.read_text()) == {
+        "tofu": {"default_providers": ["lxc/incus"]}}
+
+
+def test_write_option_reports_the_values_of_other_layers(
+        configuration, tmp_path, caplog):
+    """The values which stay present in the effective configuration
+    through other layers are reported: the removal of the file's list
+    does not reach them."""
+    configuration._layers = [
+        ('defaults', 'defaults.toml',
+         {"tofu": {"operations": ["apply"]}})]
+    path = tmp_path / "99_config_set.json"
+    path.write_text('{"tofu": {"operations": ["apply", "plan"]}}\n')
+
+    configuration.write_option(str(path), "tofu.operations",
+                               ["apply", "plan"], delete=True)
+
+    assert json.loads(path.read_text()) == {}
+    assert "still present in the effective configuration" in caplog.text
+    assert 'defaults.toml' in caplog.text
+
+
+def test_write_option_refuses_to_remove_values_from_a_scalar(
+        configuration, tmp_path, caplog):
+    path = tmp_path / "99_config_set.json"
+    path.write_text('{"syslog": {"level": "DEBUG"}}\n')
+
+    with pytest.raises(OptionRefused):
+        configuration.write_option(str(path), "syslog.level",
+                                   ["DEBUG"], delete=True)
+
+    assert 'holds a singular value' in caplog.text
+
+
 def test_write_option_expands_variables(configuration, tmp_path,
                                         monkeypatch):
     monkeypatch.setenv("DEBOPS_TEST_VALUE", "hello")
@@ -1033,13 +1309,15 @@ def test_write_option_refuses_an_unknown_option(configuration, tmp_path):
 
 
 def test_write_option_refuses_a_value_of_a_wrong_type(configuration,
-                                                      tmp_path):
+                                                      tmp_path, caplog):
     path = tmp_path / "99_config_set.json"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(OptionRefused):
         configuration.write_option(str(path), "syslog.port", "five")
 
     assert not path.exists()
+    assert "typed 'integer'" in caplog.text
+    assert "the value 'five' does not fit it" in caplog.text
 
 
 def test_write_option_refuses_a_missing_value(configuration, tmp_path):
