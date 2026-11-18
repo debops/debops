@@ -61,12 +61,15 @@ def view_drop_in_path(project, view):
                         'view-' + filename_view + '-tofu.toml')
 
 
-def write_view_drop_in(project, view, providers, modules=None):
+def write_view_drop_in(project, view, providers, modules=None,
+                       binary_version=None):
     """Record the dependency set of a view in its configuration drop-in.
 
     The drop-in declares the 'views.<view>.tofu.providers' and
     'views.<view>.tofu.modules' options, which drive the generated
-    'providers.tf' and 'modules.tf' files of the view. The drop-in is
+    'providers.tf' and 'modules.tf' files of the view, and the
+    'views.<view>.tofu.binary_version' option, which pins the version
+    of the OpenTofu binary the view runs with. The drop-in is
     written once, when the view is created: it is the user's file from
     then on, and the dependency set is changed by editing it. The
     options are merged into the live configuration of the project, so
@@ -88,7 +91,8 @@ def write_view_drop_in(project, view, providers, modules=None):
         drop_in,
         render_template('view-tofu.toml.j2', view_name=view,
                         providers=providers or [],
-                        modules=render_drop_in_modules(modules or {}))
+                        modules=render_drop_in_modules(modules or {}),
+                        binary_version=binary_version)
         + '\n',
         project=project.path)
     if not written:
@@ -103,7 +107,8 @@ def write_view_drop_in(project, view, providers, modules=None):
         pass
     project.config.merge({'views': {view: {'tofu': {
         'providers': providers or [],
-        'modules': modules or {}}}}},
+        'modules': modules or {},
+        'binary_version': binary_version}}}},
         scope='project', origin=drop_in)
     return True
 

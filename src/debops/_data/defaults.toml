@@ -167,6 +167,33 @@ default_modules = {}
 # touched.
 plan_retention = 3
 
+[tofu.upstream]
+
+# The OpenTofu version which the debops package is verified with: the
+# known-good version which the 'binary_version' option of a new view's
+# configuration drop-in is seeded with at creation. Bumping the option
+# in a debops release changes the seed of the new views; the views
+# which exist keep their recorded version -- the drop-in is written
+# once, the pin is the user's record from then on.
+known_version = "1.13.9"
+
+# The base of the OpenTofu release downloads: the GitHub releases of
+# the opentofu/opentofu repository. The '{version}' placeholder is
+# substituted with the version of the release to install; the option
+# points the 'debops tofu install' command at a mirror of the
+# releases when the GitHub downloads are not reachable.
+release_base = "https://github.com/opentofu/opentofu/releases/download/v{version}"
+
+[tofu.upstream.release_key]
+
+# The fingerprint of the GnuPG key which signs the OpenTofu releases.
+# The 'debops tofu install' command verifies the signature of the
+# release checksums against the DebOps-managed keyring, and the
+# signing key's fingerprint must match this pin: the fingerprint is
+# the trust anchor, not the key material. The key is imported from
+# the keyserver of the DebOps keyring when it is missing.
+fingerprint = "E3E6E43D84CB852EADB0051D0C0AF313E5FD9F80"
+
 [git]
 
 # The default commit message used for new git repositories.

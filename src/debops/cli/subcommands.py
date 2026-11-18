@@ -629,10 +629,15 @@ Actions:
                       '[<operation args>]',
                 description='run OpenTofu operations in the project '
                             'environment',
-                epilog='The operation and its arguments are passed to '
-                       'the "tofu" command; the DebOps options come '
+                epilog="The operation and its arguments are passed to "
+                       "the 'tofu' command; the DebOps options come "
                        'before the operation, the options of the '
-                       'operation after it.')
+                       'operation after it. The DebOps-level '
+                       "operations 'update' and 'install' are not "
+                       "passed to the 'tofu' command: 'update' "
+                       'reconciles the files DebOps owns in the view '
+                       "and runs 'tofu init', 'install' reconciles "
+                       'the OpenTofu binaries which the views pin.')
         parser.add_argument('-V', '--view', type=str,
                             help='select the infrastructure view '
                                  'to use for the "tofu" command')
