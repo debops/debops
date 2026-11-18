@@ -175,6 +175,15 @@ def test_ensure_key_refuses_when_the_import_fails(keyring, monkeypatch):
         manager.ensure_key(FINGERPRINT)
 
 
+def test_missing_gpg_refuses_the_operation(keyring, tmp_path):
+    """A gpg binary which the 'binaries.gpg' option names but the
+    system does not carry refuses the operation with the way out."""
+    manager, config, argv_log = keyring
+    config.raw['binaries']['gpg'] = str(tmp_path / 'missing-gpg')
+    with pytest.raises(ValueError, match='is not available'):
+        KeyringManager(config).ensure_key(FINGERPRINT)
+
+
 def test_ensure_key_refuses_a_fingerprint_mismatch(keyring, monkeypatch):
     """A key which the keyserver carries under a different fingerprint
     refuses the operation: the imported key must match the pin."""

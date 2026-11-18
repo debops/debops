@@ -53,10 +53,20 @@ class KeyringManager(object):
         return self._path
 
     def _run(self, args, stdin=None):
-        """Run gpg against the keyring homedir, returning the result."""
-        return subprocess.run(
-            [self._gpg, '--homedir', self._path] + args,
-            input=stdin, capture_output=True)
+        """Run gpg against the keyring homedir, returning the result.
+
+        A missing gpg binary refuses the operation: the keyring
+        cannot verify without it.
+        """
+        try:
+            return subprocess.run(
+                [self._gpg, '--homedir', self._path] + args,
+                input=stdin, capture_output=True)
+        except FileNotFoundError:
+            raise ValueError(
+                "The '{}' binary which the 'binaries.gpg' option names "
+                'is not available: install it, or point the option at '
+                'the gpg binary of the system.'.format(self._gpg))
 
     def ensure_keyring(self):
         """Create the keyring homedir and its gpg.conf when missing.
