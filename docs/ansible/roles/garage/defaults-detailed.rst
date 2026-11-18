@@ -65,10 +65,13 @@ Each entry of the list is a YAML dictionary with specific parameters:
   the ``weight`` parameter described in :ref:`universal_configuration`.
 
 ``state``
-  Optional. If not specified or ``present``, the entry is included in the
-  configuration file. If ``absent``, the entry is not included, which removes
-  an entry with the same name defined earlier. If ``ignore``, the entry is
-  not evaluated by the role.
+  Optional. If ``present``, the entry is included in the configuration file.
+  If ``absent``, the entry is not included, which removes an entry with the
+  same name defined earlier. If ``ignore``, the entry is not evaluated by the
+  role. If not specified, the entry keeps the state of an earlier entry with
+  the same name, or ``present`` if there is none; an entry which should bring
+  back an option removed earlier, for example in the group inventory, needs
+  ``state: 'present'``.
 
 Examples
 ~~~~~~~~

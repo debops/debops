@@ -391,7 +391,9 @@ garage__default_configuration:
 
   # The address other nodes use to reach this node: the default IPv4 address
   # of the host, or the default IPv6 address on a host without IPv4. Without
-  # either, the option is not set.
+  # either, the option is not set; the entry is ignored instead of absent, so
+  # that an entry with the same name in the inventory is included without
+  # its own 'state' parameter.
   - name: 'rpc_public_addr'
     config:
       rpc_public_addr: '{{ (ansible_default_ipv4.address + ":" + garage__rpc_port | string)
@@ -401,7 +403,7 @@ garage__default_configuration:
     state: '{{ "present"
                if (ansible_default_ipv4.address | d() or
                    ansible_default_ipv6.address | d())
-               else "absent" }}'
+               else "ignore" }}'
 
   - name: 's3_api'
     config:
