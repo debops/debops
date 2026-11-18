@@ -16,6 +16,7 @@ state lock pre-check and the missing-state refusal.
 from ..runner import Runner
 from ..hooks import run_hooks
 from ..utils import path_key
+from .binary import resolve_binary
 from .providers import resolve_providers
 from .modules import resolve_modules
 from .registry import view_drop_in_path, view_tofu_root
@@ -182,6 +183,18 @@ class TofuRunner(Runner):
                 state_path = 'secret/terraform.tfstate'
         return state_path
 
+    def _resolve_binary(self):
+        """Return the binary which the operation runs with.
+
+        The view's configuration drop-in records the pinned version
+        when it exists: the managed binary of that version runs when
+        it is installed, the configured binary falls back otherwise.
+        The resolution happens after the view exists -- a freshly
+        created view carries its seeded version, which 'debops tofu
+        install' installs.
+        """
+        return resolve_binary(self.project, self.project.view)
+
     def _build_command(self, tofu_args, no_color=False):
         """Build the tofu command line, preserving argument order.
 
@@ -191,7 +204,9 @@ class TofuRunner(Runner):
         which accept it, and '-no-color' is added when the output
         streams are consumed by a program rather than shown on a
         terminal -- OpenTofu emits ANSI color codes even when the
-        output is not a terminal.
+        output is not a terminal. The command carries the configured
+        binary as its placeholder; the resolution replaces it after
+        the view exists.
         """
         command = [
             self.project.config.raw['binaries']['tofu']
@@ -487,7 +502,8 @@ class TofuRunner(Runner):
         project without it applies the template and proceeds. The
         resolved provider set is recorded in the view's configuration
         drop-in, which drives the generated 'providers.tf' from then
-        on.
+        on; the binary which the operation runs is resolved after the
+        view exists, from the version the view pins.
 
         Returns the exit code of the tofu subprocess.
         """
@@ -497,6 +513,10 @@ class TofuRunner(Runner):
                                                     self._providers),
                         modules=resolve_modules(self.project,
                                                 self._modules))
+        # The binary is resolved after the view exists: a freshly
+        # created view carries its seeded version, which the managed
+        # binary runs when it is installed
+        self._tofu_command[0] = self._resolve_binary()
 
         hook_env = self._subprocess_env(self._tofu_env)
         if not run_hooks(self.project.path, 'pre-' + self._operation,
@@ -553,8 +573,10 @@ class TofuRunner(Runner):
         that the line is shell-copyable. The store's environment file
         carries the state passphrase of the view: its values are secret
         and are not part of the returned line -- they reach the tofu
-        subprocess only, at execution time.
+        subprocess only, at execution time. The binary is resolved
+        against the view's recorded version, which the command carries.
         """
+        self._tofu_command[0] = self._resolve_binary()
         assignments = ['{}={}'.format(key, shlex.quote(value))
                        for key, value in sorted(self._tofu_env.items())]
         return ' '.join(assignments + [shlex.join(self._tofu_command)])
