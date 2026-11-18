@@ -79,6 +79,11 @@ LOCK_OPERATIONS = frozenset([
 # '-input=false' OpenTofu does not ask itself.
 DESTRUCTIVE_OPERATIONS = frozenset(['apply', 'destroy'])
 
+# The usage lines of the OpenTofu help screens name the raw binary;
+# the wrapper rewrites them so that the help does not teach the
+# invocations which bypass it
+USAGE_LINE = re.compile(r'^Usage: tofu(?=[\s$])', re.MULTILINE)
+
 # The plan files DebOps saves live in the view's encrypted store, so
 # that the plan file is encrypted at rest. The 'debops-' prefix marks
 # the files the plan retention prunes: the plan files the operator
@@ -146,6 +151,9 @@ class TofuRunner(Runner):
 
         self._plan_saved = False
         self._plan_file = None
+        self._informational = (
+            self._operation == 'help'
+            or any(argument in ('-h', '--help') for argument in tofu_args))
         self._tofu_command = self._build_command(tofu_args,
                                                  no_color=no_color)
 
@@ -565,12 +573,34 @@ class TofuRunner(Runner):
             'save a plan first and apply the plan file.'.format(
                 self._operation))
 
+    def _run_informational(self):
+        """Run an informational operation -- the help surfaces of
+        OpenTofu.
+
+        The machinery of the wrapper does not apply to them: the store
+        does not cycle, the operations allow-list and the hooks do not
+        gate them, and the view tree is not created. The output is
+        captured instead of streamed, so that the usage lines name the
+        wrapper -- the help must not teach the invocations which
+        bypass it.
+        """
+        executor = subprocess.Popen(
+            self._tofu_command, cwd=self.project.path,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        std_out, std_err = executor.communicate()
+        sys.stdout.write(USAGE_LINE.sub(
+            'Usage: debops tofu', std_out.decode(errors='replace')))
+        sys.stderr.write(std_err.decode(errors='replace'))
+        return executor.returncode
+
     def execute(self):
         """Run the operation with the hooks around it and the store
         cycled for the duration.
 
-        The view tree is created lazily: the first command in a
-        project without it applies the template and proceeds. The
+        The informational operations -- the help surfaces of OpenTofu
+        -- run without the machinery of the wrapper. The view tree of
+        the regular operations is created lazily: the first command in
+        a project without it applies the template and proceeds. The
         resolved provider set is recorded in the view's configuration
         drop-in, which drives the generated 'providers.tf' from then
         on; the binary which the operation runs is resolved after the
@@ -578,6 +608,9 @@ class TofuRunner(Runner):
 
         Returns the exit code of the tofu subprocess.
         """
+        if self._informational:
+            return self._run_informational()
+
         if not os.path.exists(os.path.join(self._view_root, 'main.tf')):
             create_view(self.project, self.project.view,
                         providers=resolve_providers(self.project,
