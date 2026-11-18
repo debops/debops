@@ -826,7 +826,8 @@ Commands:
     def do_config_set(self):
         parser = _argument_parser(
                 parents=[self.global_parser],
-                usage='debops config set [<args>] [--] <key> [<value>]',
+                usage='debops config set [<args>] [--] <key> '
+                      '[<values>...]',
                 description='set or remove a DebOps configuration '
                             'option in the configuration files')
         parser.add_argument('-u', '--user', default=False,
@@ -836,12 +837,22 @@ Commands:
                             action='store_true')
         parser.add_argument('-d', '--delete', default=False,
                             help='remove the option from the '
-                                 'configuration file',
+                                 'configuration file; with values, '
+                                 'remove the values from a list option',
                             action='store_true')
+        parser.add_argument('-t', '--type', default=None,
+                            choices=['bool', 'list', 'str', 'int',
+                                     'dict'],
+                            help='the type of the option: with no '
+                                 'values, the option is created with '
+                                 "the empty value of the type "
+                                 "('bool' options need a value)")
         parser.add_argument('key', type=str,
                             help='path of the configuration option')
-        parser.add_argument('value', type=str, nargs='?',
-                            help='value to set the option to')
+        parser.add_argument('values', type=str, nargs='*',
+                            help='the values of the option: multiple '
+                                 'values are appended to a list '
+                                 'option')
         self.args = parser.parse_args(self.args[3:])
 
     def do_config_check(self):

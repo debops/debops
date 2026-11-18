@@ -4,7 +4,8 @@
 
 from . import print_error
 from ..core.exceptions import (NoDefaultViewException, InventorySpecError,
-                               OptionNotFoundError, ViewNotFoundError)
+                               OptionNotFoundError, OptionRefused,
+                               ViewNotFoundError)
 from ..core.config import Configuration
 from .subcommands import Subcommands
 from ..core.projectdir import ProjectDir
@@ -835,19 +836,27 @@ class Interpreter(object):
 
         try:
             option_file = self.config.option_file(directory)
-            self.config.write_option(option_file, args.key,
-                                     value=args.value,
-                                     delete=args.delete)
+            action = self.config.write_option(
+                option_file, args.key, values=args.values,
+                delete=args.delete, option_type=args.type)
+        except OptionRefused:
+            # The refusal is reported through the log
+            sys.exit(1)
         except (ValueError, OSError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
 
-        if args.delete:
-            logger.notice("Removed '%s' from %s", args.key, option_file,
+        if action == 'set':
+            logger.notice("Set '%s' to '%s' in %s", args.key,
+                          ' '.join(args.values), option_file,
                           extra={'allow': ['stderr', 'syslog']})
-        else:
-            logger.notice("Set '%s' to '%s' in %s", args.key, args.value,
+        elif action == 'create':
+            logger.notice("Created the '%s' option in %s", args.key,
                           option_file,
+                          extra={'allow': ['stderr', 'syslog']})
+        elif action == 'append':
+            logger.notice("Added the values to the '%s' list in %s",
+                          args.key, option_file,
                           extra={'allow': ['stderr', 'syslog']})
 
     def do_config_check(self, args):
