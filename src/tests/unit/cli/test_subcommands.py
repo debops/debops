@@ -115,23 +115,54 @@ def test_tofu_install_help_screen(capsys):
     assert '--force' in out
 
 
-def test_tofu_help_lists_the_debops_level_operations(capsys):
-    with pytest.raises(SystemExit):
-        parse_cli("tofu", "--help")
+def test_tofu_help_lists_the_debops_level_operations():
+    """The '--help' option composes the help screen: the OpenTofu
+    help followed by the options of the wrapper, whose body lists the
+    DebOps-level operations, indented like the command lists of the
+    OpenTofu help screen."""
+    subcommands = parse_cli("tofu", "--help")
 
-    out = capsys.readouterr().out
-    assert "DebOps-level operations" in out
-    assert 'install    install the OpenTofu binaries' in out
+    assert subcommands.args.help is True
+    body = subcommands.args.help_body
+    assert 'DebOps-level operations' in body
+    assert '  update     reconcile the files DebOps owns' in body
+    assert '  install    install the OpenTofu binaries' in body
 
 
-def test_tofu_help_separates_the_init_options(capsys):
-    with pytest.raises(SystemExit):
-        parse_cli("tofu", "--help")
+def test_tofu_help_body_skips_the_wrapper_usage_synopsis():
+    """The composed help screen skips the wrapper's own usage
+    synopsis, the description and the operand section: the rewritten
+    usage line of the OpenTofu help stands in for them."""
+    subcommands = parse_cli("tofu", "--help")
 
-    out = capsys.readouterr().out
-    assert "the 'debops tofu init' options" in out
-    assert out.index("the 'debops tofu init' options") \
-        > out.index('--workspace')
+    body = subcommands.args.help_body
+    assert 'usage: debops tofu [<args>]' not in body
+    assert 'run OpenTofu operations' not in body
+    assert "See 'debops tofu update --help'" not in body
+    assert 'the OpenTofu operation to run' not in body
+    assert body.count('DebOps options:') == 1
+    assert '-v, --verbose' in body
+    assert 'come before the operation' in body
+
+
+def test_tofu_help_separates_the_init_options():
+    subcommands = parse_cli("tofu", "--help")
+
+    body = subcommands.args.help_body
+    assert "the 'debops tofu init' options" in body
+    assert body.index("the 'debops tofu init' options") \
+        > body.index('--workspace')
+
+
+def test_tofu_init_options_help_is_short():
+    """The '--provider' and '--module' help texts name what the
+    option does; the full explanation belongs to the documentation."""
+    subcommands = parse_cli("tofu", "--help")
+
+    body = subcommands.args.help_body
+    assert 'require the OpenTofu provider' in body
+    assert 'instantiate the OpenTofu module' in body
+    assert 'recorded in the view configuration drop-in' not in body
 
 
 def test_tofu_provider_options_are_scoped_to_the_init_operation(capsys):
