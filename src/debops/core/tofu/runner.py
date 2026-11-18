@@ -21,6 +21,7 @@ from .providers import resolve_providers
 from .modules import resolve_modules
 from .registry import view_drop_in_path, view_tofu_root
 from .view import create_view
+import datetime
 import dotenv
 import fcntl
 import json
@@ -77,6 +78,13 @@ LOCK_OPERATIONS = frozenset([
 # plan file: the wrapper asks for their approval, because with
 # '-input=false' OpenTofu does not ask itself.
 DESTRUCTIVE_OPERATIONS = frozenset(['apply', 'destroy'])
+
+# The plan files DebOps saves live in the view's encrypted store, so
+# that the plan file is encrypted at rest. The 'debops-' prefix marks
+# the files the plan retention prunes: the plan files the operator
+# saves with the '-out' option are never touched.
+PLAN_DIR = os.path.join('secret', 'plans')
+PLAN_FILE_PREFIX = 'debops-'
 
 
 class TofuRunner(Runner):
@@ -136,6 +144,8 @@ class TofuRunner(Runner):
         if os.path.isfile(cli_config):
             self._tofu_env['TF_CLI_CONFIG_FILE'] = cli_config
 
+        self._plan_saved = False
+        self._plan_file = None
         self._tofu_command = self._build_command(tofu_args,
                                                  no_color=no_color)
 
@@ -207,12 +217,23 @@ class TofuRunner(Runner):
         output is not a terminal. The command carries the configured
         binary as its placeholder; the resolution replaces it after
         the view exists.
+
+        A 'plan' without the '-out' option is saved into the view's
+        encrypted store: the plan file carries the planned state of
+        the view, which is encrypted at rest with the state, and the
+        plan retention prunes the expired ones.
         """
         command = [
             self.project.config.raw['binaries']['tofu']
         ]
         parsed_args = self._parse_tofu_args(tofu_args)
         command.extend(parsed_args)
+        if self._operation == 'plan' and self._plan_retention() > 0:
+            if not any(arg == '-out' or arg.startswith('-out=')
+                       for arg in command):
+                self._plan_file = self._plan_file_path()
+                command.append('-out={}'.format(self._plan_file))
+                self._plan_saved = True
         if self._operation not in ('state', 'workspace') and no_color:
             command.append('-no-color')
         if self._operation in INPUT_OPERATIONS:
@@ -256,6 +277,56 @@ class TofuRunner(Runner):
     def _secret_dir(self):
         """Return the view's secret directory, the store's mount point."""
         return os.path.join(self._view_root, 'secret')
+
+    def _plan_retention(self):
+        """How many plan files the DebOps flows keep in the view's
+        store."""
+        try:
+            return self.project.config.raw['tofu']['plan_retention']
+        except (KeyError, TypeError):
+            return 3
+
+    def _plan_file_path(self):
+        """Return the path of the plan file DebOps saves.
+
+        The file lives in the view's encrypted store: the plan file
+        carries the planned state of the view, which is encrypted at
+        rest with the state. The timestamped name sorts
+        lexicographically by age, and the 'debops-' prefix marks the
+        files the retention prunes -- the plan files the operator
+        saves with the '-out' option are never touched.
+        """
+        timestamp = datetime.datetime.now().strftime('%Y%m%dT%H%M%S')
+        return os.path.join(PLAN_DIR,
+                            '{}{}.tfplan'.format(PLAN_FILE_PREFIX, timestamp))
+
+    def _announce_saved_plan(self):
+        """Announce the plan file the operation saved."""
+        logger.notice(
+            "Saved the plan file '{}' of the view {!r}".format(
+                self._plan_file, self.project.view),
+            extra={'allow': ['stderr', 'syslog']})
+
+    def _prune_plans(self):
+        """Prune the expired plan files DebOps saved in the view's
+        store.
+
+        The plan files DebOps saves carry the 'debops-' prefix; the
+        retention keeps the newest 'plan_retention' of them and
+        removes the older ones. The plan files the operator saves
+        with the '-out' option are never touched.
+        """
+        plans_dir = os.path.join(self._view_root, PLAN_DIR)
+        saved = sorted(
+            name for name in os.listdir(plans_dir)
+            if name.startswith(PLAN_FILE_PREFIX) and name.endswith('.tfplan'))
+        for name in saved[:-self._plan_retention()]:
+            os.remove(os.path.join(plans_dir, name))
+            logger.notice(
+                "Removed the expired plan file '{}' of the view "
+                '{!r}'.format(os.path.join(PLAN_DIR, name),
+                              self.project.view),
+                extra={'allow': ['stderr', 'syslog']})
 
     def _extra_env(self):
         """Return the runner's own additions to the subprocess
@@ -542,11 +613,18 @@ class TofuRunner(Runner):
                 self._check_state_lock()
             self._check_approval()
 
+            if self._plan_saved:
+                os.makedirs(os.path.join(self._view_root, PLAN_DIR),
+                            exist_ok=True)
             executor = subprocess.Popen(
                 self._tofu_command, cwd=self._view_root,
                 env=self._subprocess_env(self._extra_env()))
             std_out, std_err = executor.communicate()
             rc = executor.returncode
+
+            if self._plan_saved and rc == 0:
+                self._announce_saved_plan()
+                self._prune_plans()
 
         except KeyboardInterrupt:
             logger.notice('OpenTofu execution interrupted by user',
