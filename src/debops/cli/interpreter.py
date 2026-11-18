@@ -195,7 +195,7 @@ class Interpreter(object):
             project = ProjectDir(path=args.project_dir, config=self.config, cwd=self.cwd)
             project.commit(interactive=True)
         except (IsADirectoryError, NotADirectoryError,
-                PermissionError) as errmsg:
+                PermissionError, ViewNotFoundError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
 
@@ -216,7 +216,8 @@ class Interpreter(object):
                 venv.freeze(scope=args.scope)
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError, FileNotFoundError,
-                ChildProcessError, ValueError) as errmsg:
+                ChildProcessError, ValueError,
+                ViewNotFoundError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
 
@@ -813,6 +814,9 @@ class Interpreter(object):
             # This is not a project directory, so no project-dependent
             # configuration is included
             pass
+        except ViewNotFoundError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
 
         for line in self.config.config_list():
             print(line)
@@ -824,6 +828,9 @@ class Interpreter(object):
             # This is not a project directory, so no project-dependent
             # configuration is included
             pass
+        except ViewNotFoundError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
 
         if args.key:
             for option_name in args.key:
@@ -867,6 +874,9 @@ class Interpreter(object):
                 # Outside of a project directory, the options are set
                 # in the user configuration
                 directory = None
+            except ViewNotFoundError as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
         if directory is None:
             directory = os.path.join(xdg_config_home, 'debops', 'conf.d')
 
@@ -895,6 +905,9 @@ class Interpreter(object):
             # The configuration is checked without the project's files
             # when there is no project directory to work on
             pass
+        except ViewNotFoundError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
 
         failures = [violation for violation in self.config._violations
                     if violation['dropped']]
