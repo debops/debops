@@ -441,10 +441,16 @@ class Interpreter(object):
         """Run the 'debops tofu install' operation: reconcile the
         OpenTofu binaries which the project's views pin with the
         installed ones."""
+        force = False
         for token in args.tofu_args[1:]:
-            print_error("Unknown option of the 'install' operation: "
-                        "'{}'; see 'debops tofu --help'".format(token))
-            sys.exit(2)
+            if token == '--force':
+                force = True
+            elif token == '--':
+                continue
+            else:
+                print_error("Unknown option of the 'install' operation: "
+                            "'{}'; see 'debops tofu --help'".format(token))
+                sys.exit(2)
 
         if args.provider:
             print_error("The '--provider' options apply when a view is "
@@ -463,7 +469,7 @@ class Interpreter(object):
             sys.exit(2)
 
         try:
-            installed = reconcile_binaries(project)
+            installed = reconcile_binaries(project, force=force)
         except ValueError as errmsg:
             print_error(errmsg)
             sys.exit(1)
