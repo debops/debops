@@ -651,7 +651,7 @@ def test_config_set_writes_to_the_project_configuration(
 
     interpreter.do_config_set(make_args(project_dir=".", user=False,
                                         delete=False, key="syslog.level",
-                                        value="DEBUG"))
+                                        values=["DEBUG"], type=None))
 
     path = tmp_path / ".debops" / "conf.d" / "99_config_set.json"
     assert json.loads(path.read_text()) == {"syslog": {"level": "DEBUG"}}
@@ -666,7 +666,7 @@ def test_config_set_writes_to_the_user_configuration(
 
     interpreter.do_config_set(make_args(project_dir=".", user=False,
                                         delete=False, key="syslog.level",
-                                        value="DEBUG"))
+                                        values=["DEBUG"], type=None))
 
     path = tmp_path / "debops" / "conf.d" / "99_config_set.json"
     assert json.loads(path.read_text()) == {"syslog": {"level": "DEBUG"}}
@@ -681,7 +681,7 @@ def test_config_set_user_flag_skips_the_project_resolution(
 
     interpreter.do_config_set(make_args(project_dir=".", user=True,
                                         delete=False, key="syslog.level",
-                                        value="DEBUG"))
+                                        values=["DEBUG"], type=None))
 
     project_dir_mock.assert_not_called()
     path = tmp_path / "debops" / "conf.d" / "99_config_set.json"
@@ -702,7 +702,7 @@ def test_config_set_deletes_from_the_project_configuration(
 
     interpreter.do_config_set(make_args(project_dir=".", user=False,
                                         delete=True, key="syslog.level",
-                                        value=None))
+                                        values=None, type=None))
 
     assert json.loads(option_file.read_text()) == {
         "syslog": {"facility": "user"}}
@@ -719,7 +719,7 @@ def test_config_set_reports_errors(configuration, monkeypatch, tmp_path,
         interpreter.do_config_set(make_args(project_dir=".", user=False,
                                             delete=False,
                                             key="myscript.retries",
-                                            value="5"))
+                                            values=["5"], type=None))
 
     assert "custom options belong" in capsys.readouterr().err
 

@@ -446,16 +446,40 @@ def test_config_set_defaults():
     subcommands = parse_cli("config", "set", "syslog.level", "DEBUG")
 
     assert subcommands.args.key == "syslog.level"
-    assert subcommands.args.value == "DEBUG"
+    assert subcommands.args.values == ["DEBUG"]
     assert subcommands.args.user is False
+    assert subcommands.args.delete is False
+    assert subcommands.args.type is None
+
+
+def test_config_set_parses_the_type_and_the_values():
+    subcommands = parse_cli("config", "set", "-t", "list",
+                            "tofu.default_providers", "lxc/incus",
+                            "hashicorp/tfcoremock")
+
+    assert subcommands.args.type == "list"
+    assert subcommands.args.key == "tofu.default_providers"
+    assert subcommands.args.values == ["lxc/incus",
+                                       "hashicorp/tfcoremock"]
     assert subcommands.args.delete is False
 
 
-def test_config_set_delete_flag():
-    subcommands = parse_cli("config", "set", "-d", "syslog.port")
+def test_config_set_parses_the_delete_flag_before_the_key():
+    subcommands = parse_cli("config", "set", "-d", "custom.greeting",
+                            "hello")
 
     assert subcommands.args.delete is True
-    assert subcommands.args.value is None
+    assert subcommands.args.key == "custom.greeting"
+    assert subcommands.args.values == ["hello"]
+
+
+def test_config_set_refuses_an_unknown_type(capsys):
+    with pytest.raises(SystemExit) as exc:
+        parse_cli("config", "set", "-t", "array", "custom.greeting",
+                  "hello")
+
+    assert exc.value.code == 2
+    assert "invalid choice" in capsys.readouterr().err
 
 
 def test_config_get_format_choice():
