@@ -624,22 +624,25 @@ Actions:
 
     def do_tofu(self):
         parser = _argument_parser(
-                parents=[self.global_parser],
+                parents=[self.global_parser], add_help=False,
                 usage='''debops tofu [<args>] [--] <operation> [<operation args>]
 
 DebOps-level operations (not passed to the 'tofu' command):
-    update     reconcile the files DebOps owns in the view and run
-               'tofu init' through the wrapper
-    install    install the OpenTofu binaries which the views pin
-
-See 'debops tofu update --help' and 'debops tofu install --help' for
-the options of the DebOps-level operations.''',
-                description='run OpenTofu operations in the project '
-                            'environment',
+  update     reconcile the files DebOps owns in the view and run
+             'tofu init' through the wrapper
+  install    install the OpenTofu binaries which the views pin''',
                 epilog="The operation and its arguments are passed to "
                        "the 'tofu' command; the DebOps options come "
                        'before the operation, the options of the '
                        'operation after it.')
+        # The options of the section and the ones inherited from the
+        # global parser share the 'DebOps options' section of the
+        # composed help screen
+        parser._optionals.title = 'DebOps options'
+        parser.add_argument(
+                '-h', '--help', action='store_true',
+                help='show the OpenTofu help followed by the options '
+                     'of the wrapper')
         parser.add_argument('-V', '--view', type=str,
                             help='select the infrastructure view '
                                  'to use for the "tofu" command')
@@ -648,59 +651,45 @@ the options of the DebOps-level operations.''',
                                  'of the OpenTofu operation',
                             action='store_true')
         parser.add_argument('--no-color', default=False,
-                            help='strip the ANSI color codes from the '
-                                 'operation output',
+                            help='strip the ANSI color codes '
+                                 'from the operation output',
                             action='store_true')
         parser.add_argument('-w', '--workspace', type=str,
-                            help='run the operation against the named '
-                                 'workspace of the view, overriding '
-                                 'the workspace configured for the view')
+                            help='run the operation against the '
+                                 'named workspace of the view, '
+                                 'overriding the workspace '
+                                 'configured for the view')
         parser.add_argument('--eval', default=False,
-                            help='print the OpenTofu command and exit',
+                            help='print the OpenTofu command '
+                                 'and exit',
                             action='store_true')
         init_options = parser.add_argument_group(
                 "the 'debops tofu init' options")
         init_options.add_argument('-p', '--provider', type=str,
                                   action='append', default=None,
-                                  help='the OpenTofu provider which the '
-                                       'view requires, as a source '
-                                       "address 'namespace/name' or "
-                                       "'hostname/namespace/name', "
-                                       'optionally with a version pin '
-                                       'separated by "="; repeatable, '
-                                       'recorded in the view '
-                                       'configuration drop-in when the '
-                                       'view is created; without this '
-                                       'option, the provider set of a '
-                                       'new view comes from the '
-                                       "'tofu.default_providers' "
-                                       'configuration option')
+                                  help='require the OpenTofu provider '
+                                       'in the created view, as a '
+                                       'registry source address; '
+                                       'repeatable')
         init_options.add_argument('-m', '--module', type=str,
                                   action='append', default=None,
-                                  help='the OpenTofu module which the '
-                                       'view instantiates, as a registry '
-                                       "source 'namespace/name' or "
-                                       "'hostname/namespace/name', "
-                                       "optionally with a '//subdir' "
-                                       'suffix and a version pin '
-                                       'separated by "="; repeatable, '
-                                       'recorded in the view '
-                                       'configuration drop-in when the '
-                                       'view is created, with the local '
-                                       'module name derived from the '
-                                       'source address; without this '
-                                       'option, the module set of a new '
-                                       "view comes from the "
-                                       "'tofu.default_modules' "
-                                       'configuration option, which '
-                                       'also carries the inputs of the '
-                                       'module instances')
+                                  help='instantiate the OpenTofu module '
+                                       'in the created view, as a '
+                                       'registry source address; '
+                                       'repeatable')
         parser.add_argument('tofu_args', type=str, nargs=argparse.REMAINDER,
-                            help='the OpenTofu operation to run and its '
-                                 'arguments')
+                            help=argparse.SUPPRESS)
         self.args = parser.parse_args(self.args[2:])
         self._parse_tofu_operation()
         self._scope_tofu_init_options()
+        if self.args.help:
+            self.args.help_body = self._tofu_help_body(parser)
+
+    def _tofu_help_body(self, parser):
+        """The help of the wrapper without the usage synopsis: the
+        composed help screen prints the OpenTofu help first, whose
+        rewritten usage line stands in for ours."""
+        return parser.format_help().split('\n', 1)[1]
 
     def _parse_tofu_operation(self):
         """Parse the options of the DebOps-level tofu operations: the

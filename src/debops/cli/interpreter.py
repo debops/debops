@@ -304,7 +304,7 @@ class Interpreter(object):
             sys.exit(0)
 
     def do_tofu(self, args):
-        if not args.tofu_args:
+        if not args.tofu_args and not args.help:
             print_error('At least one operand is required: the OpenTofu '
                         'operation to run; see \'debops tofu --help\'')
             sys.exit(2)
@@ -316,6 +316,16 @@ class Interpreter(object):
                 ViewNotFoundError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
+
+        # The '--help' option composes the help screen: the OpenTofu
+        # help -- its usage lines name the wrapper -- followed by the
+        # options of the wrapper
+        if args.help:
+            runner = TofuRunner(project, ['help'], no_color=args.no_color,
+                                workspace=args.workspace)
+            runner.execute()
+            sys.stdout.write(args.help_body)
+            sys.exit(0)
 
         # The 'update' operation is a DebOps-level command: it
         # reconciles the files DebOps owns in the view and runs 'tofu
