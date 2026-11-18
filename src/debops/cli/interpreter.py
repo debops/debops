@@ -371,51 +371,21 @@ class Interpreter(object):
         """Run the 'debops tofu update' operation: reconcile the files
         DebOps owns in the view, then run 'tofu init' through the
         wrapper."""
-        diff = dry_run = force = False
-        for token in args.tofu_args[1:]:
-            if token == '--diff':
-                diff = True
-            elif token == '--dry-run':
-                dry_run = True
-            elif token == '--force':
-                force = True
-            elif token == '--':
-                continue
-            else:
-                print_error("Unknown option of the 'update' operation: "
-                            "'{}'; see 'debops tofu --help'".format(token))
-                sys.exit(2)
-
-        if args.provider:
-            print_error("The '--provider' options apply when a view is "
-                        'created: run \'debops tofu init\' to create '
-                        'the view with the provider set, or edit the '
-                        'view configuration drop-in to change the '
-                        'recorded set.')
-            sys.exit(2)
-
-        if args.module:
-            print_error("The '--module' options apply when a view is "
-                        'created: run \'debops tofu init\' to create '
-                        'the view with the module set, or edit the '
-                        'view configuration drop-in to change the '
-                        'recorded set.')
-            sys.exit(2)
-
         # The '--eval' option implies the dry-run behavior: the
         # reconcile shows its changes and the printed command is the
         # one which runs after them
         try:
-            changes = reconcile_view(project, project.view, force=force,
-                                     dry_run=(dry_run or args.eval))
+            changes = reconcile_view(project, project.view,
+                                     force=args.force,
+                                     dry_run=(args.dry_run or args.eval))
         except ValueError as errmsg:
             print_error(errmsg)
             sys.exit(1)
-        self._render_tofu_changes(changes, diff=diff,
-                                  dry_run=(dry_run or args.eval),
+        self._render_tofu_changes(changes, diff=args.diff,
+                                  dry_run=(args.dry_run or args.eval),
                                   color=(sys.stdout.isatty()
                                          and not args.no_color))
-        if dry_run:
+        if args.dry_run:
             return
 
         try:
@@ -442,35 +412,8 @@ class Interpreter(object):
         """Run the 'debops tofu install' operation: reconcile the
         OpenTofu binaries which the project's views pin with the
         installed ones."""
-        force = False
-        for token in args.tofu_args[1:]:
-            if token == '--force':
-                force = True
-            elif token == '--':
-                continue
-            else:
-                print_error("Unknown option of the 'install' operation: "
-                            "'{}'; see 'debops tofu --help'".format(token))
-                sys.exit(2)
-
-        if args.provider:
-            print_error("The '--provider' options apply when a view is "
-                        'created: run \'debops tofu init\' to create '
-                        'the view with the provider set, or edit the '
-                        'view configuration drop-in to change the '
-                        'recorded set.')
-            sys.exit(2)
-
-        if args.module:
-            print_error("The '--module' options apply when a view is "
-                        'created: run \'debops tofu init\' to create '
-                        'the view with the module set, or edit the '
-                        'view configuration drop-in to change the '
-                        'recorded set.')
-            sys.exit(2)
-
         try:
-            installed = reconcile_binaries(project, force=force)
+            installed = reconcile_binaries(project, force=args.force)
         except ValueError as errmsg:
             print_error(errmsg)
             sys.exit(1)

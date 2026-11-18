@@ -73,6 +73,88 @@ def test_tofu_section_passes_the_install_options_through():
     subcommands = parse_cli("tofu", "install", "--force")
 
     assert subcommands.args.tofu_args == ["install", "--force"]
+    assert subcommands.args.force is True
+
+
+def test_tofu_update_parses_its_options():
+    """The DebOps-level 'update' operation carries its own options,
+    parsed by its own help screen."""
+    subcommands = parse_cli("tofu", "update", "--dry-run", "--diff")
+
+    assert subcommands.args.dry_run is True
+    assert subcommands.args.diff is True
+    assert subcommands.args.force is False
+
+
+def test_tofu_update_refuses_unknown_options(capsys):
+    with pytest.raises(SystemExit) as exc:
+        parse_cli("tofu", "update", "--bogus")
+
+    assert exc.value.code == 2
+    assert "unrecognized" in capsys.readouterr().err
+
+
+def test_tofu_update_help_screen(capsys):
+    with pytest.raises(SystemExit) as exc:
+        parse_cli("tofu", "update", "--help")
+
+    assert exc.value.code == 0
+    out = capsys.readouterr().out
+    assert 'reconcile the files DebOps owns' in out
+    assert '--dry-run' in out
+    assert '--diff' in out
+
+
+def test_tofu_install_help_screen(capsys):
+    with pytest.raises(SystemExit) as exc:
+        parse_cli("tofu", "install", "--help")
+
+    assert exc.value.code == 0
+    out = capsys.readouterr().out
+    assert 'version-keyed' in out
+    assert '--force' in out
+
+
+def test_tofu_help_lists_the_debops_level_operations(capsys):
+    with pytest.raises(SystemExit):
+        parse_cli("tofu", "--help")
+
+    out = capsys.readouterr().out
+    assert "DebOps-level operations" in out
+    assert 'install    install the OpenTofu binaries' in out
+
+
+def test_tofu_help_separates_the_init_options(capsys):
+    with pytest.raises(SystemExit):
+        parse_cli("tofu", "--help")
+
+    out = capsys.readouterr().out
+    assert "the 'debops tofu init' options" in out
+    assert out.index("the 'debops tofu init' options") \
+        > out.index('--workspace')
+
+
+def test_tofu_provider_options_are_scoped_to_the_init_operation(capsys):
+    with pytest.raises(SystemExit) as exc:
+        parse_cli("tofu", "-p", "lxc/incus", "plan")
+
+    assert exc.value.code == 2
+    assert "apply when a view is created" in capsys.readouterr().err
+
+
+def test_tofu_provider_options_after_the_operation_are_refused(capsys):
+    with pytest.raises(SystemExit) as exc:
+        parse_cli("tofu", "plan", "-p", "lxc/incus")
+
+    assert exc.value.code == 2
+    assert "place them before the operation" in capsys.readouterr().err
+
+
+def test_tofu_init_accepts_the_provider_options():
+    subcommands = parse_cli("tofu", "-p", "lxc/incus", "init")
+
+    assert subcommands.args.provider == ["lxc/incus"]
+    assert subcommands.args.tofu_args == ["init"]
 
 
 def test_unknown_project_command_exits_with_an_error(capsys):
