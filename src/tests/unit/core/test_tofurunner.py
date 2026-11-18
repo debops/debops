@@ -1487,9 +1487,10 @@ def test_runner_runs_the_pinned_binary(tofu_project, tmp_path, monkeypatch,
 
 
 def test_runner_falls_back_when_the_pinned_binary_is_missing(
-        tofu_project, stub_tofu_subprocess):
+        tofu_project, tmp_path, monkeypatch, stub_tofu_subprocess):
     """The operation runs the configured binary when the pinned
     version is not installed."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
     project = tofu_project(project_type="modern")
     project.config.merge({'views': {project.view: {'tofu': {
         'binary_version': "1.13.9"}}}})
@@ -1869,3 +1870,49 @@ def test_reconcile_binaries_skips_the_installed_versions(
 
     assert binary_module.reconcile_binaries(project) == []
     download.assert_not_called()
+
+
+def test_reconcile_binaries_force_reinstalls_the_versions(
+        tofu_project, stub_gpg, tmp_path, monkeypatch):
+    """The '--force' option reinstalls the binaries which are
+    installed already: the download, the verification and the
+    install run again."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    monkeypatch.setattr(binary_module, "_release_system", lambda: "linux")
+    monkeypatch.setattr(binary_module, "_release_arch", lambda: "amd64")
+    version = "1.13.9"
+    archive_name = "tofu_1.13.9_linux_amd64.zip"
+    sums_name = "tofu_1.13.9_SHA256SUMS"
+
+    releases = tmp_path / "releases"
+    releases.mkdir()
+    archive = releases / archive_name
+    with zipfile.ZipFile(archive, "w") as zf:
+        zf.writestr("tofu", "#!/bin/sh\nexit 0\n")
+    archive_digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+    sums = releases / sums_name
+    sums.write_text("{}  {}\n".format(archive_digest, archive_name))
+    sig = releases / (sums_name + ".gpgsig")
+    sig.write_bytes(b"stub signature")
+
+    downloads = []
+
+    def download(url, path):
+        downloads.append(url)
+        name = url.rsplit("/", 1)[-1]
+        shutil.copy(str(releases / name), path)
+
+    monkeypatch.setattr(binary_module, "_download", download)
+
+    project = tofu_project(project_type="modern",
+                           raw=keyring_config(stub_gpg, tmp_path))
+    write_drop_in(project, [], binary_version=version)
+
+    assert binary_module.reconcile_binaries(project) == [version]
+    assert len(downloads) == 3
+
+    assert binary_module.reconcile_binaries(project, force=True) \
+        == [version]
+    assert len(downloads) == 6
+    assert open(binary_module.managed_binary_path(version)).read() \
+        == "#!/bin/sh\nexit 0\n"

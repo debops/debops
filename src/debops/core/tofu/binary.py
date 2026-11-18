@@ -130,12 +130,14 @@ def resolve_binary(project, view):
     return binary
 
 
-def reconcile_binaries(project):
+def reconcile_binaries(project, force=False):
     """Install the pinned binaries of the project's views.
 
     The views which record a pinned version are collected; the
-    missing binaries are installed into the managed location.
-    Returns the list of the versions which were installed.
+    missing binaries are installed into the managed location. The
+    'force' option reinstalls the binaries which are installed
+    already: the download, the verification and the install run
+    again. Returns the list of the versions which were installed.
     """
     versions = set()
     for view, config in (project.config.raw.get('views') or {}).items():
@@ -147,7 +149,7 @@ def reconcile_binaries(project):
             versions.add(version)
     installed = []
     for version in sorted(versions):
-        if install_binary(project, version):
+        if install_binary(project, version, force=force):
             installed.append(version)
     return installed
 

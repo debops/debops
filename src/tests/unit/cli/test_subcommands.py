@@ -66,6 +66,15 @@ def test_tofu_section_accumulates_the_provider_options():
     assert subcommands.args.tofu_args == ["init"]
 
 
+def test_tofu_section_passes_the_install_options_through():
+    """The options of the DebOps-level 'install' operation pass
+    through with it: the interpreter parses them from the
+    remainder."""
+    subcommands = parse_cli("tofu", "install", "--force")
+
+    assert subcommands.args.tofu_args == ["install", "--force"]
+
+
 def test_unknown_project_command_exits_with_an_error(capsys):
     with pytest.raises(SystemExit) as exc:
         parse_cli("project", "bogus")
