@@ -17,6 +17,9 @@
 [views."{{ view_name }}".tofu]
 binary_version = '{{ binary_version }}'
 providers = [{% for provider in providers %}'{{ provider }}'{{ ", " if not loop.last }}{% endfor %}]
+{% if not modules %}
+modules = {}
+{% endif %}
 {% for module in modules %}
 
 [views."{{ view_name }}".tofu.modules."{{ module.name }}"]

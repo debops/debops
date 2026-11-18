@@ -91,6 +91,45 @@ def known_version(project):
     return version
 
 
+def _resolve_pin(project, view):
+    """Return the version which the view pins and the managed binary
+    of that version, when it is installed.
+
+    The version is None when the view records no pin -- a hand-made
+    view; the binary is None when the version is recorded but the
+    managed binary of the version is not installed.
+    """
+    try:
+        version = project.config.raw['views'][view]['tofu'][
+            'binary_version']
+    except (KeyError, TypeError):
+        return None, None
+    if not version:
+        return None, None
+    managed = managed_binary_path(version)
+    if os.path.isfile(managed):
+        return version, managed
+    return version, None
+
+
+def effective_binary(project, view):
+    """Return the OpenTofu binary which the view runs with, without
+    refusing when none is available.
+
+    The pinned binary of the view runs when it is installed; the
+    configured 'binaries.tofu' binary stands in otherwise -- also
+    when the pinned binary is missing. The lenient resolution drives
+    the runtime configuration of the project: it reports the
+    effective binary without refusing, the strict resolution in the
+    runner reports the missing pin and refuses the operation when no
+    installation is available.
+    """
+    _, managed = _resolve_pin(project, view)
+    if managed:
+        return managed
+    return project.config.raw['binaries']['tofu']
+
+
 def resolve_binary(project, view):
     """Return the binary which the view runs with.
 
@@ -106,15 +145,10 @@ def resolve_binary(project, view):
     available, the resolution fails: there is no OpenTofu binary to
     run.
     """
-    try:
-        version = project.config.raw['views'][view]['tofu'][
-            'binary_version']
-    except (KeyError, TypeError):
-        version = None
+    version, managed = _resolve_pin(project, view)
+    if managed:
+        return managed
     if version:
-        managed = managed_binary_path(version)
-        if os.path.isfile(managed):
-            return managed
         logger.warning(
             'The binary of the version {!r} which the view {!r} pins '
             'is not installed: run \'debops tofu install\' to install '
