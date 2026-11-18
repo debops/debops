@@ -24,6 +24,7 @@ from unittest import mock
 import pytest
 
 import debops.core.projectdir as projectdir_module
+import debops.core.tofu.binary as binary_module
 from debops import get_project_context
 from debops.core.config import Configuration
 from debops.core.exceptions import ViewNotFoundError
@@ -1400,6 +1401,7 @@ DEFAULT_PROJECT_RAW = {
         "gpg": "gpg",
         "umount": "umount",
         "fusermount": "fusermount",
+        "tofu": "tofu",
     },
 }
 
@@ -1761,6 +1763,52 @@ def test_init_applies_the_venv_runtime(tmp_path, monkeypatch):
     assert project._commands["ansible-galaxy"] == os.path.join(
             venv_bin, "ansible-galaxy")
     assert project.config._env_vars["PATH"].startswith(venv_bin + os.pathsep)
+
+
+def test_init_applies_the_tofu_runtime(tmp_path, monkeypatch):
+    """The project open points the 'binaries.tofu' option at the
+    managed binary of the version which the view pins, when it is
+    installed: the effective binary is what 'debops config get'
+    reports, the way the venv binaries point at the virtualenv."""
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    managed = binary_module.managed_binary_path("1.13.9")
+    os.makedirs(os.path.dirname(managed))
+    with open(managed, "w") as handle:
+        handle.write("#!/bin/sh\nexit 0\n")
+    os.chmod(managed, 0o755)
+    write_modern_project(tmp_path, conf_d=(
+        "views:\n"
+        "  system:\n"
+        "    tofu:\n"
+        "      binary_version: '1.13.9'\n"))
+    raw = dict(DEFAULT_PROJECT_RAW)
+    raw["binaries"] = dict(DEFAULT_PROJECT_RAW["binaries"], tofu="tofu")
+
+    project = ProjectDir(str(tmp_path), config=make_configuration(raw))
+
+    assert project.view == "system"
+    assert project.config.raw["binaries"]["tofu"] == managed
+
+
+def test_init_keeps_the_configured_binary_without_the_managed_one(
+        tmp_path, monkeypatch):
+    """A view whose pinned binary is not installed keeps the
+    configured option at the project open: the runtime resolution is
+    conditional, the runner enforces the pin."""
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    write_modern_project(tmp_path, conf_d=(
+        "views:\n"
+        "  system:\n"
+        "    tofu:\n"
+        "      binary_version: '1.13.9'\n"))
+    raw = dict(DEFAULT_PROJECT_RAW)
+    raw["binaries"] = dict(DEFAULT_PROJECT_RAW["binaries"], tofu="tofu")
+
+    project = ProjectDir(str(tmp_path), config=make_configuration(raw))
+
+    assert project.config.raw["binaries"]["tofu"] == "tofu"
 
 
 def test_init_detects_an_encrypted_inventory(tmp_path, monkeypatch):

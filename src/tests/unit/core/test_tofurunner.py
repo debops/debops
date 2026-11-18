@@ -1374,6 +1374,7 @@ def test_drop_in_records_the_seeded_binary_version(tofu_project,
     content = open(drop_in).read()
     known = project.config.raw["tofu"]["upstream"]["known_version"]
     assert "binary_version = '{}'".format(known) in content
+    assert "modules = {}" in content
     assert known == project.config.raw[
         "views"][project.view]["tofu"]["binary_version"]
 
@@ -1462,6 +1463,50 @@ def test_resolve_binary_refuses_when_the_pin_is_missing_and_no_fallback(
 
     with pytest.raises(ValueError, match="is not available"):
         binary_module.resolve_binary(project, project.view)
+
+
+def test_effective_binary_runs_the_managed_binary(tofu_project, tmp_path,
+                                                  monkeypatch):
+    """The lenient resolution runs the managed binary of the version
+    which the view pins, when it is installed."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    version = "1.13.9"
+    managed = binary_module.managed_binary_path(version)
+    os.makedirs(os.path.dirname(managed))
+    with open(managed, "w") as handle:
+        handle.write("#!/bin/sh\nexit 0\n")
+    os.chmod(managed, 0o755)
+
+    project = tofu_project(project_type="modern")
+    project.config.merge({'views': {project.view: {'tofu': {
+        'binary_version': version}}}})
+
+    assert binary_module.effective_binary(project, project.view) \
+        == managed
+
+
+def test_effective_binary_falls_back_without_refusing(tofu_project,
+                                                      tmp_path,
+                                                      monkeypatch):
+    """The lenient resolution falls back to the configured binary
+    when the pinned one is not installed, without refusing: the
+    runtime configuration reports the effective binary, the runner
+    enforces."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    project = tofu_project(project_type="modern")
+    project.config.merge({'views': {project.view: {'tofu': {
+        'binary_version': "1.13.9"}}}})
+
+    assert binary_module.effective_binary(project, project.view) \
+        == "tofu"
+
+
+def test_effective_binary_leaves_a_hand_made_view_unmanaged(tofu_project):
+    """A view without a recorded version resolves to the configured
+    binary."""
+    project = tofu_project(project_type="modern")
+    assert binary_module.effective_binary(project, project.view) \
+        == "tofu"
 
 
 def test_runner_runs_the_pinned_binary(tofu_project, tmp_path, monkeypatch,
