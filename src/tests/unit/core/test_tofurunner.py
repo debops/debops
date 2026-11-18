@@ -1557,6 +1557,60 @@ def test_runner_refuses_when_no_binary_is_available(tofu_project):
         runner.execute()
 
 
+def test_help_operation_runs_without_the_machinery(tofu_project,
+                                                   stub_tofu_subprocess,
+                                                   monkeypatch):
+    """The help surfaces of OpenTofu run without the machinery of the
+    wrapper: the store does not cycle, the allow-list and the hooks
+    do not gate them."""
+    project = tofu_project(project_type="modern")
+    project.config.merge({'tofu': {'operations': ['plan']}})
+    unlock = mock.Mock(return_value=False)
+    monkeypatch.setattr(runner_module.TofuRunner, '_unlock_secrets',
+                        unlock)
+    hooks = mock.Mock(return_value=True)
+    monkeypatch.setattr(runner_module, 'run_hooks', hooks)
+
+    rc = TofuRunner(project, ["help"]).execute()
+
+    assert rc == 0
+    unlock.assert_not_called()
+    hooks.assert_not_called()
+
+
+def test_informational_operation_rewrites_the_usage_lines(
+        tofu_project, monkeypatch, capsys):
+    """The usage lines of the help screens name the wrapper: the help
+    does not teach the invocations which bypass it."""
+    process = mock.Mock()
+    process.returncode = 0
+    process.communicate.return_value = (
+        b"Usage: tofu [global options] <subcommand> [args]\n"
+        b"Usage: tofu plan [options]\n", b"")
+    popen = mock.Mock(return_value=process)
+    monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
+
+    project = tofu_project(project_type="modern")
+    TofuRunner(project, ["help"]).execute()
+
+    out = capsys.readouterr().out
+    assert "Usage: debops tofu [global options]" in out
+    assert "Usage: debops tofu plan [options]" in out
+    assert "Usage: tofu " not in out
+
+
+def test_regular_operations_stream_without_the_rewrite(
+        tofu_project, stub_tofu_subprocess):
+    """The regular operations stream directly: their output is not
+    captured or rewritten, only the informational ones are."""
+    project = tofu_project(project_type="modern")
+
+    TofuRunner(project, ["plan"]).execute()
+
+    popen = stub_tofu_subprocess
+    assert 'stdout' not in popen.call_args.kwargs
+
+
 def test_install_binary_downloads_verifies_and_installs(
         tofu_project, stub_gpg, tmp_path, monkeypatch):
     """The 'debops tofu install' command downloads the release
