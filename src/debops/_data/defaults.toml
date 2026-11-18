@@ -70,7 +70,10 @@ scp = "{{ env['DEBOPS_CMD_SCP'] | d('scp') }}"
 sftp = "{{ env['DEBOPS_CMD_SFTP'] | d('sftp') }}"
 
 # Path to binary which will be used to execute 'tofu' (OpenTofu) commands.
-# By default it will rely on the system's $PATH.
+# By default it will rely on the system's $PATH. At runtime the option
+# points at the managed binary of the version which the used view pins,
+# when it is installed; the configured value is the fallback which the
+# hand-made views run, unmanaged.
 tofu = "{{ env['DEBOPS_CMD_TOFU'] | d('tofu') }}"
 
 [gpg.debops.keyring]
