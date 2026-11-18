@@ -8,6 +8,12 @@
 #-- OpenTofu working data, relocated by the 'debops tofu' wrapper
 /.terraform/
 
+#-- OpenTofu plan files, transient: the plan files which the
+# 'debops tofu plan' operation saves into the store are pruned by
+# the 'tofu.plan_retention' option; the operator's own '-out' plans
+# in the directory stay untracked as well
+/{{ secret_name }}/plans/
+
 #-- OpenTofu state files, encrypted at rest by OpenTofu itself
 # The '.terraform.lock.hcl' file is committed: it pins the provider
 # versions which the view was initialized with.
