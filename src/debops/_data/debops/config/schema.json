@@ -404,6 +404,10 @@
                   ]
                 },
                 "description": "The OpenTofu modules which the view instantiates. The table keys are the local module names which the generated 'modules.tf' file instantiates; each entry carries the module source address, an optional version pin and the inputs of the module instance. The generated file is derived from this option; an empty table marks a view without modules. The option is recorded in the view's configuration drop-in, which the user owns: the 'debops tofu update' command reconciles the generated files with it."
+              },
+              "binary_version": {
+                "type": "string",
+                "description": "The version of the OpenTofu binary which the view runs with, recorded in the view's configuration drop-in when the view is created: the 'tofu.upstream.known_version' option seeds it with the known-good version. The pinned binary is installed into the DebOps data directory, version-keyed, through the 'debops tofu install' command; the view runs it when it is present. A view without a recorded version -- a hand-made one -- runs the 'binaries.tofu' configured binary, unmanaged."
               }
             }
           }
@@ -460,6 +464,33 @@
             ]
           },
           "description": "The OpenTofu modules which new views of the project instantiate, recorded in the view's configuration drop-in at creation. The table keys are the local module names which the generated 'modules.tf' file instantiates; each entry carries the module source address, an optional version pin and the inputs of the module instance. An empty table creates views without modules. The option is consulted only when a view is created; the module set of an existing view is changed by editing the 'views.<view>.tofu.modules' option of its configuration drop-in."
+        },
+        "upstream": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "known_version": {
+              "type": "string",
+              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+              "description": "The OpenTofu version which the debops package is verified with: the known-good version which the 'views.<view>.tofu.binary_version' option of a new view's configuration drop-in is seeded with at creation. The views which exist keep their recorded version: the drop-in is written once, the pin is the user's record from then on."
+            },
+            "release_base": {
+              "type": "string",
+              "pattern": "\\{version\\}",
+              "description": "The base of the OpenTofu release downloads, a URL template whose '{version}' placeholder is substituted with the version of the release to install. The 'debops tofu install' command downloads the release archive, the release checksums and their signature from the base; the option points the install at a mirror of the releases."
+            },
+            "release_key": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "fingerprint": {
+                  "type": "string",
+                  "pattern": "^[0-9A-Fa-f]{40}$",
+                  "description": "The fingerprint of the GnuPG key which signs the OpenTofu releases. The 'debops tofu install' command verifies the signature of the release checksums against the DebOps-managed keyring, and the signing key's fingerprint must match this pin: the fingerprint is the trust anchor, not the key material. The key is imported from the keyserver of the DebOps keyring when it is missing."
+                }
+              }
+            }
+          }
         }
       }
     }

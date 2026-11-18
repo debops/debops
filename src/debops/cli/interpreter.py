@@ -13,6 +13,7 @@ from ..core.ansible.ansiblerunner import AnsibleRunner
 from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
 from ..core.tofu.runner import TofuRunner
+from ..core.tofu.binary import reconcile_binaries
 from ..core.tofu.registry import view_drop_in_path, view_tofu_root
 from ..core.tofu.view import reconcile_view
 from ..core import ssh
@@ -322,6 +323,13 @@ class Interpreter(object):
             self._do_tofu_update(args, project)
             return
 
+        # The 'install' operation is a DebOps-level command: it
+        # reconciles the OpenTofu binaries which the project's views
+        # pin with the installed ones
+        if args.tofu_args[0] == 'install':
+            self._do_tofu_install(args, project)
+            return
+
         try:
             runner = TofuRunner(project, args.tofu_args, bell=args.bell,
                                 no_color=args.no_color,
@@ -333,12 +341,12 @@ class Interpreter(object):
             print_error(errmsg)
             sys.exit(1)
 
-        if args.eval:
-            self._note_pending_view_creation(project)
-            print(runner.eval())
-            sys.exit(0)
-
         try:
+            if args.eval:
+                self._note_pending_view_creation(project)
+                print(runner.eval())
+                sys.exit(0)
+
             sys.exit(runner.execute())
         except (ChildProcessError, ValueError) as errmsg:
             print_error(errmsg)
@@ -428,6 +436,42 @@ class Interpreter(object):
         except (ChildProcessError, ValueError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
+
+    def _do_tofu_install(self, args, project):
+        """Run the 'debops tofu install' operation: reconcile the
+        OpenTofu binaries which the project's views pin with the
+        installed ones."""
+        for token in args.tofu_args[1:]:
+            print_error("Unknown option of the 'install' operation: "
+                        "'{}'; see 'debops tofu --help'".format(token))
+            sys.exit(2)
+
+        if args.provider:
+            print_error("The '--provider' options apply when a view is "
+                        'created: run \'debops tofu init\' to create '
+                        'the view with the provider set, or edit the '
+                        'view configuration drop-in to change the '
+                        'recorded set.')
+            sys.exit(2)
+
+        if args.module:
+            print_error("The '--module' options apply when a view is "
+                        'created: run \'debops tofu init\' to create '
+                        'the view with the module set, or edit the '
+                        'view configuration drop-in to change the '
+                        'recorded set.')
+            sys.exit(2)
+
+        try:
+            installed = reconcile_binaries(project)
+        except ValueError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        if not installed:
+            logger.notice(
+                'The pinned binaries of the views of the project {!r} '
+                'are installed'.format(project.name),
+                extra={'allow': ['stderr', 'syslog']})
 
     def _render_tofu_changes(self, changes, diff=False, dry_run=False,
                              color=False):

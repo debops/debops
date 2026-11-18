@@ -29,6 +29,7 @@ from .providers import provider_entries, render_providers, \
     reconcile_providers
 from .registry import render_template, view_drop_in_path, view_tofu_root, \
     write_view_drop_in
+from .binary import known_version
 from .secrets import TofuSecretStore
 from ..utils import write_file
 
@@ -76,7 +77,10 @@ def create_view(project, view, providers=None, modules=None):
     the repository is set up for it, EncFS when the Ansible views use
     it, a plain store otherwise. The resolved dependency sets are
     recorded in the view's configuration drop-in, which drives the
-    generated files from then on. A view whose tree is broken --
+    generated files from then on, along with the version of the
+    OpenTofu binary which the view pins, seeded from the
+    'tofu.upstream.known_version' configuration. A view whose tree is
+    broken --
     'main.tf' deleted but the drop-in present -- keeps its recorded
     sets: the drop-in is the user's decision, repair does not
     rewrite it. Returns True when the view was created, False when it
@@ -124,7 +128,8 @@ def create_view(project, view, providers=None, modules=None):
                    render_modules(module_entries_list),
                    project=project.path)
 
-    write_view_drop_in(project, view, providers or [], modules or [])
+    write_view_drop_in(project, view, providers or [], modules or [],
+                       binary_version=known_version(project))
 
     env_path = os.path.join(view_root, 'secret', '.env')
     write_file(env_path,

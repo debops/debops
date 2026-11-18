@@ -3,16 +3,21 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import fcntl
+import hashlib
 import logging
 import os
 import shutil
+import stat
 import subprocess
 import sys
+import textwrap
 from unittest import mock
+import zipfile
 
 import pytest
 
 import debops.core.runner as runner_base_module
+import debops.core.tofu.binary as binary_module
 import debops.core.tofu.runner as runner_module
 from debops.core.tofu.runner import TofuRunner
 from debops.core.tofu.view import reconcile_view
@@ -42,15 +47,26 @@ def stub_project_secrets(monkeypatch):
 
 
 @pytest.fixture
-def tofu_project(stub_project):
+def tofu_project(stub_project, tmp_path, monkeypatch):
     """A stub project whose configuration carries the tofu section,
-    with the view's tofu directory in place."""
+    with the view's tofu directory in place. A stub 'tofu' binary on
+    the PATH stands in for the system-wide installation, so that the
+    binary resolution does not depend on the test host."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    stub_tofu = bin_dir / "tofu"
+    stub_tofu.write_text("#!/bin/sh\nexit 0\n")
+    stub_tofu.chmod(0o755)
+    monkeypatch.setenv("PATH", str(bin_dir) + os.pathsep +
+                       os.environ.get("PATH", ""))
+
     def _make(**kwargs):
         raw = {"binaries": {"tofu": "tofu"},
                "tofu": {"state_path": "secret/terraform.tfstate",
                         "operations": [], "plan_retention": 3,
                         "default_providers": [],
-                        "default_modules": {}}}
+                        "default_modules": {},
+                        "upstream": {"known_version": "1.13.9"}}}
         if "raw" in kwargs:
             for key, value in kwargs.pop("raw").items():
                 if key in raw and isinstance(raw[key], dict):
@@ -685,7 +701,7 @@ def test_state_passphrase_is_generated_into_the_store(
     assert env["TF_VAR_state_passphrase"] == passphrase
 
 
-def write_drop_in(project, providers):
+def write_drop_in(project, providers, binary_version=None):
     """Write the view's configuration drop-in, the way the view
     creation does, and merge the recorded set into the live
     configuration."""
@@ -695,9 +711,83 @@ def write_drop_in(project, providers):
     with open(drop_in, "w") as handle:
         handle.write('[views."{}".tofu]\nproviders = {}\n'.format(
             project.view, providers))
-    project.config.merge({'views': {project.view: {'tofu': {
-        'providers': providers}}}})
+        if binary_version is not None:
+            handle.write("binary_version = '{}'\n".format(binary_version))
+    recorded = {'providers': providers}
+    if binary_version is not None:
+        recorded['binary_version'] = binary_version
+    project.config.merge({'views': {project.view: {'tofu': recorded}}})
     return drop_in
+
+
+# The fingerprint the install tests pin: the tests carry their own
+# trust anchor in the configuration, the way a project does
+RELEASE_KEY_FINGERPRINT = 'E3E6E43D84CB852EADB0051D0C0AF313E5FD9F80'
+
+
+@pytest.fixture
+def stub_gpg(tmp_path, monkeypatch):
+    """A stub gpg(1) binary for the install tests: it imports the
+    requested keys into a fake keyring and reports the pinned
+    fingerprint on verification. The environment variables steer the
+    canned behavior; the keyring holds the keys the stub imports."""
+    bin_dir = tmp_path / "gpg-bin"
+    bin_dir.mkdir()
+    stub = bin_dir / "gpg"
+    stub.write_text(textwrap.dedent('''\
+        #!/bin/sh
+        case " $* " in
+          *" --list-keys "*)
+            cat "$GPG_IMPORTED_LOG" 2>/dev/null || true
+            exit 0
+            ;;
+          *" --recv-keys "*)
+            if [ -n "$GPG_RECV_FAIL" ]; then
+              echo "gpg: keyserver error" >&2
+              exit 1
+            fi
+            fpr="$*"
+            if [ -n "$GPG_RECV_KEY" ]; then
+              fpr="$GPG_RECV_KEY"
+            fi
+            echo "fpr:::::::::${fpr##* }:" >> "$GPG_IMPORTED_LOG"
+            exit 0
+            ;;
+          *" --verify "*)
+            if [ -n "$GPG_VERIFY_FAIL" ]; then
+              echo "gpg: Bad signature" >&2
+              exit 1
+            fi
+            echo "[GNUPG:] VALIDSIG $GPG_SIGNING_KEY 0 0 0 0 0 0 0 0 $GPG_SIGNING_KEY"
+            exit 0
+            ;;
+        esac
+        exit 0
+        '''))
+    stub.chmod(stub.stat().st_mode | stat.S_IXUSR)
+    monkeypatch.setenv('GPG_IMPORTED_LOG',
+                       str(tmp_path / 'gpg-imported.log'))
+    monkeypatch.setenv('GPG_SIGNING_KEY', RELEASE_KEY_FINGERPRINT)
+    return stub
+
+
+def keyring_config(stub, tmp_path):
+    """The configuration fragment which wires the stub gpg, the
+    keyring and the upstream options into the project configuration:
+    the release base and the release key fingerprint of the install
+    verification."""
+    return {
+        'binaries': {'gpg': str(stub)},
+        'gpg': {'debops': {'keyring': {
+            'path': str(tmp_path / 'keyring'),
+            'gpg_conf': {'keyserver': 'hkps://keyserver.ubuntu.com'},
+        }}},
+        'tofu': {'upstream': {
+            'release_base': ('https://github.com/opentofu/opentofu/'
+                             'releases/download/v{version}'),
+            'release_key': {
+                'fingerprint': RELEASE_KEY_FINGERPRINT}}},
+    }
 
 
 def test_provider_options_refused_on_an_existing_view(tofu_project):
@@ -1166,3 +1256,515 @@ def test_generated_modules_file_is_fmt_clean(tofu_project,
     assert 'datacenter   = "dc1"' in modules_tf
     assert 'server_count = 3' in modules_tf
     assert 'image        = var.image_name' in modules_tf
+
+
+def test_drop_in_records_the_seeded_binary_version(tofu_project,
+                                                   stub_tofu_subprocess):
+    """A created view's drop-in records the known-good version of the
+    'tofu.upstream.known_version' configuration."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    shutil.rmtree(view_dir)
+
+    TofuRunner(project, ["plan"]).execute()
+
+    drop_in = os.path.join(project.path, ".debops", "conf.d",
+                           "view-" + project.view + "-tofu.toml")
+    content = open(drop_in).read()
+    known = project.config.raw["tofu"]["upstream"]["known_version"]
+    assert "binary_version = '{}'".format(known) in content
+    assert known == project.config.raw[
+        "views"][project.view]["tofu"]["binary_version"]
+
+
+@pytest.mark.parametrize("known", ["", "  ", None, 1139])
+def test_known_version_refuses_an_invalid_value(tofu_project, known):
+    """The known-good version comes from the configuration only: an
+    empty or non-string value refuses the view creation."""
+    project = tofu_project(project_type="modern")
+    project.config.raw['tofu']['upstream']['known_version'] = known
+
+    with pytest.raises(ValueError, match="is not set"):
+        binary_module.known_version(project)
+
+
+def test_known_version_refuses_when_the_option_is_absent(tofu_project):
+    """The known-good version option is configuration-only: a
+    configuration without it refuses the view creation."""
+    project = tofu_project(project_type="modern")
+    del project.config.raw['tofu']['upstream']['known_version']
+
+    with pytest.raises(ValueError, match="is not set"):
+        binary_module.known_version(project)
+
+
+def test_resolve_binary_runs_the_managed_binary(tofu_project, tmp_path,
+                                                monkeypatch):
+    """A view which pins a version runs the managed binary of that
+    version when it is installed."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    version = "1.13.9"
+    managed = binary_module.managed_binary_path(version)
+    os.makedirs(os.path.dirname(managed))
+    with open(managed, "w") as handle:
+        handle.write("#!/bin/sh\nexit 0\n")
+    os.chmod(managed, 0o755)
+
+    project = tofu_project(project_type="modern")
+    project.config.merge({'views': {project.view: {'tofu': {
+        'binary_version': version}}}})
+
+    assert binary_module.resolve_binary(project, project.view) == managed
+
+
+def test_resolve_binary_falls_back_when_the_pin_is_missing(
+        tofu_project, tmp_path, monkeypatch):
+    """A view which pins a version runs the configured binary when the
+    managed binary of the version is not installed."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    project = tofu_project(project_type="modern")
+    project.config.merge({'views': {project.view: {'tofu': {
+        'binary_version': "1.13.9"}}}})
+
+    assert binary_module.resolve_binary(project, project.view) == "tofu"
+
+
+def test_resolve_binary_leaves_a_hand_made_view_unmanaged(tofu_project):
+    """A view without a recorded version runs the configured binary:
+    the system-wide or user-wide installation, unmanaged."""
+    project = tofu_project(project_type="modern")
+    assert binary_module.resolve_binary(project, project.view) == "tofu"
+
+
+def test_resolve_binary_refuses_when_no_installation_is_available(
+        tofu_project):
+    """When the configured binary is not available -- no system-wide
+    or user-wide installation carries it -- the resolution fails:
+    there is no OpenTofu binary to run."""
+    project = tofu_project(project_type="modern")
+    project.config.merge({'binaries': {'tofu': 'missing-tofu'}})
+
+    with pytest.raises(ValueError, match="is not available"):
+        binary_module.resolve_binary(project, project.view)
+
+
+def test_resolve_binary_refuses_when_the_pin_is_missing_and_no_fallback(
+        tofu_project, tmp_path, monkeypatch):
+    """A view whose pinned binary is not installed falls back to the
+    configured binary; when that is not available either, the
+    resolution fails."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    project = tofu_project(project_type="modern")
+    project.config.merge({'binaries': {'tofu': 'missing-tofu'},
+                          'views': {project.view: {'tofu': {
+                              'binary_version': "1.13.9"}}}})
+
+    with pytest.raises(ValueError, match="is not available"):
+        binary_module.resolve_binary(project, project.view)
+
+
+def test_runner_runs_the_pinned_binary(tofu_project, tmp_path, monkeypatch,
+                                       stub_tofu_subprocess):
+    """The operation runs the managed binary of the version the view
+    pins."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    version = "1.13.9"
+    managed = binary_module.managed_binary_path(version)
+    os.makedirs(os.path.dirname(managed))
+    with open(managed, "w") as handle:
+        handle.write("#!/bin/sh\nexit 0\n")
+    os.chmod(managed, 0o755)
+
+    project = tofu_project(project_type="modern")
+    project.config.merge({'views': {project.view: {'tofu': {
+        'binary_version': version}}}})
+
+    TofuRunner(project, ["plan"]).execute()
+
+    command = stub_tofu_subprocess.call_args[0][0]
+    assert command[0] == managed
+
+
+def test_runner_falls_back_when_the_pinned_binary_is_missing(
+        tofu_project, stub_tofu_subprocess):
+    """The operation runs the configured binary when the pinned
+    version is not installed."""
+    project = tofu_project(project_type="modern")
+    project.config.merge({'views': {project.view: {'tofu': {
+        'binary_version': "1.13.9"}}}})
+
+    TofuRunner(project, ["plan"]).execute()
+
+    command = stub_tofu_subprocess.call_args[0][0]
+    assert command[0] == "tofu"
+
+
+def test_runner_refuses_when_no_binary_is_available(tofu_project):
+    """The operation fails when no OpenTofu binary is available: the
+    missing binary is reported instead of a subprocess traceback."""
+    project = tofu_project(project_type="modern")
+    project.config.merge({'binaries': {'tofu': 'missing-tofu'}})
+
+    runner = TofuRunner(project, ["plan"])
+    with pytest.raises(ValueError, match="is not available"):
+        runner.execute()
+
+
+def test_install_binary_downloads_verifies_and_installs(
+        tofu_project, stub_gpg, tmp_path, monkeypatch):
+    """The 'debops tofu install' command downloads the release
+    archive, verifies it against the release checksums -- whose
+    signature the DebOps keyring authenticates -- and installs the
+    binary into the managed location."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    monkeypatch.setattr(binary_module, "_release_system", lambda: "linux")
+    monkeypatch.setattr(binary_module, "_release_arch", lambda: "amd64")
+    version = "1.13.9"
+    archive_name = "tofu_1.13.9_linux_amd64.zip"
+    sums_name = "tofu_1.13.9_SHA256SUMS"
+
+    releases = tmp_path / "releases"
+    releases.mkdir()
+    archive = releases / archive_name
+    with zipfile.ZipFile(archive, "w") as zf:
+        zf.writestr("tofu", "#!/bin/sh\nexit 0\n")
+    archive_digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+    sums = releases / sums_name
+    sums.write_text("{}  {}\n".format(archive_digest, archive_name))
+    sig = releases / (sums_name + ".gpgsig")
+    sig.write_bytes(b"stub signature")
+
+    def download(url, path):
+        name = url.rsplit("/", 1)[-1]
+        shutil.copy(str(releases / name), path)
+
+    monkeypatch.setattr(binary_module, "_download", download)
+
+    project = tofu_project(project_type="modern",
+                           raw=keyring_config(stub_gpg, tmp_path))
+    assert binary_module.install_binary(project, version) is True
+    managed = binary_module.managed_binary_path(version)
+    assert os.path.isfile(managed)
+    assert open(managed).read() == "#!/bin/sh\nexit 0\n"
+    assert os.stat(managed).st_mode & 0o111
+
+
+def test_install_binary_downloads_from_the_configured_base(
+        tofu_project, stub_gpg, tmp_path, monkeypatch):
+    """The 'tofu.upstream.release_base' option steers the downloads:
+    the '{version}' placeholder is substituted with the version to
+    install."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    monkeypatch.setattr(binary_module, "_release_system", lambda: "linux")
+    monkeypatch.setattr(binary_module, "_release_arch", lambda: "amd64")
+    monkeypatch.setattr(binary_module, "_verify_checksums", mock.Mock())
+    version = "1.13.9"
+
+    urls = []
+
+    def download(url, path):
+        urls.append(url)
+        if url.endswith(".zip"):
+            with zipfile.ZipFile(path, "w") as zf:
+                zf.writestr("tofu", "#!/bin/sh\nexit 0\n")
+        else:
+            with open(path, "wb") as handle:
+                handle.write(b"stub")
+
+    monkeypatch.setattr(binary_module, "_download", download)
+
+    raw = keyring_config(stub_gpg, tmp_path)
+    raw['tofu']['upstream']['release_base'] = \
+        'https://mirror.example/tofu/v{version}'
+
+    project = tofu_project(project_type="modern", raw=raw)
+    assert binary_module.install_binary(project, version) is True
+
+    assert len(urls) == 3
+    assert all(url.startswith("https://mirror.example/tofu/v1.13.9/")
+               for url in urls)
+
+
+def test_install_binary_is_idempotent(tofu_project, tmp_path, monkeypatch):
+    """The binary which is already installed is not downloaded
+    again."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    version = "1.13.9"
+    managed = binary_module.managed_binary_path(version)
+    os.makedirs(os.path.dirname(managed))
+    with open(managed, "w") as handle:
+        handle.write("#!/bin/sh\nexit 0\n")
+    os.chmod(managed, 0o755)
+
+    download = mock.Mock()
+    monkeypatch.setattr(binary_module, "_download", download)
+
+    project = tofu_project(project_type="modern")
+    assert binary_module.install_binary(project, version) is False
+    download.assert_not_called()
+
+
+def test_install_binary_refuses_a_mismatched_checksum(
+        tofu_project, stub_gpg, tmp_path, monkeypatch):
+    """The archive whose checksum does not match the release checksums
+    is refused."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    monkeypatch.setattr(binary_module, "_release_system", lambda: "linux")
+    monkeypatch.setattr(binary_module, "_release_arch", lambda: "amd64")
+    version = "1.13.9"
+    archive_name = "tofu_1.13.9_linux_amd64.zip"
+    sums_name = "tofu_1.13.9_SHA256SUMS"
+
+    releases = tmp_path / "releases"
+    releases.mkdir()
+    archive = releases / archive_name
+    with zipfile.ZipFile(archive, "w") as zf:
+        zf.writestr("tofu", "#!/bin/sh\nexit 0\n")
+    sums = releases / sums_name
+    sums.write_text("{}  {}\n".format("0" * 64, archive_name))
+    sig = releases / (sums_name + ".gpgsig")
+    sig.write_bytes(b"stub signature")
+
+    def download(url, path):
+        name = url.rsplit("/", 1)[-1]
+        shutil.copy(str(releases / name), path)
+
+    monkeypatch.setattr(binary_module, "_download", download)
+
+    project = tofu_project(project_type="modern",
+                           raw=keyring_config(stub_gpg, tmp_path))
+    with pytest.raises(ValueError, match="does not match"):
+        binary_module.install_binary(project, version)
+    assert not os.path.isfile(binary_module.managed_binary_path(version))
+
+
+def test_install_binary_refuses_checksums_without_the_archive(
+        tofu_project, stub_gpg, tmp_path, monkeypatch):
+    """The checksums file which does not carry the archive's entry
+    refuses the install."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    monkeypatch.setattr(binary_module, "_release_system", lambda: "linux")
+    monkeypatch.setattr(binary_module, "_release_arch", lambda: "amd64")
+    version = "1.13.9"
+    archive_name = "tofu_1.13.9_linux_amd64.zip"
+    sums_name = "tofu_1.13.9_SHA256SUMS"
+
+    releases = tmp_path / "releases"
+    releases.mkdir()
+    archive = releases / archive_name
+    with zipfile.ZipFile(archive, "w") as zf:
+        zf.writestr("tofu", "#!/bin/sh\nexit 0\n")
+    sums = releases / sums_name
+    sums.write_text("{}  other.zip\n".format("0" * 64))
+    sig = releases / (sums_name + ".gpgsig")
+    sig.write_bytes(b"stub signature")
+
+    def download(url, path):
+        name = url.rsplit("/", 1)[-1]
+        shutil.copy(str(releases / name), path)
+
+    monkeypatch.setattr(binary_module, "_download", download)
+
+    project = tofu_project(project_type="modern",
+                           raw=keyring_config(stub_gpg, tmp_path))
+    with pytest.raises(ValueError, match="do not carry"):
+        binary_module.install_binary(project, version)
+    assert not os.path.isfile(binary_module.managed_binary_path(version))
+
+
+def test_install_binary_refuses_a_missing_gpg(tofu_project, tmp_path,
+                                              monkeypatch):
+    """The install which the keyring cannot run -- a missing gpg --
+    refuses: an unverified download is exactly what the pin guards
+    against."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    version = "1.13.9"
+
+    project = tofu_project(project_type="modern", raw={
+        'binaries': {'gpg': str(tmp_path / 'missing-gpg')},
+        'gpg': {'debops': {'keyring': {
+            'path': str(tmp_path / 'keyring')}}},
+        'tofu': {'upstream': {
+            'release_base': ('https://github.com/opentofu/opentofu/'
+                             'releases/download/v{version}'),
+            'release_key': {
+                'fingerprint': RELEASE_KEY_FINGERPRINT}}}})
+    with pytest.raises(ValueError, match="is not available"):
+        binary_module.install_binary(project, version)
+    assert not os.path.isfile(binary_module.managed_binary_path(version))
+
+
+def test_install_binary_refuses_without_the_fingerprint_option(
+        tofu_project, tmp_path, monkeypatch):
+    """The install refuses when the release key fingerprint option is
+    absent: the trust anchor is configuration-only, there is no
+    fallback."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    version = "1.13.9"
+
+    project = tofu_project(project_type="modern")
+    with pytest.raises(ValueError, match="is not set"):
+        binary_module.install_binary(project, version)
+    assert not os.path.isfile(binary_module.managed_binary_path(version))
+
+
+@pytest.mark.parametrize("fingerprint", ["", "  ", None, 4096, True])
+def test_install_binary_refuses_an_invalid_fingerprint(
+        tofu_project, stub_gpg, tmp_path, monkeypatch, fingerprint):
+    """The install refuses when the release key fingerprint is empty
+    or not a string: the option carries the trust anchor or it
+    carries nothing."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    version = "1.13.9"
+
+    raw = keyring_config(stub_gpg, tmp_path)
+    raw['tofu']['upstream']['release_key']['fingerprint'] = fingerprint
+
+    project = tofu_project(project_type="modern", raw=raw)
+    with pytest.raises(ValueError, match="is not set"):
+        binary_module.install_binary(project, version)
+    assert not os.path.isfile(binary_module.managed_binary_path(version))
+
+
+@pytest.mark.parametrize("base", ["", "  ", None, 404])
+def test_install_binary_refuses_an_invalid_release_base(
+        tofu_project, stub_gpg, tmp_path, monkeypatch, base):
+    """The install refuses when the release base is empty or not a
+    string: the downloads come from the configuration or not at
+    all."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    version = "1.13.9"
+
+    raw = keyring_config(stub_gpg, tmp_path)
+    raw['tofu']['upstream']['release_base'] = base
+
+    project = tofu_project(project_type="modern", raw=raw)
+    with pytest.raises(ValueError, match="is not set"):
+        binary_module.install_binary(project, version)
+    assert not os.path.isfile(binary_module.managed_binary_path(version))
+
+
+def test_install_binary_refuses_an_unreachable_keyserver(
+        tofu_project, stub_gpg, tmp_path, monkeypatch):
+    """The key which the keyserver does not carry refuses the install
+    with the way out: the manual import into the DebOps keyring."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    monkeypatch.setenv('GPG_RECV_FAIL', '1')
+    version = "1.13.9"
+
+    project = tofu_project(project_type="modern",
+                           raw=keyring_config(stub_gpg, tmp_path))
+    with pytest.raises(ValueError, match="cannot be imported"):
+        binary_module.install_binary(project, version)
+    assert not os.path.isfile(binary_module.managed_binary_path(version))
+
+
+def test_install_binary_refuses_a_fingerprint_mismatch(
+        tofu_project, stub_gpg, tmp_path, monkeypatch):
+    """The key which the keyserver carries under a different
+    fingerprint refuses the install: the imported key must match the
+    pin."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    monkeypatch.setenv('GPG_RECV_KEY',
+                       'AAAA' + RELEASE_KEY_FINGERPRINT[4:])
+    version = "1.13.9"
+
+    project = tofu_project(project_type="modern",
+                           raw=keyring_config(stub_gpg, tmp_path))
+    with pytest.raises(ValueError, match="does not match"):
+        binary_module.install_binary(project, version)
+    assert not os.path.isfile(binary_module.managed_binary_path(version))
+
+
+def test_install_binary_refuses_a_bad_signature(
+        tofu_project, stub_gpg, tmp_path, monkeypatch):
+    """The release checksums whose signature does not verify refuse
+    the install."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    monkeypatch.setattr(binary_module, "_release_system", lambda: "linux")
+    monkeypatch.setattr(binary_module, "_release_arch", lambda: "amd64")
+    monkeypatch.setenv('GPG_VERIFY_FAIL', '1')
+    version = "1.13.9"
+    archive_name = "tofu_1.13.9_linux_amd64.zip"
+    sums_name = "tofu_1.13.9_SHA256SUMS"
+
+    releases = tmp_path / "releases"
+    releases.mkdir()
+    archive = releases / archive_name
+    with zipfile.ZipFile(archive, "w") as zf:
+        zf.writestr("tofu", "#!/bin/sh\nexit 0\n")
+    archive_digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+    sums = releases / sums_name
+    sums.write_text("{}  {}\n".format(archive_digest, archive_name))
+    sig = releases / (sums_name + ".gpgsig")
+    sig.write_bytes(b"stub signature")
+
+    def download(url, path):
+        name = url.rsplit("/", 1)[-1]
+        shutil.copy(str(releases / name), path)
+
+    monkeypatch.setattr(binary_module, "_download", download)
+
+    project = tofu_project(project_type="modern",
+                           raw=keyring_config(stub_gpg, tmp_path))
+    with pytest.raises(ValueError, match="does not verify"):
+        binary_module.install_binary(project, version)
+    assert not os.path.isfile(binary_module.managed_binary_path(version))
+
+
+def test_reconcile_binaries_installs_the_missing_versions(
+        tofu_project, stub_gpg, tmp_path, monkeypatch):
+    """The 'debops tofu install' command installs the binaries which
+    the project's views pin."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    monkeypatch.setattr(binary_module, "_release_system", lambda: "linux")
+    monkeypatch.setattr(binary_module, "_release_arch", lambda: "amd64")
+    version = "1.13.9"
+    archive_name = "tofu_1.13.9_linux_amd64.zip"
+    sums_name = "tofu_1.13.9_SHA256SUMS"
+
+    releases = tmp_path / "releases"
+    releases.mkdir()
+    archive = releases / archive_name
+    with zipfile.ZipFile(archive, "w") as zf:
+        zf.writestr("tofu", "#!/bin/sh\nexit 0\n")
+    archive_digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+    sums = releases / sums_name
+    sums.write_text("{}  {}\n".format(archive_digest, archive_name))
+    sig = releases / (sums_name + ".gpgsig")
+    sig.write_bytes(b"stub signature")
+
+    def download(url, path):
+        name = url.rsplit("/", 1)[-1]
+        shutil.copy(str(releases / name), path)
+
+    monkeypatch.setattr(binary_module, "_download", download)
+
+    project = tofu_project(project_type="modern",
+                           raw=keyring_config(stub_gpg, tmp_path))
+    write_drop_in(project, [], binary_version=version)
+
+    assert binary_module.reconcile_binaries(project) == [version]
+    assert os.path.isfile(binary_module.managed_binary_path(version))
+
+
+def test_reconcile_binaries_skips_the_installed_versions(
+        tofu_project, tmp_path, monkeypatch):
+    """The binaries which are already installed are not downloaded
+    again."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    version = "1.13.9"
+    managed = binary_module.managed_binary_path(version)
+    os.makedirs(os.path.dirname(managed))
+    with open(managed, "w") as handle:
+        handle.write("#!/bin/sh\nexit 0\n")
+    os.chmod(managed, 0o755)
+
+    download = mock.Mock()
+    monkeypatch.setattr(binary_module, "_download", download)
+
+    project = tofu_project(project_type="modern")
+    write_drop_in(project, [], binary_version=version)
+
+    assert binary_module.reconcile_binaries(project) == []
+    download.assert_not_called()
