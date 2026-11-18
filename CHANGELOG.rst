@@ -269,6 +269,12 @@ General
   reported a successful creation while their secrets stayed
   unencrypted.
 
+- The ``debops.debops.to_toml`` filter plugin failed with a ``RecursionError``
+  with :command:`ansible-core` v2.18 and older when the configuration
+  contained values from host facts or lookups, for example in the
+  :ref:`debops.telegraf` role. Such "unsafe" strings are now converted to
+  plain strings before serialization.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
