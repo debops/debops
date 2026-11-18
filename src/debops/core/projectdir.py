@@ -13,6 +13,7 @@ from .ansible.ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
 from .ansible.secrets import AnsibleSecretStore
 from .secrets import SecretManager
+from .tofu.binary import effective_binary
 from . import ssh
 from .ansible.inventoryspec import (parse_spec, merge_specs, apply_spec,
                                     render_keep,
@@ -304,6 +305,10 @@ class ProjectDir(object):
         self.config.set_env('ANSIBLE_CONFIG',
                             unexpanduser(self.ansible_cfg.path))
 
+        # Point the 'binaries.tofu' option at the managed binary of
+        # the version which the view pins, when it is installed
+        self._apply_tofu_runtime()
+
     def environment(self):
         """Return the environment the project's commands run in.
 
@@ -420,6 +425,21 @@ class ProjectDir(object):
         if venv_bin in path.split(os.pathsep):
             return
         self.config.set_env('PATH', venv_bin + os.pathsep + path)
+
+    def _apply_tofu_runtime(self):
+        """Point the 'binaries.tofu' option at the managed binary of
+        the version which the view pins, when it is installed.
+
+        The resolution is conditional: the managed binary wins over
+        the configured option only when it is present, the configured
+        binary stands in otherwise. A project whose binary is
+        installed nowhere keeps the configured option; the tofu
+        runner reports the missing binary and refuses the operation
+        at run time.
+        """
+        self.config.merge(
+            {'binaries': {'tofu': effective_binary(self, self.view)}},
+            scope='runtime', origin='debops')
 
     def _inventory_spec_config(self):
         """Read the 'project.inventory_spec' configuration tree.
