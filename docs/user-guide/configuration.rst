@@ -72,11 +72,11 @@ An option is addressed by its dotted path::
   alice@controller:~$ debops config get syslog.level
   NOTICE
 
-The ``--format`` option switches the output to ``json``, ``toml`` or
-``yaml``. The ``-k``/``--keys`` option lists the subkeys of an option
-instead of its value. The ``-r``/``--root`` option prints the option
-nested under its full path, so the output shows where in the tree the
-option lives::
+The ``-f``/``--format`` option switches the output to ``json``,
+``toml`` or ``yaml``; ``unix`` is the default. The ``-k``/``--keys``
+option lists the subkeys of an option instead of its value. The
+``-r``/``--root`` option prints the option nested under its full path,
+so the output shows where in the tree the option lives::
 
   alice@controller:~$ debops config get -r syslog.facility
   syslog:
@@ -107,15 +107,34 @@ configuration files. In a project directory, the options land in the
 in your user configuration::
 
   alice@controller:~$ debops config set syslog.level DEBUG
-  Set 'syslog.level' to 'DEBUG' in /home/alice/projects/infra/.debops/conf.d/99_config_set.json
 
 The values are converted to the type of the option, so ``config set
 syslog.port 514`` stores an integer. The ``-u``/``--user`` option sets
-the option in the user configuration even inside a project. The
-``-d``/``--delete`` option removes an option from the file::
+the option in the user configuration even inside a project.
+
+An option which holds a list gains the values which the command gives
+it. The values which the option already holds are skipped, so a
+repeated command adds nothing::
+
+  alice@controller:~$ debops config set -t list custom.tools ansible lxc
+  alice@controller:~$ debops config set custom.tools tofu
+
+An option which holds a single value takes one value and replaces the
+old one. Several values to such an option are refused. The
+``-t``/``--type`` option states the type of an option which DebOps
+does not define, and creates an option with the empty value of the
+type: ``list`` creates an empty list, ``int`` creates ``0``, ``str``
+creates an empty string, ``dict`` creates an empty object. The option
+must not be set yet; remove it first to change its type.
+
+The ``-d``/``--delete`` option removes an option from the file. Given
+values, it removes those values from a list option. The removal is
+silent, and a value which another configuration layer still carries
+is reported as a warning::
 
   alice@controller:~$ debops config set -d syslog.level
-  Removed 'syslog.level' from /home/alice/projects/infra/.debops/conf.d/99_config_set.json
+
+  alice@controller:~$ debops config set -d custom.tools lxc
 
 The command manages files whose names end with
 :file:`_config_set.json`. The numeric prefix of the file name decides
@@ -144,6 +163,11 @@ does not accept hyphens in variable assignments, so such overrides are
 set through the :command:`env` command::
 
   alice@controller:~$ env DEBOPS_CONFIG__BINARIES__ANSIBLE=/opt/ansible/bin/ansible debops run site.yml
+
+A value for a list option is a comma-separated string: ``a,b`` gives
+the list with the values ``a`` and ``b``. A value which starts with
+``[`` or ``{`` is parsed as JSON. To keep a comma inside one value,
+give the value as a JSON string: ``'"a,b"'`` gives the string ``a,b``.
 
 Overrides apply above every configuration file. They are meant for a
 single invocation, a CI job or a container, not for permanent changes.
