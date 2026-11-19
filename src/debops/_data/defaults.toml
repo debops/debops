@@ -170,6 +170,15 @@ default_modules = {}
 # touched.
 plan_retention = 3
 
+[tofu.inventory]
+
+# The name of the variables file which the 'debops tofu inventory'
+# bridge renders for a host or group in the 'host_vars/' and
+# 'group_vars/' directories of the Ansible view's inventory, carrying
+# the plain variables of the seed. The file name is a convention with
+# the users of the view, who may reference it in their own files.
+vars_filename = "tofu_inventory.yml"
+
 [tofu.inventory.secret]
 
 # The path template of the sensitive content files which the
@@ -180,6 +189,13 @@ plan_retention = 3
 # template. A template starting with '/' is absolute: the lookup uses it
 # as-is.
 sensitive_path = "secret/tofu/%s/sensitive/%s/content"
+
+# The name of the variables file which the bridge renders for a host or
+# group in the 'host_vars/' and 'group_vars/' directories of the Ansible
+# view's inventory, carrying the sensitive variables as 'file' lookup
+# references. Distinct from the plain 'tofu.inventory.vars_filename'
+# when the two file kinds must not share a name.
+vars_filename = "tofu_inventory.yml"
 
 [tofu.upstream]
 
