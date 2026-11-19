@@ -588,7 +588,7 @@ class TofuRunner(Runner):
         sys.stderr.write(std_err.decode(errors='replace'))
         return executor.returncode
 
-    def execute(self):
+    def execute(self, capture=False):
         """Run the operation with the hooks around it and the store
         cycled for the duration.
 
@@ -601,7 +601,14 @@ class TofuRunner(Runner):
         on; the binary which the operation runs is resolved after the
         view exists, from the version the view pins.
 
-        Returns the exit code of the tofu subprocess.
+        When *capture* is set, the stdout of the operation is
+        collected instead of streamed: the consumer reads the
+        machine-readable output of the command -- 'output -json' of
+        the inventory bridge -- whose content must not reach the
+        terminal. The diagnostics still stream on stderr.
+
+        Returns the exit code of the tofu subprocess, or the tuple of
+        the exit code and the collected output when *capture* is set.
         """
         if self._informational:
             return self._run_informational()
@@ -626,6 +633,7 @@ class TofuRunner(Runner):
                                         self._operation))
 
         rc = 0
+        collected = None
         unlocked = False
         try:
             unlocked = self._unlock_secrets()
@@ -647,9 +655,12 @@ class TofuRunner(Runner):
                             exist_ok=True)
             executor = subprocess.Popen(
                 self._tofu_command, cwd=self._view_root,
+                stdout=subprocess.PIPE if capture else None,
                 env=self._subprocess_env(self._extra_env()))
             std_out, std_err = executor.communicate()
             rc = executor.returncode
+            if capture:
+                collected = std_out.decode()
 
             if self._plan_saved and rc == 0:
                 self._announce_saved_plan()
@@ -671,6 +682,8 @@ class TofuRunner(Runner):
                   extra_env={'DEBOPS_RETURN_CODE': rc},
                   env=self._subprocess_env(self._tofu_env))
 
+        if capture:
+            return rc, collected
         return rc
 
     def eval(self):
