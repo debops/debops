@@ -172,11 +172,34 @@ plan_retention = 3
 
 [tofu.inventory]
 
+# The format of the hosts file which the 'debops tofu inventory' bridge
+# renders in the Ansible view's inventory directory: 'ini' (the classic
+# Ansible inventory), 'yaml' or 'json' (parsed by the YAML inventory
+# plugin, JSON being a YAML subset) and 'toml' (parsed by the TOML
+# inventory plugin). The format selects which 'hosts_filename_<format>'
+# option names the rendered file; the other three files are removed when
+# the renderer owns them or when they hold only the scaffold placeholder
+# the project init writes.
+hosts_format = "ini"
+
+# The name of the hosts file the bridge renders for each format. The
+# 'yaml', 'json' and 'toml' names carry the extensions the respective
+# inventory plugins claim; the bridge appends the extension when the
+# configured name lacks one. The 'ini' format needs no extension: the
+# ini plugin accepts any file name.
+hosts_filename_ini = "hosts"
+hosts_filename_yaml = "hosts.yml"
+hosts_filename_json = "hosts.json"
+hosts_filename_toml = "hosts.toml"
+
 # The name of the variables file which the 'debops tofu inventory'
 # bridge renders for a host or group in the 'host_vars/' and
 # 'group_vars/' directories of the Ansible view's inventory, carrying
-# the plain variables of the seed. The file name is a convention with
-# the users of the view, who may reference it in their own files.
+# the variables which the hosts file cannot carry inline: the complex
+# plain variables and the sensitive variable lookups when the
+# 'hosts_format' option is 'ini', the sensitive variable lookups for the
+# other formats. The file name is a convention with the users of the
+# view, who may reference it in their own files.
 vars_filename = "tofu_inventory.yml"
 
 [tofu.inventory.secret]
