@@ -391,6 +391,23 @@
                 "type": "string",
                 "description": "Per-view override of the 'tofu.state_path' option."
               },
+              "inventory": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "Per-view override of the 'tofu.inventory' options.",
+                "properties": {
+                  "secret": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "sensitive_path": {
+                        "type": "string",
+                        "description": "Per-view override of the 'tofu.inventory.secret.sensitive_path' option."
+                      }
+                    }
+                  }
+                }
+              },
               "providers": {
                 "type": "array",
                 "items": {
@@ -450,6 +467,24 @@
         "plan_retention": {
           "type": "integer",
           "description": "How many plan files the DebOps flows keep in the state directory."
+        },
+        "inventory": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Options of the 'debops tofu inventory' bridge: the static renderer which renders the OpenTofu inventory outputs of a view into the Ansible view's inventory.",
+          "properties": {
+            "secret": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Where the bridge stores the sensitive variable values it receives from the OpenTofu outputs.",
+              "properties": {
+                "sensitive_path": {
+                  "type": "string",
+                  "description": "The path template of the sensitive content files, relative to the Ansible view's root directory. The two '%s' placeholders carry the host or group name and the variable name, in that order. The rendered inventory variables reference the files with the 'file' lookup, composed from the same template. A template starting with '/' is absolute: the lookup uses it as-is."
+                }
+              }
+            }
+          }
         },
         "default_providers": {
           "type": "array",
