@@ -565,10 +565,102 @@ def test_config_get_formats_a_boolean_as_json(configuration):
     assert configuration.config_get("a", format="json") == "true"
 
 
-def test_config_get_returns_list_entries(configuration):
+def test_config_get_renders_a_list_in_the_default_format(configuration):
     configuration._config = {"a": ["x", "y"]}
 
-    assert configuration.config_get("a").splitlines() == ["x", "y"]
+    assert configuration.config_get("a") == "- x\n- y"
+
+
+def test_config_get_renders_the_unix_format_dotted(configuration):
+    configuration._config = {"syslog": {"level": "NOTICE", "port": 514}}
+
+    assert configuration.config_get(
+        "syslog", format="unix") == "syslog.level=NOTICE\nsyslog.port=514"
+
+
+def test_config_get_renders_a_scalar_query_dotted(configuration):
+    configuration._config = {"syslog": {"level": "NOTICE"}}
+
+    assert configuration.config_get(
+        "syslog.level", format="unix") == "syslog.level=NOTICE"
+
+
+def test_config_get_renders_a_list_comma_separated(configuration):
+    configuration._config = {"custom": {"tools": ["ansible", "tofu"]}}
+
+    assert configuration.config_get(
+        "custom.tools", format="unix") == "custom.tools=ansible,tofu"
+
+
+def test_config_get_renders_an_empty_list_with_an_empty_value(configuration):
+    configuration._config = {"custom": {"empty": []}}
+
+    assert configuration.config_get(
+        "custom.empty", format="unix") == "custom.empty="
+
+
+def test_config_get_renders_an_empty_section_as_an_empty_object(configuration):
+    configuration._config = {"custom": {}}
+
+    assert configuration.config_get(
+        "custom", format="unix") == "custom={}"
+
+
+def test_config_get_renders_a_boolean_as_a_json_literal(configuration):
+    configuration._config = {"version_check": {"enabled": False}}
+
+    assert configuration.config_get(
+        "version_check.enabled",
+        format="unix") == "version_check.enabled=false"
+
+
+def test_config_get_renders_the_whole_tree_sorted(configuration):
+    configuration._config = {"b": {"k": "v"}, "a": True}
+
+    assert configuration.config_get(".", format="unix") == "a=true\nb.k=v"
+
+
+def test_config_get_ignores_the_root_option_in_the_unix_format(configuration):
+    configuration._config = {"syslog": {"facility": "user"}}
+
+    assert configuration.config_get(
+        "syslog.facility", format="unix",
+        root=True) == "syslog.facility=user"
+
+
+def test_config_get_lists_the_keys_as_dotted_paths(configuration):
+    configuration._config = {"syslog": {"port": 514, "level": "NOTICE"}}
+
+    assert configuration.config_get(
+        "syslog", format="unix",
+        keys=True) == "syslog.level\nsyslog.port"
+
+
+def test_config_get_takes_the_default_format_from_the_option(configuration):
+    configuration._config = {"config": {"default_output": "unix"},
+                             "syslog": {"level": "NOTICE"}}
+
+    assert configuration.config_get("syslog.level") == "syslog.level=NOTICE"
+
+
+def test_config_get_falls_back_to_the_yaml_format(configuration):
+    configuration._config = {"syslog": {"level": "NOTICE"}}
+
+    assert configuration.config_get("syslog.level") == "NOTICE"
+
+
+def test_config_get_renders_a_yaml_scalar_without_the_document_marker(
+        configuration):
+    configuration._config = {"a": "b"}
+
+    assert configuration.config_get("a", format="yaml") == "b"
+
+
+def test_config_get_renders_a_yaml_boolean_without_the_document_marker(
+        configuration):
+    configuration._config = {"a": False}
+
+    assert configuration.config_get("a", format="yaml") == "false"
 
 
 def test_config_get_json_sorts_keys(configuration):
@@ -744,10 +836,17 @@ def test_config_get_lists_the_keys_of_a_dict(configuration):
     assert "c" in out
 
 
-def test_config_get_keys_on_a_scalar_renders_nothing(configuration):
+def test_config_get_keys_on_a_scalar_render_an_empty_list(configuration):
     configuration._config = {"a": 1}
 
-    assert configuration.config_get("a", keys=True) is None
+    assert configuration.config_get("a", keys=True) == "[]"
+
+
+def test_config_get_keys_on_a_scalar_render_nothing_in_the_unix_format(
+        configuration):
+    configuration._config = {"a": 1}
+
+    assert configuration.config_get("a", keys=True, format="unix") is None
 
 
 def test_config_get_root_renders_the_full_path(configuration):
@@ -832,6 +931,17 @@ def test_apply_env_overrides_coerces_a_boolean(configuration, monkeypatch):
     configuration.apply_env_overrides()
 
     assert configuration.raw["version_check"]["enabled"] is True
+
+
+def test_apply_env_overrides_set_the_default_output(configuration,
+                                                    monkeypatch):
+    monkeypatch.setenv("DEBOPS_CONFIG__CONFIG__DEFAULT_OUTPUT", "unix")
+    monkeypatch.setenv("DEBOPS_CONFIG__SYSLOG__LEVEL", "DEBUG")
+
+    configuration.apply_env_overrides()
+
+    assert (configuration.config_get("syslog.level")
+            == "syslog.level=DEBUG")
 
 
 def test_apply_env_overrides_parses_a_list(configuration, monkeypatch):
@@ -1643,6 +1753,19 @@ def test_config_get_show_origin_keeps_values_with_spaces(configuration):
     out = configuration.config_get("custom.greeting", show_origin=True)
 
     assert out == "/project/a.yml\tcustom.greeting=hello world"
+
+
+def test_config_get_renders_the_origin_values_in_the_unix_notation(
+        configuration):
+    configuration._config = {"custom": {"tools": ["ansible", "tofu"]}}
+    configuration._layers = [
+        ("project", "/project/custom.yml",
+         {"custom": {"tools": ["ansible", "tofu"]}}),
+    ]
+
+    out = configuration.config_get("custom.tools", show_origin=True)
+
+    assert out == "/project/custom.yml\tcustom.tools=ansible,tofu"
 
 
 def test_config_get_show_origin_refuses_other_formats(configuration):

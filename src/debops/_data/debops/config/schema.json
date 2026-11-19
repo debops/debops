@@ -60,6 +60,22 @@
         }
       }
     },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "default_output": {
+          "type": "string",
+          "enum": [
+            "unix",
+            "yaml",
+            "json",
+            "toml"
+          ],
+          "description": "The output format which the 'debops config get' command renders with when the '--format' option is not given. The 'unix' format prints one option per line in the dotted 'path=value' notation; 'yaml', 'json' and 'toml' render the values in their respective formats."
+        }
+      }
+    },
     "custom": {
       "type": "object",
       "description": "Reserved for custom configuration options defined outside of DebOps: scripts and integrations can store their parameters here, read them with the 'debops config get' command and override them from the environment with 'DEBOPS_CONFIG__CUSTOM__...' variables. DebOps does not use this section and will not define options in it."
