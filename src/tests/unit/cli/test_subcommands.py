@@ -108,7 +108,6 @@ def test_tofu_update_help_screen(capsys):
 def test_tofu_install_help_screen(capsys):
     with pytest.raises(SystemExit) as exc:
         parse_cli("tofu", "install", "--help")
-
     assert exc.value.code == 0
     out = capsys.readouterr().out
     assert 'version-keyed' in out
@@ -127,6 +126,54 @@ def test_tofu_help_lists_the_debops_level_operations():
     assert 'DebOps-level operations' in body
     assert '  update     reconcile the files DebOps owns' in body
     assert '  install    install the OpenTofu binaries' in body
+    assert '  cache      list and clean the OpenTofu cache' in body
+
+
+def test_tofu_cache_parses_the_clean_options():
+    subcommands = parse_cli("tofu", "cache", "--clean", "--project")
+
+    assert subcommands.args.clean is True
+    assert subcommands.args.project is True
+    assert subcommands.args.plugins is False
+    assert subcommands.args.reset is False
+
+
+def test_tofu_cache_refuses_a_scope_without_the_clean_option(capsys):
+    for scope in ('--project', '--plugins', '--reset'):
+        with pytest.raises(SystemExit) as exc:
+            parse_cli("tofu", "cache", scope)
+
+        assert exc.value.code == 2
+        assert "scopes of '--clean'" in capsys.readouterr().err
+
+
+def test_tofu_cache_refuses_the_reset_with_the_scopes(capsys):
+    with pytest.raises(SystemExit) as exc:
+        parse_cli("tofu", "cache", "--clean", "--reset", "--project")
+
+    assert exc.value.code == 2
+    assert "does not combine" in capsys.readouterr().err
+
+
+def test_tofu_cache_refuses_the_separate_scopes(capsys):
+    with pytest.raises(SystemExit) as exc:
+        parse_cli("tofu", "cache", "--clean", "--project", "--plugins")
+
+    assert exc.value.code == 2
+    assert "separate scopes" in capsys.readouterr().err
+
+
+def test_tofu_cache_help_screen(capsys):
+    with pytest.raises(SystemExit) as exc:
+        parse_cli("tofu", "cache", "--help")
+
+    assert exc.value.code == 0
+    out = capsys.readouterr().out
+    assert 'list and clean the OpenTofu cache' in out
+    assert '--clean' in out
+    assert '--project' in out
+    assert '--plugins' in out
+    assert '--reset' in out
 
 
 def test_tofu_help_body_skips_the_wrapper_usage_synopsis():
