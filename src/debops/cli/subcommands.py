@@ -797,10 +797,11 @@ Commands:
                 parents=[self.global_parser],
                 usage='debops config get [<args>] [--] <key>',
                 description='return value of specific DebOps option')
-        parser.add_argument('--format', type=str, nargs='?',
+        parser.add_argument('-f', '--format', type=str, nargs='?',
                             choices=['json', 'toml', 'unix', 'yaml'],
-                            default='unix',
-                            help='output format (default: %(default)s)')
+                            default=None,
+                            help="output format (default: from the "
+                                 "'config.default_output' option, 'yaml')")
         parser.add_argument('-k', '--keys', default=False,
                             help='list configuration keys '
                                  'at the specified level',

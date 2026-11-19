@@ -425,7 +425,7 @@ def test_config_get_defaults():
     subcommands = parse_cli("config", "get", "project.name")
     args = subcommands.args
 
-    assert args.format == "unix"
+    assert args.format is None
     assert args.keys is False
     assert args.key == ["project.name"]
 
@@ -485,6 +485,13 @@ def test_config_set_refuses_an_unknown_type(capsys):
 def test_config_get_format_choice():
     subcommands = parse_cli("config", "get", "--format", "json",
                             "project.name")
+
+    assert subcommands.args.format == "json"
+
+
+def test_config_get_format_short_form():
+    subcommands = parse_cli("config", "get", "-f", "json",
+                            "custom.tools")
 
     assert subcommands.args.format == "json"
 
