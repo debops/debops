@@ -126,7 +126,22 @@ def test_tofu_help_lists_the_debops_level_operations():
     assert 'DebOps-level operations' in body
     assert '  update     reconcile the files DebOps owns' in body
     assert '  install    install the OpenTofu binaries' in body
+    assert '  inventory  render the inventory outputs' in body
     assert '  cache      list and clean the OpenTofu cache' in body
+
+
+def test_tofu_inventory_parses_without_options():
+    subcommands = parse_cli("tofu", "inventory")
+
+    assert subcommands.args.tofu_args == ["inventory"]
+
+
+def test_tofu_inventory_refuses_stray_operands(capsys):
+    with pytest.raises(SystemExit) as exc:
+        parse_cli("tofu", "inventory", "stray")
+
+    assert exc.value.code == 2
+    assert "unrecognized" in capsys.readouterr().err
 
 
 def test_tofu_cache_parses_the_clean_options():
