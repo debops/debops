@@ -520,6 +520,48 @@ def test_execute_cycles_the_store_and_runs_the_operation(
     assert env["TF_DATA_DIR"] == runner._tofu_env["TF_DATA_DIR"]
 
 
+def test_execute_captures_the_operation_output(tofu_project,
+                                               stub_project_secrets,
+                                               monkeypatch):
+    """The capture mode collects the stdout of the operation instead
+    of streaming it: the machine-readable output the consumers read
+    as data -- 'output -json' of the inventory bridge -- never
+    reaches the terminal."""
+    process = mock.Mock()
+    process.returncode = 0
+    process.communicate.return_value = (b'{"inventory_seed": {}}', b"")
+    popen = mock.Mock(return_value=process)
+    monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
+    monkeypatch.setattr(runner_module, "run_hooks",
+                        mock.Mock(return_value=True))
+
+    runner = TofuRunner(tofu_project(), ["plan"])
+    rc, output = runner.execute(capture=True)
+
+    assert rc == 0
+    assert output == '{"inventory_seed": {}}'
+    assert popen.call_args.kwargs["stdout"] is subprocess.PIPE
+
+
+def test_execute_streams_the_output_without_capture(
+        tofu_project, stub_project_secrets, monkeypatch):
+    """Without the capture mode the operation streams: the stdout of
+    the subprocess is not piped, the return stays the exit code."""
+    process = mock.Mock()
+    process.returncode = 0
+    process.communicate.return_value = (b"", b"")
+    popen = mock.Mock(return_value=process)
+    monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
+    monkeypatch.setattr(runner_module, "run_hooks",
+                        mock.Mock(return_value=True))
+
+    runner = TofuRunner(tofu_project(), ["plan"])
+    rc = runner.execute()
+
+    assert rc == 0
+    assert popen.call_args.kwargs["stdout"] is None
+
+
 def test_execute_composes_the_store_environment(tofu_project,
                                                 stub_project_secrets,
                                                 monkeypatch):
@@ -1608,7 +1650,7 @@ def test_regular_operations_stream_without_the_rewrite(
     TofuRunner(project, ["plan"]).execute()
 
     popen = stub_tofu_subprocess
-    assert 'stdout' not in popen.call_args.kwargs
+    assert popen.call_args.kwargs["stdout"] is None
 
 
 def test_install_binary_downloads_verifies_and_installs(
