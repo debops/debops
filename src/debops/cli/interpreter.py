@@ -14,10 +14,12 @@ from ..core.ansible.ansiblerunner import AnsibleRunner
 from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
 from ..core.tofu.runner import TofuRunner
+from ..core.tofu import cache
 from ..core.tofu.binary import reconcile_binaries
 from ..core.tofu.registry import view_drop_in_path, view_tofu_root
 from ..core.tofu.view import reconcile_view
 from ..core import ssh
+from ..core.utils import unexpanduser
 from xdg.BaseDirectory import xdg_config_home
 import logging
 import getpass
@@ -342,6 +344,13 @@ class Interpreter(object):
             self._do_tofu_install(args, project)
             return
 
+        # The 'cache' operation is a DebOps-level command: it lists
+        # and cleans the OpenTofu cache of the project. It runs no
+        # 'tofu' command, so no hooks fire around it.
+        if args.tofu_args[0] == 'cache':
+            self._do_tofu_cache(args, project)
+            return
+
         try:
             runner = TofuRunner(project, args.tofu_args, bell=args.bell,
                                 no_color=args.no_color,
@@ -433,6 +442,34 @@ class Interpreter(object):
                 'The pinned binaries of the views of the project {!r} '
                 'are installed'.format(project.name),
                 extra={'allow': ['stderr', 'syslog']})
+
+    def _do_tofu_cache(self, args, project):
+        """Run the 'debops tofu cache' operation: list the cache
+        entries of the project, or remove the ones of the selected
+        scope and print the removed paths."""
+        if args.reset:
+            removed = [cache.reset_cache()]
+        elif args.clean:
+            if args.project:
+                removed = cache.clean_project(project)
+            elif args.plugins:
+                removed = [cache.clean_plugins()]
+            else:
+                removed = [cache.clean_data_dir(project)]
+        else:
+            removed = None
+        if removed is not None:
+            for path in removed:
+                if path:
+                    print(path)
+            return
+        rows = [(unexpanduser(path), size, note)
+                for path, size, note in cache.cache_rows(project)]
+        width = max(len(path) for path, _, _ in rows) if rows else 0
+        for path, size, note in rows:
+            print('{}  {:>7}  {}'.format(path.ljust(width),
+                                         cache.human_size(size),
+                                         note))
 
     def _render_tofu_changes(self, changes, diff=False, dry_run=False,
                              color=False):
