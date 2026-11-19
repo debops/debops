@@ -29,7 +29,24 @@
                                          + (".json"
                                             if (cloudflared__tunnel_mode == "local")
                                             else ".token") }}'
+    cloudflared__tunnel_config: '{{ {} | combine((cloudflared__combined_configuration
+                                                  + tunnel.configuration | d([]))
+                                                 | debops.debops.parse_kv_config
+                                                 | rejectattr("state", "in", ["absent", "init", "ignore"])
+                                                 | selectattr("config", "defined")
+                                                 | map(attribute="config") | list,
+                                                 recursive=True) }}'
   block:
+
+    - name: Check configuration format of cloudflared tunnel {{ tunnel.name }}
+      ansible.builtin.assert:
+        that:
+          - tunnel.config is undefined
+        fail_msg: 'The configuration of tunnel "{{ tunnel.name }}" is set
+                   with the "configuration" parameter, a list of entries
+                   with "name" and "config" keys; the "config" dictionary of
+                   the tunnel is not supported.'
+        quiet: True
 
     - name: Check parameters of cloudflared tunnel {{ tunnel.name }}
       ansible.builtin.assert:

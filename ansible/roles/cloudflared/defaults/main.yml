@@ -189,7 +189,8 @@ cloudflared__host_tunnels: []
 # Variable which combines all tunnel configuration lists and is used in role
 # tasks and templates. Entries with the same ``name`` are merged together by
 # the ``debops.debops.parse_kv_items`` filter, so a later list can change or
-# remove a tunnel defined in an earlier one.
+# remove a tunnel defined in an earlier one, or a single entry of its
+# ``configuration`` parameter.
 cloudflared__combined_tunnels: '{{ cloudflared__default_tunnels
                                    + cloudflared__tunnels
                                    + cloudflared__group_tunnels
@@ -199,33 +200,63 @@ cloudflared__combined_tunnels: '{{ cloudflared__default_tunnels
 # Tunnel configuration [[[
 # ------------------------
 
-# The configuration file of each tunnel is generated from the dictionaries
-# below, merged recursively with the ``config`` parameter of a given tunnel.
-# Keys are passed to :command:`cloudflared` unchanged, therefore any option
-# supported by the :command:`cloudflared` configuration file can be used. See
-# :ref:`cloudflared__ref_tunnels` for details.
+# The configuration file of each tunnel is generated from the lists below
+# using the :ref:`universal_configuration` system, followed by the
+# ``configuration`` parameter of a given tunnel. The ``config`` dictionaries
+# of the entries are merged recursively and passed to :command:`cloudflared`
+# unchanged, therefore any option supported by the :command:`cloudflared`
+# configuration file can be used. See :ref:`cloudflared__ref_configuration`
+# for details.
 
-# .. envvar:: cloudflared__default_config [[[
+# .. envvar:: cloudflared__default_configuration [[[
 #
-# YAML dictionary with :command:`cloudflared` configuration options defined by
-# the role and applied to all tunnels. Automatic updates are disabled since
+# List of :command:`cloudflared` configuration options defined by the role
+# and applied to all tunnels. Automatic updates are disabled since
 # :command:`cloudflared` is installed from the APT repository.
 #
 # The ``metrics`` option is not set by default. In that case each tunnel
 # binds the Prometheus metrics endpoint to the first free port in the
 # ``localhost:20241`` - ``localhost:20245`` range, which also works for
-# several tunnels on the same host. Set ``metrics`` in the ``config``
+# several tunnels on the same host. Set ``metrics`` in the ``configuration``
 # parameter of a tunnel to use a fixed address.
-cloudflared__default_config:
-  no-autoupdate: True
+cloudflared__default_configuration:
+
+  - name: 'no-autoupdate'
+    config:
+      no-autoupdate: True
 
                                                                    # ]]]
-# .. envvar:: cloudflared__config [[[
+# .. envvar:: cloudflared__configuration [[[
 #
-# YAML dictionary with :command:`cloudflared` configuration options applied
-# to all tunnels, defined in the Ansible inventory. It is merged recursively
-# with :envvar:`cloudflared__default_config`.
-cloudflared__config: {}
+# List of :command:`cloudflared` configuration options applied to all
+# tunnels, defined on all hosts in the Ansible inventory.
+cloudflared__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__group_configuration [[[
+#
+# List of :command:`cloudflared` configuration options applied to all
+# tunnels, defined on hosts in a specific Ansible inventory group.
+cloudflared__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__host_configuration [[[
+#
+# List of :command:`cloudflared` configuration options applied to all
+# tunnels, defined on specific hosts in the Ansible inventory.
+cloudflared__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: cloudflared__combined_configuration [[[
+#
+# Variable which combines all of the :command:`cloudflared` configuration
+# lists and is used in role tasks. This list defines the order in which the
+# entries from different variables are processed; the ``configuration``
+# parameter of a tunnel is processed after it.
+cloudflared__combined_configuration: '{{ cloudflared__default_configuration
+                                         + cloudflared__configuration
+                                         + cloudflared__group_configuration
+                                         + cloudflared__host_configuration }}'
 
                                                                    # ]]]
 # .. envvar:: cloudflared__catch_all_service [[[

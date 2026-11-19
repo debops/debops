@@ -111,16 +111,19 @@ When using local mode, the ingress rules are defined in the Ansible inventory:
      - name: 'web'
        mode: 'local'
        tunnel_uuid: '6ff42ae2-765d-4adf-8112-31c55c1551ef'
-       config:
-         ingress:
-           - hostname: 'app.example.com'
-             service: 'https://127.0.0.1:443'
-             originRequest:
-               originServerName: 'app.example.com'
-           - hostname: 'api.example.com'
-             service: 'https://127.0.0.1:443'
-             originRequest:
-               originServerName: 'api.example.com'
+       configuration:
+
+         - name: 'ingress'
+           config:
+             ingress:
+               - hostname: 'app.example.com'
+                 service: 'https://127.0.0.1:443'
+                 originRequest:
+                   originServerName: 'app.example.com'
+               - hostname: 'api.example.com'
+                 service: 'https://127.0.0.1:443'
+                 originRequest:
+                   originServerName: 'api.example.com'
 
 All hostnames point to the same nginx port. nginx is then configured with
 separate ``server`` blocks (managed by :ref:`debops.nginx`) to route to
@@ -186,16 +189,19 @@ HTTP traffic goes through nginx:
      - name: 'mixed'
        mode: 'local'
        tunnel_uuid: 'abc12345-6789-def0-1234-56789abcdef0'
-       config:
-         ingress:
-           - hostname: 'www.example.com'
-             service: 'https://127.0.0.1:443'
-             originRequest:
-               originServerName: 'www.example.com'
-           - hostname: 'ssh.example.com'
-             service: 'ssh://127.0.0.1:22'
-           - hostname: 'db.example.com'
-             service: 'tcp://127.0.0.1:5432'
+       configuration:
+
+         - name: 'ingress'
+           config:
+             ingress:
+               - hostname: 'www.example.com'
+                 service: 'https://127.0.0.1:443'
+                 originRequest:
+                   originServerName: 'www.example.com'
+               - hostname: 'ssh.example.com'
+                 service: 'ssh://127.0.0.1:22'
+               - hostname: 'db.example.com'
+                 service: 'tcp://127.0.0.1:5432'
 
 In this example, HTTP traffic goes through nginx while SSH and PostgreSQL
 traffic is routed directly to the respective daemons.
@@ -241,12 +247,18 @@ it is self-signed, cloudflared refuses the connection. The
      - name: 'secure'
        mode: 'local'
        tunnel_uuid: 'abc12345-6789-def0-1234-56789abcdef0'
-       config:
-         originRequest:
-           noTLSVerify: True
-         ingress:
-           - hostname: 'secure.example.com'
-             service: 'https://127.0.0.1:443'
+       configuration:
+
+         - name: 'originRequest'
+           config:
+             originRequest:
+               noTLSVerify: True
+
+         - name: 'ingress'
+           config:
+             ingress:
+               - hostname: 'secure.example.com'
+                 service: 'https://127.0.0.1:443'
 
 The loopback connection is still encrypted, but cloudflared does not
 authenticate nginx. Treat this as an exception, not a secure default, and

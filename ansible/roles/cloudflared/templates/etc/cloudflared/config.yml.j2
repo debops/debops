@@ -7,10 +7,7 @@
 # cloudflared tunnel configuration for '{{ tunnel.name }}'
 # Mode: {{ cloudflared__tunnel_mode }}
 
-{% set cloudflared__tpl_config = cloudflared__default_config
-                                 | combine(cloudflared__config,
-                                           tunnel.config | d({}),
-                                           recursive=True) %}
+{% set cloudflared__tpl_config = cloudflared__tunnel_config %}
 {% if cloudflared__tunnel_mode == 'local' %}
 {%   set cloudflared__tpl_ingress = cloudflared__tpl_config.ingress | d([]) %}
 {%   if (cloudflared__tpl_ingress | length == 0) or

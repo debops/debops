@@ -23,6 +23,13 @@ The ``debops.cloudflared`` role installs and configures cloudflared on
 Debian/Ubuntu servers, managing one or more tunnel instances via systemd
 template units (``cloudflared@<name>.service``).
 
+The daemon runs as an unprivileged system account with the
+:file:`/var/lib/cloudflared/` home directory (:envvar:`cloudflared__home`).
+The directory only holds the state of the account and the daemon cannot
+write to it, so it stays in :file:`/var/lib/` with the home directories of
+other system accounts instead of the service data directory defined by the
+:ref:`debops.fhs` role.
+
 
 Prerequisites
 -------------
@@ -131,15 +138,19 @@ Local-mode configuration with ingress rules:
      - name: 'web-tunnel'
        mode: 'local'
        tunnel_uuid: '6ff42ae2-765d-4adf-8112-31c55c1551ef'
-       config:
-         ingress:
-           - hostname: 'app.example.com'
-             service: 'http://127.0.0.1:80'
-           - hostname: 'api.example.com'
-             service: 'http://127.0.0.1:8080'
+       configuration:
 
-The ``config`` dictionary is written to the tunnel configuration file as is,
-see :ref:`cloudflared__ref_tunnels` for details.
+         - name: 'ingress'
+           config:
+             ingress:
+               - hostname: 'app.example.com'
+                 service: 'http://127.0.0.1:80'
+               - hostname: 'api.example.com'
+                 service: 'http://127.0.0.1:8080'
+
+The ``config`` dictionaries of the ``configuration`` entries are merged and
+written to the tunnel configuration file, see
+:ref:`cloudflared__ref_configuration` for details.
 
 
 Prometheus metrics

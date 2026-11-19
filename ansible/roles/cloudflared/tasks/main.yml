@@ -142,7 +142,8 @@
         - "'Could not find the requested service' not in (cloudflared__register_leftover_stop.msg | d(''))"
         - (cloudflared__register_leftover_stop.status.LoadState | d('')) != 'not-found'
       loop: '{{ (ansible_local.cloudflared.tunnels | d([]) | map(attribute="name") | list)
-                | union(cloudflared__combined_tunnels | debops.debops.parse_kv_items
+                | union(cloudflared__combined_tunnels
+                        | debops.debops.parse_kv_items(merge_keys=["configuration"])
                         | map(attribute="name") | list) }}'
 
     - name: Remove cloudflared directories
@@ -173,7 +174,8 @@
 # Skipped in check mode on a host without the template unit, see above.
 - name: Manage cloudflared tunnel instances
   ansible.builtin.include_tasks: 'manage_tunnel.yml'
-  loop: '{{ cloudflared__combined_tunnels | debops.debops.parse_kv_items }}'
+  loop: '{{ cloudflared__combined_tunnels
+            | debops.debops.parse_kv_items(merge_keys=["configuration"]) }}'
   loop_control:
     loop_var: 'tunnel'
     label: '{{ tunnel.name }}'

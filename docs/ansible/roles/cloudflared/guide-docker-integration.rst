@@ -63,10 +63,13 @@ Example with :ref:`debops.docker_service`:
      - name: 'docker-apps'
        mode: 'local'
        tunnel_uuid: 'abc12345-6789-def0-1234-56789abcdef0'
-       config:
-         ingress:
-           - hostname: 'gitea.example.com'
-             service: 'http://127.0.0.1:3000'
+       configuration:
+
+         - name: 'ingress'
+           config:
+             ingress:
+               - hostname: 'gitea.example.com'
+                 service: 'http://127.0.0.1:3000'
 
 Example with :ref:`debops.docker_compose_service`:
 
@@ -91,12 +94,15 @@ Example with :ref:`debops.docker_compose_service`:
      - name: 'monitoring'
        mode: 'local'
        tunnel_uuid: 'def67890-1234-5678-9abc-def012345678'
-       config:
-         ingress:
-           - hostname: 'grafana.example.com'
-             service: 'http://127.0.0.1:3100'
-           - hostname: 'prometheus.example.com'
-             service: 'http://127.0.0.1:9090'
+       configuration:
+
+         - name: 'ingress'
+           config:
+             ingress:
+               - hostname: 'grafana.example.com'
+                 service: 'http://127.0.0.1:3100'
+               - hostname: 'prometheus.example.com'
+                 service: 'http://127.0.0.1:9090'
 
 .. note::
 
@@ -145,12 +151,15 @@ parameter of a service (see :ref:`docker_service__ref_nginx`):
      - name: 'web'
        mode: 'local'
        tunnel_uuid: 'abc12345-6789-def0-1234-56789abcdef0'
-       config:
-         ingress:
-           - hostname: 'webapp.example.com'
-             service: 'https://127.0.0.1:443'
-             originRequest:
-               originServerName: 'webapp.example.com'
+       configuration:
+
+         - name: 'ingress'
+           config:
+             ingress:
+               - hostname: 'webapp.example.com'
+                 service: 'https://127.0.0.1:443'
+                 originRequest:
+                   originServerName: 'webapp.example.com'
 
 cloudflared connects to the HTTPS port of nginx, because with the
 :ref:`debops.pki` role active nginx redirects plain HTTP requests to HTTPS,
@@ -203,24 +212,30 @@ A complete example combining cloudflared, nginx, and Docker on a single host:
      - name: 'services'
        mode: 'local'
        tunnel_uuid: 'abc12345-6789-def0-1234-56789abcdef0'
-       config:
-         protocol: 'quic'
-         ingress:
-           # Web apps through nginx
-           - hostname: 'app.example.com'
-             service: 'https://127.0.0.1:443'
-             originRequest:
-               originServerName: 'app.example.com'
-           - hostname: 'cloud.example.com'
-             service: 'https://127.0.0.1:443'
-             originRequest:
-               originServerName: 'cloud.example.com'
-           # Direct to container
-           - hostname: 'gitea.example.com'
-             service: 'http://127.0.0.1:3000'
-           # Non-HTTP service
-           - hostname: 'ssh.example.com'
-             service: 'ssh://127.0.0.1:22'
+       configuration:
+
+         - name: 'protocol'
+           config:
+             protocol: 'quic'
+
+         - name: 'ingress'
+           config:
+             ingress:
+               # Web apps through nginx
+               - hostname: 'app.example.com'
+                 service: 'https://127.0.0.1:443'
+                 originRequest:
+                   originServerName: 'app.example.com'
+               - hostname: 'cloud.example.com'
+                 service: 'https://127.0.0.1:443'
+                 originRequest:
+                   originServerName: 'cloud.example.com'
+               # Direct to container
+               - hostname: 'gitea.example.com'
+                 service: 'http://127.0.0.1:3000'
+               # Non-HTTP service
+               - hostname: 'ssh.example.com'
+                 service: 'ssh://127.0.0.1:22'
 
    # host_vars/server/docker_service.yml
    docker_service__host_services:
