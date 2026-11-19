@@ -175,10 +175,11 @@ set through the :command:`env` command::
 
   alice@controller:~$ env DEBOPS_CONFIG__BINARIES__ANSIBLE=/opt/ansible/bin/ansible debops run site.yml
 
-A value for a list option is a comma-separated string: ``a,b`` gives
-the list with the values ``a`` and ``b``. A value which starts with
-``[`` or ``{`` is parsed as JSON. To keep a comma inside one value,
-give the value as a JSON string: ``'"a,b"'`` gives the string ``a,b``.
+A value for a list option, or for an option which DebOps does not type,
+is a comma-separated string: ``web1,web2`` gives the list with the
+values ``web1`` and ``web2``. A value which starts with ``[`` or ``{``
+is parsed as JSON. To keep a comma inside one value, give the value as
+a JSON string: ``'"web1,web2"'`` gives the string ``web1,web2``.
 
 Overrides apply above every configuration file. They are meant for a
 single invocation, a CI job or a container, not for permanent changes.
