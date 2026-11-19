@@ -631,6 +631,8 @@ DebOps-level operations (not passed to the 'tofu' command):
   update     reconcile the files DebOps owns in the view and run
              'tofu init' through the wrapper
   install    install the OpenTofu binaries which the views pin
+  inventory  render the inventory outputs of the view into the
+             Ansible view's inventory
   cache      list and clean the OpenTofu cache of the project''',
                 epilog="The operation and its arguments are passed to "
                        "the 'tofu' command; the DebOps options come "
@@ -698,7 +700,20 @@ DebOps-level operations (not passed to the 'tofu' command):
         command carry their own options and their own help screens."""
         if (not self.args.tofu_args
                 or self.args.tofu_args[0] not in ('update', 'install',
-                                                  'cache')):
+                                                  'inventory', 'cache')):
+            return
+        if self.args.tofu_args[0] == 'inventory':
+            parser = _argument_parser(
+                    usage='debops tofu inventory [<options>]',
+                    description="render the inventory outputs of the "
+                                "view into the Ansible view's "
+                                'inventory: the hosts file in the '
+                                'configured format, the variables '
+                                'files of the hosts and groups, and '
+                                'the sensitive values into the '
+                                "view's secret store")
+            self.args = parser.parse_args(self.args.tofu_args[1:],
+                                          namespace=self.args)
             return
         if self.args.tofu_args[0] == 'cache':
             parser = _argument_parser(

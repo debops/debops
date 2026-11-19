@@ -5,6 +5,7 @@
 import json
 import logging
 import os
+from unittest import mock
 
 import pytest
 import yaml
@@ -505,3 +506,93 @@ def test_the_unknown_hosts_format_is_refused(inventory_project):
     project = inventory_project({'hosts_format': 'xml'})
     with pytest.raises(ValueError, match='hosts_format'):
         render_inventory(project, 'system', outputs())
+
+
+# The 'debops tofu inventory' operation: the interpreter collects the
+# outputs of the view through the runner machinery, cycles the Ansible
+# secret store around the render and prints the rendered paths.
+
+def inventory_operation(monkeypatch, rc=0, output='{}', paths=None,
+                        unlock=True, render_error=None):
+    """Run the interpreter's inventory operation with the runner, the
+    secret store and the renderer stubbed; returns the stubs."""
+    from types import SimpleNamespace
+    import debops.cli.interpreter as cli_module
+
+    runner = mock.Mock()
+    runner.execute.return_value = (rc, output)
+    monkeypatch.setattr(cli_module, "TofuRunner",
+                        mock.Mock(return_value=runner))
+    store = mock.Mock()
+    store.unlock.return_value = unlock
+    monkeypatch.setattr(cli_module, "SecretManager",
+                        mock.Mock(return_value=mock.Mock(
+                            store=mock.Mock(return_value=store))))
+    if render_error is not None:
+        monkeypatch.setattr(cli_module, "render_inventory",
+                            mock.Mock(side_effect=render_error))
+    else:
+        monkeypatch.setattr(cli_module, "render_inventory",
+                            mock.Mock(return_value=paths or []))
+    args = SimpleNamespace(bell=False, workspace=None)
+    project = SimpleNamespace(view='system', path='/tmp/opencode/x')
+    cli_module.Interpreter._do_tofu_inventory(
+        mock.Mock(), args, project)
+    return runner, store, cli_module.render_inventory
+
+
+def test_the_inventory_operation_collects_through_the_runner(
+        monkeypatch, capsys):
+    """The operation runs 'tofu output -json' with the capture mode
+    and the machine-consumption color stripped, cycles the Ansible
+    store around the render and prints the rendered paths."""
+    runner, store, render = inventory_operation(
+        monkeypatch, output='{"inventory_seed": {}}',
+        paths=['inventory/hosts'])
+
+    cli_runner = __import__('debops.cli.interpreter',
+                            fromlist=['TofuRunner']).TofuRunner
+    cli_runner.assert_called_once()
+    assert cli_runner.call_args.args[1] == ['output', '-json']
+    assert cli_runner.call_args.kwargs['no_color'] is True
+    runner.execute.assert_called_once_with(capture=True)
+    render.assert_called_once()
+    store.unlock.assert_called_once()
+    store.lock.assert_called_once()
+    assert capsys.readouterr().out == 'inventory/hosts\n'
+
+
+def test_a_failed_output_operation_exits_with_its_code(
+        monkeypatch, capsys):
+    """The 'tofu output' operation which fails refuses the render:
+    the exit code carries, nothing is rendered and the store stays
+    locked."""
+    with pytest.raises(SystemExit) as exc:
+        inventory_operation(monkeypatch, rc=3)
+
+    assert exc.value.code == 3
+    assert 'failed with exit code 3' in capsys.readouterr().err
+
+
+def test_a_refused_render_locks_the_store_back(monkeypatch, capsys):
+    """A render which refuses the outputs exits with the error named;
+    the store cycles back in the meantime."""
+    with pytest.raises(SystemExit) as exc:
+        inventory_operation(
+            monkeypatch,
+            output='{"inventory_seed": {"web-1": {"address": ""}}}',
+            render_error=ValueError("The seed host 'web-1' carries "
+                                    "no 'address'"))
+
+    assert exc.value.code == 1
+    assert "no 'address'" in capsys.readouterr().err
+
+
+def test_an_already_unlocked_store_is_not_locked(monkeypatch):
+    """The interpreter does not lock what it did not unlock: a store
+    which was already unlocked stays unlocked."""
+    _, store, _ = inventory_operation(monkeypatch, unlock=False,
+                                      paths=['inventory/hosts'])
+
+    store.unlock.assert_called_once()
+    store.lock.assert_not_called()
