@@ -85,6 +85,23 @@ def _parse_scalar(value):
         return value
 
 
+def _parse_untyped_value(value):
+    """Parse an environment value for an option which has no type.
+
+    A comma-separated value becomes a list of the parsed elements, so
+    the environment can carry a list for the options which DebOps does
+    not type. A value which carries JSON structure -- an array, an
+    object or a quoted string -- is parsed as a whole: a JSON string is
+    the way to keep a comma inside one value.
+    """
+    if value.lstrip().startswith(('[', '{', '"')):
+        return _parse_scalar(value)
+    if ',' in value:
+        return [_parse_scalar(entry.strip())
+                for entry in value.split(',') if entry.strip()]
+    return _parse_scalar(value)
+
+
 def _option_schema_type_name(schema_node):
     """Return the type name of the schema node, for the refusal
     messages."""
@@ -539,17 +556,17 @@ class Configuration(object):
         """
         validator = self._schema()
         if validator is None:
-            return _parse_scalar(value)
+            return _parse_untyped_value(value)
         node = _resolve_schema_node(validator.schema, segments)
         if node is None:
             return None
         if node is _UNTYPED:
-            return _parse_scalar(value)
+            return _parse_untyped_value(value)
         schema_type = node.get('type')
         if isinstance(schema_type, list):
             schema_type = schema_type[0]
         if schema_type is None:
-            return _parse_scalar(value)
+            return _parse_untyped_value(value)
         if schema_type == 'boolean':
             return bool(strtobool(value))
         if schema_type == 'integer':
