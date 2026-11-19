@@ -345,7 +345,8 @@ class Configuration(object):
         in d1 is a dictionary (or dict-like), *and* the corresponding
         value in d2 is also a dictionary, then merge them in-place.
         If any value in d1 is a list and corresponding value in d2 is also
-        a list, the lists are combined together.
+        a list, the lists are combined together, without repeating the
+        entries which are already present.
         """
         if d2:
             for k, v2 in d2.items():
@@ -355,7 +356,9 @@ class Configuration(object):
                     self._merge_dict(v1, v2)
                 elif (isinstance(v1, list) and
                         isinstance(v2, list)):
-                    d1[k].extend(v2)
+                    for entry in v2:
+                        if entry not in d1[k]:
+                            d1[k].append(entry)
                 else:
                     d1[k] = v2
 
@@ -474,7 +477,7 @@ class Configuration(object):
     def apply_env_overrides(self, environ=None):
         """Apply configuration overrides from the environment.
 
-        Each variable named '<PREFIX>__<SECTION>__<KEY>' sets the
+        Each variable named '<PREFIX>__<SECTION>__<KEY>' merges the
         value at the matching path of the configuration tree, with the
         path segments separated by '__' -- for the DebOps
         configuration the prefix is 'DEBOPS_CONFIG__', for a
