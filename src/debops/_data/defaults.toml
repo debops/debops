@@ -220,6 +220,17 @@ sensitive_path = "secret/tofu/%s/sensitive/%s/content"
 # when the two file kinds must not share a name.
 vars_filename = "tofu_inventory.yml"
 
+[tofu.inventory.output.host_status]
+
+# What the bridge does with the hosts which the 'status' attribute of
+# the inventory seed marks, keyed by the status value, lowercased:
+# 'include' renders the hosts into the inventory, 'skip' leaves them
+# out. A status without a configured key is skipped, with a notice
+# naming the hosts; hosts without a 'status' attribute are always
+# included. New status keys are accepted when a provider starts
+# exporting them.
+running = "include"
+
 [tofu.upstream]
 
 # The OpenTofu version which the debops package is verified with: the
