@@ -500,6 +500,34 @@
                   "description": "The name of the variables file which the bridge renders for a host or group in the 'host_vars/' and 'group_vars/' directories of the Ansible view's inventory, carrying the sensitive variables as 'file' lookup references. Distinct from the plain 'tofu.inventory.vars_filename' when the two file kinds must not share a name."
                 }
               }
+            },
+            "output": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "How the bridge processes the OpenTofu outputs it collects.",
+              "properties": {
+                "host_status": {
+                  "type": "object",
+                  "description": "What the bridge does with the hosts which the 'status' attribute of the inventory seed marks, keyed by the status value, lowercased: 'include' renders the hosts into the inventory, 'skip' leaves them out. A status without a configured key is skipped, with a notice naming the hosts; hosts without a 'status' attribute are always included.",
+                  "additionalProperties": {
+                    "type": "string",
+                    "enum": [
+                      "skip",
+                      "include"
+                    ]
+                  },
+                  "properties": {
+                    "running": {
+                      "type": "string",
+                      "enum": [
+                        "skip",
+                        "include"
+                      ],
+                      "description": "The handling of the hosts whose status is 'running': the status the bridge renders by default. The other statuses are skipped until a key names their handling."
+                    }
+                  }
+                }
+              }
             }
           }
         },
