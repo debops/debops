@@ -6,7 +6,9 @@
 ----------------------------
 
 Output DebOps project configuration, optionally scoped to a specific context.
-Multiple output formats are available (plain text, JSON, TOML, YAML).
+Multiple output formats are available: the 'unix' format prints one option
+per line in the dotted ``path=value`` notation, the other formats render the
+values as YAML, JSON or TOML.
 
 Options
 ~~~~~~~
@@ -19,23 +21,30 @@ Options
   will use the current directory.
 
 ``-f, --format json|toml|unix|yaml``
-  Specify the format of the output. The default format is 'unix' which is
-  considered human-friendly. The JSON format can be used to enable easy parsing
-  by programs.
+  Specify the format of the output. Without the option, the format comes
+  from the ``config.default_output`` option; it is 'yaml'. The 'unix'
+  format prints one option per line in the dotted ``path=value``
+  notation. The JSON format can be used to enable easy parsing by
+  programs.
 
 ``-k, --keys``
   Instead of returning the entire configuration tree, return a list of
   configuration keys present at a given configuration level. Empty output or
-  list means that there are no more subkeys present at a given level.
+  list means that there are no more subkeys present at a given level. In the
+  'unix' format the keys print as dotted paths, one queryable option per
+  line.
 
 ``-r, --root``
   Print the option nested under its full path from the root of the
   configuration tree, which shows where in the tree the option is defined.
+  The dotted unix rendering carries the full path on every line, so the
+  option does not change it.
 
 ``--show-origin``
   Print the options as plain text, one line per option: the source
   which last set each option, then the option and its value joined by
-  ``=``. The source is the configuration file which set the option,
+  ``=``. The values render in the notation of the ``unix`` format.
+  The source is the configuration file which set the option,
   the environment variable for the options overridden from the
   environment, or ``debops`` for the options which the tool computes
   at runtime. Paths under the home directory are shown with ``~``.
