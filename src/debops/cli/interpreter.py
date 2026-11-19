@@ -847,17 +847,17 @@ class Interpreter(object):
             sys.exit(1)
 
         if action == 'set':
-            logger.notice("Set '%s' to '%s' in %s", args.key,
-                          ' '.join(args.values), option_file,
-                          extra={'allow': ['stderr', 'syslog']})
+            logger.info("Set '%s' to '%s' in %s", args.key,
+                        ' '.join(args.values), option_file,
+                        extra={'allow': ['stderr', 'syslog']})
         elif action == 'create':
-            logger.notice("Created the '%s' option in %s", args.key,
-                          option_file,
-                          extra={'allow': ['stderr', 'syslog']})
+            logger.info("Created the '%s' option in %s", args.key,
+                        option_file,
+                        extra={'allow': ['stderr', 'syslog']})
         elif action == 'append':
-            logger.notice("Added the values to the '%s' list in %s",
-                          args.key, option_file,
-                          extra={'allow': ['stderr', 'syslog']})
+            logger.info("Added the values to the '%s' list in %s",
+                        args.key, option_file,
+                        extra={'allow': ['stderr', 'syslog']})
 
     def do_config_check(self, args):
         try:
