@@ -456,6 +456,32 @@
           "additionalProperties": false,
           "description": "Options of the 'debops tofu inventory' bridge: the static renderer which renders the OpenTofu inventory outputs of a view into the Ansible view's inventory.",
           "properties": {
+            "hosts_format": {
+              "type": "string",
+              "enum": [
+                "ini",
+                "yaml",
+                "json",
+                "toml"
+              ],
+              "description": "The format of the hosts file which the bridge renders in the Ansible view's inventory directory: 'ini' (the classic Ansible inventory), 'yaml' or 'json' (parsed by the YAML inventory plugin, JSON being a YAML subset) and 'toml' (parsed by the TOML inventory plugin). The format selects which 'hosts_filename_<format>' option names the rendered file; the other three files are removed when the renderer owns them or when they hold only the scaffold placeholder the project init writes."
+            },
+            "hosts_filename_ini": {
+              "type": "string",
+              "description": "The name of the hosts file the bridge renders when the 'hosts_format' option is 'ini'. The ini inventory plugin accepts any file name; the default carries no extension."
+            },
+            "hosts_filename_yaml": {
+              "type": "string",
+              "description": "The name of the hosts file the bridge renders when the 'hosts_format' option is 'yaml'. The YAML inventory plugin claims '.yaml' and '.yml' files; the default carries the extension, and the bridge appends it when the configured name lacks one."
+            },
+            "hosts_filename_json": {
+              "type": "string",
+              "description": "The name of the hosts file the bridge renders when the 'hosts_format' option is 'json'. JSON is a YAML subset: the YAML inventory plugin claims '.json' files; the default carries the extension, and the bridge appends it when the configured name lacks one."
+            },
+            "hosts_filename_toml": {
+              "type": "string",
+              "description": "The name of the hosts file the bridge renders when the 'hosts_format' option is 'toml'. The TOML inventory plugin claims '.toml' files strictly; the default carries the extension, and the bridge appends it when the configured name lacks one."
+            },
             "vars_filename": {
               "type": "string",
               "description": "The name of the variables file which the bridge renders for a host or group in the 'host_vars/' and 'group_vars/' directories of the Ansible view's inventory. The plain variables of the seed are written there; the file name is a convention with the users of the view, who may reference it in their own files."
