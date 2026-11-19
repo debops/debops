@@ -15,6 +15,8 @@ from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
 from ..core.tofu.runner import TofuRunner
 from ..core.tofu import cache
+from ..core.tofu.inventory import render_inventory
+from ..core.secrets import SecretManager
 from ..core.tofu.binary import reconcile_binaries
 from ..core.tofu.registry import view_drop_in_path, view_tofu_root
 from ..core.tofu.view import reconcile_view
@@ -351,6 +353,13 @@ class Interpreter(object):
             self._do_tofu_cache(args, project)
             return
 
+        # The 'inventory' operation is a DebOps-level command: it
+        # collects the inventory outputs of the view through the
+        # wrapper and renders them into the Ansible view's inventory
+        if args.tofu_args[0] == 'inventory':
+            self._do_tofu_inventory(args, project)
+            return
+
         try:
             runner = TofuRunner(project, args.tofu_args, bell=args.bell,
                                 no_color=args.no_color,
@@ -470,6 +479,51 @@ class Interpreter(object):
             print('{}  {:>7}  {}'.format(path.ljust(width),
                                          cache.human_size(size),
                                          note))
+
+    def _do_tofu_inventory(self, args, project):
+        """Run the 'debops tofu inventory' operation: collect the
+        inventory outputs of the view through the wrapper and render
+        them into the Ansible view's inventory.
+
+        The captured 'tofu output -json' carries the sensitive values
+        of the seed in plaintext: the output is collected, never
+        streamed to the terminal. The render writes into the Ansible
+        secret store of the view, which cycles around it -- the
+        runner's own cycle has already locked the tofu store back,
+        this one is a fresh unlock/lock pair."""
+        try:
+            runner = TofuRunner(project, ['output', '-json'],
+                                bell=args.bell, no_color=True,
+                                workspace=args.workspace)
+        except (NoDefaultViewException, ValueError,
+                FileNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        try:
+            rc, output = runner.execute(capture=True)
+        except (ChildProcessError, ValueError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        if rc != 0:
+            print_error("The 'tofu output' operation of the view "
+                        '{!r} failed with exit code {}'.format(
+                            project.view, rc))
+            sys.exit(rc)
+
+        store = SecretManager(project, project.view).store('ansible')
+        unlocked = store.unlock()
+        try:
+            paths = render_inventory(project, project.view, output)
+        except (ValueError, FileNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        finally:
+            if unlocked:
+                store.lock()
+
+        for path in paths:
+            print(path)
 
     def _render_tofu_changes(self, changes, diff=False, dry_run=False,
                              color=False):
