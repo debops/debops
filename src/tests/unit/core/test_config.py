@@ -73,6 +73,22 @@ def test_merge_dict_extends_lists(configuration):
     assert data == {"a": [1, 2, 3]}
 
 
+def test_merge_dict_deduplicates_list_entries(configuration):
+    data = {"a": [1, 2]}
+
+    configuration._merge_dict(data, {"a": [2, 3]})
+
+    assert data == {"a": [1, 2, 3]}
+
+
+def test_merge_dict_deduplicates_entries_within_a_source(configuration):
+    data = {"a": [1]}
+
+    configuration._merge_dict(data, {"a": [2, 2, 3]})
+
+    assert data == {"a": [1, 2, 3]}
+
+
 def test_merge_dict_replaces_on_a_type_mismatch(configuration):
     data = {"a": [1]}
 
@@ -826,6 +842,18 @@ def test_apply_env_overrides_parses_a_list(configuration, monkeypatch):
 
     assert (configuration.raw["views"]["prod"]["playbook_collections"]
             == ["debops.debops", "custom.collection"])
+
+
+def test_apply_env_overrides_do_not_duplicate_list_entries(configuration,
+                                                           monkeypatch):
+    monkeypatch.setenv("DEBOPS_CONFIG__TOFU__OPERATIONS", "plan,apply")
+
+    configuration.apply_env_overrides()
+    configuration.merge({"tofu": {"operations": ["local"]}})
+    configuration.apply_env_overrides()
+
+    assert (configuration.raw["tofu"]["operations"]
+            == ["plan", "apply", "local"])
 
 
 def test_apply_env_overrides_expands_variables(configuration, monkeypatch):
