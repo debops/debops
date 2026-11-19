@@ -623,10 +623,11 @@ class TofuRunner(Runner):
         self._tofu_command[0] = self._resolve_binary()
 
         hook_env = self._subprocess_env(self._tofu_env)
-        if not run_hooks(self.project.path, 'pre-' + self._operation,
+        if not run_hooks(self.project.path,
+                         'pre-tofu-' + self._operation,
                          env=hook_env):
-            raise ChildProcessError('Hook pre-{} aborted, not executing '
-                                    'the OpenTofu command'.format(
+            raise ChildProcessError('Hook pre-tofu-{} aborted, not '
+                                    'executing the OpenTofu command'.format(
                                         self._operation))
 
         rc = 0
@@ -671,7 +672,7 @@ class TofuRunner(Runner):
             if unlocked:
                 self._lock_secrets()
 
-        run_hooks(self.project.path, 'post-' + self._operation,
+        run_hooks(self.project.path, 'post-tofu-' + self._operation,
                   extra_env={'DEBOPS_RETURN_CODE': rc},
                   env=self._subprocess_env(self._tofu_env))
 
