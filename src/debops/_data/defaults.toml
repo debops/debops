@@ -170,6 +170,17 @@ default_modules = {}
 # touched.
 plan_retention = 3
 
+[tofu.inventory.secret]
+
+# The path template of the sensitive content files which the
+# 'debops tofu inventory' bridge writes, relative to the Ansible view's
+# root directory. The two '%s' placeholders carry the host or group name
+# and the variable name, in that order. The rendered inventory variables
+# reference the files with the 'file' lookup, composed from the same
+# template. A template starting with '/' is absolute: the lookup uses it
+# as-is.
+sensitive_path = "secret/tofu/%s/sensitive/%s/content"
+
 [tofu.upstream]
 
 # The OpenTofu version which the debops package is verified with: the
