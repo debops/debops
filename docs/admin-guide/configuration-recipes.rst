@@ -49,12 +49,42 @@ should be the same everywhere belongs one level up, in your user
 configuration::
 
   alice@controller:~$ debops config set -u version_check.enabled true
-  Set 'version_check.enabled' to 'true' in /home/alice/.config/debops/conf.d/99_config_set.json
 
 The ``-u``/``--user`` option writes to
 :file:`~/.config/debops/conf.d/`, which every project reads. The option
 applies everywhere, and each project can still override it in its own
 files.
+
+
+Manage a list option
+--------------------
+
+Some options are lists: hosts, paths, collections. The
+:command:`debops config set` command manages them entry by entry.
+Options which DebOps defines as lists are detected from the schema;
+for an option which DebOps does not define, the ``-t list`` option
+states the type when the command creates the option::
+
+  alice@controller:~$ debops config set -t list custom.myscript.servers web1 web2
+
+Every later command adds to the list. The entries which the list
+already holds are skipped, so a repeated command changes nothing::
+
+  alice@controller:~$ debops config set custom.myscript.servers web3
+
+The command skips the entries of every layer, not only the file which
+it writes: an entry which the user configuration already carries is
+not added again in the project's file.
+
+The ``-d``/``--delete`` option removes entries from the list. When the
+last entry goes, the option goes with it, and an empty section is
+pruned from the file::
+
+  alice@controller:~$ debops config set -d custom.myscript.servers web3
+
+A value which another layer still carries is reported as a warning
+after the removal: the file no longer carries it, but the option
+still holds it.
 
 
 Validate the configuration in CI
