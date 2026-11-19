@@ -396,6 +396,10 @@
                 "additionalProperties": false,
                 "description": "Per-view override of the 'tofu.inventory' options.",
                 "properties": {
+                  "vars_filename": {
+                    "type": "string",
+                    "description": "Per-view override of the 'tofu.inventory.vars_filename' option."
+                  },
                   "secret": {
                     "type": "object",
                     "additionalProperties": false,
@@ -403,6 +407,10 @@
                       "sensitive_path": {
                         "type": "string",
                         "description": "Per-view override of the 'tofu.inventory.secret.sensitive_path' option."
+                      },
+                      "vars_filename": {
+                        "type": "string",
+                        "description": "Per-view override of the 'tofu.inventory.secret.vars_filename' option."
                       }
                     }
                   }
@@ -473,6 +481,10 @@
           "additionalProperties": false,
           "description": "Options of the 'debops tofu inventory' bridge: the static renderer which renders the OpenTofu inventory outputs of a view into the Ansible view's inventory.",
           "properties": {
+            "vars_filename": {
+              "type": "string",
+              "description": "The name of the variables file which the bridge renders for a host or group in the 'host_vars/' and 'group_vars/' directories of the Ansible view's inventory. The plain variables of the seed are written there; the file name is a convention with the users of the view, who may reference it in their own files."
+            },
             "secret": {
               "type": "object",
               "additionalProperties": false,
@@ -481,6 +493,10 @@
                 "sensitive_path": {
                   "type": "string",
                   "description": "The path template of the sensitive content files, relative to the Ansible view's root directory. The two '%s' placeholders carry the host or group name and the variable name, in that order. The rendered inventory variables reference the files with the 'file' lookup, composed from the same template. A template starting with '/' is absolute: the lookup uses it as-is."
+                },
+                "vars_filename": {
+                  "type": "string",
+                  "description": "The name of the variables file which the bridge renders for a host or group in the 'host_vars/' and 'group_vars/' directories of the Ansible view's inventory, carrying the sensitive variables as 'file' lookup references. Distinct from the plain 'tofu.inventory.vars_filename' when the two file kinds must not share a name."
                 }
               }
             }
