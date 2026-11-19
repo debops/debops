@@ -630,7 +630,8 @@ Actions:
 DebOps-level operations (not passed to the 'tofu' command):
   update     reconcile the files DebOps owns in the view and run
              'tofu init' through the wrapper
-  install    install the OpenTofu binaries which the views pin''',
+  install    install the OpenTofu binaries which the views pin
+  cache      list and clean the OpenTofu cache of the project''',
                 epilog="The operation and its arguments are passed to "
                        "the 'tofu' command; the DebOps options come "
                        'before the operation, the options of the '
@@ -696,7 +697,61 @@ DebOps-level operations (not passed to the 'tofu' command):
         operations which the wrapper does not pass to the 'tofu'
         command carry their own options and their own help screens."""
         if (not self.args.tofu_args
-                or self.args.tofu_args[0] not in ('update', 'install')):
+                or self.args.tofu_args[0] not in ('update', 'install',
+                                                  'cache')):
+            return
+        if self.args.tofu_args[0] == 'cache':
+            parser = _argument_parser(
+                    usage='debops tofu cache [<options>]',
+                    description="list and clean the OpenTofu cache of "
+                                'the project: the data directories of '
+                                'its views, the in-tree '
+                                "'.terraform/ leftovers of the views "
+                                'which predate the data dir relocation, '
+                                'and the shared plugin cache. The '
+                                'cleaned data is re-derivable: the '
+                                'state lives in the secret store, the '
+                                'next init rebuilds the rest')
+            parser.add_argument('--clean', action='store_true',
+                                help='remove the cache entries of the '
+                                     'selected scope: the resolved '
+                                     "view's data dir by default")
+            parser.add_argument('--project', action='store_true',
+                                help="scope the clean to the data "
+                                     'dirs of all the views of the '
+                                     'project')
+            parser.add_argument('--plugins', action='store_true',
+                                help='scope the clean to the shared '
+                                     'plugin cache of all views and '
+                                     'projects')
+            parser.add_argument('--reset', action='store_true',
+                                help='clean the whole cache root: '
+                                     'the data dirs of all projects, '
+                                     'the shared plugin cache and the '
+                                     'stale entries of the projects '
+                                     'which moved away')
+            parser.epilog = (
+                'The scopes rank from the narrow to the whole: '
+                "'--clean' cleans the resolved view, '--project' the "
+                'views of the project, \'--plugins\' the shared '
+                'provider cache, and \'--reset\' the entire cache '
+                'root. Provider binaries live in the shared cache and '
+                're-download on the next init; the module state lives '
+                'in the data dirs.')
+            self.args = parser.parse_args(self.args.tofu_args[1:],
+                                          namespace=self.args)
+            if self.args.reset and (self.args.project
+                                    or self.args.plugins):
+                parser.error("'--reset' cleans the whole cache root: "
+                             "it does not combine with '--project' "
+                             "or '--plugins'")
+            if self.args.project and self.args.plugins:
+                parser.error("'--project' and '--plugins' are separate "
+                             'scopes: choose one')
+            if ((self.args.project or self.args.plugins or self.args.reset)
+                    and not self.args.clean):
+                parser.error("'--project', '--plugins' and '--reset' are "
+                             "scopes of '--clean': give both options")
             return
         if self.args.tofu_args[0] == 'update':
             parser = _argument_parser(

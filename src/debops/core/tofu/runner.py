@@ -15,7 +15,7 @@ state lock pre-check and the missing-state refusal.
 
 from ..runner import Runner
 from ..hooks import run_hooks
-from ..utils import path_key
+from . import cache
 from .binary import resolve_binary
 from .providers import resolve_providers
 from .modules import resolve_modules
@@ -31,8 +31,6 @@ import re
 import shlex
 import subprocess
 import sys
-
-from xdg.BaseDirectory import xdg_cache_home
 
 logger = logging.getLogger(__name__)
 
@@ -127,11 +125,8 @@ class TofuRunner(Runner):
                     self._operation))
         self._workspace = self._resolve_workspace(workspace)
         self._state_path = self._resolve_state_path()
-        self._data_dir = os.path.join(xdg_cache_home, 'debops', 'tofu',
-                                      path_key(project.path, project.name,
-                                               project.view))
-        self._plugin_cache = os.path.join(xdg_cache_home, 'debops', 'tofu',
-                                          'plugins')
+        self._data_dir = cache.data_dir(project)
+        self._plugin_cache = cache.plugin_cache()
 
         self._tofu_env = {
             'TF_DATA_DIR': self._data_dir,
