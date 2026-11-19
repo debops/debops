@@ -856,6 +856,46 @@ def test_apply_env_overrides_do_not_duplicate_list_entries(configuration,
             == ["plan", "apply", "local"])
 
 
+def test_apply_env_overrides_splits_untyped_comma_values(configuration,
+                                                         monkeypatch):
+    monkeypatch.setenv("DEBOPS_CONFIG__CUSTOM__MYSCRIPT__TOOLS",
+                       "ansible, lxc")
+
+    configuration.apply_env_overrides()
+
+    assert (configuration.raw["custom"]["myscript"]["tools"]
+            == ["ansible", "lxc"])
+
+
+def test_apply_env_overrides_auto_types_untyped_comma_elements(
+        configuration, monkeypatch):
+    monkeypatch.setenv("DEBOPS_CONFIG__CUSTOM__MYSCRIPT__PORTS", "514,515")
+
+    configuration.apply_env_overrides()
+
+    assert (configuration.raw["custom"]["myscript"]["ports"]
+            == [514, 515])
+
+
+def test_apply_env_overrides_keeps_a_json_string_with_a_comma(
+        configuration, monkeypatch):
+    monkeypatch.setenv("DEBOPS_CONFIG__CUSTOM__MYSCRIPT__NOTES", '"a,b"')
+
+    configuration.apply_env_overrides()
+
+    assert (configuration.raw["custom"]["myscript"]["notes"]
+            == "a,b")
+
+
+def test_apply_env_overrides_parses_a_json_array_override(configuration,
+                                                          monkeypatch):
+    monkeypatch.setenv("DEBOPS_CONFIG__CUSTOM__MYSCRIPT__IDS", "[1, 2]")
+
+    configuration.apply_env_overrides()
+
+    assert configuration.raw["custom"]["myscript"]["ids"] == [1, 2]
+
+
 def test_apply_env_overrides_expands_variables(configuration, monkeypatch):
     monkeypatch.setenv("DEBOPS_TEST_USER", "joe")
     monkeypatch.setenv("DEBOPS_CONFIG__GIT__INIT_MESSAGE",
