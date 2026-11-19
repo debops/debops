@@ -552,11 +552,11 @@ def test_execute_runs_the_hooks_around_the_operation(
     """The hooks of the operation run around the tofu subprocess,
     with the project environment composed for them."""
     project = tofu_project(raw={"binaries": {"tofu": "/bin/true"}})
-    script = os.path.join(project.path, ".debops", "hooks", "pre-plan",
+    script = os.path.join(project.path, ".debops", "hooks", "pre-tofu-plan",
                           "00-pre")
     os.makedirs(os.path.dirname(script))
     with open(script, "w") as handle:
-        handle.write("#!/bin/sh\ntouch pre-plan-ran\n")
+        handle.write("#!/bin/sh\ntouch pre-tofu-plan-ran\n")
     os.chmod(script, 0o755)
     # The stub project carries the markers the hook runner requires
     os.makedirs(os.path.join(project.path, ".debops", "conf.d"),
@@ -565,13 +565,13 @@ def test_execute_runs_the_hooks_around_the_operation(
     runner = TofuRunner(project, ["plan"])
     runner.execute()
 
-    assert os.path.exists(os.path.join(project.path, "pre-plan-ran"))
+    assert os.path.exists(os.path.join(project.path, "pre-tofu-plan-ran"))
 
 
 def test_failed_hook_aborts_the_operation(tofu_project,
                                           stub_project_secrets):
     project = tofu_project(raw={"binaries": {"tofu": "/bin/true"}})
-    script = os.path.join(project.path, ".debops", "hooks", "pre-plan",
+    script = os.path.join(project.path, ".debops", "hooks", "pre-tofu-plan",
                           "00-pre")
     os.makedirs(os.path.dirname(script))
     with open(script, "w") as handle:
