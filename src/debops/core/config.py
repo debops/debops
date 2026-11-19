@@ -161,6 +161,47 @@ def _prune_empty(data, segments):
         del parent[segments[depth - 1]]
 
 
+def _render_value(value):
+    """Render one scalar value in the assignment notation of the unix
+    format: strings raw, the other JSON types through 'json.dumps', so
+    the notation matches the environment override values."""
+    if isinstance(value, str):
+        return value
+    return json.dumps(value)
+
+
+def _render_assignment(value):
+    """Render one option value in the assignment notation: lists with
+    the elements comma-separated, the other values as one scalar."""
+    if isinstance(value, list):
+        return ','.join(_render_value(entry) for entry in value)
+    return _render_value(value)
+
+
+def _render_dotted(path, value, lines):
+    """Extend 'lines' with the dotted 'path=value' renderings of the
+    value: one line per option, the dictionaries recursed into the
+    sub-paths, the segments sorted."""
+    if isinstance(value, dict):
+        if not value:
+            lines.append('='.join([path, _render_value(value)]))
+            return
+        for segment in sorted(value):
+            _render_dotted('.'.join([path, segment]) if path else segment,
+                           value[segment], lines)
+        return
+    lines.append('='.join([path, _render_assignment(value)]))
+
+
+def _yaml_render(value):
+    """Render a value as YAML, without the document-end marker which
+    PyYAML appends after the scalar documents."""
+    rendered = yaml.dump(value)
+    if rendered.endswith('\n...\n'):
+        rendered = rendered[:-4]
+    return rendered.strip()
+
+
 def _resolve_schema_node(schema, segments):
     """Find the schema node at the given path of the tree.
 
@@ -1348,14 +1389,39 @@ class Configuration(object):
                             value))
         return origins
 
-    def config_get(self, key, format='unix', keys=False, root=False,
+    def default_output_format(self, show_origin=False, show_scope=False):
+        """Return the format which the 'config_get' method renders
+        with when the caller does not name one: the origin table of
+        the 'show_origin' and 'show_scope' options renders as plain
+        text, the other renderings take the 'config.default_output'
+        option, with 'yaml' as the fallback."""
+        if show_origin or show_scope:
+            return 'unix'
+        section = self._config.get('config')
+        value = (section.get('default_output')
+                 if isinstance(section, dict) else None)
+        return value if isinstance(value, str) and value else 'yaml'
+
+    def config_get(self, key, format=None, keys=False, root=False,
                    show_origin=False, show_scope=False):
         """Return the value of a configuration option, rendered in the
         requested format.
 
+        Without an explicit format, the rendering takes the
+        'config.default_output' option, with 'yaml' as the fallback; the
+        origin table of the 'show_origin' and 'show_scope' options is
+        its own plain-text rendering and does not take the option.
+
+        The 'unix' format renders one option per line in the dotted
+        'path=value' notation: the notation the environment overrides
+        use, with the list values comma-separated and the dictionaries
+        recursed into the sub-paths.
+
         With 'root' set, the option is rendered nested under its full
         path from the root of the configuration tree, which shows where
-        in the tree the option is defined.
+        in the tree the option is defined. The dotted unix rendering
+        carries the full path on every line, so the option does not
+        change it.
 
         With 'show_origin' or 'show_scope' set, the options are
         rendered as plain text, one line per option: the columns asked
@@ -1368,6 +1434,8 @@ class Configuration(object):
         Raises OptionNotFoundError when the option is not defined; the
         clients decide how absence is presented.
         """
+        if format is None:
+            format = self.default_output_format(show_origin, show_scope)
         if show_origin or show_scope:
             if format != 'unix' or keys or root:
                 raise ValueError('The origin of the options is rendered '
@@ -1375,8 +1443,7 @@ class Configuration(object):
                                  'with other formats or options')
             lines = []
             for option, scope, origin, value in self.config_origins(key):
-                rendered = (value if isinstance(value, str)
-                            else json.dumps(value))
+                rendered = _render_assignment(value)
                 columns = []
                 if show_scope:
                     columns.append(scope or 'unknown')
@@ -1392,6 +1459,8 @@ class Configuration(object):
         key_path = ['.']
         if key != '.':
             key_path = list(filter(None, key.split('.')))
+        prefix = '.'.join(segment for segment in key_path
+                          if segment != '.')
         key_found = True
 
         _config = self._config
@@ -1421,36 +1490,36 @@ class Configuration(object):
             raise OptionNotFoundError('The "' + key + '" option is not '
                                       'defined in the DebOps configuration')
 
-        if root and key != '.':
+        if root and key != '.' and format != 'unix':
             for element in reversed(key_path):
                 _config = {element: _config}
 
+        if format == 'unix':
+            if keys:
+                # The subkeys render as dotted paths, one per line, so
+                # each line names a queryable option
+                lines = ['.'.join([prefix, name]) if prefix else name
+                         for name in sorted(_config)]
+                return '\n'.join(lines) if lines else None
+            if isinstance(_config, dict):
+                lines = []
+                _render_dotted(prefix, _config, lines)
+                return '\n'.join(lines) if lines else None
+            return '='.join([prefix, _render_assignment(_config)])
         if isinstance(_config, dict):
-            if format in ['unix', 'yaml']:
-                return yaml.dump(_config).strip()
+            if format == 'yaml':
+                return _yaml_render(_config)
             elif format == 'json':
                 return json.dumps(_config, sort_keys=True, indent=2)
             elif format == 'toml':
                 return toml.dumps(_config).strip()
-        elif isinstance(_config, bool):
-            if format == 'unix':
-                return json.dumps(_config)
-            elif format == 'yaml':
-                return yaml.dump(_config).strip()
-            elif format in ['json', 'toml']:
-                return json.dumps(_config)
         elif isinstance(_config, list):
-            if format == 'unix':
-                # An empty list renders as nothing at all
-                return '\n'.join(str(entry) for entry in _config) or None
-            elif format == 'yaml':
-                return yaml.dump(_config).strip()
+            if format == 'yaml':
+                return _yaml_render(_config)
             elif format in ['json', 'toml']:
                 return json.dumps(_config, sort_keys=True)
         else:
-            if format == 'unix':
-                return str(_config)
-            elif format == 'yaml':
-                return yaml.dump(_config).strip()
+            if format == 'yaml':
+                return _yaml_render(_config)
             elif format in ['json', 'toml']:
                 return json.dumps(_config)

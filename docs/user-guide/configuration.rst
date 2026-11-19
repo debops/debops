@@ -72,11 +72,22 @@ An option is addressed by its dotted path::
   alice@controller:~$ debops config get syslog.level
   NOTICE
 
-The ``-f``/``--format`` option switches the output to ``json``,
-``toml`` or ``yaml``; ``unix`` is the default. The ``-k``/``--keys``
-option lists the subkeys of an option instead of its value. The
-``-r``/``--root`` option prints the option nested under its full path,
-so the output shows where in the tree the option lives::
+The output format comes from the ``config.default_output`` option; it
+is ``yaml``. The ``-f``/``--format`` option switches the format for
+one invocation. The ``unix`` format prints one option per line in the
+dotted ``path=value`` notation, the same notation the environment
+overrides use, with the list values comma-separated::
+
+  alice@controller:~$ debops config get -f unix syslog
+  syslog.address=/dev/log
+  syslog.facility=user
+  syslog.level=NOTICE
+  syslog.port=514
+
+The ``-k``/``--keys`` option lists the subkeys of an option instead of
+its value; in the ``unix`` format the subkeys print as dotted paths.
+The ``-r``/``--root`` option prints the option nested under its full
+path, so the output shows where in the tree the option lives::
 
   alice@controller:~$ debops config get -r syslog.facility
   syslog:

@@ -133,6 +133,11 @@ General
   the hosts whose keys changed. The defaults of the verification
   and the prompting are configurable.
 
+- The new ``config.default_output`` option names the output format
+  which :command:`debops config get` renders with when the
+  ``--format`` option is not given; it accepts ``unix``, ``yaml``,
+  ``json`` and ``toml``, and ``yaml`` is the default.
+
 Changed
 ~~~~~~~
 
@@ -229,6 +234,16 @@ General
   :ref:`debops.global_handlers` role documentation. Plays that notify the
   shared handlers without the role will fail at runtime with a missing handler
   error.
+
+- The :command:`debops config get` output changes: the ``unix``
+  format prints one option per line in the dotted ``path=value``
+  notation, the same notation the environment overrides use, with the
+  list values comma-separated, and the ``--show-origin`` table renders
+  its values the same way. The default format moves to the
+  ``config.default_output`` option: the tree and section dumps render
+  as before, the scalar and boolean queries drop the document-end
+  marker which PyYAML appends, and the list queries render in the YAML
+  list form.
 
 Fixed
 ~~~~~
