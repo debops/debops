@@ -58,6 +58,21 @@ A value which only accepts a fixed set of words gets an ``enum``. The
 pattern. The enum values must match the values the code accepts, not
 the values the code would tolerate.
 
+An array option declares the type of its elements through ``items``.
+The elements of the values which :command:`debops config set` writes
+are converted to it:
+
+.. code-block:: json
+
+   "ports": {
+     "type": "array",
+     "items": {"type": "integer"}
+   }
+
+Without an ``items`` entry the list accepts any value: the elements
+are parsed as JSON when they look like JSON, stored as strings
+otherwise.
+
 
 Mirror the code's tolerance
 ---------------------------
@@ -102,6 +117,12 @@ option joins an existing section, or it defines a new root section. A
 new root section takes a name which nothing else uses, now or plausibly
 later. The ``custom`` section is reserved for options defined outside
 of DebOps and is not available.
+
+The :command:`debops config set` command follows the same rule from
+the other side: it refuses an option which the schema does not
+define, everywhere but under ``custom``. That section is the one
+place where a script or an administrator can invent options, so
+DebOps keeps out of it.
 
 The scope and origin labels rendered by
 :command:`debops config get --show-origin` are single tokens. A new
