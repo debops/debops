@@ -4,12 +4,14 @@
 
 """The OpenTofu view of a DebOps project directory.
 
-The :command:`debops tofu` wrapper creates a view's ``tofu/`` tree
-lazily: the first command in a project without the tree applies the
-template, announces what it created and proceeds. The template carries
-the local backend whose state files live in the view's encrypted
-store, the OpenTofu-native state and plan encryption and the
-dependencies selected through the configuration or the command line.
+The :command:`debops tofu mkview` command creates a view's ``tofu/``
+tree: the template carries the local backend whose state lives in the
+view's ``state/`` directory -- encrypted at rest by OpenTofu itself
+and tracked in git as ciphertext -- the OpenTofu-native state and
+plan encryption, and the dependencies selected through the
+configuration or the command line. The store carries the key material:
+the ``environment`` file with the state passphrase, written through
+the store-cycling window and encrypted by the store when one exists.
 
 The registry-addressed dependencies of the view are managed by the
 shared engine in :mod:`debops.core.tofu.registry`; this module carries
@@ -20,6 +22,7 @@ wiring.
 import glob
 import logging
 import os
+import re
 import secrets as secrets_module
 import string
 
@@ -65,34 +68,56 @@ def _random_passphrase(length):
     return ''.join(secrets_module.choice(alphabet) for _ in range(length))
 
 
-def create_view(project, view, providers=None, modules=None):
-    """Create the OpenTofu view of a project when it does not exist.
+def create_view(project, view, providers=None, modules=None,
+                encrypt=None, keys=None):
+    """Create the OpenTofu view of a project: the view tree from the
+    templates, the configuration drop-in with the recorded dependency
+    sets, and the store with its 'environment' key file written
+    through the store-cycling window.
 
-    The view's tree is created from the template shipped with DebOps:
-    the OpenTofu configuration with the local backend and the
-    encryption stanza, the gitignore and gitattributes which route
-    the store, the generated 'providers.tf' and 'modules.tf' files
-    with the selected dependencies and the store's 'environment' file
-    with the state passphrase generated per the 'tofu.init.secret'
-    options. An existing view is left alone.
+    The store type comes from the caller: 'debops tofu mkview' passes
+    the operator's '--encrypt' decision, falling back to the project's
+    convention when unset. The git-crypt store requires the
+    repository-wide setup which the creation cannot initialize; the
+    EncFS store requires the GPG recipients ('keys') which encrypt the
+    volume keyfile; the plain store writes the key file tracked but
+    unencrypted -- the operator's decision, announced as such.
 
-    The store type follows the project's convention: git-crypt when
-    the repository is set up for it, EncFS when the Ansible views use
-    it, a plain store otherwise. The resolved dependency sets are
-    recorded in the view's configuration drop-in, which drives the
-    generated files from then on, along with the version of the
-    OpenTofu binary which the view pins, seeded from the
-    'tofu.upstream.known_version' configuration. A view whose tree is
-    broken --
-    'main.tf' deleted but the drop-in present -- keeps its recorded
-    sets: the drop-in is the user's decision, repair does not
-    rewrite it. Returns True when the view was created, False when it
-    already existed.
+    An existing view is refused: its files are the user's. Returns
+    True when the view was created.
     """
+    if not re.match(r'^[A-Za-z0-9][A-Za-z0-9_]*$', view or ''):
+        raise ValueError(
+            'The view name can carry only letters, digits and '
+            'underscores, and must not start with an underscore: '
+            + str(view))
+
     view_root = view_tofu_root(project, view)
 
     if os.path.exists(os.path.join(view_root, 'main.tf')):
-        return False
+        raise ValueError(
+            "The view {!r} already exists in the project; its files "
+            'belong to the user'.format(view))
+
+    if encrypt is None:
+        encrypt = detect_store_type(project)
+
+    if encrypt == 'git-crypt' and not os.path.exists(
+            os.path.join(project.path, '.git', 'git-crypt', 'keys')):
+        logger.error(
+            'The repository has no git-crypt setup. Creating a view '
+            'cannot initialize repository-wide encryption; use '
+            "'debops project init --encrypt git-crypt' on a new "
+            'project instead.',
+            extra={'allow': 'syslog'})
+        raise ValueError(
+            'Cannot encrypt the view: the repository is not set up '
+            'for git-crypt')
+
+    if encrypt == 'encfs' and not keys:
+        raise ValueError(
+            'The EncFS encryption requires the GPG recipients which '
+            "encrypt the volume keyfile: pass '--keys'")
 
     # A view whose drop-in already exists is a broken tree: the
     # recorded sets are authoritative for the regenerated files
@@ -102,7 +127,7 @@ def create_view(project, view, providers=None, modules=None):
         modules = recorded['modules']
     except (KeyError, TypeError):
         pass
-    encrypted_secrets = detect_store_type(project)
+    encrypted_secrets = encrypt
     provider_entries_list = provider_entries(providers or [])
     module_entries_list = module_entries(modules or {})
     context = {
@@ -134,43 +159,48 @@ def create_view(project, view, providers=None, modules=None):
     write_view_drop_in(project, view, providers or [], modules or [],
                        binary_version=known_version(project))
 
-    try:
-        generate = project.config.raw['tofu']['init']['secret'][
-            'generate_passphrase']
-    except (KeyError, TypeError):
-        generate = True
-    try:
-        length = project.config.raw['tofu']['init']['secret'][
-            'passphrase_length']
-    except (KeyError, TypeError):
-        length = 32
+    store = TofuSecretStore(project, view, keys=keys, encrypt=encrypt)
+    if encrypt == 'encfs':
+        store.encrypt_encfs()
 
-    write_file(os.path.join(view_root, 'secret', 'environment'),
-               render_template('environment.j2', view_name=view,
-                               passphrase=_random_passphrase(length)
-                               if generate else '') + '\n',
-               project=project.path)
-
-    if encrypted_secrets == 'encfs':
-        TofuSecretStore(project, view, keys=project.keys,
-                        encrypt='encfs').encrypt_encfs()
+    # The key material of the view, written through the store-cycling
+    # window: the EncFS volume mounts on the unlock, the git-crypt
+    # store unlocks when the repository is locked, the plain store
+    # passes through
+    unlocked = store.unlock()
+    try:
+        try:
+            length = project.config.raw['tofu']['mkview']['secret'][
+                'passphrase_length']
+        except (KeyError, TypeError):
+            length = 32
+        write_file(os.path.join(view_root, 'secret', 'environment'),
+                   render_template('environment.j2', view_name=view,
+                                   passphrase=_random_passphrase(length))
+                   + '\n',
+                   project=project.path)
+    finally:
+        if unlocked:
+            store.lock()
 
     if encrypted_secrets == 'git-crypt':
         logger.notice(
-            'Created the OpenTofu view {!r} in project {!r}; the state '
-            'store is encrypted with git-crypt'.format(view, project.name),
+            'Created the OpenTofu view {!r} in project {!r}; the '
+            'environment file with the state passphrase is tracked '
+            'behind the git-crypt store'.format(view, project.name),
             extra={'allow': ['stderr', 'syslog']})
     elif encrypted_secrets == 'encfs':
         logger.notice(
-            'Created the OpenTofu view {!r} in project {!r}; the state '
-            'store is encrypted with EncFS'.format(view, project.name),
+            'Created the OpenTofu view {!r} in project {!r}; the '
+            'environment file with the state passphrase is tracked '
+            'behind the EncFS store'.format(view, project.name),
             extra={'allow': ['stderr', 'syslog']})
     else:
-        logger.notice(
-            'Created the OpenTofu view {!r} in project {!r}; the state '
-            'store is not encrypted -- the state is protected by the '
-            'OpenTofu-native encryption, and the store can be encrypted '
-            'later through the project encryption flow'.format(
+        logger.warning(
+            'Created the OpenTofu view {!r} in project {!r}; the store '
+            'is not encrypted: the environment file with the state '
+            'passphrase is tracked in plaintext -- initialize the '
+            'store through the project encryption flow'.format(
                 view, project.name),
             extra={'allow': ['stderr', 'syslog']})
 
