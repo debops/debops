@@ -138,6 +138,20 @@ def test_tofu_inventory_parses_without_options():
     assert subcommands.args.tofu_args == ["inventory"]
 
 
+def test_tofu_inventory_parses_the_render_options():
+    subcommands = parse_cli("tofu", "inventory", "-n", "--diff", "-vv")
+
+    assert subcommands.args.dry_run is True
+    assert subcommands.args.diff is True
+    assert subcommands.args.verbose == 2
+
+
+def test_tofu_inventory_parses_the_verbosity_before_the_operation():
+    subcommands = parse_cli("tofu", "-vvv", "inventory")
+
+    assert subcommands.args.verbose == 3
+
+
 def test_tofu_inventory_refuses_stray_operands(capsys):
     with pytest.raises(SystemExit) as exc:
         parse_cli("tofu", "inventory", "stray")

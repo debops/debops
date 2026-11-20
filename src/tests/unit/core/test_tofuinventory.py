@@ -749,6 +749,35 @@ def test_the_secret_changes_carry_no_diff(inventory_project):
     assert 'n3w' not in str(update)
 
 
+def test_the_unchanged_files_report_at_info(inventory_project, caplog):
+    """The unchanged files report at the INFO level: the terminal
+    shows them at '-vv', the default run stays quiet about them."""
+    project = inventory_project()
+    render_inventory(project, 'system', outputs())
+    with caplog.at_level(logging.INFO):
+        render_inventory(project, 'system', outputs())
+
+    messages = [record.getMessage() for record in caplog.records
+                if record.levelno == logging.INFO]
+    assert any('inventory/hosts' in message and
+               'is unchanged' in message for message in messages)
+
+
+def test_the_render_internals_report_at_debug(inventory_project,
+                                              caplog):
+    """The render internals report at the DEBUG level: the collected
+    outputs and the effective options, visible at '-vvv'."""
+    project = inventory_project()
+    with caplog.at_level(logging.DEBUG):
+        render_inventory(project, 'system', outputs())
+
+    messages = [record.getMessage() for record in caplog.records
+                if record.levelno == logging.DEBUG]
+    assert any('Rendering the inventory' in message
+               for message in messages)
+    assert any('sensitive_path' in message for message in messages)
+
+
 def test_the_unknown_hosts_format_is_refused(inventory_project):
     """The hosts format comes from the schema enum; a hand-edited
     configuration which carries another value is refused."""
@@ -832,6 +861,19 @@ def test_the_dry_run_operation_reports_without_applying(
     assert capsys.readouterr().out == (
         'Would create /x/inventory/hosts\n'
         'Would update /x/secret/tofu/x/content\n')
+
+
+def test_the_store_cycle_reports_at_debug(monkeypatch, caplog):
+    """The store cycle of the operation reports at the DEBUG level:
+    the unlock and the lock back of the Ansible store."""
+    with caplog.at_level(logging.DEBUG):
+        inventory_operation(monkeypatch,
+                            output='{"inventory_seed": {}}')
+
+    messages = [record.getMessage() for record in caplog.records]
+    assert any("'system' unlocked" in message for message in messages)
+    assert any("'system' locked back" in message
+               for message in messages)
 
 
 def test_a_failed_output_operation_exits_with_its_code(

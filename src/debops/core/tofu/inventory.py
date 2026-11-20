@@ -629,6 +629,7 @@ def _reconcile_file(path, content, changes, project_root, containment,
     except OSError:
         existing = None
     if existing == content:
+        logger.info("The file '{}' is unchanged".format(label))
         return
     if existing is None:
         action, old = 'create', ''
@@ -850,6 +851,16 @@ def render_inventory(project, view, output_json, dry_run=False):
         raise ValueError(
             "The 'tofu.inventory.hosts_format' option is '{}': the "
             'bridge renders one of {}.'.format(fmt, ', '.join(FORMATS)))
+    logger.debug(
+        "Rendering the inventory of the view '{}' from {} hosts and "
+        '{} group records in the {} format'.format(
+            view, len(hosts), len(records), fmt))
+    logger.debug(
+        "The inventory options of the view '{}': hosts_format={}, "
+        'vars_filename={}, secret.vars_filename={}, '
+        'sensitive_path={}'.format(
+            view, fmt, config['vars_filename'],
+            config['secret_vars_filename'], config['sensitive_path']))
 
     desired = set()
 
