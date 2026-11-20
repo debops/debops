@@ -16,6 +16,7 @@ entries the seed dropped against it.
 import json
 import logging
 import os
+import re
 
 import toml
 import yaml
@@ -132,11 +133,56 @@ def _validate_groups_list(name, groups):
         raise ValueError(
             "The group list of the entry '{}' is not a list of group "
             'names.'.format(name))
+    for group in groups:
+        _validate_name(
+            group, "the group list of the entry '{}'".format(name))
+
+
+def _validate_name(name, what):
+    """Check one name which crosses into file paths, INI sections and
+    lookup expressions: only a safe path component and INI token
+    renders."""
+    if isinstance(name, str) and re.fullmatch(r'[A-Za-z0-9._-]+', name) \
+            and not name.startswith('.'):
+        return
+    raise ValueError(
+        "The name '{}' of {} is not renderable: the bridge needs "
+        'names of [A-Za-z0-9._-] without a leading dot, they cross '
+        'into file paths and rendered syntax.'.format(name, what))
+
+
+def _validate_address(name, kind, address):
+    """The address rides the INI host line as a single token:
+    whitespace or '=' would inject further inline variables."""
+    if isinstance(address, str) and re.search(r'[\s=]', address):
+        raise ValueError(
+            "The address of the {} '{}' carries whitespace or '=': "
+            'the address rides the host line as a single '
+            'token.'.format(kind, name))
+
+
+def _validate_jump(name, kind, jump):
+    """The jump composes into 'ansible_ssh_common_args', which
+    Ansible splits into SSH options at runtime: whitespace or quotes
+    would smuggle options into the connection. An empty jump is no
+    jump: the host connects directly."""
+    if not jump:
+        return
+    if isinstance(jump, str) and \
+            not re.fullmatch(r'[A-Za-z0-9._@,:-]+', jump):
+        raise ValueError(
+            "The jump of the {} '{}' carries characters outside of "
+            '[A-Za-z0-9._@,:-]: it composes into '
+            "'ansible_ssh_common_args', which Ansible splits into "
+            'SSH options.'.format(kind, name))
 
 
 def _validate_entry(name, entry, attributes, kind):
     """Check the shape of one host or group entry: a mapping of the
-    known attributes with the types the renderer reads them as."""
+    known attributes with the types the renderer reads them as. The
+    names the entry carries cross into file paths and rendered
+    syntax, so they are validated as such."""
+    _validate_name(name, kind)
     if not isinstance(entry, dict):
         raise ValueError(
             "The {} '{}' of the inventory outputs is not a map of "
@@ -153,9 +199,21 @@ def _validate_entry(name, entry, attributes, kind):
             raise ValueError(
                 "The '{}' attribute of the {} '{}' is not a map of "
                 'variables.'.format(attr, kind, name))
+    for attr in ('vars', 'sensitive_vars'):
+        for var in entry.get(attr, {}):
+            _validate_name(
+                var, "the variables of the {} '{}'".format(kind, name))
     for attr in ('groups', 'children'):
         if attr in entry:
             _validate_groups_list(name, entry[attr])
+    if entry.get('host'):
+        _validate_name(
+            entry['host'],
+            "the 'host' attribute of the {} '{}'".format(kind, name))
+    if 'address' in entry:
+        _validate_address(name, kind, entry['address'])
+    if 'jump' in entry:
+        _validate_jump(name, kind, entry['jump'])
 
 
 def _collect_outputs(output_json):
