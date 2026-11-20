@@ -22,7 +22,7 @@ import toml
 import yaml
 
 from ..ansible.inventory import AnsibleInventory
-from ..utils import write_file
+from ..utils import remove_dir, remove_file, write_file
 
 logger = logging.getLogger(__name__)
 
@@ -544,12 +544,14 @@ def _render_hosts_toml(hosts, records, all_record, view):
 
 
 def _sensitive_location(config, view_root, name, var):
-    """Return the write path and the lookup path expression of one
-    sensitive value. A template which starts with '/' is absolute:
-    the content file is written there and the lookup uses it as-is;
-    a relative template is resolved against the Ansible view's root
-    directory, which the 'inventory_dir' variable of the lookup
-    expression walks out of."""
+    """Return the write path, the lookup path expression and the
+    containment root of one sensitive value. A template which starts
+    with '/' is absolute: the content file is written there, the
+    lookup uses it as-is and the write carries no containment root --
+    the operator configured the destination. A relative template is
+    resolved against the Ansible view's root directory, which the
+    'inventory_dir' variable of the lookup expression walks out of;
+    the write stays inside the view root."""
     try:
         relative = config['sensitive_path'] % (name, var)
     except (TypeError, ValueError) as errmsg:
@@ -557,9 +559,9 @@ def _sensitive_location(config, view_root, name, var):
             "The 'tofu.inventory.secret.sensitive_path' option is "
             'not a valid path template: {}'.format(errmsg))
     if relative.startswith('/'):
-        return relative, '"{}"'.format(relative)
+        return relative, '"{}"'.format(relative), None
     return (os.path.join(view_root, relative),
-            'inventory_dir + "/../{}"'.format(relative))
+            'inventory_dir + "/../{}"'.format(relative), view_root)
 
 
 def _sensitive_value(value):
@@ -579,21 +581,22 @@ def _manifest_path(view_root, path):
     return path
 
 
-def _write_exact(path, content):
+def _write_exact(path, content, project=None):
     """Write the content to the path when it differs from what the
     path already holds.
 
     The files inside the encrypted store are re-encrypted on every
     write -- the ciphertext of an unchanged value differs per save --
     so a render which changes nothing writes nothing and the store
-    of the view stays clean."""
+    of the view stays clean. The containment root, when given,
+    refuses a path which resolves outside of it."""
     try:
         with open(path) as handle:
             if handle.read() == content:
                 return False
     except OSError:
         pass
-    write_file(path, content, overwrite=True)
+    write_file(path, content, overwrite=True, project=project)
     return True
 
 
@@ -624,14 +627,14 @@ def _read_manifest(inventory_dir):
     return files if isinstance(files, list) else []
 
 
-def _write_manifest(inventory_dir, files):
+def _write_manifest(inventory_dir, files, project):
     content = ("# The files which 'debops tofu inventory' renders in "
                'the view. The next\n# render prunes the entries the '
                'seed dropped against this record.\n\n')
     content += yaml.safe_dump({'files': sorted(files)},
                               default_flow_style=False, width=4096)
     write_file(os.path.join(inventory_dir, MANIFEST_NAME), content,
-               overwrite=True)
+               overwrite=True, project=project)
 
 
 def _prune_empty_dirs(directory, view_root):
@@ -644,24 +647,33 @@ def _prune_empty_dirs(directory, view_root):
         return
     while directory != view_root and \
             os.path.dirname(directory) != view_root:
-        try:
-            os.rmdir(directory)
-        except OSError:
+        if not remove_dir(directory, project=view_root):
             break
         directory = os.path.dirname(directory)
 
 
 def _prune_stale(view_root, owned, desired):
     """Remove the recorded files which the render no longer
-    produces, and the directories they leave empty."""
+    produces, and the directories they leave empty.
+
+    The removals stay inside the view root: an entry which resolves
+    outside of it refuses the render, the manifest is recorded state
+    and a tampered one must not delete files elsewhere. The absolute
+    entries which an absolute 'sensitive_path' template records by
+    design are skipped with a notice -- their stale files the
+    operator cleans by hand."""
     for relative in owned:
         if relative in desired:
             continue
-        path = os.path.join(view_root, relative)
-        try:
-            os.remove(path)
-        except OSError:
+        if os.path.isabs(relative):
+            logger.notice(
+                "The stale file '{}' is outside of the view root: "
+                'the render does not prune it, clean it by '
+                'hand.'.format(relative),
+                extra={'allow': 'stderr'})
             continue
+        path = os.path.join(view_root, relative)
+        remove_file(path, project=view_root)
         _prune_empty_dirs(os.path.dirname(path), view_root)
 
 
@@ -669,13 +681,15 @@ def _write_sensitive(desired, config, view_root, name, sensitive_vars):
     """Write the sensitive values of one host or group into the
     store, recording the content files in the desired set."""
     for var in sorted(sensitive_vars):
-        path, _ = _sensitive_location(config, view_root, name, var)
-        _write_exact(path, _sensitive_value(sensitive_vars[var]))
+        path, _, project = _sensitive_location(config, view_root,
+                                               name, var)
+        _write_exact(path, _sensitive_value(sensitive_vars[var]),
+                     project=project)
         desired.add(_manifest_path(view_root, path))
 
 
 def _write_vars_file(desired, inventory_dir, kind, name, filename,
-                     data, view):
+                     data, view, project):
     """Render one variables file of a host or group; a file with
     nothing to carry is not written."""
     if not data:
@@ -683,7 +697,7 @@ def _write_vars_file(desired, inventory_dir, kind, name, filename,
     path = os.path.join(inventory_dir, kind, name, filename)
     content = _header(view) + yaml.safe_dump(
         data, default_flow_style=False, sort_keys=True, width=4096)
-    _write_exact(path, content)
+    _write_exact(path, content, project=project)
     desired.add(os.path.join('inventory', kind, name, filename))
 
 
@@ -715,12 +729,15 @@ def _render_vars_files(desired, config, fmt, view_root, inventory_dir,
         merged = dict(complex_vars)
         merged.update(lookups)
         _write_vars_file(desired, inventory_dir, kind, name,
-                         config['vars_filename'], merged, view)
+                         config['vars_filename'], merged, view,
+                         view_root)
     else:
         _write_vars_file(desired, inventory_dir, kind, name,
-                         config['vars_filename'], complex_vars, view)
+                         config['vars_filename'], complex_vars, view,
+                         view_root)
         _write_vars_file(desired, inventory_dir, kind, name,
-                         config['secret_vars_filename'], lookups, view)
+                         config['secret_vars_filename'], lookups,
+                         view, view_root)
 
 
 def render_inventory(project, view, output_json):
@@ -779,7 +796,8 @@ def render_inventory(project, view, output_json):
     else:
         content = _render_hosts_toml(hosts, records, all_record, view)
     hosts_name = _hosts_filename(config, fmt)
-    _write_exact(os.path.join(inventory_dir, hosts_name), content)
+    _write_exact(os.path.join(inventory_dir, hosts_name), content,
+                 project=view_root)
     desired.add(os.path.join('inventory', hosts_name))
 
     # The hosts files of the other formats are the renderer's
@@ -791,7 +809,7 @@ def render_inventory(project, view, output_json):
             continue
         path = os.path.join(inventory_dir, _hosts_filename(config, other))
         if os.path.isfile(path) and _is_scaffold(path):
-            os.remove(path)
+            remove_file(path, project=view_root)
 
     # The variables files of the hosts and the groups
     for host in hosts:
@@ -813,5 +831,5 @@ def render_inventory(project, view, output_json):
 
     owned = _read_manifest(inventory_dir)
     _prune_stale(view_root, owned, desired)
-    _write_manifest(inventory_dir, desired)
+    _write_manifest(inventory_dir, desired, view_root)
     return sorted(desired)

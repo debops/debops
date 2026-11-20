@@ -575,6 +575,51 @@ def test_the_prune_removes_the_dropped_entries(inventory_project):
     assert manifest['files'] == ['inventory/hosts']
 
 
+def test_a_prune_outside_the_view_root_refuses_the_render(
+        inventory_project):
+    """The manifest is recorded state: an entry which resolves
+    outside of the view root -- a tampered one -- refuses the render
+    instead of deleting files elsewhere, even when the path stays
+    inside the project directory."""
+    project = inventory_project()
+    render_inventory(project, 'system', outputs())
+
+    outside = os.path.join(project.path, 'outside')
+    os.makedirs(outside)
+    target = os.path.join(outside, 'target')
+    with open(target, 'w') as handle:
+        handle.write('keep\n')
+    with open(os.path.join(inventory_dir(project), MANIFEST_NAME),
+              'w') as handle:
+        yaml.safe_dump({'files': ['../../../outside/target']}, handle)
+
+    with pytest.raises(ValueError, match='outside of the project'):
+        render_inventory(project, 'system', outputs())
+
+    assert os.path.exists(target)
+
+
+def test_a_stale_absolute_sensitive_file_is_not_pruned(
+        inventory_project, caplog):
+    """An absolute 'sensitive_path' template writes outside of the
+    view root: the render records the file but does not prune it
+    when the seed drops the host -- the operator cleans it by hand,
+    the render names it."""
+    import tempfile
+    external = tempfile.mkdtemp(dir='/tmp/opencode')
+    project = inventory_project({
+        'secret': {'sensitive_path': external + '/tofu/%s/%s'}})
+    render_inventory(project, 'system', outputs())
+    with caplog.at_level(logging.INFO):
+        render_inventory(project, 'system', outputs(seed={
+            'cache-1': {'address': '10.42.7.103'}}, groups=None))
+
+    assert os.path.exists(os.path.join(
+        external, 'tofu', 'web-1', 'host_token'))
+    assert 'web-1' in caplog.text
+    assert 'outside of the view root' in caplog.text
+
+
 def test_the_render_is_idempotent(inventory_project):
     """A render which changes nothing rewrites nothing: the files
     keep their content, the manifest keeps its entries."""
