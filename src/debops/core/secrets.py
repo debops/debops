@@ -166,10 +166,8 @@ class SecretStore:
                           extra={'allow': ['stderr', 'syslog']})
             os.makedirs(self.encfs_path)
             logger.debug('Encrypting EncFS keyfile')
-            gpg_cmd = subprocess.Popen([self._commands['gpg'], '--batch',
-                                        '--yes', '--trust-model',
-                                        'always',
-                                        '--encrypt', '--armor',
+            gpg_cmd = subprocess.Popen([self._commands['gpg'], '--encrypt',
+                                        '--armor',
                                         '--output', encfs_keyfile]
                                        + gpg_recipients,
                                        stdin=subprocess.PIPE)
@@ -200,10 +198,9 @@ class SecretStore:
             self.lock()
 
             logger.debug('Encrypting EncFS configuration file')
-            gpg_cmd = subprocess.Popen([self._commands['gpg'], '--batch',
-                                        '--yes', '--trust-model',
-                                        'always',
-                                        '--encrypt', '--armor',
+            logger.debug('Encrypting EncFS configuration file')
+            gpg_cmd = subprocess.Popen([self._commands['gpg'], '--encrypt',
+                                        '--armor',
                                         '--output', encfs_configfile + '.asc']
                                        + gpg_recipients + [encfs_configfile])
             gpg_cmd.communicate()
