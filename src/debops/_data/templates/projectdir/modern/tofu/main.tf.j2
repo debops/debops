@@ -4,15 +4,16 @@
  #}
 # OpenTofu configuration of the '{{ view_name }}' view
 #
-# The state of the view lives in the encrypted 'secret/' directory of
-# the store; the passphrase comes from the store's '.env' file through
-# the 'debops tofu' wrapper. The provider requirements of the view are
+# The state of the view lives in the 'state/' directory, encrypted at
+# rest by OpenTofu itself and tracked in git as ciphertext; the
+# passphrase comes from the store's 'environment' file through the
+# 'debops tofu' wrapper. The provider requirements of the view are
 # managed by DebOps in the 'providers.tf' file.
 
 terraform {
   backend "local" {
-    path          = "secret/terraform.tfstate"
-    workspace_dir = "secret/workspaces"
+    path          = "state/terraform.tfstate"
+    workspace_dir = "state/workspaces"
   }
 
   encryption {
