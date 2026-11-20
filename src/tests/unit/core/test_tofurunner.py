@@ -1432,6 +1432,22 @@ def test_known_version_refuses_when_the_option_is_absent(tofu_project):
         binary_module.known_version(project)
 
 
+def test_managed_binary_path_refuses_traversal_versions():
+    """The managed binary paths compose from the version: a
+    traversal-shaped value is refused instead of placing the binary
+    outside the managed root -- or on the operator's PATH."""
+    for version in ('../../../bin', '', None, '.hidden', 'a..b'):
+        with pytest.raises(ValueError, match='version'):
+            binary_module.managed_binary_path(version)
+
+
+def test_managed_binary_path_accepts_release_versions():
+    """The release version strings resolve inside the managed root."""
+    managed = binary_module.managed_binary_path('1.13.9')
+    assert managed.startswith(
+        binary_module.binary_install_root() + os.sep)
+
+
 def test_resolve_binary_runs_the_managed_binary(tofu_project, tmp_path,
                                                 monkeypatch):
     """A view which pins a version runs the managed binary of that
