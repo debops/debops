@@ -86,7 +86,7 @@ USAGE_LINE = re.compile(r'^Usage: tofu(?=[\s$])', re.MULTILINE)
 # that the plan file is encrypted at rest. The 'debops-' prefix marks
 # the files the plan retention prunes: the plan files the operator
 # saves with the '-out' option are never touched.
-PLAN_DIR = os.path.join('secret', 'plans')
+PLAN_DIR = 'plans'
 PLAN_FILE_PREFIX = 'debops-'
 
 

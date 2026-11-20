@@ -374,12 +374,11 @@ def test_plan_operation_saves_the_plan_file(tofu_project,
     saved = [arg for arg in command if arg.startswith("-out=")]
     assert len(saved) == 1
     plan_path = saved[0].split("=", 1)[1]
-    assert plan_path.startswith(
-        os.path.join("secret", "plans", "debops-"))
+    assert plan_path.startswith(os.path.join("plans", "debops-"))
     assert plan_path.endswith(".tfplan")
     assert os.path.isdir(os.path.join(
         project.path, "tofu", "views", project.view,
-        "secret", "plans"))
+        "plans"))
 
 
 def test_plan_retention_prunes_the_expired_plans(tofu_project,
@@ -389,7 +388,7 @@ def test_plan_retention_prunes_the_expired_plans(tofu_project,
     project = tofu_project(project_type="modern")
     project.config.merge({'tofu': {'plan_retention': 3}})
     plans_dir = os.path.join(project.path, "tofu", "views",
-                             project.view, "secret", "plans")
+                             project.view, "plans")
     os.makedirs(plans_dir)
     for stamp in ("20240101T000000", "20240102T000000",
                   "20240103T000000", "20240104T000000",
@@ -413,7 +412,7 @@ def test_plan_retention_never_touches_the_operator_plans(
     never pruned."""
     project = tofu_project(project_type="modern")
     plans_dir = os.path.join(project.path, "tofu", "views",
-                             project.view, "secret", "plans")
+                             project.view, "plans")
     os.makedirs(plans_dir)
     for stamp in ("20240101T000000", "20240102T000000",
                   "20240103T000000", "20240104T000000"):
@@ -441,7 +440,7 @@ def test_plan_with_out_is_not_saved_by_the_runner(tofu_project,
     assert command.count("-out=manual.tfplan") == 1
     assert not os.path.isdir(os.path.join(
         project.path, "tofu", "views", project.view,
-        "secret", "plans"))
+        "plans"))
 
 
 def test_plan_retention_zero_disables_the_saving(tofu_project,
@@ -456,7 +455,7 @@ def test_plan_retention_zero_disables_the_saving(tofu_project,
     assert not any(arg.startswith("-out=") for arg in command)
     assert not os.path.isdir(os.path.join(
         project.path, "tofu", "views", project.view,
-        "secret", "plans"))
+        "plans"))
 
 
 def test_var_value_is_not_taken_for_the_plan_file(tofu_project,
