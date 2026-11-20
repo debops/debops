@@ -343,7 +343,7 @@ class TofuRunner(Runner):
         tofu subprocess only, never the hook scripts.
         """
         env = dict(self._tofu_env)
-        store_env = os.path.join(self._secret_dir(), '.env')
+        store_env = os.path.join(self._secret_dir(), 'environment')
         if os.path.isfile(store_env):
             env.update({key: value
                         for key, value in dotenv.dotenv_values(
