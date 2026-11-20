@@ -733,6 +733,13 @@ DebOps-level operations (not passed to the 'tofu' command):
                                 'files of the hosts and groups, and '
                                 'the sensitive values into the '
                                 "view's secret store")
+            parser.add_argument('-n', '--dry-run', action='store_true',
+                                help='only simulate the render: '
+                                     'report the changes without '
+                                     'applying them')
+            parser.add_argument('--diff', action='store_true',
+                                help='print the unified diffs of the '
+                                     'changes instead of the paths')
             self.args = parser.parse_args(self.args.tofu_args[1:],
                                           namespace=self.args)
             return
