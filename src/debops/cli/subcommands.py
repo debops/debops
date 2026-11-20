@@ -733,6 +733,9 @@ DebOps-level operations (not passed to the 'tofu' command):
                                 'files of the hosts and groups, and '
                                 'the sensitive values into the '
                                 "view's secret store")
+            parser.add_argument('-v', '--verbose', action='count',
+                                help='increase output verbosity '
+                                     '(e.g., -vv is more than -v)')
             parser.add_argument('-n', '--dry-run', action='store_true',
                                 help='only simulate the render: '
                                      'report the changes without '

@@ -537,6 +537,9 @@ class Interpreter(object):
 
         store = SecretManager(project, project.view).store('ansible')
         unlocked = store.unlock()
+        if unlocked:
+            logger.debug("The Ansible store of the view '{}' "
+                         'unlocked'.format(project.view))
         try:
             changes = render_inventory(project, project.view, output,
                                        dry_run=args.dry_run)
@@ -546,6 +549,8 @@ class Interpreter(object):
         finally:
             if unlocked:
                 store.lock()
+                logger.debug("The Ansible store of the view '{}' "
+                             'locked back'.format(project.view))
 
         self._render_tofu_changes(
             changes, diff=args.diff, dry_run=args.dry_run,
