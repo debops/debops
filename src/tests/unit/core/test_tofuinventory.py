@@ -86,32 +86,52 @@ def test_the_ini_hosts_file_carries_the_contract(inventory_project):
 
     content = read(project, 'inventory/hosts')
     assert "view 'system'" in content
-    assert "[all:vars]\ndebops_legacy_vars=True\n" in content
-    assert "[ungrouped]\ncache-1 ansible_host='10.42.7.103' " \
-        "ansible_user='drybjed'\n" in content
+    assert '[all:vars]\ndebops_legacy_vars="True"\n' in content
+    assert '[ungrouped]\ncache-1 ansible_host="\'10.42.7.103\'" ' \
+        'ansible_user="\'drybjed\'"\n' in content
     # the full line in the alphabetically first group of the host,
     # the bare line in the other one
-    assert "web.fracki.pl ansible_host='10.42.7.101' " \
-        "ansible_ssh_common_args='-o ProxyJump=tethys.fracki.pl' " \
-        "ansible_user='drybjed'" in content
+    assert 'web.fracki.pl ansible_host="\'10.42.7.101\'" ' \
+        'ansible_ssh_common_args="\'-o ProxyJump=tethys.fracki.pl\'" ' \
+        'ansible_user="\'drybjed\'"' in content
     assert "[frontend]\nweb.fracki.pl ansible_host=" in content
     assert "[web]\nweb.fracki.pl\n" in content
     assert "[web:children]\nfrontend\n" in content
-    assert "[web:vars]\nhttp_port=8080\n" in content
+    assert '[web:vars]\nhttp_port="8080"\n' in content
 
 
 def test_the_ini_scalars_round_trip_their_types(inventory_project):
-    """The ini parser reads the inline values back through
-    ast.literal_eval: strings are quoted, the other scalars are
-    written as Python literals."""
+    """The ini parser strips the outer quote level and reads the
+    rest through ast.literal_eval: every value is the repr of the
+    value wrapped in double quotes, so the types survive the
+    round trip."""
     project = inventory_project()
     render_inventory(project, 'system', outputs())
 
     content = read(project, 'inventory/hosts')
-    assert "port=22" in content
-    assert "debops_legacy_vars=True" in content
-    assert "http_port=8080" in content
-    assert "ansible_user='drybjed'" in content
+    assert 'port="22"' in content
+    assert 'debops_legacy_vars="True"' in content
+    assert 'http_port="8080"' in content
+    assert 'ansible_user="\'drybjed\'"' in content
+
+
+def test_the_ini_string_values_survive_the_quote_strip(
+        inventory_project):
+    """A bare repr would lose its own quotes when the parser strips
+    the outer quote level: a numeric-looking string would come back
+    as a number, a backslash would double, a quote would break the
+    literal. The double-quote wrap keeps the repr intact."""
+    seed = {'web-1': {'address': '10.42.7.101',
+                      'vars': {'version': '23',
+                               'path': 'a\\b',
+                               'quote': 'a"b'}}}
+    project = inventory_project()
+    render_inventory(project, 'system', outputs(seed=seed, groups=None))
+
+    content = read(project, 'inventory/hosts')
+    assert 'version="' + "'23'" + '"' in content
+    assert 'path="' + "'a\\\\b'" + '"' in content
+    assert 'quote="' + "'a\"b'" + '"' in content
 
 
 def test_the_complex_ini_variables_ride_the_vars_file(inventory_project):
@@ -325,6 +345,21 @@ def test_the_sensitive_path_template_is_validated(inventory_project):
         'secret': {'sensitive_path': 'secret/tofu/%s/%s/extra/%z'}})
     with pytest.raises(ValueError, match='sensitive_path'):
         render_inventory(project, 'system', outputs())
+
+
+def test_the_lookup_expression_escapes_the_path(inventory_project):
+    """The lookup path expression composes through 'json.dumps': a
+    quote anywhere in the composed path cannot break out of the
+    Jinja string literal it rides in."""
+    project = inventory_project({
+        'secret': {'sensitive_path': 'secret/to"fu/%s/sensitive/%s/content'}})
+    render_inventory(project, 'system', outputs())
+
+    data = yaml.safe_load(read(
+        project, 'inventory/host_vars/web.fracki.pl/tofu_inventory.yml'))
+    assert data['host_token'] == (
+        '{{ lookup("file", inventory_dir + '
+        '"/../secret/to\\"fu/web-1/sensitive/host_token/content") }}')
 
 
 def test_the_status_filter_skips_the_unconfigured_statuses(
