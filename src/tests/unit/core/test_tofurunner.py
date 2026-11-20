@@ -20,8 +20,19 @@ import debops.core.runner as runner_base_module
 import debops.core.tofu.binary as binary_module
 import debops.core.tofu.runner as runner_module
 from debops.core.tofu.runner import TofuRunner
-from debops.core.tofu.view import reconcile_view
+from debops.core.tofu.view import create_view, reconcile_view
+from debops.core.tofu.providers import resolve_providers
+from debops.core.tofu.modules import resolve_modules
 from debops.core.secrets import SecretManager
+
+
+def mkview(project, providers=None, modules=None, encrypt=None,
+           keys=None):
+    """Create the view the way 'debops tofu mkview' does."""
+    create_view(project, project.view,
+                providers=resolve_providers(project, providers),
+                modules=resolve_modules(project, modules),
+                encrypt=encrypt, keys=keys)
 
 
 @pytest.fixture(autouse=True)
@@ -627,21 +638,15 @@ def test_failed_hook_aborts_the_operation(tofu_project,
         runner.execute()
 
 
-def test_missing_view_tree_is_created_lazily(tofu_project,
-                                             stub_tofu_subprocess):
-    """The first command in a project without the view tree applies
-    the template and proceeds."""
+def test_missing_view_tree_is_refused(tofu_project):
+    """A command in a project without the view refuses with the way
+    out: the views are created by 'debops tofu mkview'."""
     project = tofu_project(project_type="modern")
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    runner = TofuRunner(project, ["plan"])
-    runner.execute()
-
-    assert os.path.isfile(os.path.join(view_dir, "main.tf"))
-    assert os.path.isfile(os.path.join(view_dir, "secret", "environment"))
-    # The operation runs against the created view
-    assert runner._view_root == view_dir
+    with pytest.raises(ValueError, match="mkview"):
+        TofuRunner(project, ["plan"]).execute()
 
 
 def test_existing_view_is_left_alone(tofu_project):
@@ -666,7 +671,7 @@ def test_broken_view_tree_is_completed(tofu_project, stub_tofu_subprocess):
     with open(custom, "w") as handle:
         handle.write("# The user's own file\n")
 
-    TofuRunner(project, ["plan"]).execute()
+    mkview(project)
 
     assert os.path.isfile(os.path.join(view_dir, "main.tf"))
     assert open(custom).read() == "# The user's own file\n"
@@ -683,7 +688,7 @@ def test_providers_come_from_the_configuration(tofu_project,
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"]).execute()
+    mkview(project)
 
     providers_tf = open(os.path.join(view_dir, "providers.tf")).read()
     assert 'source = "lxc/incus"' in providers_tf
@@ -704,8 +709,7 @@ def test_provider_options_replace_the_configuration(tofu_project,
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"], providers=["hashicorp/tfcoremock"]
-               ).execute()
+    mkview(project, providers=["hashicorp/tfcoremock"])
 
     providers_tf = open(os.path.join(view_dir, "providers.tf")).read()
     assert 'source = "hashicorp/tfcoremock"' in providers_tf
@@ -724,7 +728,7 @@ def test_providerless_view_writes_no_providers_file(tofu_project,
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"]).execute()
+    mkview(project)
 
     assert not os.path.exists(os.path.join(view_dir, "providers.tf"))
 
@@ -741,7 +745,7 @@ def test_existing_view_follows_the_recorded_set(tofu_project,
     shutil.rmtree(view_dir)
 
     # A view created without providers has no generated file
-    TofuRunner(project, ["plan"]).execute()
+    mkview(project)
     assert not os.path.exists(os.path.join(view_dir, "providers.tf"))
 
     # The user edits the drop-in to record the provider set; the
@@ -774,7 +778,7 @@ def test_existing_view_drops_the_file_with_an_empty_set(
                            "view-" + project.view + "-tofu.toml")
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"], providers=["lxc/incus"]).execute()
+    mkview(project, providers=["lxc/incus"])
     assert os.path.exists(os.path.join(view_dir, "providers.tf"))
 
     # The user edits the drop-in to record an empty set; the
@@ -816,8 +820,7 @@ def test_provider_version_pin_is_written(tofu_project,
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"], providers=["lxc/incus=1.2.1"]
-               ).execute()
+    mkview(project, providers=["lxc/incus=1.2.1"])
 
     providers_tf = open(os.path.join(view_dir, "providers.tf")).read()
     assert 'source  = "lxc/incus"' in providers_tf
@@ -833,8 +836,7 @@ def test_state_passphrase_is_generated_into_the_store(
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    runner = TofuRunner(project, ["plan"])
-    runner.execute()
+    mkview(project)
     env_content = open(os.path.join(view_dir, "secret",
                                     "environment")).read()
 
@@ -846,7 +848,7 @@ def test_state_passphrase_is_generated_into_the_store(
     assert all(char.isalnum() or char in "-_" for char in passphrase)
     # The store's environment composes into the subprocess environment
     # at execution time, after the store is unlocked
-    env = runner._extra_env()
+    env = TofuRunner(project, ["plan"])._extra_env()
     assert env["TF_VAR_state_passphrase"] == passphrase
 
 
@@ -939,33 +941,21 @@ def keyring_config(stub, tmp_path):
     }
 
 
-def test_provider_options_refused_on_an_existing_view(tofu_project):
-    """The '--provider' options apply when a view is created: an
-    existing view's provider set is recorded in its configuration
-    drop-in, which the user owns."""
-    project = tofu_project(project_type="modern")
-
-    with pytest.raises(ValueError,
-                       match="The '--provider' options apply when a view "
-                             'is created'):
-        TofuRunner(project, ["plan"], providers=["lxc/incus"])
-
-
-def test_provider_options_refused_on_a_view_with_a_drop_in(
-        tofu_project, stub_tofu_subprocess):
+def test_broken_tree_keeps_the_recorded_set(tofu_project):
     """A view whose tree is broken keeps its recorded provider set:
-    repair does not get to rewrite the user's decision."""
+    the creation does not get to rewrite the user's decision."""
     project = tofu_project(project_type="modern")
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"], providers=["lxc/incus"]).execute()
+    mkview(project, providers=["lxc/incus"])
     os.remove(os.path.join(view_dir, "main.tf"))
 
-    with pytest.raises(ValueError,
-                       match="The '--provider' options apply when a view "
-                             'is created'):
-        TofuRunner(project, ["plan"], providers=["lxc/incus"])
+    mkview(project, providers=["hashicorp/tfcoremock"])
+
+    providers_tf = open(os.path.join(view_dir, "providers.tf")).read()
+    assert 'source = "lxc/incus"' in providers_tf
+    assert 'tfcoremock' not in providers_tf
 
 
 def test_drop_in_is_written_once(tofu_project, stub_tofu_subprocess):
@@ -977,7 +967,7 @@ def test_drop_in_is_written_once(tofu_project, stub_tofu_subprocess):
                            "view-" + project.view + "-tofu.toml")
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"], providers=["lxc/incus"]).execute()
+    mkview(project, providers=["lxc/incus"])
     content = open(drop_in).read()
     assert "providers = ['lxc/incus']" in content
 
@@ -1118,7 +1108,7 @@ def test_modules_come_from_the_configuration(tofu_project,
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"]).execute()
+    mkview(project)
 
     modules_tf = open(os.path.join(view_dir, "modules.tf")).read()
     assert 'module "consul" {' in modules_tf
@@ -1144,9 +1134,7 @@ def test_module_options_replace_the_configuration(tofu_project,
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"], modules=["terraform-aws-modules/"
-                                           "vpc/aws=5.16.0"]
-               ).execute()
+    mkview(project, modules=["terraform-aws-modules/vpc/aws=5.16.0"])
 
     modules_tf = open(os.path.join(view_dir, "modules.tf")).read()
     assert 'module "vpc" {' in modules_tf
@@ -1169,7 +1157,7 @@ def test_moduleless_view_writes_no_modules_file(tofu_project,
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"]).execute()
+    mkview(project)
 
     assert not os.path.exists(os.path.join(view_dir, "modules.tf"))
 
@@ -1182,8 +1170,7 @@ def test_module_version_pin_is_written(tofu_project,
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"], modules=["hashicorp/consul/aws=5.0.0"]
-               ).execute()
+    mkview(project, modules=["hashicorp/consul/aws=5.0.0"])
 
     modules_tf = open(os.path.join(view_dir, "modules.tf")).read()
     assert 'source  = "hashicorp/consul/aws"' in modules_tf
@@ -1198,9 +1185,8 @@ def test_module_local_name_is_derived_from_the_source(
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"],
-               modules=["hashicorp/consul/aws",
-                        "git.example.com/ns/name//subdir"]).execute()
+    mkview(project, modules=["hashicorp/consul/aws",
+                             "git.example.com/ns/name//subdir"])
 
     modules_tf = open(os.path.join(view_dir, "modules.tf")).read()
     assert 'module "consul" {' in modules_tf
@@ -1216,9 +1202,8 @@ def test_module_collision_is_refused(tofu_project):
     shutil.rmtree(view_dir)
 
     with pytest.raises(ValueError, match='more than one module source'):
-        TofuRunner(project, ["plan"],
-                   modules=["hashicorp/consul/aws",
-                            "hashicorp/consul/other"]).execute()
+        mkview(project, modules=["hashicorp/consul/aws",
+                                 "hashicorp/consul/other"])
 
 
 def test_module_inputs_render_from_the_recorded_table(
@@ -1243,7 +1228,7 @@ def test_module_inputs_render_from_the_recorded_table(
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"]).execute()
+    mkview(project)
 
     modules_tf = open(os.path.join(view_dir, "modules.tf")).read()
     assert 'datacenter   = "dc1"' in modules_tf
@@ -1277,7 +1262,7 @@ def test_module_inputs_render_raw_hcl_expressions(
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"]).execute()
+    mkview(project)
 
     modules_tf = open(os.path.join(view_dir, "modules.tf")).read()
     assert 'image   = var.image_name' in modules_tf
@@ -1287,18 +1272,6 @@ def test_module_inputs_render_raw_hcl_expressions(
     assert 'nothing = null' in modules_tf
     assert 'escaped = "hcl:hello"' in modules_tf
     assert 'text    = hello' in modules_tf
-
-
-def test_module_options_refused_on_an_existing_view(tofu_project):
-    """The '--module' options apply when a view is created: an
-    existing view's module set is recorded in its configuration
-    drop-in, which the user owns."""
-    project = tofu_project(project_type="modern")
-
-    with pytest.raises(ValueError,
-                       match="The '--module' options apply when a view "
-                             'is created'):
-        TofuRunner(project, ["plan"], modules=["hashicorp/consul/aws"])
 
 
 def test_modules_follow_the_recorded_set(tofu_project,
@@ -1313,7 +1286,7 @@ def test_modules_follow_the_recorded_set(tofu_project,
     shutil.rmtree(view_dir)
 
     # A view created without modules has no generated file
-    TofuRunner(project, ["plan"]).execute()
+    mkview(project)
     assert not os.path.exists(os.path.join(view_dir, "modules.tf"))
 
     # The user edits the drop-in to record the module set; the
@@ -1408,7 +1381,7 @@ def test_generated_modules_file_is_fmt_clean(tofu_project,
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"]).execute()
+    mkview(project)
 
     modules_tf = open(os.path.join(view_dir, "modules.tf")).read()
     assert 'source  = "hashicorp/consul/aws"' in modules_tf
@@ -1426,7 +1399,7 @@ def test_drop_in_records_the_seeded_binary_version(tofu_project,
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
-    TofuRunner(project, ["plan"]).execute()
+    mkview(project)
 
     drop_in = os.path.join(project.path, ".debops", "conf.d",
                            "view-" + project.view + "-tofu.toml")

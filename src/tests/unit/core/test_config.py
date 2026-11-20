@@ -1193,25 +1193,24 @@ def test_write_option_appends_to_a_list_option(configuration, tmp_path):
     path = tmp_path / "99_config_set.json"
 
     assert configuration.write_option(
-        str(path), "tofu.default_providers",
+        str(path), "tofu.mkview.default_providers",
         ["lxc/incus", "hashicorp/tfcoremock"]) == 'append'
     assert configuration.write_option(
-        str(path), "tofu.default_providers", ["lxc/incus"]) == 'none'
+        str(path), "tofu.mkview.default_providers", ["lxc/incus"]) == 'none'
 
     assert json.loads(path.read_text()) == {
-        "tofu": {"default_providers": ["lxc/incus",
-                                       "hashicorp/tfcoremock"]}}
+        "tofu": {"mkview": {"default_providers": ["lxc/incus", "hashicorp/tfcoremock"]}}}
 
 
 def test_write_option_dedupes_against_the_effective_list(
         configuration, tmp_path):
     """A value which the effective configuration carries already is
     skipped: the effective list decides what the option contains."""
-    configuration._config = {"tofu": {"default_providers": ["lxc/incus"]}}
+    configuration._config = {"tofu": {"mkview": {"default_providers": ["lxc/incus"]}}}
     path = tmp_path / "99_config_set.json"
 
     assert configuration.write_option(
-        str(path), "tofu.default_providers", ["lxc/incus"]) == 'none'
+        str(path), "tofu.mkview.default_providers", ["lxc/incus"]) == 'none'
 
     assert not path.exists()
 
@@ -1219,11 +1218,11 @@ def test_write_option_dedupes_against_the_effective_list(
 def test_write_option_dedupes_within_the_values(configuration, tmp_path):
     path = tmp_path / "99_config_set.json"
 
-    configuration.write_option(str(path), "tofu.default_providers",
+    configuration.write_option(str(path), "tofu.mkview.default_providers",
                                ["lxc/incus", "lxc/incus"])
 
     assert json.loads(path.read_text()) == {
-        "tofu": {"default_providers": ["lxc/incus"]}}
+        "tofu": {"mkview": {"default_providers": ["lxc/incus"]}}}
 
 
 def test_write_option_appends_a_single_value_to_a_list_option(
@@ -1233,14 +1232,13 @@ def test_write_option_appends_a_single_value_to_a_list_option(
     path = tmp_path / "99_config_set.json"
 
     assert configuration.write_option(
-        str(path), "tofu.default_providers", ["lxc/incus"]) == 'append'
+        str(path), "tofu.mkview.default_providers", ["lxc/incus"]) == 'append'
     assert configuration.write_option(
-        str(path), "tofu.default_providers",
+        str(path), "tofu.mkview.default_providers",
         ["hashicorp/tfcoremock"]) == 'append'
 
     assert json.loads(path.read_text()) == {
-        "tofu": {"default_providers": ["lxc/incus",
-                                       "hashicorp/tfcoremock"]}}
+        "tofu": {"mkview": {"default_providers": ["lxc/incus", "hashicorp/tfcoremock"]}}}
 
 
 def test_write_option_refuses_multiple_values_for_a_scalar(
@@ -1393,25 +1391,25 @@ def test_write_option_refuses_multiple_values_for_a_dict(
 def test_write_option_prunes_the_values_of_a_list_option(
         configuration, tmp_path):
     path = tmp_path / "99_config_set.json"
-    path.write_text('{"tofu": {"default_providers": '
-                    '["lxc/incus", "hashicorp/tfcoremock"]}}\n')
+    path.write_text('{"tofu": {"mkview": {"default_providers": '
+                    '["lxc/incus", "hashicorp/tfcoremock"]}}}\n')
 
     assert configuration.write_option(
-        str(path), "tofu.default_providers", ["lxc/incus"],
+        str(path), "tofu.mkview.default_providers", ["lxc/incus"],
         delete=True) == 'prune'
 
     assert json.loads(path.read_text()) == {
-        "tofu": {"default_providers": ["hashicorp/tfcoremock"]}}
+        "tofu": {"mkview": {"default_providers": ["hashicorp/tfcoremock"]}}}
 
 
 def test_write_option_removes_an_emptied_list_option(configuration, tmp_path):
     """A list which empties removes the option together with the
     sections left empty: the lower layers show through."""
     path = tmp_path / "99_config_set.json"
-    path.write_text('{"tofu": {"default_providers": ["lxc/incus"]}}\n')
+    path.write_text('{"tofu": {"mkview": {"default_providers": ["lxc/incus"]}}}\n')
 
     assert configuration.write_option(
-        str(path), "tofu.default_providers", ["lxc/incus"],
+        str(path), "tofu.mkview.default_providers", ["lxc/incus"],
         delete=True) == 'delete'
 
     assert json.loads(path.read_text()) == {}
@@ -1422,14 +1420,14 @@ def test_write_option_delete_of_missing_values_is_clean(
     """The values which the list of the file does not carry are a
     clean exit: the removal is idempotent."""
     path = tmp_path / "99_config_set.json"
-    path.write_text('{"tofu": {"default_providers": ["lxc/incus"]}}\n')
+    path.write_text('{"tofu": {"mkview": {"default_providers": ["lxc/incus"]}}}\n')
 
     assert configuration.write_option(
-        str(path), "tofu.default_providers", ["hashicorp/tfcoremock"],
+        str(path), "tofu.mkview.default_providers", ["hashicorp/tfcoremock"],
         delete=True) == 'none'
 
     assert json.loads(path.read_text()) == {
-        "tofu": {"default_providers": ["lxc/incus"]}}
+        "tofu": {"mkview": {"default_providers": ["lxc/incus"]}}}
 
 
 def test_write_option_reports_the_values_of_other_layers(
