@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 Maciej Delmanowski <admin@gmail.com>
 # Copyright (C) 2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -17,14 +17,14 @@ from debops.core.tofu.inventory import MANIFEST_NAME, render_inventory
 # with a jump host, complex and sensitive variables.
 SEED = {
     'web-1': {
-        'address': '10.42.7.101', 'host': 'web.fracki.pl',
-        'groups': ['web', 'frontend'], 'jump': 'tethys.fracki.pl',
-        'vars': {'ansible_user': 'drybjed', 'port': 22,
+        'address': '10.42.7.101', 'host': 'web.example.com',
+        'groups': ['web', 'frontend'], 'jump': 'tethys.example.com',
+        'vars': {'ansible_user': 'admin', 'port': 22,
                  'tags': ['a', 'b']},
         'sensitive_vars': {'host_token': 's3cr3t'}},
     'cache-1': {
         'address': '10.42.7.103', 'status': 'Running',
-        'vars': {'ansible_user': 'drybjed'}},
+        'vars': {'ansible_user': 'admin'}},
 }
 GROUPS = {
     'all': {'vars': {'debops_legacy_vars': True}},
@@ -88,14 +88,14 @@ def test_the_ini_hosts_file_carries_the_contract(inventory_project):
     assert "view 'system'" in content
     assert '[all:vars]\ndebops_legacy_vars="True"\n' in content
     assert '[ungrouped]\ncache-1 ansible_host="\'10.42.7.103\'" ' \
-        'ansible_user="\'drybjed\'"\n' in content
+        'ansible_user="\'admin\'"\n' in content
     # the full line in the alphabetically first group of the host,
     # the bare line in the other one
-    assert 'web.fracki.pl ansible_host="\'10.42.7.101\'" ' \
-        'ansible_ssh_common_args="\'-o ProxyJump=tethys.fracki.pl\'" ' \
-        'ansible_user="\'drybjed\'"' in content
-    assert "[frontend]\nweb.fracki.pl ansible_host=" in content
-    assert "[web]\nweb.fracki.pl\n" in content
+    assert 'web.example.com ansible_host="\'10.42.7.101\'" ' \
+        'ansible_ssh_common_args="\'-o ProxyJump=tethys.example.com\'" ' \
+        'ansible_user="\'admin\'"' in content
+    assert "[frontend]\nweb.example.com ansible_host=" in content
+    assert "[web]\nweb.example.com\n" in content
     assert "[web:children]\nfrontend\n" in content
     assert '[web:vars]\nhttp_port="8080"\n' in content
 
@@ -112,7 +112,7 @@ def test_the_ini_scalars_round_trip_their_types(inventory_project):
     assert 'port="22"' in content
     assert 'debops_legacy_vars="True"' in content
     assert 'http_port="8080"' in content
-    assert 'ansible_user="\'drybjed\'"' in content
+    assert 'ansible_user="\'admin\'"' in content
 
 
 def test_the_ini_string_values_survive_the_quote_strip(
@@ -142,7 +142,7 @@ def test_the_complex_ini_variables_ride_the_vars_file(inventory_project):
     render_inventory(project, 'system', outputs())
 
     content = read(project,
-                   'inventory/host_vars/web.fracki.pl/tofu_inventory.yml')
+                   'inventory/host_vars/web.example.com/tofu_inventory.yml')
     data = yaml.safe_load(content)
     assert data['tags'] == ['a', 'b']
     assert data['host_token'] == (
@@ -160,9 +160,9 @@ def test_the_distinct_vars_filenames_split_the_files(inventory_project):
     render_inventory(project, 'system', outputs())
 
     plain = yaml.safe_load(read(
-        project, 'inventory/host_vars/web.fracki.pl/plain.yml'))
+        project, 'inventory/host_vars/web.example.com/plain.yml'))
     secret = yaml.safe_load(read(
-        project, 'inventory/host_vars/web.fracki.pl/secret.yml'))
+        project, 'inventory/host_vars/web.example.com/secret.yml'))
     assert plain == {'tags': ['a', 'b']}
     assert list(secret) == ['host_token']
 
@@ -181,13 +181,13 @@ def test_the_native_formats_carry_the_plain_vars_inline(inventory_project):
         content = read(project, 'inventory/hosts.' + extension)
         if fmt == 'yaml':
             data = yaml.safe_load(content)
-            assert data['all']['hosts']['web.fracki.pl']['tags'] == \
+            assert data['all']['hosts']['web.example.com']['tags'] == \
                 ['a', 'b']
         if fmt != 'json':
             assert "view 'system'" in content
         vars_file = yaml.safe_load(read(
             project,
-            'inventory/host_vars/web.fracki.pl/tofu_inventory.yml'))
+            'inventory/host_vars/web.example.com/tofu_inventory.yml'))
         assert list(vars_file) == ['host_token']
 
 
@@ -199,7 +199,7 @@ def test_the_json_hosts_file_carries_no_header(inventory_project):
 
     content = read(project, 'inventory/hosts.json')
     assert not content.startswith('#')
-    assert json.loads(content)['all']['hosts']['web.fracki.pl']
+    assert json.loads(content)['all']['hosts']['web.example.com']
 
 
 def test_the_toml_children_are_a_list(inventory_project):
@@ -214,7 +214,7 @@ def test_the_toml_children_are_a_list(inventory_project):
     assert '[web]' in content
     assert '[web.vars]\nhttp_port = 8080' in content
     # a hostname which carries dots is quoted by the encoder
-    assert '[web.hosts."web.fracki.pl"]' in content
+    assert '[web.hosts."web.example.com"]' in content
 
 
 def test_the_group_hierarchy_nests_in_the_yaml_format(inventory_project):
@@ -226,7 +226,7 @@ def test_the_group_hierarchy_nests_in_the_yaml_format(inventory_project):
 
     data = yaml.safe_load(read(project, 'inventory/hosts.yml'))
     assert data['all']['children']['web']['children']['frontend'] == \
-        {'hosts': {'web.fracki.pl': None}}
+        {'hosts': {'web.example.com': None}}
     assert 'frontend' not in data['all']['children']
 
 
@@ -333,7 +333,7 @@ def test_the_absolute_sensitive_path(inventory_project):
                            'host_token')) as handle:
         assert handle.read() == 's3cr3t'
     vars_file = yaml.safe_load(read(
-        project, 'inventory/host_vars/web.fracki.pl/tofu_inventory.yml'))
+        project, 'inventory/host_vars/web.example.com/tofu_inventory.yml'))
     assert vars_file['host_token'] == (
         '{{ lookup("file", "' + external + '/tofu/web-1/host_token") }}')
 
@@ -356,7 +356,7 @@ def test_the_lookup_expression_escapes_the_path(inventory_project):
     render_inventory(project, 'system', outputs())
 
     data = yaml.safe_load(read(
-        project, 'inventory/host_vars/web.fracki.pl/tofu_inventory.yml'))
+        project, 'inventory/host_vars/web.example.com/tofu_inventory.yml'))
     assert data['host_token'] == (
         '{{ lookup("file", inventory_dir + '
         '"/../secret/to\\"fu/web-1/sensitive/host_token/content") }}')
@@ -459,7 +459,7 @@ def test_the_seed_contract_is_validated(inventory_project):
                       'sensitve_vars': {}}}, groups=None))
     with pytest.raises(ValueError, match="'address'"):
         render_inventory(project, 'system', outputs(seed={
-            'web-1': {'host': 'web.fracki.pl'}}, groups=None))
+            'web-1': {'host': 'web.example.com'}}, groups=None))
     with pytest.raises(ValueError, match='not a map'):
         render_inventory(project, 'system', outputs(seed={
             'web-1': 'broken'}, groups=None))
@@ -602,7 +602,7 @@ def test_the_prune_removes_the_dropped_entries(inventory_project):
 
     assert not os.path.exists(os.path.join(
         view_root(project), 'inventory', 'host_vars',
-        'web.fracki.pl'))
+        'web.example.com'))
     assert not os.path.exists(os.path.join(
         view_root(project), 'secret', 'tofu', 'web-1'))
     manifest = yaml.safe_load(read(project, 'inventory/' +
