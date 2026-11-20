@@ -628,6 +628,7 @@ Actions:
                 usage='''debops tofu [<args>] [--] <operation> [<operation args>]
 
 DebOps-level operations (not passed to the 'tofu' command):
+  mkview     create a new view with its store and the environment file
   update     reconcile the files DebOps owns in the view and run
              'tofu init' through the wrapper
   install    install the OpenTofu binaries which the views pin
@@ -666,25 +667,10 @@ DebOps-level operations (not passed to the 'tofu' command):
                             help='print the OpenTofu command '
                                  'and exit',
                             action='store_true')
-        init_options = parser.add_argument_group(
-                "the 'debops tofu init' options")
-        init_options.add_argument('-p', '--provider', type=str,
-                                  action='append', default=None,
-                                  help='require the OpenTofu provider '
-                                       'in the created view, as a '
-                                       'registry source address; '
-                                       'repeatable')
-        init_options.add_argument('-m', '--module', type=str,
-                                  action='append', default=None,
-                                  help='instantiate the OpenTofu module '
-                                       'in the created view, as a '
-                                       'registry source address; '
-                                       'repeatable')
         parser.add_argument('tofu_args', type=str, nargs=argparse.REMAINDER,
                             help=argparse.SUPPRESS)
         self.args = parser.parse_args(self.args[2:])
         self._parse_tofu_operation()
-        self._scope_tofu_init_options()
         if self.args.help:
             self.args.help_body = self._tofu_help_body(parser)
 
@@ -699,8 +685,43 @@ DebOps-level operations (not passed to the 'tofu' command):
         operations which the wrapper does not pass to the 'tofu'
         command carry their own options and their own help screens."""
         if (not self.args.tofu_args
-                or self.args.tofu_args[0] not in ('update', 'install',
-                                                  'inventory', 'cache')):
+                or self.args.tofu_args[0] not in ('mkview', 'update',
+                                                  'install', 'inventory',
+                                                  'cache')):
+            return
+        if self.args.tofu_args[0] == 'mkview':
+            parser = _argument_parser(
+                    usage='debops tofu mkview [<options>] <new_view>',
+                    description='create a new OpenTofu view with its '
+                                'encrypted store and the environment '
+                                'key file of the view')
+            parser.add_argument('--encrypt', type=str, nargs='?',
+                                choices=['encfs', 'git-crypt'],
+                                help='enable encrypted secrets; the '
+                                     'default follows the project '
+                                     'convention')
+            parser.add_argument('--keys', type=str,
+                                help='list of GPG recipients with '
+                                     'secret access, delimited by '
+                                     'commas; required for EncFS')
+            mkview_options = parser.add_argument_group(
+                    "the 'debops tofu mkview' options")
+            mkview_options.add_argument('-p', '--provider', type=str,
+                                        action='append', default=None,
+                                        help='require the OpenTofu provider '
+                                             'in the created view, as a '
+                                             'registry source address; '
+                                             'repeatable')
+            mkview_options.add_argument('-m', '--module', type=str,
+                                        action='append', default=None,
+                                        help='instantiate the OpenTofu module '
+                                             'in the created view, as a '
+                                             'registry source address; '
+                                             'repeatable')
+            parser.add_argument('new_view', type=str,
+                                help='name of the view to create')
+            self.args = parser.parse_args(self.args.tofu_args[1:],
+                                          namespace=self.args)
             return
         if self.args.tofu_args[0] == 'inventory':
             parser = _argument_parser(
@@ -805,31 +826,6 @@ DebOps-level operations (not passed to the 'tofu' command):
                                      'run again')
         self.args = parser.parse_args(self.args.tofu_args[1:],
                                       namespace=self.args)
-
-    def _scope_tofu_init_options(self):
-        """Scope the '--provider' and '--module' options to the
-        'debops tofu init' operation: they are the DebOps options of
-        the view creation, not options of the OpenTofu operations."""
-        operation = (self.args.tofu_args[0]
-                     if self.args.tofu_args else None)
-        misplaced = any(token in ('-p', '--provider', '-m', '--module')
-                        for token in self.args.tofu_args[1:])
-        if operation == 'init' and not misplaced:
-            return
-        if not ((self.args.provider or self.args.module) or misplaced):
-            return
-        parser = _argument_parser(usage='debops tofu',
-                                  prog='debops tofu')
-        if misplaced:
-            parser.error(
-                    "The '--provider' and '--module' options are the "
-                    'DebOps options of the view creation: place them '
-                    "before the operation, 'debops tofu -p <provider> "
-                    "init'.")
-        parser.error(
-                "The '--provider' and '--module' options apply when a "
-                "view is created: run 'debops tofu init' to create the "
-                'view with the dependency set.')
 
     def do_config(self):
         parser = _argument_parser(

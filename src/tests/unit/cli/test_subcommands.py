@@ -55,15 +55,17 @@ def test_tofu_section_stops_at_the_first_operation():
     assert subcommands.args.tofu_args == ["plan", "-w", "feature"]
 
 
-def test_tofu_section_accumulates_the_provider_options():
-    """The '--provider' option is repeatable and takes the '-p'
-    short form; both spellings accumulate in order."""
-    subcommands = parse_cli("tofu", "-p", "lxc/incus", "--provider",
-                            "hashicorp/tfcoremock=1.2.0", "init")
+def test_tofu_mkview_accumulates_the_provider_options():
+    """The '--provider' option of 'debops tofu mkview' is repeatable
+    and takes the '-p' short form; both spellings accumulate in
+    order."""
+    subcommands = parse_cli("tofu", "mkview", "-p", "lxc/incus",
+                            "--provider", "hashicorp/tfcoremock=1.2.0",
+                            "dev")
 
     assert subcommands.args.provider == ["lxc/incus",
                                          "hashicorp/tfcoremock=1.2.0"]
-    assert subcommands.args.tofu_args == ["init"]
+    assert subcommands.args.new_view == "dev"
 
 
 def test_tofu_section_passes_the_install_options_through():
@@ -207,47 +209,41 @@ def test_tofu_help_body_skips_the_wrapper_usage_synopsis():
     assert 'come before the operation' in body
 
 
-def test_tofu_help_separates_the_init_options():
+def test_tofu_help_lists_the_mkview_operation():
     subcommands = parse_cli("tofu", "--help")
 
     body = subcommands.args.help_body
-    assert "the 'debops tofu init' options" in body
-    assert body.index("the 'debops tofu init' options") \
-        > body.index('--workspace')
+    assert 'mkview     create a new view' in body
+    assert "the 'debops tofu init' options" not in body
 
 
-def test_tofu_init_options_help_is_short():
+def test_tofu_mkview_help_is_short(capsys):
     """The '--provider' and '--module' help texts name what the
     option does; the full explanation belongs to the documentation."""
-    subcommands = parse_cli("tofu", "--help")
-
-    body = subcommands.args.help_body
-    assert 'require the OpenTofu provider' in body
-    assert 'instantiate the OpenTofu module' in body
-    assert 'recorded in the view configuration drop-in' not in body
-
-
-def test_tofu_provider_options_are_scoped_to_the_init_operation(capsys):
     with pytest.raises(SystemExit) as exc:
-        parse_cli("tofu", "-p", "lxc/incus", "plan")
+        parse_cli("tofu", "mkview", "--help")
 
-    assert exc.value.code == 2
-    assert "apply when a view is created" in capsys.readouterr().err
-
-
-def test_tofu_provider_options_after_the_operation_are_refused(capsys):
-    with pytest.raises(SystemExit) as exc:
-        parse_cli("tofu", "plan", "-p", "lxc/incus")
-
-    assert exc.value.code == 2
-    assert "place them before the operation" in capsys.readouterr().err
+    assert exc.value.code == 0
+    out = capsys.readouterr().out
+    assert 'require the OpenTofu provider' in out
+    assert 'instantiate the OpenTofu module' in out
+    assert 'recorded in the view configuration drop-in' not in out
 
 
-def test_tofu_init_accepts_the_provider_options():
-    subcommands = parse_cli("tofu", "-p", "lxc/incus", "init")
+def test_tofu_provider_options_of_other_operations_pass_through():
+    """The '--provider' option is mkview's; the other operations pass
+    their arguments through to the tofu command, which rejects what it
+    does not know."""
+    subcommands = parse_cli("tofu", "plan", "-p", "lxc/incus")
+
+    assert subcommands.args.tofu_args == ["plan", "-p", "lxc/incus"]
+
+
+def test_tofu_mkview_accepts_the_provider_options():
+    subcommands = parse_cli("tofu", "mkview", "-p", "lxc/incus", "dev")
 
     assert subcommands.args.provider == ["lxc/incus"]
-    assert subcommands.args.tofu_args == ["init"]
+    assert subcommands.args.new_view == "dev"
 
 
 def test_unknown_project_command_exits_with_an_error(capsys):

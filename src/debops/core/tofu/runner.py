@@ -20,7 +20,6 @@ from .binary import resolve_binary
 from .providers import resolve_providers
 from .modules import resolve_modules
 from .registry import view_drop_in_path, view_tofu_root
-from .view import create_view
 import datetime
 import dotenv
 import fcntl
@@ -93,31 +92,10 @@ PLAN_FILE_PREFIX = 'debops-'
 class TofuRunner(Runner):
 
     def __init__(self, project, tofu_args, bell=False, no_color=False,
-                 workspace=None, providers=None, modules=None):
+                 workspace=None):
         super().__init__(project, bell=bell, secrets_name='tofu')
 
-        self._providers = providers
-        self._modules = modules
         self._view_root = self._view_tofu_root()
-        for flag, set_name in (('--provider', 'provider set'),
-                               ('--module', 'module set')):
-            options = providers if flag == '--provider' else modules
-            if not options or not self._view_exists():
-                continue
-            # The '--provider' and '--module' options apply when a view
-            # is created: the dependency set of an existing view is
-            # recorded in its configuration drop-in, which the user owns
-            if os.path.exists(view_drop_in_path(project, project.view)):
-                raise ValueError(
-                    "The '{}' options apply when a view is created: the "
-                    '{} of the view {!r} is already recorded in its '
-                    'configuration drop-in. Edit the drop-in and run '
-                    "'debops tofu update' to reconcile the generated "
-                    'files.'.format(flag, set_name, project.view))
-            raise ValueError(
-                "The '{}' options apply when a view is created: the "
-                'view {!r} already exists and manages its own '
-                'requirements.'.format(flag, project.view))
         self._operation = tofu_args[0]
         if not re.fullmatch(r'[a-z]+(-[a-z]+)*', self._operation):
             raise ValueError(
@@ -335,20 +313,42 @@ class TofuRunner(Runner):
         """Return the runner's own additions to the subprocess
         environment.
 
-        The environment file inside the unlocked store carries the
-        state passphrase and the provider credentials of the view;
-        their values compose into the subprocess environment last, so
-        that a rotated value in the store wins over a stale one
-        exported in the operator's session. The variables reach the
+        The composition ranks the layers: the view's local '.env' file
+        (untracked, per host, its values interpolated), the runner's
+        own OpenTofu variables, and the store's tracked 'environment'
+        file -- whose TF_VAR_* values compose last, so a rotated
+        credential wins over a stale one exported in the operator's
+        session. The tracked file's non-TF_VAR_* keys are refused with
+        a warning: the general variables belong in
+        '.debops/environment', the project '.env' or the view's '.env'
+        file. The tracked file is parsed without interpolation: its
+        values are literal, host-independent. The variables reach the
         tofu subprocess only, never the hook scripts.
         """
-        env = dict(self._tofu_env)
-        store_env = os.path.join(self._secret_dir(), 'environment')
-        if os.path.isfile(store_env):
+        env = {}
+        view_env = os.path.join(self._view_root, '.env')
+        if os.path.isfile(view_env):
             env.update({key: value
                         for key, value in dotenv.dotenv_values(
-                            store_env).items()
+                            view_env).items()
                         if value is not None})
+        env.update(self._tofu_env)
+        store_env = os.path.join(self._secret_dir(), 'environment')
+        if os.path.isfile(store_env):
+            store_values = dotenv.dotenv_values(store_env,
+                                                interpolate=False)
+            refused = [key for key in store_values
+                       if not key.startswith('TF_VAR_')]
+            for key in refused:
+                logger.warning(
+                    "The {!r} key of the tracked environment file is "
+                    'not a TF_VAR_* variable and is not applied; '
+                    "define it in '.debops/environment', the project "
+                    "'.env' or the view's '.env' file".format(key),
+                    extra={'allow': 'stderr'})
+            env.update({key: value
+                        for key, value in store_values.items()
+                        if value is not None and key not in refused})
         return env
 
     def _state_file(self):
@@ -614,11 +614,9 @@ class TofuRunner(Runner):
             return self._run_informational()
 
         if not os.path.exists(os.path.join(self._view_root, 'main.tf')):
-            create_view(self.project, self.project.view,
-                        providers=resolve_providers(self.project,
-                                                    self._providers),
-                        modules=resolve_modules(self.project,
-                                                self._modules))
+            raise ValueError(
+                "The view {!r} does not exist in the project; create "
+                "it with 'debops tofu mkview'".format(self.project.view))
         # The binary is resolved after the view exists: a freshly
         # created view carries its seeded version, which the managed
         # binary runs when it is installed

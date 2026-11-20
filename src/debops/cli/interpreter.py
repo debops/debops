@@ -16,6 +16,9 @@ from ..core.envrunner import EnvRunner
 from ..core.tofu.runner import TofuRunner
 from ..core.tofu import cache
 from ..core.tofu.inventory import render_inventory
+from ..core.tofu.view import create_view
+from ..core.tofu.providers import resolve_providers
+from ..core.tofu.modules import resolve_modules
 from ..core.secrets import SecretManager
 from ..core.tofu.binary import reconcile_binaries
 from ..core.tofu.registry import view_drop_in_path, view_tofu_root
@@ -332,6 +335,13 @@ class Interpreter(object):
             sys.stdout.write(args.help_body)
             sys.exit(0)
 
+        # The 'mkview' operation is a DebOps-level command: it creates
+        # the view tree, its encrypted store and the environment key
+        # file, with the store cycled around the key material
+        if args.tofu_args[0] == 'mkview':
+            self._do_tofu_mkview(args, project)
+            return
+
         # The 'update' operation is a DebOps-level command: it
         # reconciles the files DebOps owns in the view and runs 'tofu
         # init' through the wrapper
@@ -363,9 +373,7 @@ class Interpreter(object):
         try:
             runner = TofuRunner(project, args.tofu_args, bell=args.bell,
                                 no_color=args.no_color,
-                                workspace=args.workspace,
-                                providers=args.provider,
-                                modules=args.module)
+                                workspace=args.workspace)
         except (NoDefaultViewException, ValueError,
                 FileNotFoundError) as errmsg:
             print_error(errmsg)
@@ -395,6 +403,22 @@ class Interpreter(object):
             'printed command runs after the template is applied to '
             'it.'.format(project.view),
             extra={'allow': ['stderr', 'syslog']})
+
+    def _do_tofu_mkview(self, args, project):
+        """Run the 'debops tofu mkview' operation: create the view
+        tree, its encrypted store and the environment key file, with
+        the store cycled around the key material."""
+        try:
+            create_view(project, args.new_view,
+                        providers=resolve_providers(project,
+                                                    args.provider),
+                        modules=resolve_modules(project,
+                                                args.module),
+                        encrypt=args.encrypt, keys=args.keys)
+        except (NoDefaultViewException, ValueError,
+                ChildProcessError, FileNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
 
     def _do_tofu_update(self, args, project):
         """Run the 'debops tofu update' operation: reconcile the files
