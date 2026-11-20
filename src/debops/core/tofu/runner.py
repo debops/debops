@@ -171,7 +171,7 @@ class TofuRunner(Runner):
             try:
                 state_path = self.project.config.raw['tofu']['state_path']
             except (KeyError, TypeError):
-                state_path = 'secret/terraform.tfstate'
+                state_path = 'state/terraform.tfstate'
         return state_path
 
     def _resolve_binary(self):
