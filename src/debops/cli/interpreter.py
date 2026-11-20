@@ -538,7 +538,8 @@ class Interpreter(object):
         store = SecretManager(project, project.view).store('ansible')
         unlocked = store.unlock()
         try:
-            paths = render_inventory(project, project.view, output)
+            changes = render_inventory(project, project.view, output,
+                                       dry_run=args.dry_run)
         except (ValueError, FileNotFoundError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
@@ -546,23 +547,27 @@ class Interpreter(object):
             if unlocked:
                 store.lock()
 
-        for path in paths:
-            print(path)
+        self._render_tofu_changes(
+            changes, diff=args.diff, dry_run=args.dry_run,
+            color=(sys.stdout.isatty() and not args.no_color))
 
     def _render_tofu_changes(self, changes, diff=False, dry_run=False,
                              color=False):
-        """Print the changes which the reconcile applies: the paths and
-        the actions, or the unified diffs with '--diff'."""
+        """Print the changes which the operation applies: the paths
+        and the actions, or the unified diffs with '--diff'. A change
+        without a diff -- the sensitive files of the inventory render
+        -- prints its action line in both modes: the values must not
+        reach the terminal."""
         for change in changes:
-            if not diff:
-                action = change['action']
-                if dry_run:
-                    action = 'Would ' + action
-                else:
-                    action = action.capitalize()
-                print('{} {}'.format(action, change['path']))
-            else:
+            if diff and change.get('diff') is not None:
                 self._print_colored_diff(change['diff'], color=color)
+                continue
+            action = change['action']
+            if dry_run:
+                action = 'Would ' + action
+            else:
+                action = action.capitalize()
+            print('{} {}'.format(action, change['path']))
 
     @staticmethod
     def _print_colored_diff(diff_text, color=False):
