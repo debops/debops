@@ -121,13 +121,13 @@ def resolve_modules(project, modules=None):
     The '--module' options of the command line replace the
     'tofu.default_modules' configuration option, which itself defaults
     to an empty table: a view without modules. The resolution applies
-    when a view is created -- the 'tofu.default_modules' option is
+    when a view is created -- the 'tofu.mkview.default_modules' option is
     consulted only there; the module set of an existing view lives in
     its configuration drop-in, which the user owns.
     """
     if modules:
         return parse_module_specs(modules)
-    return project.config.raw['tofu']['default_modules']
+    return project.config.raw['tofu']['mkview']['default_modules']
 
 
 def _local_name(source):
