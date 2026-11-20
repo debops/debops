@@ -62,10 +62,10 @@ def tofu_project(stub_project, tmp_path, monkeypatch):
 
     def _make(**kwargs):
         raw = {"binaries": {"tofu": "tofu"},
-               "tofu": {"state_path": "secret/terraform.tfstate",
+               "tofu": {"state_path": "state/terraform.tfstate",
                         "operations": [], "plan_retention": 3,
-                        "default_providers": [],
-                        "default_modules": {},
+                        "mkview": {"default_providers": [],
+                                   "default_modules": {}},
                         "upstream": {"known_version": "1.13.9"}}}
         if "raw" in kwargs:
             for key, value in kwargs.pop("raw").items():
@@ -195,7 +195,7 @@ def test_state_file_of_the_default_workspace_is_the_state_path(
     project = tofu_project(project_type="modern", view="prod")
     runner = TofuRunner(project, ["plan"])
     assert runner._state_file() == os.path.join(
-        project.path, "tofu", "views", "prod", "secret",
+        project.path, "tofu", "views", "prod", "state",
         "terraform.tfstate")
 
 
@@ -204,7 +204,7 @@ def test_state_file_of_a_named_workspace_is_in_the_workspaces_directory(
     project = tofu_project(project_type="modern", view="prod")
     runner = TofuRunner(project, ["plan"], workspace="feature")
     assert runner._state_file() == os.path.join(
-        project.path, "tofu", "views", "prod", "secret", "workspaces",
+        project.path, "tofu", "views", "prod", "state", "workspaces",
         "feature", "terraform.tfstate")
 
 
@@ -278,7 +278,7 @@ def test_fresh_named_workspace_is_allowed(tofu_project, monkeypatch):
                            "_initialized_before", return_value=True):
         with mock.patch.object(
                 runner_module.TofuRunner, "_backend_metadata",
-                return_value={"path": "secret/terraform.tfstate"}):
+                return_value={"path": "state/terraform.tfstate"}):
             runner._check_state_presence()
 
 
@@ -317,9 +317,9 @@ def make_locked_runner(tmp_path, tofu_project):
     """A runner whose view holds a state file, with the fcntl lock
     machinery live."""
     project = tofu_project()
-    os.makedirs(os.path.join(project.path, "tofu", "secret"),
+    os.makedirs(os.path.join(project.path, "tofu", "state"),
                 exist_ok=True)
-    state_file = os.path.join(project.path, "tofu", "secret",
+    state_file = os.path.join(project.path, "tofu", "state",
                               "terraform.tfstate")
     with open(state_file, "w") as handle:
         handle.write("{}")
@@ -677,8 +677,9 @@ def test_providers_come_from_the_configuration(tofu_project,
     """The 'tofu.default_providers' option is the default provider
     set of new views, recorded in the view's configuration drop-in."""
     project = tofu_project(project_type="modern",
-                           raw={"tofu": {"default_providers":
-                                         ["lxc/incus"]}})
+                           raw={"tofu": {"mkview": {"default_providers":
+                                         ["lxc/incus"],
+                                         "default_modules": {}}}})
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
@@ -697,8 +698,9 @@ def test_provider_options_replace_the_configuration(tofu_project,
     """The '--provider' options of the command line replace the
     configured default provider set for one invocation."""
     project = tofu_project(project_type="modern",
-                           raw={"tofu": {"default_providers":
-                                         ["lxc/incus"]}})
+                           raw={"tofu": {"mkview": {"default_providers":
+                                         ["lxc/incus"],
+                                         "default_modules": {}}}})
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
@@ -1108,9 +1110,11 @@ def test_modules_come_from_the_configuration(tofu_project,
     """The 'tofu.default_modules' option is the default module set of
     new views, recorded in the view's configuration drop-in."""
     project = tofu_project(project_type="modern",
-                           raw={"tofu": {"default_modules": {
-                               "consul": {
-                                   "source": "hashicorp/consul/aws"}}}})
+                           raw={"tofu": {"mkview": {
+                               "default_providers": [],
+                               "default_modules": {
+                                   "consul": {
+                                       "source": "hashicorp/consul/aws"}}}}})
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
@@ -1132,9 +1136,11 @@ def test_module_options_replace_the_configuration(tofu_project,
     """The '--module' options of the command line replace the
     configured default module set for one invocation."""
     project = tofu_project(project_type="modern",
-                           raw={"tofu": {"default_modules": {
-                               "consul": {
-                                   "source": "hashicorp/consul/aws"}}}})
+                           raw={"tofu": {"mkview": {
+                               "default_providers": [],
+                               "default_modules": {
+                                   "consul": {
+                                       "source": "hashicorp/consul/aws"}}}}})
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
@@ -1220,18 +1226,20 @@ def test_module_inputs_render_from_the_recorded_table(
     """The inputs of a recorded module render as the HCL attributes of
     the generated module block."""
     project = tofu_project(project_type="modern",
-                           raw={"tofu": {"default_modules": {
-                               "consul": {
-                                   "source": "hashicorp/consul/aws",
-                                   "version": "5.0.0",
-                                   "inputs": {
-                                       "datacenter": "dc1",
-                                       "server_count": 3,
-                                       "replicas": True,
-                                       "cidrs": ["10.0.1.0/24",
-                                                 "10.0.2.0/24"],
-                                       "net": {"host": "x",
-                                               "port": 8300}}}}}})
+                           raw={"tofu": {"mkview": {
+                               "default_providers": [],
+                               "default_modules": {
+                                   "consul": {
+                                       "source": "hashicorp/consul/aws",
+                                       "version": "5.0.0",
+                                       "inputs": {
+                                           "datacenter": "dc1",
+                                           "server_count": 3,
+                                           "replicas": True,
+                                           "cidrs": ["10.0.1.0/24",
+                                                     "10.0.2.0/24"],
+                                           "net": {"host": "x",
+                                                   "port": 8300}}}}}}})
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
@@ -1252,18 +1260,20 @@ def test_module_inputs_render_raw_hcl_expressions(
     prefix is consumed once, and a doubled prefix is an escaped
     literal."""
     project = tofu_project(project_type="modern",
-                           raw={"tofu": {"default_modules": {
-                               "consul": {
-                                   "source": "hashicorp/consul/aws",
-                                   "inputs": {
-                                       "image": "hcl:var.image_name",
-                                       "cidrs": "hcl:module.network.cidrs",
-                                       "count": "hcl:var.autoscaling "
-                                                '? var.max_count '
-                                                ": var.min_count",
-                                       "nothing": "hcl:null",
-                                       "escaped": "hcl:hcl:hello",
-                                       "text": "hcl:hello"}}}}})
+                           raw={"tofu": {"mkview": {
+                               "default_providers": [],
+                               "default_modules": {
+                                   "consul": {
+                                       "source": "hashicorp/consul/aws",
+                                       "inputs": {
+                                           "image": "hcl:var.image_name",
+                                           "cidrs": "hcl:module.network.cidrs",
+                                           "count": "hcl:var.autoscaling "
+                                                    '? var.max_count '
+                                                    ": var.min_count",
+                                           "nothing": "hcl:null",
+                                           "escaped": "hcl:hcl:hello",
+                                           "text": "hcl:hello"}}}}}})
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
@@ -1385,14 +1395,16 @@ def test_generated_modules_file_is_fmt_clean(tofu_project,
     """The generated 'modules.tf' is fmt-clean: running 'tofu fmt' in
     the view does not churn the generated file."""
     project = tofu_project(project_type="modern",
-                           raw={"tofu": {"default_modules": {
-                               "consul": {
-                                   "source": "hashicorp/consul/aws",
-                                   "version": "5.0.0",
-                                   "inputs": {
-                                       "datacenter": "dc1",
-                                       "server_count": 3,
-                                       "image": "hcl:var.image_name"}}}}})
+                           raw={"tofu": {"mkview": {
+                               "default_providers": [],
+                               "default_modules": {
+                                   "consul": {
+                                       "source": "hashicorp/consul/aws",
+                                       "version": "5.0.0",
+                                       "inputs": {
+                                           "datacenter": "dc1",
+                                           "server_count": 3,
+                                           "image": "hcl:var.image_name"}}}}}})
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
