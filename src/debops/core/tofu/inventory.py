@@ -390,11 +390,15 @@ def _is_scalar(value):
 
 
 def _ini_value(value):
-    """The inline form of a scalar value. The ini parser reads the
-    values back through ast.literal_eval, so strings are quoted and
-    the other scalars are written as Python literals -- an unquoted
-    'True' or '23' would change the type of the variable."""
-    return repr(value)
+    """The inline form of a scalar value.
+
+    The ini parser strips the outer quote level and reads the rest
+    through ast.literal_eval: the repr of the value is wrapped in
+    double quotes, so the strip leaves the repr intact and
+    literal_eval reads it exactly. A bare repr would lose its own
+    quotes at the strip -- a numeric-looking string would come back
+    as a number, a backslash would double."""
+    return '"' + repr(value) + '"'
 
 
 def _ini_host_line(host):
@@ -551,7 +555,9 @@ def _sensitive_location(config, view_root, name, var):
     the operator configured the destination. A relative template is
     resolved against the Ansible view's root directory, which the
     'inventory_dir' variable of the lookup expression walks out of;
-    the write stays inside the view root."""
+    the write stays inside the view root. The expression composes
+    through 'json.dumps': the path rides a Jinja string literal, a
+    quote in it must not break out of it."""
     try:
         relative = config['sensitive_path'] % (name, var)
     except (TypeError, ValueError) as errmsg:
@@ -559,9 +565,10 @@ def _sensitive_location(config, view_root, name, var):
             "The 'tofu.inventory.secret.sensitive_path' option is "
             'not a valid path template: {}'.format(errmsg))
     if relative.startswith('/'):
-        return relative, '"{}"'.format(relative), None
+        return relative, json.dumps(relative), None
     return (os.path.join(view_root, relative),
-            'inventory_dir + "/../{}"'.format(relative), view_root)
+            'inventory_dir + ' + json.dumps('/../' + relative),
+            view_root)
 
 
 def _sensitive_value(value):
