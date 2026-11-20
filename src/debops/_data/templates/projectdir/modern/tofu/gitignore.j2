@@ -9,14 +9,22 @@
 /.terraform/
 
 #-- OpenTofu plan files, transient: the plan files which the
-# 'debops tofu plan' operation saves into the store are pruned by
-# the 'tofu.plan_retention' option; the operator's own '-out' plans
-# in the directory stay untracked as well
-/{{ secret_name }}/plans/
+# 'debops tofu plan' operation saves beside the view configuration
+# are pruned by the 'tofu.plan_retention' option; the operator's own
+# '-out' plans in the directory stay untracked as well
+/plans/
+
+#-- OpenTofu state backups: the rolling prior-state copy the local
+# backend writes beside the state on every apply. The state itself is
+# tracked -- the git history is the version record -- and the backups
+# are the just-in-case net of the backend.
+*.backup
 
 #-- OpenTofu state files, encrypted at rest by OpenTofu itself
-# The '.terraform.lock.hcl' file is committed: it pins the provider
-# versions which the view was initialized with.
+# The state is tracked: the native encryption protects it at rest and
+# in the git history. The '.terraform.lock.hcl' file and the '*.tfvars'
+# files are committed as well: the variable files which carry secrets
+# belong under 'secret/', where the store's routing encrypts them.
 
 # EncFS mount targets
 # Uncomment this line if you want to use EncFS as secret storage
