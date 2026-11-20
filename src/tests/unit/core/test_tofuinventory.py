@@ -441,6 +441,91 @@ def test_a_duplicate_inventory_hostname_is_refused(inventory_project):
                                                     groups=None))
 
 
+@pytest.mark.parametrize('name', ['../evil', 'a/b', '.', '..hidden',
+                                  'with space'])
+def test_unrenderable_entry_names_are_refused(inventory_project, name):
+    """The seed keys cross into file paths, INI sections and lookup
+    expressions: a traversal, a section break or a leading dot
+    refuses the render, named."""
+    project = inventory_project()
+    with pytest.raises(ValueError, match='not renderable'):
+        render_inventory(project, 'system', outputs(
+            seed={name: {'address': '10.42.7.101'}}, groups=None))
+
+
+def test_unrenderable_group_names_are_refused(inventory_project):
+    """The group names and the group list entries ride the INI
+    sections and the rendered hierarchy: an unsafe one refuses the
+    render, named."""
+    project = inventory_project()
+    with pytest.raises(ValueError, match='not renderable'):
+        render_inventory(project, 'system', outputs(groups={
+            'bad]group': {}}))
+    with pytest.raises(ValueError, match='not renderable'):
+        render_inventory(project, 'system', outputs(groups={
+            'web': {'children': ['a child']}}))
+
+
+def test_unrenderable_variable_names_are_refused(inventory_project):
+    """Variable names ride the vars files as YAML keys and the
+    sensitive ones into the store paths and the lookup expressions:
+    a quote or a traversal refuses the render."""
+    seed = {'web-1': {'address': '10.42.7.101',
+                      'vars': {'bad"name': 'v'},
+                      'sensitive_vars': {'../dot': 'v'}}}
+    project = inventory_project()
+    with pytest.raises(ValueError, match='not renderable'):
+        render_inventory(project, 'system', outputs(seed=seed,
+                                                    groups=None))
+
+
+def test_the_host_attribute_is_a_validated_name(inventory_project):
+    """The 'host' attribute renders as the inventory hostname: an
+    unsafe one refuses the render like the seed keys do."""
+    seed = {'web-1': {'address': '10.42.7.101', 'host': 'a[b]'}}
+    project = inventory_project()
+    with pytest.raises(ValueError, match="'host' attribute"):
+        render_inventory(project, 'system', outputs(seed=seed,
+                                                    groups=None))
+
+
+def test_an_address_with_injected_variables_is_refused(inventory_project):
+    """The address rides the INI host line as one token: whitespace
+    or '=' would inject further inline variables into the
+    inventory."""
+    seed = {'web-1': {'address': '10.42.7.101 ansible_port=2222'}}
+    project = inventory_project()
+    with pytest.raises(ValueError, match='address'):
+        render_inventory(project, 'system', outputs(seed=seed,
+                                                    groups=None))
+
+
+def test_a_jump_with_injected_options_is_refused(inventory_project):
+    """The jump composes into 'ansible_ssh_common_args', which
+    Ansible splits into SSH options: a whitespace would smuggle an
+    option like 'ProxyCommand' into the connection."""
+    seed = {'web-1': {'address': '10.42.7.101',
+                      'jump': 'bastion -o ProxyCommand=evil'}}
+    project = inventory_project()
+    with pytest.raises(ValueError, match='jump'):
+        render_inventory(project, 'system', outputs(seed=seed,
+                                                    groups=None))
+
+
+def test_an_empty_jump_and_host_are_the_fallbacks(inventory_project):
+    """An empty 'jump' is no jump -- the host connects directly; an
+    empty 'host' renders under the seed key. Both are seed
+    conventions the validation accepts."""
+    seed = {'web-1': {'address': '10.42.7.101', 'jump': '',
+                      'host': ''}}
+    project = inventory_project()
+    render_inventory(project, 'system', outputs(seed=seed, groups=None))
+
+    content = read(project, 'inventory/hosts')
+    assert 'web-1 ansible_host=' in content
+    assert 'ProxyJump' not in content
+
+
 def test_a_broken_output_document_is_refused(inventory_project):
     """The 'tofu output -json' document is validated: a document
     which is not JSON and a missing 'inventory_seed' output are
