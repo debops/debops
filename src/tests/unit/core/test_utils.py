@@ -310,9 +310,9 @@ def test_verify_gpg_recipients_requires_recipients(gpg_stub):
         utils.verify_gpg_recipients(gpg, None)
 
 
-def test_wrap_message_wraps_a_long_error():
+def test_wrap_message_wraps_a_long_error(home):
     line = ("Cannot find the OpenTofu view directory at "
-            "/home/drybjed/src/projects/containers/tofu/views/system. "
+            "{}/src/projects/containers/tofu/views/system. ".format(home) +
             "A project gains its 'tofu/' tree when the view template is "
             "applied to it.")
     message = utils.wrap_message('Error: ' + line, width=72)
@@ -320,19 +320,19 @@ def test_wrap_message_wraps_a_long_error():
     assert message.startswith('Error: Cannot find the OpenTofu view '
                               'directory at')
     assert '~' in message
-    assert '/home/drybjed' not in message
+    assert home not in message
     # Continuation lines hang under the first one
     for line in message.splitlines()[1:]:
         assert line.startswith('    ')
 
 
-def test_wrap_message_keeps_home_paths_of_other_users():
+def test_wrap_message_keeps_home_paths_of_other_users(home):
     message = utils.wrap_message(
-        "Error: Cannot find /home/drybjed/src/project but "
-        "/home/drybjed2/src/project is present", width=72)
+        "Error: Cannot find {}/src/project but ".format(home) +
+        "{}2/src/project is present".format(home), width=72)
 
     assert '~/src/project' in message
-    assert '/home/drybjed2/src/project' in message
+    assert '{}2/src/project'.format(home) in message
 
 
 def test_wrap_message_leaves_short_and_structured_lines_alone():
