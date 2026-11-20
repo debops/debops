@@ -391,15 +391,19 @@ def _is_scalar(value):
 
 
 def _ini_value(value):
-    """The inline form of a scalar value.
+    """The inline form of a scalar value: the repr of the value,
+    which the ini parser reads back through ast.literal_eval with a
+    string fallback.
 
-    The ini parser strips the outer quote level and reads the rest
-    through ast.literal_eval: the repr of the value is wrapped in
-    double quotes, so the strip leaves the repr intact and
-    literal_eval reads it exactly. A bare repr would lose its own
-    quotes at the strip -- a numeric-looking string would come back
-    as a number, a backslash would double."""
-    return '"' + repr(value) + '"'
+    The host lines are shlex-stripped before the literal_eval, the
+    ':vars' sections are not -- one quoted form cannot satisfy both
+    surfaces, and the wrap which satisfied the host lines put
+    literal quotes into the ':vars' strings. The bare repr restores
+    the ':vars' round trip; the values the host-line strip corrupts
+    -- numeric-looking strings, backslashes -- parse as their Python
+    look-alikes instead, accepted for the quoting which reads
+    naturally (2026-11-20)."""
+    return repr(value)
 
 
 def _ini_host_line(host):
