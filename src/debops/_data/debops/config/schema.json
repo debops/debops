@@ -436,6 +436,28 @@
       "additionalProperties": false,
       "description": "Integration options of the 'debops tofu' wrapper. The OpenTofu language itself is configured in the project's tofu files, not here.",
       "properties": {
+        "init": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The options consulted when a view is created; the existing views keep their recorded state.",
+          "properties": {
+            "secret": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "The state passphrase generation of the view creation, written into the store's 'environment' file.",
+              "properties": {
+                "generate_passphrase": {
+                  "type": "boolean",
+                  "description": "Whether the view creation generates the state passphrase into the store's 'environment' file. When disabled, the template ships an empty passphrase and the first state-touching operation refuses with the way out, until the operator sets one by hand."
+                },
+                "passphrase_length": {
+                  "type": "integer",
+                  "description": "The length in characters of the generated state passphrase. The passphrase is drawn from the URL-safe alphabet -- letters, digits, dashes and underscores -- which the environment file carries without quoting."
+                }
+              }
+            }
+          }
+        },
         "state_path": {
           "type": "string",
           "description": "Path to the state file of the local backend, relative to the view's 'tofu' directory. Empty string marks a view with a remote backend: the local state checks are skipped."
