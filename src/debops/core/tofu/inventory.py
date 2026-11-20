@@ -13,6 +13,7 @@ manifest inside the inventory directory; the next render prunes the
 entries the seed dropped against it.
 """
 
+import difflib
 import json
 import logging
 import os
@@ -588,23 +589,82 @@ def _manifest_path(view_root, path):
     return path
 
 
-def _write_exact(path, content, project=None):
-    """Write the content to the path when it differs from what the
-    path already holds.
+def _unified_diff(old_content, new_content, label):
+    """Return the unified diff between two file contents, labeled with
+    the change label of the path."""
+    return ''.join(difflib.unified_diff(
+        (old_content or '').splitlines(keepends=True),
+        (new_content or '').splitlines(keepends=True),
+        fromfile='a/' + label, tofile='b/' + label))
+
+
+def _change_label(path, project_root):
+    """The path form the change records print and label: relative to
+    the project directory when the path is inside it, absolute
+    otherwise."""
+    path = os.path.normpath(path)
+    project_root = os.path.normpath(project_root)
+    if path.startswith(project_root + os.sep):
+        return os.path.relpath(path, project_root)
+    return path
+
+
+def _reconcile_file(path, content, changes, project_root, containment,
+                    dry_run, secret=False):
+    """Record the change of one file and apply it: create, update or
+    nothing.
 
     The files inside the encrypted store are re-encrypted on every
     write -- the ciphertext of an unchanged value differs per save --
     so a render which changes nothing writes nothing and the store
-    of the view stays clean. The containment root, when given,
-    refuses a path which resolves outside of it."""
+    of the view stays clean. The diff rides the record for the
+    '--diff' option; the sensitive files record none, their values
+    must not reach the terminal -- the action line names the file
+    instead. Nothing is written in the dry run. The containment
+    root, when given, refuses a path which resolves outside of it."""
+    label = _change_label(path, project_root)
     try:
         with open(path) as handle:
-            if handle.read() == content:
-                return False
+            existing = handle.read()
     except OSError:
-        pass
-    write_file(path, content, overwrite=True, project=project)
-    return True
+        existing = None
+    if existing == content:
+        return
+    if existing is None:
+        action, old = 'create', ''
+    else:
+        action, old = 'update', existing
+    changes.append({
+        'path': path,
+        'action': action,
+        'diff': None if secret else _unified_diff(old, content, label),
+        'secret': secret,
+    })
+    if not dry_run:
+        write_file(path, content, overwrite=True, project=containment)
+
+
+def _reconcile_removal(path, changes, project_root, containment,
+                       dry_run, secret=False):
+    """Record the removal of one file and apply it; report whether
+    the file was removed, so that the caller can prune the
+    directories it left behind. The sensitive files record no diff:
+    the removed content is the secret itself."""
+    try:
+        with open(path) as handle:
+            existing = handle.read()
+    except OSError:
+        return False
+    label = _change_label(path, project_root)
+    changes.append({
+        'path': path,
+        'action': 'remove',
+        'diff': None if secret else _unified_diff(existing, '', label),
+        'secret': secret,
+    })
+    if dry_run:
+        return False
+    return remove_file(path, project=containment)
 
 
 def _is_scaffold(path):
@@ -659,7 +719,8 @@ def _prune_empty_dirs(directory, view_root):
         directory = os.path.dirname(directory)
 
 
-def _prune_stale(view_root, owned, desired):
+def _prune_stale(view_root, project_root, owned, desired, changes,
+                 dry_run):
     """Remove the recorded files which the render no longer
     produces, and the directories they leave empty.
 
@@ -668,7 +729,9 @@ def _prune_stale(view_root, owned, desired):
     and a tampered one must not delete files elsewhere. The absolute
     entries which an absolute 'sensitive_path' template records by
     design are skipped with a notice -- their stale files the
-    operator cleans by hand."""
+    operator cleans by hand. The removals ride the change records;
+    the sensitive ones record no diff, the removed content is the
+    secret itself."""
     for relative in owned:
         if relative in desired:
             continue
@@ -680,23 +743,29 @@ def _prune_stale(view_root, owned, desired):
                 extra={'allow': 'stderr'})
             continue
         path = os.path.join(view_root, relative)
-        remove_file(path, project=view_root)
-        _prune_empty_dirs(os.path.dirname(path), view_root)
+        removed = _reconcile_removal(
+            path, changes, project_root, view_root, dry_run,
+            secret=relative.startswith('secret' + os.sep))
+        if removed:
+            _prune_empty_dirs(os.path.dirname(path), view_root)
 
 
-def _write_sensitive(desired, config, view_root, name, sensitive_vars):
-    """Write the sensitive values of one host or group into the
-    store, recording the content files in the desired set."""
+def _reconcile_sensitive(desired, changes, config, view_root,
+                         project_root, name, sensitive_vars, dry_run):
+    """Record and apply the sensitive values of one host or group
+    into the store, recording the content files in the desired set."""
     for var in sorted(sensitive_vars):
-        path, _, project = _sensitive_location(config, view_root,
-                                               name, var)
-        _write_exact(path, _sensitive_value(sensitive_vars[var]),
-                     project=project)
+        path, _, containment = _sensitive_location(config, view_root,
+                                                   name, var)
+        _reconcile_file(path, _sensitive_value(sensitive_vars[var]),
+                        changes, project_root, containment, dry_run,
+                        secret=True)
         desired.add(_manifest_path(view_root, path))
 
 
-def _write_vars_file(desired, inventory_dir, kind, name, filename,
-                     data, view, project):
+def _write_vars_file(desired, changes, inventory_dir, kind, name,
+                     filename, data, view, view_root, project_root,
+                     dry_run):
     """Render one variables file of a host or group; a file with
     nothing to carry is not written."""
     if not data:
@@ -704,12 +773,14 @@ def _write_vars_file(desired, inventory_dir, kind, name, filename,
     path = os.path.join(inventory_dir, kind, name, filename)
     content = _header(view) + yaml.safe_dump(
         data, default_flow_style=False, sort_keys=True, width=4096)
-    _write_exact(path, content, project=project)
+    _reconcile_file(path, content, changes, project_root, view_root,
+                    dry_run)
     desired.add(os.path.join('inventory', kind, name, filename))
 
 
-def _render_vars_files(desired, config, fmt, view_root, inventory_dir,
-                       kind, name, plain, sensitive, secret_name, view):
+def _render_vars_files(desired, changes, config, fmt, view_root,
+                       inventory_dir, project_root, kind, name, plain,
+                       sensitive, secret_name, view, dry_run):
     """Render the variables files of one host or group.
 
     The 'ini' hosts file carries the scalar plain variables inline;
@@ -735,26 +806,27 @@ def _render_vars_files(desired, config, fmt, view_root, inventory_dir,
     if config['vars_filename'] == config['secret_vars_filename']:
         merged = dict(complex_vars)
         merged.update(lookups)
-        _write_vars_file(desired, inventory_dir, kind, name,
+        _write_vars_file(desired, changes, inventory_dir, kind, name,
                          config['vars_filename'], merged, view,
-                         view_root)
+                         view_root, project_root, dry_run)
     else:
-        _write_vars_file(desired, inventory_dir, kind, name,
+        _write_vars_file(desired, changes, inventory_dir, kind, name,
                          config['vars_filename'], complex_vars, view,
-                         view_root)
-        _write_vars_file(desired, inventory_dir, kind, name,
+                         view_root, project_root, dry_run)
+        _write_vars_file(desired, changes, inventory_dir, kind, name,
                          config['secret_vars_filename'], lookups,
-                         view, view_root)
+                         view, view_root, project_root, dry_run)
 
 
-def render_inventory(project, view, output_json):
+def render_inventory(project, view, output_json, dry_run=False):
     """Render the OpenTofu inventory outputs of a view into the
     Ansible view's inventory directory.
 
-    Returns the sorted list of the files the renderer owns, relative
-    to the Ansible view's root directory -- the manifest record the
-    next render prunes against.
-    """
+    Returns the list of the changes the render applies: the records
+    the '--diff' option prints and the dry run reports. With
+    'dry_run' the changes are computed and reported, nothing is
+    written -- the render reads the current files, which needs the
+    Ansible store unlocked around it as a writing render does."""
     seed, groups = _collect_outputs(output_json)
     config = _inventory_config(project)
     seed = _filter_hosts(seed, config['host_status'])
@@ -770,6 +842,8 @@ def render_inventory(project, view, output_json):
         raise FileNotFoundError(
             "The inventory directory of the Ansible view '{}' does "
             'not exist: {}'.format(view, inventory_dir))
+    project_root = project.path
+    changes = []
 
     fmt = config['hosts_format']
     if fmt not in FORMATS:
@@ -782,14 +856,17 @@ def render_inventory(project, view, output_json):
     # The sensitive values into the store, before the files which
     # reference them
     if all_record:
-        _write_sensitive(desired, config, view_root, 'all',
-                         all_record['sensitive_vars'])
+        _reconcile_sensitive(desired, changes, config, view_root,
+                             project_root, 'all',
+                             all_record['sensitive_vars'], dry_run)
     for host in hosts:
-        _write_sensitive(desired, config, view_root, host['key'],
-                         host['sensitive_vars'])
+        _reconcile_sensitive(desired, changes, config, view_root,
+                             project_root, host['key'],
+                             host['sensitive_vars'], dry_run)
     for name in sorted(records):
-        _write_sensitive(desired, config, view_root, name,
-                         records[name]['sensitive_vars'])
+        _reconcile_sensitive(desired, changes, config, view_root,
+                             project_root, name,
+                             records[name]['sensitive_vars'], dry_run)
 
     # The hosts file in the configured format
     if fmt == 'ini':
@@ -803,8 +880,8 @@ def render_inventory(project, view, output_json):
     else:
         content = _render_hosts_toml(hosts, records, all_record, view)
     hosts_name = _hosts_filename(config, fmt)
-    _write_exact(os.path.join(inventory_dir, hosts_name), content,
-                 project=view_root)
+    _reconcile_file(os.path.join(inventory_dir, hosts_name), content,
+                    changes, project_root, view_root, dry_run)
     desired.add(os.path.join('inventory', hosts_name))
 
     # The hosts files of the other formats are the renderer's
@@ -816,27 +893,33 @@ def render_inventory(project, view, output_json):
             continue
         path = os.path.join(inventory_dir, _hosts_filename(config, other))
         if os.path.isfile(path) and _is_scaffold(path):
-            remove_file(path, project=view_root)
+            _reconcile_removal(path, changes, project_root, view_root,
+                               dry_run)
 
     # The variables files of the hosts and the groups
     for host in hosts:
-        _render_vars_files(desired, config, fmt, view_root,
-                           inventory_dir, 'host_vars', host['name'],
-                           host['vars'], host['sensitive_vars'],
-                           host['key'], view)
+        _render_vars_files(desired, changes, config, fmt, view_root,
+                           inventory_dir, project_root, 'host_vars',
+                           host['name'], host['vars'],
+                           host['sensitive_vars'], host['key'], view,
+                           dry_run)
     if all_record:
-        _render_vars_files(desired, config, fmt, view_root,
-                           inventory_dir, 'group_vars', 'all',
-                           all_record['vars'],
-                           all_record['sensitive_vars'], 'all', view)
+        _render_vars_files(desired, changes, config, fmt, view_root,
+                           inventory_dir, project_root, 'group_vars',
+                           'all', all_record['vars'],
+                           all_record['sensitive_vars'], 'all', view,
+                           dry_run)
     for name in sorted(records):
         record = records[name]
-        _render_vars_files(desired, config, fmt, view_root,
-                           inventory_dir, 'group_vars', name,
-                           record['vars'], record['sensitive_vars'],
-                           name, view)
+        _render_vars_files(desired, changes, config, fmt, view_root,
+                           inventory_dir, project_root, 'group_vars',
+                           name, record['vars'],
+                           record['sensitive_vars'], name, view,
+                           dry_run)
 
     owned = _read_manifest(inventory_dir)
-    _prune_stale(view_root, owned, desired)
-    _write_manifest(inventory_dir, desired, view_root)
-    return sorted(desired)
+    _prune_stale(view_root, project_root, owned, desired, changes,
+                 dry_run)
+    if not dry_run:
+        _write_manifest(inventory_dir, desired, view_root)
+    return changes
