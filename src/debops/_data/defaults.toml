@@ -109,8 +109,7 @@ no-comments = true
 # condition before state-touching operations. Set it to an empty string
 # in views which use a remote backend; the wrapper then skips the local
 # state checks.
-state_path = "secret/terraform.tfstate"
-
+state_path = "state/terraform.tfstate"
 # The OpenTofu operations which the 'debops tofu' wrapper is allowed to
 # run. An empty list allows every operation; a non-empty list restricts
 # the wrapper to the named operations, for example:
@@ -169,6 +168,21 @@ default_modules = {}
 # plan files which the user saves with the '-out' option are never
 # touched.
 plan_retention = 3
+
+
+[tofu.init.secret]
+
+# Whether the view creation generates the state passphrase into the
+# store's 'environment' file. When disabled, the template ships an
+# empty passphrase and the first state-touching operation refuses with
+# the way out, until the operator sets one by hand.
+generate_passphrase = true
+
+# The length in characters of the generated state passphrase. The
+# passphrase is drawn from the URL-safe alphabet -- letters, digits,
+# dashes and underscores -- which the environment file carries without
+# quoting.
+passphrase_length = 32
 
 [tofu.inventory]
 
