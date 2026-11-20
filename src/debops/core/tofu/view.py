@@ -56,11 +56,13 @@ def detect_store_type(project):
     return None
 
 
-def _random_passphrase():
-    """Return a random state passphrase, generated from the system's
-    random source."""
-    alphabet = string.digits + string.ascii_letters + string.punctuation
-    return ''.join(secrets_module.choice(alphabet) for _ in range(64))
+def _random_passphrase(length):
+    """Return a random state passphrase of the given length, drawn
+    from the URL-safe alphabet: the environment file carries the
+    passphrase without quoting, so the alphabet stays free of the
+    characters the file format would have to escape."""
+    alphabet = string.ascii_letters + string.digits + '-_'
+    return ''.join(secrets_module.choice(alphabet) for _ in range(length))
 
 
 def create_view(project, view, providers=None, modules=None):
@@ -70,8 +72,9 @@ def create_view(project, view, providers=None, modules=None):
     the OpenTofu configuration with the local backend and the
     encryption stanza, the gitignore and gitattributes which route
     the store, the generated 'providers.tf' and 'modules.tf' files
-    with the selected dependencies and the store's '.env' file with
-    the generated state passphrase. An existing view is left alone.
+    with the selected dependencies and the store's 'environment' file
+    with the state passphrase generated per the 'tofu.init.secret'
+    options. An existing view is left alone.
 
     The store type follows the project's convention: git-crypt when
     the repository is set up for it, EncFS when the Ansible views use
@@ -131,10 +134,21 @@ def create_view(project, view, providers=None, modules=None):
     write_view_drop_in(project, view, providers or [], modules or [],
                        binary_version=known_version(project))
 
-    env_path = os.path.join(view_root, 'secret', '.env')
-    write_file(env_path,
-               'TF_VAR_state_passphrase={}\n'.format(
-                   _random_passphrase()),
+    try:
+        generate = project.config.raw['tofu']['init']['secret'][
+            'generate_passphrase']
+    except (KeyError, TypeError):
+        generate = True
+    try:
+        length = project.config.raw['tofu']['init']['secret'][
+            'passphrase_length']
+    except (KeyError, TypeError):
+        length = 32
+
+    write_file(os.path.join(view_root, 'secret', 'environment'),
+               render_template('environment.j2', view_name=view,
+                               passphrase=_random_passphrase(length)
+                               if generate else '') + '\n',
                project=project.path)
 
     if encrypted_secrets == 'encfs':
