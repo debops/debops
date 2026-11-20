@@ -2,9 +2,11 @@
 # Copyright (C) 2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import ast
 import json
 import logging
 import os
+import shlex
 from unittest import mock
 
 import pytest
@@ -76,6 +78,33 @@ def read(project, relative):
         return handle.read()
 
 
+def parse_host_line(line):
+    """The ini plugin's host-line parse, replicated hermetically:
+    posix shlex strips one quote level, then the values go through
+    ast.literal_eval with a string fallback (ansible-core 2.18,
+    'ini.py' _parse_host_definition)."""
+    tokens = shlex.split(line, comments=True)
+    values = {}
+    for token in tokens[1:]:
+        key, value = token.split('=', 1)
+        try:
+            values[key] = ast.literal_eval(value)
+        except (ValueError, SyntaxError):
+            values[key] = value
+    return values
+
+
+def parse_vars_line(line):
+    """The ini plugin's ':vars' parse: the raw value goes through
+    ast.literal_eval with a string fallback, no shlex ('ini.py'
+    _parse_variable_definition)."""
+    key, value = [element.strip() for element in line.split('=', 1)]
+    try:
+        return ast.literal_eval(value)
+    except (ValueError, SyntaxError):
+        return value
+
+
 def test_the_ini_hosts_file_carries_the_contract(inventory_project):
     """The hosts file in the 'ini' format: the full host line in the
     first group section of the host, the bare membership lines in
@@ -86,41 +115,41 @@ def test_the_ini_hosts_file_carries_the_contract(inventory_project):
 
     content = read(project, 'inventory/hosts')
     assert "view 'system'" in content
-    assert '[all:vars]\ndebops_legacy_vars="True"\n' in content
-    assert '[ungrouped]\ncache-1 ansible_host="\'10.42.7.103\'" ' \
-        'ansible_user="\'admin\'"\n' in content
+    assert "[all:vars]\ndebops_legacy_vars=True\n" in content
+    assert "[ungrouped]\ncache-1 ansible_host='10.42.7.103' " \
+        "ansible_user='admin'\n" in content
     # the full line in the alphabetically first group of the host,
     # the bare line in the other one
-    assert 'web.example.com ansible_host="\'10.42.7.101\'" ' \
-        'ansible_ssh_common_args="\'-o ProxyJump=tethys.example.com\'" ' \
-        'ansible_user="\'admin\'"' in content
+    assert "web.example.com ansible_host='10.42.7.101' " \
+        "ansible_ssh_common_args='-o ProxyJump=tethys.example.com' " \
+        "ansible_user='admin'" in content
     assert "[frontend]\nweb.example.com ansible_host=" in content
     assert "[web]\nweb.example.com\n" in content
     assert "[web:children]\nfrontend\n" in content
-    assert '[web:vars]\nhttp_port="8080"\n' in content
+    assert "[web:vars]\nhttp_port=8080\n" in content
 
 
 def test_the_ini_scalars_round_trip_their_types(inventory_project):
-    """The ini parser strips the outer quote level and reads the
-    rest through ast.literal_eval: every value is the repr of the
-    value wrapped in double quotes, so the types survive the
-    round trip."""
+    """The ini parser reads the inline values back through
+    ast.literal_eval with a string fallback: strings are quoted, the
+    other scalars are written as Python literals."""
     project = inventory_project()
     render_inventory(project, 'system', outputs())
 
     content = read(project, 'inventory/hosts')
-    assert 'port="22"' in content
-    assert 'debops_legacy_vars="True"' in content
-    assert 'http_port="8080"' in content
-    assert 'ansible_user="\'admin\'"' in content
+    assert 'port=22' in content
+    assert 'debops_legacy_vars=True' in content
+    assert 'http_port=8080' in content
+    assert "ansible_user='admin'" in content
 
 
-def test_the_ini_string_values_survive_the_quote_strip(
-        inventory_project):
-    """A bare repr would lose its own quotes when the parser strips
-    the outer quote level: a numeric-looking string would come back
-    as a number, a backslash would double, a quote would break the
-    literal. The double-quote wrap keeps the repr intact."""
+def test_the_ini_values_carry_the_bare_repr(inventory_project):
+    """The values render as the bare repr. The ':vars' sections read
+    the raw value through ast.literal_eval, so their strings survive;
+    the host lines lose one quote level to the shlex strip -- the
+    numeric-looking strings and the backslashes parse as their
+    Python look-alikes there, accepted for the quoting which reads
+    naturally."""
     seed = {'web-1': {'address': '10.42.7.101',
                       'vars': {'version': '23',
                                'path': 'a\\b',
@@ -129,9 +158,47 @@ def test_the_ini_string_values_survive_the_quote_strip(
     render_inventory(project, 'system', outputs(seed=seed, groups=None))
 
     content = read(project, 'inventory/hosts')
-    assert 'version="' + "'23'" + '"' in content
-    assert 'path="' + "'a\\\\b'" + '"' in content
-    assert 'quote="' + "'a\"b'" + '"' in content
+    assert "version='23'" in content
+    assert "path='a\\\\b'" in content
+    assert "quote='a\"b'" in content
+
+
+def test_the_rendered_ini_values_parse_back(inventory_project):
+    """The rendered values parse back the way the ini plugin reads
+    them: the host lines through the shlex strip, the ':vars'
+    sections without it -- the strings, the ints and the booleans
+    come back with the types the seed carries."""
+    seed = {'web-1': {'address': '10.42.7.101',
+                      'host': 'web.example.com',
+                      'jump': 'tethys.example.com',
+                      'vars': {'ansible_user': 'admin',
+                               'port': 22}}}
+    groups = {'all': {'vars': {'debops_legacy_vars': True}},
+              'web': {'vars': {'http_port': 8080,
+                               'tier': 'frontend'}}}
+    project = inventory_project()
+    render_inventory(project, 'system', outputs(seed=seed,
+                                                groups=groups))
+
+    content = read(project, 'inventory/hosts')
+    host_line = [line for line in content.splitlines()
+                 if line.startswith('web.example.com ')][0]
+    assert parse_host_line(host_line) == {
+        'ansible_host': '10.42.7.101',
+        'ansible_ssh_common_args': '-o ProxyJump=tethys.example.com',
+        'ansible_user': 'admin',
+        'port': 22}
+
+    lines = content.splitlines()
+    assert parse_vars_line(
+        [line for line in lines if line.startswith('tier=')][0]
+    ) == 'frontend'
+    assert parse_vars_line(
+        [line for line in lines if line.startswith('http_port=')][0]
+    ) == 8080
+    assert parse_vars_line(
+        [line for line in lines
+         if line.startswith('debops_legacy_vars=')][0]) is True
 
 
 def test_the_complex_ini_variables_ride_the_vars_file(inventory_project):
@@ -725,9 +792,9 @@ def test_the_changes_carry_the_diffs(inventory_project):
     update = [change for change in changes
               if change['action'] == 'update'][0]
     lines = update['diff'].splitlines()
-    assert any(line.startswith('-') and 'port="22"' in line
+    assert any(line.startswith('-') and 'port=22' in line
                for line in lines)
-    assert any(line.startswith('+') and 'port="8022"' in line
+    assert any(line.startswith('+') and 'port=8022' in line
                for line in lines)
     assert 'a/ansible/views/system/inventory/hosts' in update['diff']
 
