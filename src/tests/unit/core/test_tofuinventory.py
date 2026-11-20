@@ -593,12 +593,13 @@ def test_the_missing_inventory_directory_is_refused(stub_project):
 def test_the_prune_removes_the_dropped_entries(inventory_project):
     """A host dropped from the seed loses its variables file and its
     secret content files, and the directories it left empty are
-    pruned."""
+    pruned; the removals ride the change records."""
     project = inventory_project()
     render_inventory(project, 'system', outputs())
 
     seed = {'cache-1': {'address': '10.42.7.103'}}
-    render_inventory(project, 'system', outputs(seed=seed, groups=None))
+    changes = render_inventory(project, 'system',
+                               outputs(seed=seed, groups=None))
 
     assert not os.path.exists(os.path.join(
         view_root(project), 'inventory', 'host_vars',
@@ -608,6 +609,19 @@ def test_the_prune_removes_the_dropped_entries(inventory_project):
     manifest = yaml.safe_load(read(project, 'inventory/' +
                                    MANIFEST_NAME))
     assert manifest['files'] == ['inventory/hosts']
+
+    removals = [change for change in changes
+                if change['action'] == 'remove']
+    assert len(removals) == 2
+    vars_change = [change for change in removals
+                   if 'host_vars' in change['path']][0]
+    assert vars_change['secret'] is False
+    assert vars_change['diff'] is not None
+    secret_change = [change for change in removals
+                     if 'secret' in change['path']][0]
+    assert secret_change['secret'] is True
+    assert secret_change['diff'] is None
+    assert 's3cr3t' not in str(secret_change)
 
 
 def test_a_prune_outside_the_view_root_refuses_the_render(
@@ -656,13 +670,83 @@ def test_a_stale_absolute_sensitive_file_is_not_pruned(
 
 
 def test_the_render_is_idempotent(inventory_project):
-    """A render which changes nothing rewrites nothing: the files
-    keep their content, the manifest keeps its entries."""
+    """A render which changes nothing records no changes and
+    rewrites nothing: the files keep their content."""
     project = inventory_project()
-    paths = render_inventory(project, 'system', outputs())
-    before = {path: read(project, path) for path in paths}
+    changes = render_inventory(project, 'system', outputs())
+    assert changes
+    before = {change['path']: open(change['path']).read()
+              for change in changes}
+    assert render_inventory(project, 'system', outputs()) == []
+    assert {path: open(path).read()
+            for path in before} == before
+
+
+def test_the_dry_run_writes_nothing(inventory_project):
+    """The dry run reports the changes and writes nothing: the
+    scaffold hosts file stays, the store stays empty, the manifest
+    is not written; a real render after it applies the changes."""
+    project = inventory_project()
+    changes = render_inventory(project, 'system', outputs(),
+                               dry_run=True)
+
+    assert [change['action'] for change in changes] == \
+        ['create', 'update', 'create']
+    assert changes[0]['secret'] is True
+    assert changes[0]['diff'] is None
+    assert changes[1]['diff'] is not None
+    assert read(project, 'inventory/hosts') == \
+        '# scaffold comment\n\n[debops_all_hosts]\n'
+    assert not os.path.exists(os.path.join(
+        view_root(project), 'secret', 'tofu'))
+    assert not os.path.exists(os.path.join(
+        inventory_dir(project), MANIFEST_NAME))
+
     render_inventory(project, 'system', outputs())
-    assert {path: read(project, path) for path in paths} == before
+    assert read(project,
+                'secret/tofu/web-1/sensitive/host_token/content') == \
+        's3cr3t'
+    assert render_inventory(project, 'system', outputs(),
+                            dry_run=True) == []
+
+
+def test_the_changes_carry_the_diffs(inventory_project):
+    """The change records carry the unified diffs of the files: an
+    update of a rendered file shows the removed and the added
+    lines."""
+    project = inventory_project()
+    render_inventory(project, 'system', outputs())
+    seed = dict(SEED)
+    seed['web-1'] = dict(SEED['web-1'])
+    seed['web-1']['vars'] = dict(SEED['web-1']['vars'])
+    seed['web-1']['vars']['port'] = 8022
+    changes = render_inventory(project, 'system', outputs(seed=seed))
+
+    update = [change for change in changes
+              if change['action'] == 'update'][0]
+    lines = update['diff'].splitlines()
+    assert any(line.startswith('-') and 'port="22"' in line
+               for line in lines)
+    assert any(line.startswith('+') and 'port="8022"' in line
+               for line in lines)
+    assert 'a/ansible/views/system/inventory/hosts' in update['diff']
+
+
+def test_the_secret_changes_carry_no_diff(inventory_project):
+    """The sensitive content files record their action but no diff:
+    the old and the new values must not reach the terminal."""
+    project = inventory_project()
+    render_inventory(project, 'system', outputs())
+    seed = {'web-1': {'address': '10.42.7.101',
+                      'sensitive_vars': {'host_token': 'n3w'}}}
+    changes = render_inventory(project, 'system', outputs(seed=seed,
+                                                          groups=None))
+
+    update = [change for change in changes if change['secret']][0]
+    assert update['action'] == 'update'
+    assert update['diff'] is None
+    assert 's3cr3t' not in str(update)
+    assert 'n3w' not in str(update)
 
 
 def test_the_unknown_hosts_format_is_refused(inventory_project):
@@ -677,8 +761,9 @@ def test_the_unknown_hosts_format_is_refused(inventory_project):
 # outputs of the view through the runner machinery, cycles the Ansible
 # secret store around the render and prints the rendered paths.
 
-def inventory_operation(monkeypatch, rc=0, output='{}', paths=None,
-                        unlock=True, render_error=None):
+def inventory_operation(monkeypatch, rc=0, output='{}', changes=None,
+                        unlock=True, render_error=None, dry_run=False,
+                        diff=False):
     """Run the interpreter's inventory operation with the runner, the
     secret store and the renderer stubbed; returns the stubs."""
     from types import SimpleNamespace
@@ -698,11 +783,14 @@ def inventory_operation(monkeypatch, rc=0, output='{}', paths=None,
                             mock.Mock(side_effect=render_error))
     else:
         monkeypatch.setattr(cli_module, "render_inventory",
-                            mock.Mock(return_value=paths or []))
-    args = SimpleNamespace(bell=False, workspace=None)
+                            mock.Mock(return_value=changes or []))
+    args = SimpleNamespace(bell=False, workspace=None, dry_run=dry_run,
+                           diff=diff)
     project = SimpleNamespace(view='system', path='/tmp/opencode/x')
-    cli_module.Interpreter._do_tofu_inventory(
-        mock.Mock(), args, project)
+    # A bare interpreter instance: the operation prints through the
+    # real '_render_tofu_changes', which a Mock self would swallow
+    interpreter = cli_module.Interpreter.__new__(cli_module.Interpreter)
+    interpreter._do_tofu_inventory(args, project)
     return runner, store, cli_module.render_inventory
 
 
@@ -710,10 +798,11 @@ def test_the_inventory_operation_collects_through_the_runner(
         monkeypatch, capsys):
     """The operation runs 'tofu output -json' with the capture mode
     and the machine-consumption color stripped, cycles the Ansible
-    store around the render and prints the rendered paths."""
+    store around the render and prints the changes it applies."""
     runner, store, render = inventory_operation(
         monkeypatch, output='{"inventory_seed": {}}',
-        paths=['inventory/hosts'])
+        changes=[{'path': '/x/inventory/hosts', 'action': 'create',
+                  'diff': None, 'secret': False}])
 
     cli_runner = __import__('debops.cli.interpreter',
                             fromlist=['TofuRunner']).TofuRunner
@@ -724,7 +813,25 @@ def test_the_inventory_operation_collects_through_the_runner(
     render.assert_called_once()
     store.unlock.assert_called_once()
     store.lock.assert_called_once()
-    assert capsys.readouterr().out == 'inventory/hosts\n'
+    assert capsys.readouterr().out == 'Create /x/inventory/hosts\n'
+
+
+def test_the_dry_run_operation_reports_without_applying(
+        monkeypatch, capsys):
+    """The '--dry-run' option rides into the renderer and the
+    reported actions carry the 'Would' prefix; the '--diff' option
+    prints the diff of a change which carries one."""
+    _, _, render = inventory_operation(
+        monkeypatch, output='{"inventory_seed": {}}', dry_run=True,
+        changes=[{'path': '/x/inventory/hosts', 'action': 'create',
+                  'diff': None, 'secret': False},
+                 {'path': '/x/secret/tofu/x/content', 'action': 'update',
+                  'diff': None, 'secret': True}])
+
+    assert render.call_args.kwargs['dry_run'] is True
+    assert capsys.readouterr().out == (
+        'Would create /x/inventory/hosts\n'
+        'Would update /x/secret/tofu/x/content\n')
 
 
 def test_a_failed_output_operation_exits_with_its_code(
@@ -757,7 +864,10 @@ def test_an_already_unlocked_store_is_not_locked(monkeypatch):
     """The interpreter does not lock what it did not unlock: a store
     which was already unlocked stays unlocked."""
     _, store, _ = inventory_operation(monkeypatch, unlock=False,
-                                      paths=['inventory/hosts'])
+                                      changes=[{'path': 'inventory/hosts',
+                                                'action': 'create',
+                                                'diff': None,
+                                                'secret': False}])
 
     store.unlock.assert_called_once()
     store.lock.assert_not_called()
