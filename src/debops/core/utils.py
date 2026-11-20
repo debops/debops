@@ -184,6 +184,46 @@ def write_file(path, content, overwrite=False, project=None):
     return True
 
 
+def remove_file(path, project=None):
+    """Remove the file at path.
+
+    When the project directory is given, the removal is refused when
+    the target path resolves outside of it, so that a stale record
+    cannot delete files elsewhere on the file system.
+
+    Returns True if the file was removed, False if it did not exist.
+    """
+    if project is not None and not path_inside_project(path, project):
+        raise ValueError('Refusing to remove outside of the project '
+                         'directory: ' + path)
+
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        return False
+    return True
+
+
+def remove_dir(path, project=None):
+    """Remove the empty directory at path.
+
+    When the project directory is given, the removal is refused when
+    the target path resolves outside of it.
+
+    Returns True if the directory was removed, False when it did not
+    exist or was not empty.
+    """
+    if project is not None and not path_inside_project(path, project):
+        raise ValueError('Refusing to remove outside of the project '
+                         'directory: ' + path)
+
+    try:
+        os.rmdir(path)
+    except OSError:
+        return False
+    return True
+
+
 def host_is_controller():
     """Report whether the local host can run DebOps playbooks itself.
 
