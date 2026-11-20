@@ -1,0 +1,15 @@
+{# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# The OpenTofu environment of the '{{ view_name }}' view.
+#
+# The values of this file compose the environment of the 'debops tofu'
+# operations: TF_VAR_state_passphrase protects the state and the plan
+# files with the OpenTofu-native encryption, the other TF_VAR_*
+# variables carry the provider credentials. The file is tracked in git
+# behind the encrypted store: a repository move unlocks it with the
+# GPG key of the store, and the OpenTofu data decrypts from the
+# passphrase.
+
+TF_VAR_state_passphrase={{ passphrase }}

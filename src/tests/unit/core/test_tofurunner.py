@@ -570,7 +570,7 @@ def test_execute_composes_the_store_environment(tofu_project,
     project = tofu_project()
     os.makedirs(os.path.join(project.path, "tofu", "secret"),
                 exist_ok=True)
-    with open(os.path.join(project.path, "tofu", "secret", ".env"),
+    with open(os.path.join(project.path, "tofu", "secret", "environment"),
               "w") as handle:
         handle.write("TF_VAR_state_passphrase=from-the-store\n")
 
@@ -640,7 +640,7 @@ def test_missing_view_tree_is_created_lazily(tofu_project,
     runner.execute()
 
     assert os.path.isfile(os.path.join(view_dir, "main.tf"))
-    assert os.path.isfile(os.path.join(view_dir, "secret", ".env"))
+    assert os.path.isfile(os.path.join(view_dir, "secret", "environment"))
     # The operation runs against the created view
     assert runner._view_root == view_dir
 
@@ -825,19 +825,24 @@ def test_provider_version_pin_is_written(tofu_project,
 
 def test_state_passphrase_is_generated_into_the_store(
         tofu_project, stub_tofu_subprocess):
-    """The store's '.env' carries the state passphrase which the
-    runner composes into the environment."""
+    """The store's 'environment' file carries the state passphrase
+    which the runner composes into the environment; the passphrase is
+    drawn from the URL-safe alphabet and the file documents itself."""
     project = tofu_project(project_type="modern")
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
     shutil.rmtree(view_dir)
 
     runner = TofuRunner(project, ["plan"])
     runner.execute()
-    dotenv_content = open(os.path.join(view_dir, "secret", ".env")).read()
+    env_content = open(os.path.join(view_dir, "secret",
+                                    "environment")).read()
 
-    assert dotenv_content.startswith("TF_VAR_state_passphrase=")
-    passphrase = dotenv_content.split("=", 1)[1].rstrip("\n")
-    assert len(passphrase) == 64
+    assert "The OpenTofu environment of the 'system' view" in env_content
+    passphrase_line = [line for line in env_content.splitlines()
+                       if line.startswith("TF_VAR_state_passphrase=")][0]
+    passphrase = passphrase_line.split("=", 1)[1]
+    assert len(passphrase) == 32
+    assert all(char.isalnum() or char in "-_" for char in passphrase)
     # The store's environment composes into the subprocess environment
     # at execution time, after the store is unlocked
     env = runner._extra_env()
@@ -1072,7 +1077,8 @@ def test_eval_prints_the_command_without_the_store_secrets(tofu_project):
     out of the output."""
     project = tofu_project(project_type="modern")
     view_dir = os.path.join(project.path, "tofu", "views", project.view)
-    with open(os.path.join(view_dir, "secret", ".env"), "w") as handle:
+    with open(os.path.join(view_dir, "secret", "environment"),
+              "w") as handle:
         handle.write("TF_VAR_state_passphrase=from-the-store\n")
 
     runner = TofuRunner(project, ["plan"])
