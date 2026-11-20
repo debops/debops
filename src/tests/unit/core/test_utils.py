@@ -116,6 +116,58 @@ def test_write_file_refuses_a_target_outside_the_project(tmp_path):
                          project=str(project))
 
 
+def test_remove_file_removes_the_file(tmp_path):
+    target = tmp_path / "file.txt"
+    target.write_text("hello\n")
+
+    assert utils.remove_file(str(target)) is True
+    assert not target.exists()
+
+
+def test_remove_file_reports_a_missing_file(tmp_path):
+    assert utils.remove_file(str(tmp_path / "missing.txt")) is False
+
+
+def test_remove_file_refuses_a_path_outside_the_project(tmp_path):
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    project = tmp_path / "project"
+
+    with pytest.raises(ValueError):
+        utils.remove_file(str(outside / "file.txt"),
+                          project=str(project))
+
+
+def test_remove_dir_removes_an_empty_directory(tmp_path):
+    target = tmp_path / "empty"
+    target.mkdir()
+
+    assert utils.remove_dir(str(target)) is True
+    assert not target.exists()
+
+
+def test_remove_dir_keeps_a_filled_directory(tmp_path):
+    target = tmp_path / "filled"
+    target.mkdir()
+    (target / "file.txt").write_text("hello\n")
+
+    assert utils.remove_dir(str(target)) is False
+    assert target.exists()
+
+
+def test_remove_dir_reports_a_missing_directory(tmp_path):
+    assert utils.remove_dir(str(tmp_path / "missing")) is False
+
+
+def test_remove_dir_refuses_a_path_outside_the_project(tmp_path):
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    project = tmp_path / "project"
+
+    with pytest.raises(ValueError):
+        utils.remove_dir(str(outside), project=str(project))
+
+
 def test_host_is_controller_on_debian(monkeypatch):
     monkeypatch.setattr(utils.platform, "system", lambda: "Linux")
     monkeypatch.setattr(utils.distro, "id", lambda: "Debian")
