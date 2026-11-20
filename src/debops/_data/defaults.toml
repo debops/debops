@@ -110,6 +110,7 @@ no-comments = true
 # in views which use a remote backend; the wrapper then skips the local
 # state checks.
 state_path = "state/terraform.tfstate"
+
 # The OpenTofu operations which the 'debops tofu' wrapper is allowed to
 # run. An empty list allows every operation; a non-empty list restricts
 # the wrapper to the named operations, for example:
@@ -118,6 +119,16 @@ state_path = "state/terraform.tfstate"
 #
 # The raw 'tofu' command is not affected by this option.
 operations = []
+
+# How many plan files the DebOps flows keep in the view's 'plans/'
+# directory. The
+# plan files which DebOps itself saves are pruned to the newest ones;
+# plan files which the user saves with the '-out' option are never
+# touched.
+plan_retention = 3
+
+
+[tofu.mkview]
 
 # The OpenTofu providers which the tofu views of the project use. The
 # list is written into the generated 'providers.tf' file of a view when
@@ -163,14 +174,7 @@ default_providers = []
 # reconciles into the generated files.
 default_modules = {}
 
-# How many plan files the DebOps flows keep in the state directory. The
-# plan files which DebOps itself saves are pruned to the newest ones;
-# plan files which the user saves with the '-out' option are never
-# touched.
-plan_retention = 3
-
-
-[tofu.init.secret]
+[tofu.mkview.secret]
 
 # Whether the view creation generates the state passphrase into the
 # store's 'environment' file. When disabled, the template ships an

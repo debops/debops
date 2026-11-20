@@ -33,7 +33,7 @@ def resolve_providers(project, providers=None):
     """
     if providers:
         return providers
-    return project.config.raw['tofu']['default_providers']
+    return project.config.raw['tofu']['mkview']['default_providers']
 
 
 def provider_entries(providers):
