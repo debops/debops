@@ -26,6 +26,7 @@ import hashlib
 import logging
 import os
 import platform
+import re
 import shutil
 import sys
 import tempfile
@@ -67,8 +68,25 @@ def binary_install_root():
 
 
 def managed_binary_path(version):
-    """Return the path of the managed OpenTofu binary of a version."""
-    return os.path.join(binary_install_root(), version, 'tofu')
+    """Return the path of the managed OpenTofu binary of a version.
+
+    The version is validated: the path composes from it, and a
+    traversal-shaped value would place the installed binary outside
+    the managed root -- or on the operator's PATH.
+    """
+    if not version or not isinstance(version, str) or \
+            not re.fullmatch(r'[0-9A-Za-z][0-9A-Za-z._-]*', version) \
+            or '..' in version:
+        raise ValueError(
+            'The OpenTofu version {!r} is not a version string: the '
+            'managed binary paths compose from it.'.format(version))
+    target = os.path.join(binary_install_root(), version, 'tofu')
+    if not os.path.realpath(target).startswith(
+            os.path.realpath(binary_install_root()) + os.sep):
+        raise ValueError(
+            'The managed binary of the version {!r} would land '
+            'outside the DebOps binary root.'.format(version))
+    return target
 
 
 def known_version(project):
@@ -300,15 +318,6 @@ def _download(url, path):
     with urllib.request.urlopen(request, timeout=60) as response, \
             open(path, 'wb') as fh:
         shutil.copyfileobj(response, fh)
-
-
-def _release_keyring():
-    """Return the armored release keyring which ships with the debops
-    package, or None when it is not available."""
-    try:
-        return pkgutil.get_data('debops', TOFU_KEYRING)
-    except (FileNotFoundError, OSError):
-        return None
 
 
 def _verify_checksums(archive, sums, archive_name):
