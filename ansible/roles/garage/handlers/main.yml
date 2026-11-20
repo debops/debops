@@ -1,0 +1,13 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Restart garage
+  ansible.builtin.systemd:
+    name: 'garage.service'
+    state: 'restarted'
+  when:
+    - garage__deploy_state != 'absent'
+    - (garage__register_unit_stat.stat.exists | d(False) | bool) or
+      not (ansible_check_mode | bool)
