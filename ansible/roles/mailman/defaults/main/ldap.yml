@@ -69,9 +69,11 @@ mailman__ldap_bind_dn: '{{ ([mailman__ldap_self_rdn]
 # .. envvar:: mailman__ldap_bind_password [[[
 #
 # The password used by Mailman 3 to access the LDAP directory.
-mailman__ldap_bind_password: '{{ lookup("password", secret + "/ldap/credentials/"
-                                                    + mailman__ldap_bind_dn | to_uuid
-                                                    + ".password chars=ascii_letters,digits length=22") }}'
+mailman__ldap_bind_password: '{{ lookup("ldap_password",
+                                        secret + "/ldap/credentials/",
+                                        mailman__ldap_bind_dn,
+                                        "chars=ascii_letters,digits "
+                                        + "length=22") }}'
 
                                                                    # ]]]
 # .. envvar:: mailman__ldap_base_dn [[[

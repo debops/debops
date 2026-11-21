@@ -110,8 +110,9 @@ sssd__ldap_binddn: '{{ ([sssd__ldap_self_rdn] + sssd__ldap_device_dn) | join(","
 #
 # The password stored in the account LDAP object used by the :command:`sssd`
 # service to bind to the LDAP directory.
-sssd__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
-                               + sssd__ldap_binddn | to_uuid + ".password length=32"))
+sssd__ldap_bindpw: '{{ (lookup("ldap_password",
+                               secret + "/ldap/credentials/",
+                               sssd__ldap_binddn, "length=32"))
                        if sssd__ldap_enabled | bool
                        else "" }}'
 

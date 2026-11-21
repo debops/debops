@@ -73,6 +73,11 @@ spaces.  You can use the :file:`ldap/get-uuid.yml` playbook to convert user
 account DNs or arbitrary LDAP Distinguished Names to an UUID value you can use
 to look up the passwords manually, if needed.
 
+In addition, the file :file:`secret/ldap/credentials/debops_ldap_uuid.log` will
+contain a list of known UUID-DN mappings (this file is automatically maintained
+by the `ldap_password` lookup plugin from :ref:`debops.ansible_plugins`, which
+should be used in any role which wishes to create/fetch LDAP credentials).
+
 Password Store
 ~~~~~~~~~~~~~~
 Finally, the role will try and lookup the password using the `passwordstore`__

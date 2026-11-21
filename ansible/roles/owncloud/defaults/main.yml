@@ -1159,8 +1159,10 @@ owncloud__ldap_binddn: '{{ ([owncloud__ldap_self_rdn] + owncloud__ldap_device_dn
 #
 # The password stored in the account LDAP object used by the Nextcloud service
 # to bind to the LDAP directory.
-owncloud__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
-                                   + owncloud__ldap_binddn | to_uuid + ".password length=32 "
+owncloud__ldap_bindpw: '{{ (lookup("ldap_password",
+                                   secret + "/ldap/credentials/",
+                                   owncloud__ldap_binddn,
+                                   "length=32 "
                                    + "chars=ascii_letters,digits,!@_#$%^&*"))
                            if owncloud__ldap_enabled | bool
                            else "" }}'

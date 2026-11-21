@@ -190,8 +190,9 @@ dokuwiki__ldap_binddn: '{{ ([dokuwiki__ldap_self_rdn] + dokuwiki__ldap_device_dn
 #
 # The password stored in the account LDAP object used by the DokuWiki service
 # to bind to the LDAP directory.
-dokuwiki__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
-                                   + dokuwiki__ldap_binddn | to_uuid + ".password length=32"))
+dokuwiki__ldap_bindpw: '{{ (lookup("ldap_password",
+                                   secret + "/ldap/credentials/",
+                                   dokuwiki__ldap_binddn, "length=32"))
                            if dokuwiki__ldap_enabled | bool
                            else "" }}'
 
