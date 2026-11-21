@@ -17,6 +17,8 @@ prereqs)
     ;;
 esac
 
+# jinja templating is not supported by shellcheck
+# shellcheck disable=all
 {% for name, interface in dropbear_initramfs__combined_interfaces.items() %}
 {%   set interface_name = (interface.iface | d(name)) %}
 ip link    set   dev {{ interface_name | quote }} down
