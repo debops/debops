@@ -321,6 +321,24 @@ that uses the ``debops.docker_service`` role:
    :lines: 1,5-
 
 
+Role entry points
+-----------------
+
+The ``debops.docker_service`` role supports multiple entry points, utilized by
+the playbooks provided with the role:
+
+``service/docker_service``
+  The main playbook which configures a complete Docker service stack using
+  other DebOps roles as needed. Tags can be used to apply specific roles or
+  exclude roles that are not needed in a given Ansible playbook run.
+
+  This playbook is included in the main DebOps :file:`site.yml` playbook.
+
+``scope/docker_service``
+  The playbook that only configures the Docker service itself. It will work
+  correctly on an already configured host, but might not work on a clean host.
+
+
 Ansible tags
 ------------
 

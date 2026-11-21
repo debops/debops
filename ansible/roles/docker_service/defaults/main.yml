@@ -189,7 +189,9 @@ docker_service__ferm__default_protocol: 'tcp'
 # Default action applied to traffic that does not match any ``allow`` source
 # range when a ``published_ports`` entry is firewalled. Supported values:
 #
-# - ``reject``: reply with an ICMP/TCP-reset (default)
+# - ``reject``: reply to the client, choosing the reply type from the protocol
+#   (TCP gets a ``tcp-reset``, UDP gets ``icmp-port-unreachable``, anything else
+#   gets ``icmp-admin-prohibited``) (default)
 # - ``drop``: silently discard the packet
 docker_service__ferm__default_action: 'reject'
 
@@ -201,7 +203,8 @@ docker_service__ferm__default_action: 'reject'
 # included as a ``pre_task`` in the playbook. Each service entry that defines
 # ``published_ports`` with a non-empty ``allow`` list will contribute
 # accept rules on the configured chain (``DOCKER-USER`` by default)
-# and a trailing default-deny rule for the declared port.
+# and a trailing default-deny rule for the declared port. Do not set this
+# variable directly, it is regenerated on every run.
 docker_service__ferm__dependent_rules: []
                                                                    # ]]]
                                                                    # ]]]

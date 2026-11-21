@@ -4,13 +4,38 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 # This task file is included via pre_tasks in the playbook to build
-# ferm dependent variables before the ferm role runs. The template
-# lookup must execute in the docker_service role context to find
-# the templates in this role's templates/ directory.
+# ferm dependent variables before the ferm role runs. The rule list is
+# rendered by the docker_service filter plugin, which runs controller-side
+# and does not need role-local template lookup.
+
+- name: Find existing docker_service ferm rules
+  ansible.builtin.find:
+    paths: [ '/etc/ferm/rules.d/' ]
+    patterns: [ '*_rule_docker_service_*.conf' ]
+    file_type: 'file'
+  become: True
+  register: docker_service__register_ferm_rules
+  tags: [ 'role::docker_service', 'skip::docker_service',
+          'role::ferm', 'skip::ferm' ]
+
+- name: Extract names of existing docker_service ferm rules
+  ansible.builtin.set_fact:
+    docker_service__ferm__existing_rule_names: '{{
+      docker_service__register_ferm_rules.files | d([])
+      | map(attribute="path")
+      | map("regex_replace", "^.*/[0-9]+_rule_(?P<name>.*)\.conf$", "\g<name>")
+      | list }}'
+  tags: [ 'role::docker_service', 'skip::docker_service',
+          'role::ferm', 'skip::ferm' ]
 
 - name: Build ferm dependent variables from service definitions
   ansible.builtin.set_fact:
-    docker_service__ferm__dependent_rules: '{{ lookup("template",
-                                               "lookup/docker_service__ferm_rules.j2")
-                                               | from_yaml
-                                               | default([], true) }}'
+    docker_service__ferm__dependent_rules: "{{
+      docker_service__combined_services | d([])
+      | debops.debops.docker_service_ferm_rules(default_chain=docker_service__ferm__default_chain,
+                                                default_protocol=docker_service__ferm__default_protocol,
+                                                default_action=docker_service__ferm__default_action,
+                                                on_disk_rule_names=docker_service__ferm__existing_rule_names)
+      | list }}"
+  tags: [ 'role::docker_service', 'skip::docker_service',
+          'role::ferm', 'skip::ferm' ]
