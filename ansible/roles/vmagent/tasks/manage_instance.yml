@@ -1,0 +1,189 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Manage a single vmagent instance. This file is included from main.yml in
+# a loop over the parsed vmagent__combined_instances list, which also defines
+# the vmagent__instance_flags (a dictionary of parsed command line flags),
+# vmagent__instance_token_src, vmagent__instance_token_file and
+# vmagent__instance_binary_outdated variables.
+
+- name: Check parameters of vmagent instance {{ instance.name }}
+  ansible.builtin.assert:
+    that:
+      - instance.name | string is match('^[A-Za-z0-9][A-Za-z0-9._-]*$')
+      - instance.state == 'absent' or
+        (instance.remote_write_urls | d([]) is not string and
+         instance.remote_write_urls | d([]) is not mapping and
+         instance.remote_write_urls | d([]) | length > 0)
+      - instance.state == 'absent' or
+        not (instance.bearer_token | d(False) | bool) or
+        vmagent__instance_token_src is file
+      - instance.state == 'absent' or
+        (instance.scrape_configs | d([], True) is not string and
+         instance.scrape_configs | d([], True) is not mapping and
+         instance.scrape_configs | d([], True) | reject('mapping') | list | length == 0 and
+         instance.scrape_configs | d([], True) | rejectattr('job_name', 'string') | list | length == 0)
+    fail_msg: 'vmagent instance "{{ instance.name }}" needs a name made of
+               letters, digits, ".", "_" and "-", a list with at least one
+               URL in "remote_write_urls", with "bearer_token" enabled the
+               {{ vmagent__instance_token_src }} file on the Ansible Controller,
+               and a "job_name" string in each scrape job in
+               "scrape_configs".'
+    quiet: True
+
+# The command line is passed through the ARGS variable in the environment
+# file. systemd splits it on whitespace and removes quotes, and the
+# environment file parser handles backslashes, so these characters are
+# rejected instead of being escaped twice.
+- name: Check command line flags of vmagent instance {{ instance.name }}
+  ansible.builtin.assert:
+    that:
+      - vmagent__var_invalid_flags | trim | length == 0
+    fail_msg: 'Values of the {{ vmagent__var_invalid_flags | trim }} flags of
+               vmagent instance "{{ instance.name }}" contain whitespace, quotes
+               or the backslash character, which cannot be passed to vmagent
+               through the environment file.'
+    quiet: True
+  vars:
+    vmagent__var_invalid_flags: |-
+      {% set invalid = [] %}
+      {% for url in instance.remote_write_urls | d([]) %}
+      {%   if (url | string) is search('[\\s"\'\\\\]') %}
+      {%     set _ = invalid.append('remoteWrite.url') %}
+      {%   endif %}
+      {% endfor %}
+      {% for key, value in vmagent__instance_flags | dictsort %}
+      {%   set values = value if (value is iterable and value is not string
+                                  and value is not mapping) else [ value ] %}
+      {%   for element in values %}
+      {%     if element is not none and (element | string) is search('[\\s"\'\\\\]') %}
+      {%       set _ = invalid.append(key) %}
+      {%     endif %}
+      {%   endfor %}
+      {% endfor %}
+      {{ invalid | unique | join(', ') }}
+  when: instance.state == 'present'
+
+- name: Configure vmagent instance {{ instance.name }}
+  when: instance.state == 'present'
+  block:
+
+    - name: Create queue directory for vmagent instance {{ instance.name }}
+      ansible.builtin.file:
+        path: '{{ vmagent__home }}/{{ instance.name }}'
+        state: 'directory'
+        owner: '{{ vmagent__user }}'
+        group: '{{ vmagent__group }}'
+        mode: '0750'
+
+    - name: Install bearer token for vmagent instance {{ instance.name }}
+      ansible.builtin.copy:
+        src: '{{ vmagent__instance_token_src }}'
+        dest: '{{ vmagent__instance_token_file }}'
+        owner: 'root'
+        group: '{{ vmagent__group }}'
+        mode: '0640'
+      register: vmagent__register_secret
+      no_log: '{{ debops__no_log | d(True) }}'
+      diff: False
+      when: instance.bearer_token | d(False) | bool
+
+    - name: Remove unused bearer token of vmagent instance {{ instance.name }}
+      ansible.builtin.file:
+        path: '{{ vmagent__instance_token_file }}'
+        state: 'absent'
+      register: vmagent__register_secret_removed
+      when: not (instance.bearer_token | d(False) | bool)
+
+    - name: Generate scrape configuration of vmagent instance {{ instance.name }}
+      ansible.builtin.template:
+        src: 'etc/vmagent/instance.yml.j2'
+        dest: '{{ vmagent__config_dir }}/{{ instance.name }}.yml'
+        owner: 'root'
+        group: '{{ vmagent__group }}'
+        mode: '0640'
+        validate: '{{ vmagent__bin_path }} -promscrape.config=%s -dryRun{{ vmagent__var_strict_parse }}'
+      vars:
+        # Same rule as in instance.env.j2: an unset or null flag keeps the
+        # default strict parsing of vmagent.
+        vmagent__var_strict_parse: '{{ " -promscrape.config.strictParse=false"
+                                       if (vmagent__instance_flags["promscrape.config.strictParse"]
+                                           | d(None) is not none
+                                           and not (vmagent__instance_flags["promscrape.config.strictParse"]
+                                                    | bool))
+                                       else "" }}'
+      register: vmagent__register_config
+
+    - name: Generate environment file of vmagent instance {{ instance.name }}
+      ansible.builtin.template:
+        src: 'etc/vmagent/instance.env.j2'
+        dest: '{{ vmagent__config_dir }}/{{ instance.name }}.env'
+        owner: 'root'
+        group: '{{ vmagent__group }}'
+        mode: '0640'
+      register: vmagent__register_env
+
+    # In check mode the template unit might not exist yet, see main.yml.
+    # vmagent__instance_binary_outdated comes from the local facts and catches
+    # an instance which still runs a replaced binary, for example when an
+    # earlier run failed between the installation and the restart.
+    - name: Restart vmagent instance {{ instance.name }}
+      ansible.builtin.systemd:  # noqa no-handler
+        name: 'vmagent@{{ instance.name }}.service'
+        state: 'restarted'
+      register: vmagent__register_restart
+      when:
+        - (vmagent__register_unit_stat.stat.exists | d(False) | bool) or
+          not (ansible_check_mode | bool)
+        - (vmagent__register_env is changed) or
+          (vmagent__register_secret is changed) or
+          (vmagent__register_secret_removed is changed) or
+          (vmagent__register_unit is changed) or
+          (vmagent__fact_install | d(False) | bool) or
+          (vmagent__instance_binary_outdated | bool)
+
+    - name: Reload scrape configuration of vmagent instance {{ instance.name }}
+      ansible.builtin.systemd:  # noqa no-handler
+        name: 'vmagent@{{ instance.name }}.service'
+        state: 'reloaded'
+      when:
+        - (vmagent__register_unit_stat.stat.exists | d(False) | bool) or
+          not (ansible_check_mode | bool)
+        - vmagent__register_config is changed
+        - vmagent__register_restart is skipped
+
+    - name: Enable and start vmagent instance {{ instance.name }}
+      ansible.builtin.systemd:
+        name: 'vmagent@{{ instance.name }}.service'
+        enabled: True
+        state: 'started'
+      when: (vmagent__register_unit_stat.stat.exists | d(False) | bool) or
+            not (ansible_check_mode | bool)
+
+- name: Remove vmagent instance {{ instance.name }}
+  when: instance.state == 'absent'
+  block:
+
+    # Only a missing unit is tolerated here, same as in main.yml.
+    - name: Stop and disable vmagent instance {{ instance.name }}
+      ansible.builtin.systemd:
+        name: 'vmagent@{{ instance.name }}.service'
+        enabled: False
+        state: 'stopped'
+      register: vmagent__register_instance_stop
+      failed_when:
+        - vmagent__register_instance_stop is failed
+        - "'Could not find the requested service' not in (vmagent__register_instance_stop.msg | d(''))"
+        - (vmagent__register_instance_stop.status.LoadState | d('')) != 'not-found'
+
+    - name: Remove files of vmagent instance {{ instance.name }}
+      ansible.builtin.file:
+        path: '{{ item }}'
+        state: 'absent'
+      loop:
+        - '{{ vmagent__config_dir }}/{{ instance.name }}.yml'
+        - '{{ vmagent__config_dir }}/{{ instance.name }}.env'
+        - '{{ vmagent__instance_token_file }}'
+        - '{{ vmagent__home }}/{{ instance.name }}'

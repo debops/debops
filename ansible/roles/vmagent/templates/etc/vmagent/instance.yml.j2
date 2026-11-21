@@ -1,0 +1,25 @@
+{# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+#
+# vmagent scrape configuration for instance: {{ instance.name }}
+# Reference: https://docs.victoriametrics.com/victoriametrics/sd_configs/
+
+{#
+ # Scrape jobs with the same job_name are merged by the parse_kv_items filter.
+ # Jobs which are not in the "present" state are skipped, and the keys used by
+ # the filter are removed before the jobs are written to the file.
+ #}
+{% set uc_keys = [ 'state', 'weight', 'id', 'first_index', 'anchor_to',
+                   'comment', 'option', 'alias' ] %}
+{% set scrape_configs = instance.scrape_configs | d([], True)
+                        | debops.debops.parse_kv_items(name='job_name')
+                        | selectattr('state', 'equalto', 'present')
+                        | map('dict2items')
+                        | map('rejectattr', 'key', 'in', uc_keys)
+                        | map('items2dict') | list %}
+{{ ({'global': instance.global} if (instance.global | d({})) else {})
+   | combine({'scrape_configs': scrape_configs})
+   | to_nice_yaml(indent=2, width=120) }}
