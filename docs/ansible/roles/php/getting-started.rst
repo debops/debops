@@ -18,13 +18,11 @@ The ``debops.php`` role supports management of multiple PHP versions; only one
 PHP version can be managed at a time. By default the role will install and
 configure the PHP version provided with the current OS release.
 
-The role checks for existence of ``php7.3``, ``php`` and ``php5.6`` APT
-packages (by default in that order) and based on available versions installs
-either ``php7.3-*``, the version preferred by the ``php`` package or
-``php5.6-*`` APT packages. If multiple versions of the PHP packages are
-available, the first found one wins. To force an older version in case the
-newer one is installed, you can change the order of the packages used for the
-version detection using the :envvar:`php__version_preference` list.
+The role checks for existence of various PHP APT packages and chooses a version
+based the order in :envvar:`php__version_preference`.  To force an older
+version in case the newer one is installed, you can change the order of the
+packages used for the version detection using the
+:envvar:`php__version_preference` list.
 
 To learn how to specify different PHP packages for installation, refer to
 :ref:`php__ref_packages` documentation.
@@ -36,15 +34,14 @@ PHP packages provided by Ondřej Surý
 ------------------------------------
 
 `Ondřej Surý <https://qa.debian.org/developer.php?login=ondrej%40debian.org>`_
-is a member of the Debian PHP Maintainers team and maintains Debian
-`PHP5 <https://packages.qa.debian.org/p/php5.html>`_ and
-`PHP7 <https://packages.qa.debian.org/p/php7.0.html>`_ packages. He also provides
-`an external APT package repository <https://deb.sury.org/>`_ of PHP5 and PHP7
-packages (among other things) for Debian and Ubuntu distributions.
+is a member of the Debian PHP Maintainers team and maintains Debian PHP
+packages. He also provides `an external APT package repository
+<https://deb.sury.org/>`_ of various PHP versions for Debian and Ubuntu
+distributions.
 
 The ``debops.php`` role can use the packages from the Ondřej Surý repositories
-to provide PHP7 packages on Debian Jessie. Remember that these packages
-**DO NOT** fall under the Debian Stable security support and may contain bugs.
+to provide alternative PHP versions. Remember that these packages **DO NOT**
+fall under the Debian Stable security support and may contain bugs.
 
 To enable the custom APT repository, add in the Ansible inventory:
 
@@ -52,9 +49,7 @@ To enable the custom APT repository, add in the Ansible inventory:
 
    php__sury: True
 
-This will add the required OpenPGP keys and APT repositories. The order of the
-package versions should ensure that the PHP7 packages will be installed on
-Debian Jessie.
+This will add the required OpenPGP keys and APT repositories.
 
 
 Custom environment role
@@ -65,8 +60,8 @@ should be added to the playbook or role dependencies before the main role and
 other roles that use configuration from ``debops.php``, like
 :ref:`debops.logrotate`. The ``debops.php/env`` role configures custom APT
 repositories if they are enabled and prepares the facts needed by other roles
-to function correctly. See the :ref:`provided playbook <php__ref_example_playbook>`
-to see an example usage.
+to function correctly. See the
+:ref:`provided playbook<php__ref_example_playbook>` for an example usage.
 
 
 PHP Composer installation
@@ -74,8 +69,8 @@ PHP Composer installation
 
 The :ref:`debops.php` role will install the `PHP Composer`__, a dependency
 manager for PHP. The version from the OS repositories will be preferred. On
-older OS releases (including Debian Stretch), a known upstream binary will be
-downloaded and installed instead.
+older OS releases, a known upstream binary will be downloaded and installed
+instead.
 
 .. __: https://getcomposer.org/
 
@@ -83,15 +78,15 @@ downloaded and installed instead.
 Layout of the php.ini configuration
 -----------------------------------
 
-The main :file:`/etc/php{5,/7.0}/*/php.ini` files maintained by the OS distribution
-are not modified by the ``debops.php`` role to allow an easy upgrade process.
-Instead, a custom :file:`php.ini` configuration is stored in
-:file:`/etc/php{5,/7.0}/ansible/*.ini` files generated using a simple template,
-which are then linked to each of the PHP SAPI directories in
-:file:`/etc/php{5,/7.0}/*/conf.d/` which are read by the PHP interpreters. This
-allows for configuration synchronization between different PHP interpreters. To
-learn more about this process refer to :ref:`php__ref_configuration`
-documentation.
+The main :file:`/etc/php<version>/*/php.ini` files maintained by the OS
+distribution are not modified by the ``debops.php`` role to allow an easy
+upgrade process.  Instead, a custom :file:`php.ini` configuration is stored in
+:file:`/etc/php<bersion>/ansible/*.ini` files generated using a simple
+template, which is then linked to each of the PHP SAPI directories in
+:file:`/etc/php<version>/*/conf.d/` which are read by the PHP interpreters.
+This allows for configuration synchronization between different PHP
+interpreters. To learn more about this process refer to
+:ref:`php__ref_configuration` documentation.
 
 
 Information stored in Ansible local facts
@@ -102,7 +97,7 @@ through the Ansible local facts. The specific variables are:
 
 ``ansible_local.php.version``
   Short version of the PHP environment, used in package names.
-  Either ``5`` or ``7.0``.
+  For example, ``5`` or ``7.0``.
 
 ``ansible_local.php.long_version``
   Longer version of the PHP environment, used for version comparison. For
