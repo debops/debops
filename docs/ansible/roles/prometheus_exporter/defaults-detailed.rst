@@ -1,0 +1,110 @@
+.. Copyright (C) 2026 Patryk Sciborek <patryk@sciborek.com>
+.. Copyright (C) 2026 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-only
+
+.. _prometheus_exporter__ref_defaults_detailed:
+
+Default variable details
+========================
+
+.. include:: ../../../includes/global.rst
+
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 1
+
+
+.. _prometheus_exporter__ref_exporters:
+
+prometheus_exporter__exporters
+------------------------------
+
+The :envvar:`prometheus_exporter__exporters`,
+:envvar:`prometheus_exporter__group_exporters` and
+:envvar:`prometheus_exporter__host_exporters` lists define the managed
+exporters. They are combined into
+:envvar:`prometheus_exporter__combined_exporters` using
+:ref:`Universal Configuration <universal_configuration>`. Entries with
+the same ``name`` are merged; later lists override earlier ones
+(``host_exporters`` over ``group_exporters`` over ``exporters``). The
+role tasks and the local fact use this normalized list, so a host-level
+``state: absent`` disables a globally defined exporter instead of
+deploying it and then removing it.
+
+Each entry is a dict with the following keys:
+
+``name``
+  Required. Short exporter name, e.g. ``node``, ``postgres``, ``sql``. Used
+  to derive defaults for ``package``, ``service``, ``bin_path`` and the
+  listen port.
+
+``state``
+  Optional, default ``present``. ``absent`` stops/disables the service,
+  removes the drop-in and any role-managed configuration files
+  (``config`` / ``config_files``), and purges the package when
+  :envvar:`prometheus_exporter__purge_on_absent` is True.
+
+``package`` / ``packages``
+  Optional. APT package (default ``prometheus-<name>-exporter``) and a list
+  of extra packages.
+
+``service`` / ``bin_path``
+  Optional. systemd unit (default ``prometheus-<name>-exporter``) and binary
+  path (default ``/usr/bin/<service>``).
+
+``listen_address``
+  Optional when ``name`` is in
+  :envvar:`prometheus_exporter__known_ports`. ``host:port`` for
+  ``--web.listen-address``. Defaults to
+  ``prometheus_exporter__default_listen_host`` plus the known port.
+  Required for any other ``name`` — the role asserts this before
+  deploying, so an unmapped exporter cannot start on ``127.0.0.1:``.
+
+``web_listen_flag``
+  Optional, default ``--web.listen-address``. Override for exporters that use
+  a different flag name.
+
+``args``
+  Optional list of extra command-line flags appended verbatim.
+
+``environment``
+  Optional dict of environment variables placed in the drop-in (e.g.
+  ``DATA_SOURCE_NAME``). When non-empty, the drop-in is written with mode
+  ``0600`` and ``no_log``.
+
+``config`` / ``config_path`` / ``config_flag`` / ``config_mode`` / ``config_group`` / ``config_no_log``
+  Optional. When ``config`` (a dict) is set, it is rendered as YAML to
+  ``config_path`` (default ``/etc/prometheus/<name>.yml``) and
+  ``<config_flag>=<config_path>`` (default ``--config.file``) is added to
+  the command line. Files are owned by ``root`` and
+  ``config_group`` (default ``root``). Debian exporter units typically
+  run as an unprivileged user, so the default file mode is ``0644``.
+  Prefer ``environment`` for secrets (the drop-in is ``0600``). To keep
+  a YAML config readable only by the exporter, set
+  ``config_mode: '0640'``, ``config_group`` to that unit's group
+  (commonly ``prometheus``), and ``config_no_log: true``. ``0600``
+  works only when the process can read a root-owned file.
+
+``config_files``
+  Optional list of extra files
+  (``{ path, content|src, mode, group }``) for exporters split across
+  multiple files. ``group`` defaults to ``config_group``.
+
+``systemd_overrides``
+  Optional list of extra ``[Service]`` lines, e.g.
+  ``AmbientCapabilities=CAP_NET_RAW`` (blackbox ICMP) or ``User=root``
+  (local IPMI).
+
+Example:
+
+.. code-block:: yaml
+
+   prometheus_exporter__group_exporters:
+
+     - name: 'node'
+
+     - name: 'postgres'
+       environment:
+         DATA_SOURCE_NAME: 'host=127.0.0.1 port=5432 user=prometheus_exporter password=SECRET dbname=postgres sslmode=disable'
