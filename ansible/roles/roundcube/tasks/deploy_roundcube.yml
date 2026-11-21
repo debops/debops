@@ -77,6 +77,22 @@
 
 # ---- Post deployment ----
 
+- name: Remove Roundcube plugins via Composer
+  community.general.composer:  # noqa jinja[spacing]
+    command: 'remove'
+    arguments: '{{ item }}'
+    working_dir: '{{ roundcube__git_dest }}'
+    no_dev: True
+  loop: '{{ roundcube__combined_plugins | debops.debops.parse_kv_items
+            | selectattr("state", "match", "^absent$")
+            | selectattr("package", "defined")
+            | map(attribute="package") | list }}'
+  become: True
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_remove_composer_plugins
+  until: roundcube__register_remove_composer_plugins is succeeded
+  tags: [ 'skip::roundcube:plugins' ]
+
 - name: Install or upgrade PHP packages via Composer
   community.general.composer:  # noqa no-handler
     command: '{{ "upgrade"
