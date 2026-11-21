@@ -1,0 +1,24 @@
+---
+# Copyright (C) 2019-2023 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2024 Tasos Alvas <tasos.alvas@qwertyuiopia.com>
+# Copyright (C) 2019-2024 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Configure backups using borgbackup and borgmatic
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts:
+    - 'debops_service_borgbackup'
+    - 'debops_service_borgbackup_server'
+    - 'debops_service_borgbackup_controlled'
+    - 'debops_service_borgbackup_controller'
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+    - role: borgbackup
+      tags: [ 'role::borgbackup', 'skip::borgbackup' ]

@@ -1,0 +1,628 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2019-2023 Robin Schneider <ypid@riseup.net>
+# .. Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# .. Copyright (C) 2024 Tasos Alvas <tasos.alvas@qwertyuiopia.com>
+# .. Copyright (C) 2019-2023 DebOps https://debops.org/
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _borgbackup__ref_defaults:
+
+# debops.borgbackup default variables [[[
+# ==============================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Software installation [[[
+# -------------------------
+
+# .. envvar:: borgbackup__base_packages [[[
+#
+# List of base APT packages to install.
+borgbackup__base_packages:
+  - borgbackup
+                                                                     # ]]]
+
+# .. envvar:: borgbackup__borgmatic_packages [[[
+#
+# List of base APT packages to install on hosts with archive definitions.
+borgbackup__client_packages:
+  - borgmatic
+
+# .. envvar:: borgbackup__packages [[[
+#
+# List of additional APT packages to install.
+borgbackup__packages: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__borgmatic_binary [[[
+#
+# Location of the borgmatic binary on the host.
+borgbackup__borgmatic_binary: /usr/bin/borgmatic
+
+
+# ..envvar:: borgbackup__completion_dir [[[
+#
+# Location to place the borgmatic bash completion script.
+# Borgmatic suggests ``/usr/share/bash-completion/completions/``,
+# But we use the units in etc to have etckeeper coverage.
+borgbackup__completion_dir: /etc/bash_completion.d
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__cmd_validate [[[
+#
+# Version check for the borgmatic :command:`validate` command.
+borgbackup__cmd_validate: '{{
+    "validate-borgmatic-config"
+    if ansible_local.borgbackup.borgmatic_version is version("1.7.15", "<")
+    else "borgmatic config validate" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+
+# Basic configuration [[[
+# -----------------------
+
+# .. envvar:: borgbackup__restore_mode  [[[
+#
+# Restore mode will restore a client's borg encryption keys from the
+# controller's secrets and place the system into a state to be repopulated
+# from backup.
+#
+# :envvar:`borgbackup__service_enabled` has no effect on a restore mode
+# run and the service will be left disabled either way, to allow populating
+# the host's live data.
+#
+# New repository initialization still happens in restore mode, as borgmatic
+# will skip creating existing repositories on its own. However, if you are
+# restoring from a *local* repository, you will want those local files to be
+# available *before* the role runs.
+#
+# You can then restore your live data by manually running
+# :command:`sudo borgmatic restore --repository [repo unit] --archive latest`
+# or calling it from your dedicated service deployment playbook.
+#
+# Once your data is restored, run the role again with this off to resume
+# normal operation
+borgbackup__restore_mode: False
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__fqdn [[[
+#
+# Fully Qualified Domain Name of the host.
+#
+# If defined in inventory (not defaults), the role will use it in
+# **controller** configuration (as ``hostvars[host].borgbackup__fqdn``).
+# Otherwise it will fall back to using ``hostvars[client].ansible_host``
+# to connect to clients in inventory.
+borgbackup__fqdn: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+
+# .. envvar:: borgbackup__secret_base_path [[[
+#
+# Base secret path of this role on the Ansible controller.
+#
+# * :file:`clients/[host]` contains key backups and repo passphrases
+# * :file:`control/` contains the public keys of controllers
+borgbackup__secret_base_path: '{{ secret + "/borgbackup" }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+
+# Service configuration [[[
+# ------------------------
+
+# These variables apply to hosts in the ``[debops_service_borgmatic]`` group.
+
+# Variables in this section are used to configure the :command:``systemd``
+# timer and service running on clients to make backups.
+#
+# An equivalent cron job is configured on hosts that don't support ``systemd``
+#
+# .. envvar:: borgbackup__service_enabled [[[
+#
+# Enables or disables the recurring backup job on the host.
+borgbackup__service_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__service_period [[[
+#
+# Time interval between performing backups. See the :man:`systemd.time(7)`
+# documentation for possible ``OnCalendar=`` values. If you are not using
+# :command:`systemd`, the time units recognized by the :program:`cron`
+# Ansible module ``special_time`` parameter can be used instead.
+borgbackup__service_period: 'daily'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__service_random_delay [[[
+#
+# Random delay for the above time interval. See the :man:`systemd.time(7)`
+# documentation for possible ``RandomizedDelaySec=`` values and note that
+# the ``FixedRandomDelay=`` parameter is set to ``true``. The default
+# value means that backups will be triggered between midnight and 6AM.
+borgbackup__service_random_delay: '3h'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__service_persistent [[[
+#
+# Should the :command:`systemd` timer which triggers backups be persistent? If
+# true, a powered-down host will trigger a backup within
+# :envvar:`borgbackup__service_random_delay` after booting. If false, backups
+# will only be performed at the scheduled period/delay (see the ``Persistent=``
+# parameter in :man:`systemd.time(7)`). This has no effect on non-systemd
+# installations.
+borgbackup__service_persistent: True
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__service_ac_power [[[
+#
+# Sets `ConditionACPower` for the service, so it only runs when the
+# machine is plugged into power.
+borgbackup__service_ac_power: True
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__service_protect_system [[[
+#
+# Sets ``ProtectSystem`` in the systemd service.
+#
+# ``full`` disallows write access to :file:`/etc/`.
+#
+# ``strict`` disallows all write access and enables security features
+# configured in :envvar:`borgbackup__service_protect_root`,
+# :envvar:`borgbackup__service_rw_directories`, and
+# :envvar:`borgbackup__service_capabilities`.
+borgbackup__service_protect_system: 'full'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__service_protect_root [[[
+#
+# Protects the :file:`/root` directory from the :command:`borgmatic` command
+# when ran by :command:`systemd` by mounting a tmpfs on top of /root and
+# allowing it access to a subset of directories.
+#
+# If true, you cannot backup the :file:`/root` directory.
+#
+# This only applies to systemd installations with
+# :envvar:`borgbackup__service_protect_system` set to ``strict``.
+borgbackup__service_protect_root: True
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__service_rw_directories [[[
+#
+# List of directories which should be readable and writeable by
+# :command:`borgmatic` on clients when ran by :command:`systemd`.
+#
+# This is necessary if you configure local repositories with
+# :envvar:`borgbackup__service_protect_system` set to ``strict``.
+borgbackup__service_rw_directories: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__service_capabilities [[[
+#
+# Configures ``CapabilityBoundingSet`` in the systemd service.
+# May interfere with running external programs within borgmatic hooks.
+#
+# :man:`capabilities(7)` to tweak it further, or set it to "" to disable.
+#
+# This only applies to systemd installations with
+# :envvar:`borgbackup__service_protect_system` set to ``strict``.
+borgbackup__service_capabilities: 'CAP_DAC_READ_SEARCH CAP_NET_RAW'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__service_systemd_units [[[
+#
+# Configures the :ref:`debops.systemd` role as ``systemd__dependent_units``
+# to add the borgmatic timer and service on systemd clients.
+#
+# The configuration is based on the `borgmatic systemd service sample`__,
+# and parametrized to use the variables above.
+# If you template your own, you can safely ignore them.
+#
+# .. __: https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/sample/systemd/borgmatic.service
+borgbackup__service_systemd_units:
+  - name: borgmatic.service
+    raw: '{{ lookup("template", "borgbackup__service__systemd.j2") }}'
+    state: present
+
+  - name: borgmatic.timer
+    raw: |
+      [Unit]
+      Description=Perform a backup using borgmatic/BorgBackup
+      Documentation=https://docs.debops.org/en/master/ansible/roles/debops.borgbackup/
+
+      [Timer]
+      OnCalendar={{ borgbackup__service_period }}
+      RandomizedDelaySec={{ borgbackup__service_random_delay }}
+      FixedRandomDelay=true
+      {% if not borgbackup__service_persistent | d(False) | bool %}
+      Persistent=false
+      {% endif %}
+
+      [Install]
+      WantedBy=timers.target
+    enabled: '{{ borgbackup__service_enabled }}'
+    state: '{{ "started"
+            if (borgbackup__service_enabled and not borgbackup__restore_mode)
+            else "stopped" }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+
+# Archive encryption [[[
+# ----------------------
+
+# ``repo`` configuration entries initialize borgbackup repositories with passkeys
+# stored as :file:`secret/{hostname}/{item.name}_passphrase.txt` on the controller.
+#
+# .. envvar:: borgbackup__encryption [[[
+#
+# The encryption mode to use when creating a new repository. See
+# :ref:`borgbackup__ref_encryption` for details.
+borgbackup__encryption: 'keyfile-blake2'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__passphrase_length [[[
+#
+# Length of randomly generated borgbackup repository passphrase. Upper and
+# lowercase ASCII letters and the numbers 0-9 are used, i.e. 62 possibilities,
+# or a bit less than 6 bits of entropy per character. The passphrase is used
+# to generate 256-bit repo keys.
+borgbackup__passphrase_length: 48
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__passphrase_base_path [[[
+#
+# Passphrase base path on the remote machine.
+borgbackup__passphrase_base_path: '{{ borgbackup__configuration_base_path + "/passphrases" }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+
+# Borgmatic configuration [[[
+# ---------------------------
+
+# The role configures no repositories by default,
+# See :ref:`borgbackup__ref_configuration` for usage examples.
+#
+# .. envvar:: borgbackup__configuration_base_path [[[
+#
+# Main configuration directory for borgmatic on the remote machine.
+borgbackup__configuration_base_path: '/etc/borgmatic'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__configuration_include_path [[[
+#
+# Directory for borgmatic configuration includes on the remote machine.
+borgbackup__configuration_include_path: '{{ borgbackup__configuration_base_path }}/includes'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__configuration_repo_path [[[
+#
+# Directory for debops repository definition includes on the remote machine.
+borgbackup__configuration_repo_path: '{{ borgbackup__configuration_base_path }}/repos'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__configuration_unit_path [[[
+#
+# Directory for borgmatic configuration units on the remote machine.
+borgbackup__configuration_unit_path: '/etc/borgmatic.d'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__legacy_common_yaml [[[
+#
+# Common configuration include content for borgmatic, legacy syntax version.
+#
+# If debian's borgmatic version is ``1.8.0`` or later, feel free to remove this
+# and incorporate ``borgbackup__common_yaml`` in the default configuration.
+borgbackup__legacy_common_yaml:
+  retention:
+    # Retention policy for how many backups to keep.
+    keep_daily: 7
+    keep_weekly: 4
+    keep_monthly: 6
+
+  consistency:
+    # List of checks to run to validate your backups.
+    checks:
+      - name: repository
+      - name: archives
+        frequency: 2 weeks
+
+  storage:
+    # Only rely on system-wide knows hosts, disable user interaction, no multiple sessions
+    ssh_command: 'ssh -o CheckHostIP=no -o ControlMaster=no -o UserKnownHostsFile=none -o BatchMode=yes -o ServerAliveInterval=120'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__common_yaml [[[
+#
+# Common configuration include content for borgmatic version ``1.8.0`` or later.
+borgbackup__common_yaml:
+  # Retention policy for how many backups to keep.
+  keep_daily: 7
+  keep_weekly: 4
+  keep_monthly: 6
+
+  # List of checks to run to validate your backups.
+  checks:
+    - name: repository
+    - name: archives
+      frequency: 2 weeks
+
+  # Only rely on system-wide knows hosts, disable user interaction, no multiple sessions
+  ssh_command: 'ssh -o CheckHostIP=no -o ControlMaster=no -o UserKnownHostsFile=none -o BatchMode=yes -o ServerAliveInterval=120'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__default_configuration [[[
+#
+# List of the default borgmatic configuration options.
+borgbackup__default_configuration:
+  - name: common
+    type: include
+    comment: "Common defaults included in repo definitions"
+    yaml: '{{ borgbackup__legacy_common_yaml
+              if ansible_local.borgbackup.borgmatic_version is version("1.8.0", "<")
+              else borgbackup__common_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__configuration [[[
+#
+# List of the configuration options for system-wide borgbackup support, defined on
+# all hosts in the Ansible inventory.
+borgbackup__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__group_configuration [[[
+#
+# List of the configuration options for system-wide borgbackup support, defined on
+# hosts in a specific Ansible inventory group.
+borgbackup__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__host_configuration [[[
+#
+# List of the configuration options for system-wide borgbackup support, defined on
+# specific hosts in the Ansible inventory.
+borgbackup__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__dependent_configuration [[[
+#
+# Allows configuration as a dependent role.
+borgbackup__dependent_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__combined_configuration [[[
+#
+# The variable which combines all other system-wide configuration variables and
+# is used in the Ansible tasks and templates.
+borgbackup__combined_configuration: '{{ borgbackup__default_configuration
+                                        + borgbackup__configuration
+                                        + borgbackup__group_configuration
+                                        + borgbackup__host_configuration
+                                        + borgbackup__dependent_configuration }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+
+# Server configuration [[[
+# ------------------------
+
+# These variables apply to hosts in the ``[debops_service_borgmatic_server]`` group.
+
+# .. envvar:: borgbackup__server_accounts [[[
+#
+# Borg user accounts to create on the server.
+borgbackup__server_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__server_group_accounts [[[
+#
+# List of the configuration options for system-wide borgbackup support, defined on
+# hosts in a specific Ansible inventory group.
+borgbackup__server_group_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__server_host_accounts [[[
+#
+# List of the configuration options for system-wide borgbackup support, defined on
+# specific hosts in the Ansible inventory.
+borgbackup__server_host_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__server_dependent_accounts [[[
+#
+# Allows configuration as a dependent role.
+borgbackup__server_dependent_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__server_combined_accounts [[[
+#
+# The variable which combines all other system-wide configuration variables and
+# is used in the Ansible tasks and templates.
+borgbackup__server_combined_accounts: '{{ borgbackup__server_accounts
+                                        + borgbackup__server_group_accounts
+                                        + borgbackup__server_host_accounts
+                                        + borgbackup__server_dependent_accounts }}'
+                                                                   # ]]]
+                                                                   # ]]]
+
+# Control configuration [[[
+# -------------------------
+
+# These variables apply to hosts in the ``[debops_service_borgmatic_controlled]``
+# and ``[debops_service_borgmatic_controller]`` groups.
+#
+# The controller needs to run before the controlled clients
+# in order to generate its key.
+
+# .. envvar:: borgbackup__control_user [[[
+#
+# The username of the control user pulling the backups.
+# Control users are generated on controllers, then allowed access with their
+# public keys to all controlled clients.
+borgbackup__control_user: 'borg-control'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__controlled_clients [[[
+#
+# List of client hosts the controller will be connecting to in sequence.
+borgbackup__control_clients: '{{ groups["debops_service_borgbackup_controlled"] | d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__controller_public_key [[[
+#
+# The public part of the key the controller will use to connect to clients.
+#
+# The keys are in :file:`secret/borgbackup/control/[user]_id_ed25519.pub`.
+# Don't initialize a second controller with the same username in inventory.
+borgbackup__controller_public_key: '{{ lookup("ansible.builtin.file",
+                                              secret
+                                              + "/borgbackup/control/"
+                                              + borgbackup__control_user + "_id_ed25519.pub",
+                                              errors="ignore") }}'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__controller_service_enabled [[[
+#
+# Enables or disables the recurring job on the controller.
+borgbackup__controller_service_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__controller_service_period [[[
+#
+# Same as :envvar:`borgbackup__service_period`, but for controllers.
+borgbackup__controller_service_period: 'daily'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__controller_service_random_delay [[[
+#
+# Same as :envvar:`borgbackup__service_random_delay`, but for controllers.
+borgbackup__controller_service_random_delay: '3h'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__controller_systemd_units [[[
+#
+# Configures the :ref:`debops.systemd` role as ``systemd__dependent_units``
+# to add the timer and service running the borg-controller script on systemd controllers.
+borgbackup__controller_systemd_units:
+  - name: borg-controller.service
+    raw: |
+      [Unit]
+      Description=Trigger remote backups using Borg Backup
+      Documentation=https://docs.debops.org/en/master/ansible/roles/debops.borgbackup/
+
+      [Service]
+      User={{ borgbackup__control_user }}
+      Type=oneshot
+      ExecStart=/usr/local/bin/borg_controller
+      StandardOutput=append:/var/local/{{ borgbackup__control_user }}/borg_controller.log
+      StandardError=append:/var/local/{{ borgbackup__control_user }}/borg_controller.log
+    state: present
+
+  - name: borg-controller.timer
+    raw: |
+      [Unit]
+      Description=Trigger remote backups using Borg Backup
+      Documentation=https://docs.debops.org/en/master/ansible/roles/debops.borgbackup/
+
+      [Timer]
+      OnCalendar={{ borgbackup__controller_service_period }}
+      RandomizedDelaySec={{ borgbackup__controller_service_random_delay }}
+      FixedRandomDelay=true
+      Persistent=true
+
+      [Install]
+      WantedBy=timers.target
+    enabled: '{{ borgbackup__controller_service_enabled }}'
+    state: '{{ "started" if borgbackup__controller_service_enabled else "stopped" }}'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__control_user_accounts [[[
+#
+# The control user is shared between controlled clients and controllers.
+# This is the definition passed to the ref:`debops.users` role
+# as ``users__dependent_accounts`` to create it.
+borgbackup__control_user_accounts:
+  - name: '{{ borgbackup__control_user }}'
+    home: '/var/local/{{ borgbackup__control_user }}'
+    shell: '/bin/bash'
+    system: True
+    home_mode: '0750'
+    groups: '{{ [ansible_local.system_groups.local_prefix + "sshusers"]
+                if "debops_service_borgbackup_controlled" in group_names
+                else [] }}'
+    generate_ssh_key: '{{ True
+                          if "debops_service_borgbackup_controller" in group_names
+                          else False }}'
+    ssh_key_comment: '{{ borgbackup__control_user }}'
+    ssh_key_type: 'ed25519'
+    resources:
+
+      - path: '.ssh/config'
+        content: |
+          # Borg controller config
+
+          # We only want to use the Ansible managed /etc/ssh/ssh_known_hosts file.
+          CheckHostIP no
+          UserKnownHostsFile none
+
+          # Ensure shared connections are disabled for backup.
+          ControlMaster no
+
+          # Disable password prompts and other user interaction
+          BatchMode yes
+
+          # Prevent timeouts during checks of large repos
+          ServerAliveInterval 120
+        state: '{{ "file"
+                   if "debops_service_borgbackup_controller" in group_names
+                   else "absent" }}'
+        mode: '0644'
+        parent_mode: '0750'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__controlled_authorized_keys [[[
+#
+# Configures the :ref:`debops.authorized_keys` role as ``authorized_keys__dependent_identities``
+# to add SSH keys restricted to the :command:`borgmatic` command on the controlled host.
+borgbackup__controlled_authorized_keys:
+
+  - name: '{{ borgbackup__control_user }}'
+    accounts: [ '{{ borgbackup__control_user }}' ]
+    state: 'present'
+    file_state: 'present'
+    sshkeys: '{{ borgbackup__controller_public_key | d(omit) }}'
+    exclusive: True
+    command: '{{ "sudo /bin/systemctl start borgmatic"
+                 if ansible_service_mgr == "systemd"
+                 else "sudo " + borgbackup__borgmatic_binary }}'
+    options:
+      - 'restrict'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__controlled_sudo [[[
+#
+# Configures the :ref:`debops.sudo` role as ``sudo__dependent_sudoers``
+# to allow the :envvar:`borgbackup__control_user` to run :command:`borgmatic` as root.
+borgbackup__controlled_sudo:
+
+  - name: '{{ borgbackup__control_user }}-borgmatic-systemd'
+    comment: 'Allow the {{ borgbackup__control_user }} user to trigger backups'
+    raw: |
+      {{ borgbackup__control_user }} ALL = (ALL) NOPASSWD: /bin/systemctl start borgmatic
+    state: '{{ "present" if ansible_service_mgr == "systemd" else "ignore" }}'
+
+  - name: '{{ borgbackup__control_user }}-borgmatic-direct'
+    comment: 'Allow the {{ borgbackup__control_user }} user to trigger backups'
+    raw: |
+      {{ borgbackup__control_user }} ALL = (ALL) NOPASSWD: {{ borgbackup__borgmatic_binary }}
+    state: '{{ "present" if ansible_service_mgr != "systemd" else "ignore" }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
