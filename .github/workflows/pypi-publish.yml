@@ -35,22 +35,31 @@ jobs:
 
     steps:
 
-      - name: 'Add ~/.local/bin to $PATH'
-        run: 'printf "%s/.local/bin\n" "${HOME}" >> "${GITHUB_PATH}"'
-
       - name: 'Clone the repository'
         uses: 'actions/checkout@v7'
         with:
           fetch-depth: 0
 
+      - name: 'Pin the build interpreter'
+        # Sphinx 5.3.0 is pinned for the speed of the documentation
+        # reading phase, and it imports the 'imghdr' module which the
+        # Python standard library removed in 3.13. The runner images
+        # ship Python 3.14, so the toolchain virtual environment is
+        # built from the setup-python interpreter instead.
+        uses: 'actions/setup-python@v7'
+        with:
+          python-version: '3.12'
+
       - name: 'Prepare the build environment'
         run: |
           sudo apt-get -qq update
           sudo apt-get -yq install pandoc pandoc-data graphviz
-          pip3 install --user -c requirements-ci.txt \
-            wheel setuptools sphinx sphinx-autobuild \
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -c requirements-ci.txt \
+            wheel setuptools pyyaml sphinx sphinx-autobuild \
             sphinx-rtd-theme pypandoc
-          pip3 check
+          "${RUNNER_TEMP}/venv/bin/pip" check
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
 
       - name: 'Build and check the DebOps Python packages'
         run: |

@@ -112,13 +112,13 @@
 - name: Get HTTP server from nginx defaults for default_server roulette
   ansible.builtin.set_fact:
     nginx_register_default_server_name: '{{ nginx_default_name }}'
-  when: nginx_default_name is defined and nginx_default_name
+  when: (nginx_default_name | d('')) | length > 0
   tags: [ 'role::nginx:servers' ]
 
 - name: Get HTTPS server from nginx defaults for default_server roulette
   ansible.builtin.set_fact:
     nginx_register_default_server_ssl_name: '{{ nginx_default_ssl_name }}'
-  when: nginx_default_ssl_name is defined and nginx_default_ssl_name
+  when: (nginx_default_ssl_name | d('')) | length > 0
   tags: [ 'role::nginx:servers' ]
 
 - name: Get first server that listens on http port for default_server roulette

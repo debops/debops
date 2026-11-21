@@ -98,6 +98,35 @@ def test_merge_config_skips_an_empty_section(tmp_path):
     assert not config.config.has_section("empty")
 
 
+def test_merge_config_joins_a_list_value_with_spaces(tmp_path):
+    """A list-valued option is rendered as one space-separated line.
+
+    The Ansible configuration fragments of a view can define options
+    such as 'ssh_args' as lists of arguments, one element per argument;
+    an 'ansible.cfg' option takes one string, so the elements are
+    joined with spaces instead of the Python representation of the
+    list landing in the file."""
+    config = AnsibleConfig(str(tmp_path / "ansible.cfg"),
+                           project_type="modern")
+
+    config.merge_config({"ssh_connection": {"ssh_args": [
+        "-o ControlMaster=auto",
+        "-o ControlPersist=60s",
+    ]}})
+
+    assert config.get_option("ssh_args", section="ssh_connection") == \
+        "-o ControlMaster=auto -o ControlPersist=60s"
+
+
+def test_merge_config_joins_list_items_of_non_string_types(tmp_path):
+    config = AnsibleConfig(str(tmp_path / "ansible.cfg"),
+                           project_type="modern")
+
+    config.merge_config({"defaults": {"forks": [5, 10]}})
+
+    assert config.get_option("forks") == "5 10"
+
+
 def test_load_config_reads_an_existing_file(tmp_path):
     path = tmp_path / "ansible.cfg"
     path.write_text("[defaults]\nforks = 20\n")

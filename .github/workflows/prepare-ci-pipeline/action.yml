@@ -36,10 +36,6 @@ runs:
   using: 'composite'
   steps:
 
-    - name: Add ~/.local/bin to $PATH
-      run: 'printf "%s/.local/bin\n" "${HOME}" >> "${GITHUB_PATH}"'
-      shell: bash
-
     - name: Install system dependencies
       run: |
         sudo apt-get -qq update
@@ -50,18 +46,18 @@ runs:
 
     - name: Configure VirtualEnv and install Python dependencies
       run: |
-        python3 -m venv venv
-        source venv/bin/activate
-        pip install wheel "setuptools==65.7.0"
-        pip install -r requirements-integration.txt
-        pip install .
+        python3 -m venv "${RUNNER_TEMP}/venv"
+        "${RUNNER_TEMP}/venv/bin/pip" install wheel "setuptools==84.2.1"
+        "${RUNNER_TEMP}/venv/bin/pip" install -r requirements-integration.txt
+        "${RUNNER_TEMP}/venv/bin/pip" install .
+        "${RUNNER_TEMP}/venv/bin/pip" check
+        echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
       shell: bash
 
     - name: Initialize DebOps project
       env:
         CI_EXTRA_GROUPS: '${{ inputs.extra_groups }}'
       run: |
-        source venv/bin/activate
         debops project init ~/src/controller
         cd ~/src/controller
         cat <<EOL >> ansible/inventory/hosts
@@ -84,7 +80,6 @@ runs:
       env:
         CI_INVENTORY_SPEC: '${{ inputs.inventory_spec }}'
       run: |
-        source venv/bin/activate
         printf '%s' "${CI_INVENTORY_SPEC}" | \
           debops project refresh --template - --force ~/src/controller
       shell: bash

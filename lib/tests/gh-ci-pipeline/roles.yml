@@ -34,6 +34,38 @@
     cloudflared --version
     test -f /etc/systemd/system/cloudflared@.service
 
+- name: 'garage'
+  playbook: 'service/garage'
+  groups: [ 'debops_service_garage' ]
+  idempotency: 'advisory'
+  # The domain of the GitHub runners is too long for the default size of the
+  # nginx server names hash with the '*.s3.<domain>' wildcard names.
+  inventoryspec:
+    files:
+      group_vars/debops_service_garage/garage.yml: |
+        ---
+        garage__domain: 'example.com'
+  post_script: |
+    garage --version
+    systemctl is-active garage.service
+    sudo garage status
+    curl --fail --silent http://127.0.0.1:3903/health
+
+- name: 'vmagent'
+  playbook: 'service/vmagent'
+  groups: [ 'debops_service_vmagent' ]
+  idempotency: 'advisory'
+  inventoryspec:
+    files:
+      group_vars/all/vmagent.yml: |
+        ---
+        vmagent__remote_write_urls:
+          - 'http://127.0.0.1:8428/api/v1/write'
+  post_script: |
+    vmagent -version
+    systemctl is-active vmagent@default.service
+    curl -fsS http://127.0.0.1:8429/metrics | grep -q '^vm_app_version'
+
 - name: 'mariadb_server'
   playbook: 'service/mariadb_server'
   groups: [ 'debops_service_mariadb_server' ]

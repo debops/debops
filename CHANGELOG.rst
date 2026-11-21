@@ -36,6 +36,21 @@ New DebOps roles
   defined in the Ansible inventory, using credentials stored by the
   :ref:`debops.secret` role.
 
+- The :ref:`debops.garage` role installs the `Garage`__ S3-compatible
+  object store. A single-node inventory produces a working S3 endpoint in
+  one play via the daemon's ``--single-node`` bootstrap, with TLS
+  terminated on :ref:`debops.nginx`. Binary upgrades are gated, so that
+  a change of the pinned version cannot silently become a major upgrade.
+
+  .. __: https://garagehq.deuxfleurs.fr/
+
+- The :ref:`debops.vmagent` role can be used to install the VictoriaMetrics
+  :command:`vmagent` metrics agent from the upstream release archive, verified
+  with a SHA256 checksum, and manage one or more instances through a systemd
+  template unit. Scrape jobs can be defined on different inventory levels and
+  by other roles, and the bearer tokens used for remote write are stored by
+  the :ref:`debops.secret` role.
+
 General
 '''''''
 
@@ -95,11 +110,44 @@ General
   top of the project directory environment. The file is ignored by
   git and holds variables specific to one view.
 
+- The SSH host keys of the inventory hosts can be stored per
+  infrastructure view in a known_hosts file inside the project
+  directory, selected by the ``views.<view>.ssh.known_hosts``
+  configuration option and used by the DebOps commands and the
+  Ansible runs of the view alike. The store files are tracked in
+  the git repository of the project.
+
+- The :command:`debops run`, :command:`debops check` and
+  :command:`debops exec` commands accept unseen SSH host keys on
+  the first contact with a host when run with the ``--accept``
+  option. The acceptance is announced before the run and the keys
+  the store gained are reported afterwards.
+
+- The new :command:`debops ssh`, :command:`debops scp` and
+  :command:`debops sftp` commands connect to and transfer files
+  from hosts defined in the Ansible inventory of the project, with
+  the SSH connection options composed from the inventory
+  variables.
+
+- The new :command:`debops ssh rescan` command refreshes the
+  known_hosts entries of the inventory hosts. It scans the current
+  host keys, verifies them against the SSHFP records of the DNS
+  when the zone publishes them, and rewrites only the entries of
+  the hosts whose keys changed. The defaults of the verification
+  and the prompting are configurable.
+
 Changed
 ~~~~~~~
 
 General
 '''''''
+
+- View names of DebOps projects no longer accept dashes or other
+  characters outside of the letters, the digits and the underscores.
+  The names are validated when the views are created, by
+  :command:`debops project init --default-view` and
+  :command:`debops project mkview`; the views which already exist
+  keep working.
 
 - Drop support for the end-of-life Python releases 3.8, 3.9 and 3.10;
   Python 3.11 or newer is required to run the :command:`debops`
@@ -245,6 +293,24 @@ General
   lost in the refactoring of the secret store, and legacy projects
   reported a successful creation while their secrets stayed
   unencrypted.
+
+- The ``debops.debops.to_toml`` filter plugin failed with a ``RecursionError``
+  with :command:`ansible-core` v2.18 and older when the configuration
+  contained values from host facts or lookups, for example in the
+  :ref:`debops.telegraf` role. Such "unsafe" strings are now converted to
+  plain strings before serialization.
+
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The role no longer fails with ansible-core 2.19 and later when the
+  ``nginx_default_name`` and ``nginx_default_ssl_name`` variables keep their
+  default empty values. The default server selection checked the strings
+  directly in conditions, which have to evaluate to a boolean now.
+
+- The proxy server template no longer passes custom ``proxy_headers`` text
+  through the ``bool`` filter, which ansible-core 2.19 and later report as
+  an invalid boolean value.
 
 Removed
 ~~~~~~~

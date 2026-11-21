@@ -225,6 +225,49 @@ def test_execute_aborts_when_the_pre_hook_fails(stub_project, monkeypatch):
         runner.execute()
 
 
+def test_accept_option_composes_the_environment(stub_project):
+    """Without configured ssh_args, the composed value restates the
+    default of the connection plugin."""
+    runner = AnsibleRunner(stub_project(), ansible_args=["all"], accept=True)
+
+    assert runner._ansible_env["ANSIBLE_SSH_ARGS"] == \
+        ("-o StrictHostKeyChecking=accept-new "
+         "-C -o ControlMaster=auto -o ControlPersist=60s")
+
+
+def test_accept_option_reports_the_key_count_in_the_plural(
+        stub_project, monkeypatch, stub_project_secrets, tmp_path, caplog):
+    """The report of the keys the store gained during the run counts
+    them in the plural from two up."""
+    store = tmp_path / "store"
+    runner = AnsibleRunner(
+        stub_project(cfg_options={
+            "inventory": "ansible/inventory",
+            "collections_path": "",
+            "ssh_args": "-o UserKnownHostsFile=" + str(store)}),
+        ansible_args=["all"], accept=True)
+
+    executor = mock.Mock(returncode=0)
+    executor.communicate.return_value = (b"", b"")
+
+    def accept_two_keys(*args, **kwargs):
+        with open(store, 'a') as handle:
+            handle.write('web.example.org ssh-ed25519 AAAAnewkey\n')
+            handle.write('192.0.2.10 ssh-rsa AAAAoldkey\n')
+        return executor
+
+    monkeypatch.setattr(runner_module.subprocess, "Popen", accept_two_keys)
+    monkeypatch.setattr(runner_module, "run_hooks",
+                        mock.Mock(return_value=True))
+    stub_project_secrets.unlock.return_value = False
+
+    with caplog.at_level(logging.NOTICE):
+        assert runner.execute() == 0
+    messages = [record.getMessage() for record in caplog.records]
+    assert any(message == 'Ansible auto-accepted 2 SSH host keys during '
+               'the run' for message in messages)
+
+
 def test_execute_re_raises_a_failed_unlock(stub_project, monkeypatch,
                                            stub_project_secrets):
     runner = AnsibleRunner(stub_project(), ansible_args=["all"])
@@ -301,3 +344,18 @@ def test_execute_handles_keyboard_interrupt(stub_project, monkeypatch,
 
     stub_project_secrets.lock.assert_called_once_with()
     assert "interrupted by user" in caplog.text
+
+
+def test_runner_ensures_the_declared_store(stub_project, tmp_path):
+    """The runner creates the known_hosts store directory which the
+    view's 'ansible.cfg' declares, private like '~/.ssh'."""
+    store = tmp_path / "stores" / "system" / "known_hosts"
+    project = stub_project(
+        cfg_options={"inventory": "ansible/inventory",
+                     "ssh_args":
+                     "-o UserKnownHostsFile=" + str(store)})
+
+    AnsibleRunner(project, ansible_args=[])
+
+    assert store.parent.is_dir()
+    assert (os.stat(store.parent).st_mode & 0o777) == 0o700
