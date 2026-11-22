@@ -98,6 +98,26 @@ def max_plan_seq(view_root):
                 if sequence is not None), default=0)
 
 
+def plan_stamp(name):
+    """The stamp of a saved plan file name: the timestamp between
+    the sequence id and the suffix."""
+    tail = name[len(PLAN_FILE_PREFIX):-len('.tfplan')]
+    return tail.partition('-')[2]
+
+
+def remove_saved(view_root):
+    """Remove the plan files DebOps saved in the view and return
+    their view-relative paths -- the rotation's cleanup of the
+    old-key plans; the operator's own '-out' plans are never
+    touched."""
+    removed = []
+    for name in plan_file_names(view_root):
+        if name.startswith(PLAN_FILE_PREFIX):
+            os.remove(os.path.join(view_root, PLAN_DIR, name))
+            removed.append(os.path.join(PLAN_DIR, name))
+    return removed
+
+
 def plan_rows(view_root):
     """Return the listing rows of the saved plans: the sequence id,
     the file name, the size and the modification time of each

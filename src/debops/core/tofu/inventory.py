@@ -22,7 +22,7 @@ import toml
 import yaml
 
 from ..ansible.inventory import AnsibleInventory
-from ..secrets import SecretManager
+from ..secrets import SecretManager, unlocked_store
 from ..utils import remove_dir, remove_file, write_file
 from .changes import change_label, file_change
 from .runner import TofuOperationFailed, TofuRunner
@@ -840,18 +840,11 @@ def render_view_inventory(project, view, force=False, dry_run=False,
             'with exit code {}'.format(view, rc), rc)
 
     store = SecretManager(project, view).store('ansible')
-    unlocked = store.unlock()
-    if unlocked:
-        logger.debug("The Ansible store of the view '{}' "
-                     'unlocked'.format(view))
-    try:
+    with unlocked_store(store,
+                        label="The Ansible store of the view "
+                              "'{}'".format(view)):
         return render_inventory(project, view, output,
                                 dry_run=dry_run)
-    finally:
-        if unlocked:
-            store.lock()
-            logger.debug("The Ansible store of the view '{}' "
-                         'locked back'.format(view))
 
 
 def render_inventory(project, view, output_json, dry_run=False):

@@ -14,16 +14,16 @@ from ..core.ansible.ansiblerunner import AnsibleRunner
 from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
 from ..core.tofu.inventory import render_view_inventory
-from ..core.tofu.runner import TofuOperationFailed, TofuRunner
-from ..core.tofu.plans import (PLAN_FILE_PREFIX, plan_rows,
-                               resolve_plan_file)
+from ..core.tofu import plans as plans_module
+from ..core.tofu.plans import plan_rows, resolve_plan_file
 from ..core.tofu import cache
-from ..core.tofu.view import create_view, rekey_view
+from ..core.tofu.rekey import rekey_view
+from ..core.tofu.runner import TofuOperationFailed, TofuRunner
 from ..core.tofu.providers import resolve_providers
 from ..core.tofu.modules import resolve_modules
 from ..core.tofu.binary import reconcile_binaries
 from ..core.tofu.registry import view_drop_in_path, view_tofu_root
-from ..core.tofu.view import reconcile_view
+from ..core.tofu.view import create_view, reconcile_view
 from ..core import ssh
 from ..core.utils import remove_file, unexpanduser
 from xdg.BaseDirectory import xdg_config_home
@@ -562,14 +562,16 @@ class Interpreter(object):
     def _do_tofu_rekey(self, args, project):
         """Run the 'debops tofu rekey' operation: rotate the state
         passphrase of the view through the fallback key provider of
-        the OpenTofu encryption."""
+        the OpenTofu encryption, printing the change records the
+        rotation applies."""
         try:
-            rekey_view(project, project.view,
-                       workspace=args.workspace)
+            changes = rekey_view(project, project.view,
+                                 workspace=args.workspace)
         except (NoDefaultViewException, ValueError, FileNotFoundError,
                 ChildProcessError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
+        self._render_tofu_changes(changes)
 
     def _do_tofu_plans(self, args, project):
         """Run the 'debops tofu plans' operation: list the plan files
@@ -588,11 +590,9 @@ class Interpreter(object):
             if args.verb is None:
                 rows = plan_rows(view_root)
                 for sequence, name, size, mtime in rows:
-                    stamp = name[len(PLAN_FILE_PREFIX):-len('.tfplan')]
-                    stamp = stamp.partition('-')[2]
                     print('{:>4}  {}  {:>7}  {}'.format(
-                        sequence, stamp, cache.human_size(size),
-                        human_age(mtime)))
+                        sequence, plans_module.plan_stamp(name),
+                        cache.human_size(size), human_age(mtime)))
                 return
             plan_file = resolve_plan_file(view_root, args.plan_id)
         except ValueError as errmsg:
