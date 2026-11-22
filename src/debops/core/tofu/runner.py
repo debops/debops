@@ -139,6 +139,15 @@ class TofuRunner(Runner):
             raise ValueError(
                 "The token '{}' is not an OpenTofu operation.".format(
                     self._operation))
+        for argument in tofu_args:
+            if argument in ('-provider', '--provider',
+                            '-module', '--module') \
+                    or argument.startswith(('-provider=', '--provider=',
+                                            '-module=', '--module=')):
+                raise ValueError(
+                    "The '--provider' and '--module' options apply when "
+                    'a view is created: place them on the '
+                    "'debops tofu mkview' operation.")
         self._workspace = self._resolve_workspace(workspace)
         self._state_path = self._resolve_state_path()
         self._allow_missing_state = allow_missing_state
@@ -538,6 +547,11 @@ class TofuRunner(Runner):
         attempts the same record lock and releases it again -- tofu
         re-acquires the lock for the duration of the operation, and a
         window between the release and the re-acquisition is benign.
+
+        The state file is opened read-write: testing the exclusive
+        lock a writer would take requires a writable descriptor, and
+        a state file which cannot be opened for writing is its own
+        failure, reported as one.
         """
         if not self._state_checks_enabled():
             return
@@ -548,6 +562,12 @@ class TofuRunner(Runner):
 
         try:
             handle = os.open(state_file, os.O_RDWR)
+        except PermissionError as error:
+            raise ChildProcessError(
+                'The state file of the view is not writable ({}) and '
+                'the lock pre-check cannot test the exclusive lock: '
+                'check the store mount and the file permissions of '
+                '{!r}.'.format(error.strerror, state_file))
         except OSError as error:
             raise ChildProcessError(
                 'Cannot open the state file of the view for the lock '
@@ -588,6 +608,18 @@ class TofuRunner(Runner):
             return False
         return any(index > 0 for index in self._positional_indexes)
 
+    def _explicit_approval(self, argument):
+        """Whether one command-line argument carries an explicit
+        '-auto-approve' approval: the flag alone, or the
+        '-auto-approve=value' form with an affirmative value -- the
+        form CI pipelines write. The '-auto-approve=false' form
+        declines the approval: the gate asks for it instead."""
+        if argument == '-auto-approve':
+            return True
+        if argument.startswith('-auto-approve='):
+            return argument.partition('=')[2].lower() in ('1', 't', 'true')
+        return False
+
     def _check_approval(self):
         """Refuse a destructive one-step operation without approval.
 
@@ -600,7 +632,8 @@ class TofuRunner(Runner):
         """
         if self._operation not in DESTRUCTIVE_OPERATIONS:
             return
-        if '-auto-approve' in self._tofu_command:
+        if any(self._explicit_approval(argument)
+               for argument in self._tofu_command):
             return
         if self._plan_file_given():
             return
