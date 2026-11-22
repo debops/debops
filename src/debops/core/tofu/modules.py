@@ -27,7 +27,7 @@ import logging
 import re
 
 from ..config import hcl_value
-from .registry import reconcile_managed_file, render_template
+from .registry import view_tofu_options, reconcile_managed_file, render_template
 
 logger = logging.getLogger(__name__)
 
@@ -212,7 +212,7 @@ def reconcile_modules(project, view, force=False, dry_run=False):
     'force'.
     """
     try:
-        modules = project.config.raw['views'][view]['tofu']['modules']
+        modules = view_tofu_options(project, view).get('modules')
     except (KeyError, TypeError):
         modules = {}
     entries = module_entries(modules or {})

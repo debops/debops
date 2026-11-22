@@ -18,7 +18,7 @@ guarantee the table."""
 
 import logging
 
-from .registry import reconcile_managed_file, render_template
+from .registry import view_tofu_options, reconcile_managed_file, render_template
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +75,7 @@ def reconcile_providers(project, view, force=False, dry_run=False):
     'force'.
     """
     try:
-        providers = project.config.raw['views'][view]['tofu']['providers']
+        providers = view_tofu_options(project, view).get('providers')
     except (KeyError, TypeError):
         providers = []
     entries = provider_entries(providers or [])

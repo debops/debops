@@ -206,6 +206,18 @@ def render_drop_in_modules(modules):
             for name, spec in modules.items()]
 
 
+def view_tofu_options(project, view):
+    """The OpenTofu options of the view: the section of the view's
+    configuration drop-in, an empty mapping when the view carries
+    none. The drop-in is the user-owned authority for the recorded
+    dependency sets; the readers consume this section rather than
+    their own try/except chains."""
+    try:
+        return project.config.raw['views'][view]['tofu'] or {}
+    except (KeyError, TypeError):
+        return {}
+
+
 def reconcile_managed_file(project, view, filename, expected, set_name,
                            entries_repr, force=False, dry_run=False):
     """Reconcile one generated file of a view.
