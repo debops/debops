@@ -519,6 +519,10 @@
               "type": "string",
               "description": "The name of the hosts file the bridge renders when the 'hosts_format' option is 'ini'. The ini inventory plugin accepts any file name; the default carries no extension."
             },
+            "state_refresh": {
+              "type": "boolean",
+              "description": "Whether the 'debops tofu inventory' operation refreshes the state of the view before it renders: 'true' runs 'tofu refresh' before the outputs are collected, so in-place changes and late DHCP leases land in the rendered inventory. The refresh churns the state -- its serial bumps even with no changes, and the store records a commit per render -- so the default renders the state as of the last refresh or apply; the observable staleness (a host whose state carries no address) skips with a notice naming the '--force' option."
+            },
             "hosts_filename_yaml": {
               "type": "string",
               "description": "The name of the hosts file the bridge renders when the 'hosts_format' option is 'yaml'. The YAML inventory plugin claims '.yaml' and '.yml' files; the default carries the extension, and the bridge appends it when the configured name lacks one."

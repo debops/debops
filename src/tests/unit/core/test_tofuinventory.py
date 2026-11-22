@@ -506,27 +506,37 @@ def test_a_stopped_host_without_an_address_is_skipped(inventory_project,
     assert 'stopped-1' not in content
 
 
-def test_an_included_host_without_an_address_is_refused(inventory_project):
-    """A host the status filter includes must carry an address: the
-    rendered inventory cannot reach it."""
-    seed = {'web-1': {'address': None, 'status': 'Running'}}
+def test_an_included_host_without_an_address_skips_with_a_notice(
+        inventory_project, caplog):
+    """A host the status filter includes which still carries no
+    address skips with the staleness notice: the observable case is
+    the lease which landed late, and the way out is the '--force'
+    option, which refreshes the state before the render."""
+    seed = {'running-1': {'address': '10.42.7.101',
+                          'status': 'Running'},
+            'late-1': {'address': None,
+                       'status': 'Running'}}
     project = inventory_project()
-    with pytest.raises(ValueError, match="'address'"):
-        render_inventory(project, 'system', outputs(seed=seed,
-                                                    groups=None))
+    with caplog.at_level(logging.INFO):
+        render_inventory(project, 'system',
+                         outputs(seed=seed, groups=None))
+
+    content = read(project, 'inventory/hosts')
+    assert 'running-1' in content
+    assert 'late-1' not in content
+    assert "no address" in caplog.text
+    assert 'late-1' in caplog.text
+    assert '--force' in caplog.text
 
 
 def test_the_seed_contract_is_validated(inventory_project):
-    """The seed entries are validated: unknown attributes, a missing
-    address and a non-map entry are refused with the entry named."""
+    """The seed entries are validated: unknown attributes and a
+    non-map entry are refused with the entry named."""
     project = inventory_project()
     with pytest.raises(ValueError, match='unknown attributes'):
         render_inventory(project, 'system', outputs(seed={
             'web-1': {'address': '10.42.7.101',
                       'sensitve_vars': {}}}, groups=None))
-    with pytest.raises(ValueError, match="'address'"):
-        render_inventory(project, 'system', outputs(seed={
-            'web-1': {'host': 'web.example.com'}}, groups=None))
     with pytest.raises(ValueError, match='not a map'):
         render_inventory(project, 'system', outputs(seed={
             'web-1': 'broken'}, groups=None))
@@ -859,7 +869,8 @@ def test_the_unknown_hosts_format_is_refused(inventory_project):
 
 def inventory_operation(monkeypatch, rc=0, output='{}', changes=None,
                         unlock=True, render_error=None, dry_run=False,
-                        diff=False):
+                        diff=False, force=False, state_refresh=False,
+                        refresh_rc=0):
     """Run the interpreter's inventory operation with the runner, the
     secret store and the renderer stubbed; returns the stubs."""
     from types import SimpleNamespace
@@ -867,8 +878,10 @@ def inventory_operation(monkeypatch, rc=0, output='{}', changes=None,
 
     runner = mock.Mock()
     runner.execute.return_value = (rc, output)
-    monkeypatch.setattr(cli_module, "TofuRunner",
-                        mock.Mock(return_value=runner))
+    if force or state_refresh:
+        runner.execute.side_effect = [refresh_rc, (rc, output)]
+    runner_stub = mock.Mock(return_value=runner)
+    monkeypatch.setattr(cli_module, "TofuRunner", runner_stub)
     store = mock.Mock()
     store.unlock.return_value = unlock
     monkeypatch.setattr(cli_module, "SecretManager",
@@ -881,13 +894,15 @@ def inventory_operation(monkeypatch, rc=0, output='{}', changes=None,
         monkeypatch.setattr(cli_module, "render_inventory",
                             mock.Mock(return_value=changes or []))
     args = SimpleNamespace(bell=False, workspace=None, dry_run=dry_run,
-                           diff=diff)
-    project = SimpleNamespace(view='system', path='/tmp/opencode/x')
+                           diff=diff, force=force, no_color=False)
+    raw = {'tofu': {'inventory': {'state_refresh': state_refresh}}}
+    project = SimpleNamespace(view='system', path='/tmp/opencode/x',
+                              config=SimpleNamespace(raw=raw))
     # A bare interpreter instance: the operation prints through the
     # real '_render_tofu_changes', which a Mock self would swallow
     interpreter = cli_module.Interpreter.__new__(cli_module.Interpreter)
     interpreter._do_tofu_inventory(args, project)
-    return runner, store, cli_module.render_inventory
+    return runner_stub, store, cli_module.render_inventory
 
 
 def test_the_inventory_operation_collects_through_the_runner(
@@ -905,6 +920,7 @@ def test_the_inventory_operation_collects_through_the_runner(
     cli_runner.assert_called_once()
     assert cli_runner.call_args.args[1] == ['output', '-json']
     assert cli_runner.call_args.kwargs['no_color'] is True
+    runner = cli_runner.return_value
     runner.execute.assert_called_once_with(capture=True)
     render.assert_called_once()
     store.unlock.assert_called_once()
@@ -941,6 +957,53 @@ def test_the_store_cycle_reports_at_debug(monkeypatch, caplog):
     assert any("'system' unlocked" in message for message in messages)
     assert any("'system' locked back" in message
                for message in messages)
+
+
+def test_the_forced_inventory_refreshes_the_state_first(
+        monkeypatch):
+    """The '--force' option runs 'tofu refresh' before the outputs
+    are collected: the in-place changes and the late leases land in
+    the render. The refresh streams, the outputs capture."""
+    runner_stub, _, render = inventory_operation(
+        monkeypatch, output='{"inventory_seed": {}}', force=True,
+        changes=[])
+    assert [call.args[1][0] for call in runner_stub.call_args_list] \
+        == ['refresh', 'output']
+    runner = runner_stub.return_value
+    assert runner.execute.call_args_list == [mock.call(),
+                                             mock.call(capture=True)]
+    render.assert_called_once()
+
+
+def test_the_state_refresh_option_refreshes_before_the_render(
+        monkeypatch):
+    """The 'tofu.inventory.state_refresh' option drives the same
+    refresh-then-render sequence without the '--force' flag."""
+    runner_stub, _, _ = inventory_operation(
+        monkeypatch, output='{"inventory_seed": {}}',
+        state_refresh=True, changes=[])
+    assert [call.args[1][0] for call in runner_stub.call_args_list] \
+        == ['refresh', 'output']
+
+
+def test_the_default_render_does_not_refresh(monkeypatch):
+    """The default renders the state as of the last refresh or
+    apply: the operation collects the outputs only."""
+    runner_stub, _, _ = inventory_operation(
+        monkeypatch, output='{"inventory_seed": {}}', changes=[])
+    assert [call.args[1][0] for call in runner_stub.call_args_list] \
+        == ['output']
+
+
+def test_a_failed_refresh_refuses_the_render(monkeypatch, capsys):
+    """A 'tofu refresh' which fails exits with its code: nothing is
+    rendered and the outputs are never collected."""
+    with pytest.raises(SystemExit) as exc:
+        inventory_operation(monkeypatch, force=True, refresh_rc=3,
+                            changes=[])
+
+    assert exc.value.code == 3
+    assert "failed with exit code 3" in capsys.readouterr().err
 
 
 def test_a_failed_output_operation_exits_with_its_code(
