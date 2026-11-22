@@ -132,7 +132,7 @@ plan_retention = 3
 
 # The OpenTofu providers which the tofu views of the project use. The
 # list is written into the generated 'providers.tf' file of a view when
-# it is created; the '--provider' options of the 'debops tofu init'
+# it is created; the '--provider' options of the 'debops tofu mkview'
 # command replace it for one invocation. Each entry is a provider
 # source address in the OpenTofu registry notation -- 'namespace/name',
 # or 'hostname/namespace/name' for providers outside the public
@@ -149,18 +149,18 @@ default_providers = []
 # The OpenTofu modules which the tofu views of the project
 # instantiate. The table is written into the generated 'modules.tf'
 # file of a view when it is created; the '--module' options of the
-# 'debops tofu init' command replace it for one invocation. The table
+# 'debops tofu mkview' command replace it for one invocation. The table
 # keys are the local module names which the generated file
 # instantiates; each entry carries the module source address in the
 # OpenTofu registry notation -- 'namespace/name[/submodule]', or
 # 'hostname/...' for modules outside the public registry -- an
 # optional version pin and the inputs of the module instance:
 #
-#     [tofu.default_modules.consul]
+#     [tofu.mkview.default_modules.consul]
 #     source = "hashicorp/consul/aws"
 #     version = "5.0.0"
 #
-#     [tofu.default_modules.consul.inputs]
+#     [tofu.mkview.default_modules.consul.inputs]
 #     datacenter = "dc1"
 #
 # The input values are configuration values: the literals render as

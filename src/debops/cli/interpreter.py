@@ -25,7 +25,7 @@ from ..core.tofu.binary import reconcile_binaries
 from ..core.tofu.registry import view_drop_in_path, view_tofu_root
 from ..core.tofu.view import reconcile_view
 from ..core import ssh
-from ..core.utils import unexpanduser
+from ..core.utils import remove_file, unexpanduser
 from xdg.BaseDirectory import xdg_config_home
 import logging
 import getpass
@@ -631,7 +631,8 @@ class Interpreter(object):
             print_error(errmsg)
             sys.exit(1)
         if args.verb == 'delete':
-            os.remove(os.path.join(view_root, plan_file))
+            remove_file(os.path.join(view_root, plan_file),
+                        project=view_root)
             print(plan_file)
             return
         try:
