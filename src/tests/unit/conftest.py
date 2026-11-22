@@ -5,6 +5,7 @@
 """Fixtures shared by the unit tests."""
 
 import configparser
+import io
 import os
 import shlex
 import stat
@@ -475,6 +476,8 @@ def stub_tofu_subprocess(monkeypatch):
     without the tofu binary, the hooks pass."""
     process = mock.Mock()
     process.returncode = 0
+    process.stdout = io.BytesIO(b"")
+    process.stderr = io.BytesIO(b"")
     process.communicate.return_value = (b"", b"")
     popen = mock.Mock(return_value=process)
     monkeypatch.setattr(runner_module.subprocess, "Popen", popen)

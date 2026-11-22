@@ -18,19 +18,7 @@ The reads of the configuration keys the package defaults guarantee --
 did not load is a broken installation, and the missing key fails loudly at the
 point of use."""
 
-from ..runner import Runner
-from git.exc import (GitCommandError, InvalidGitRepositoryError,
-                     NoSuchPathError)
-from ..hooks import run_hooks
-from . import cache
-from . import plans
-from ..secrets import environment_values
-from .binary import resolve_binary
-from .providers import resolve_providers
-from .modules import resolve_modules
-from .registry import view_drop_in_path, view_tofu_options, \
-    view_tofu_root
-import dotenv
+import codecs
 import fcntl
 import json
 import logging
@@ -39,6 +27,22 @@ import re
 import shlex
 import subprocess
 import sys
+import threading
+
+import dotenv
+from git.exc import (GitCommandError, InvalidGitRepositoryError,
+                     NoSuchPathError)
+
+from ..runner import Runner
+from ..hooks import run_hooks
+from ..secrets import environment_values
+from . import cache
+from . import plans
+from .binary import resolve_binary
+from .modules import resolve_modules
+from .providers import resolve_providers
+from .registry import view_drop_in_path, view_tofu_options, \
+    view_tofu_root
 
 logger = logging.getLogger(__name__)
 
@@ -637,6 +641,48 @@ class TofuRunner(Runner):
         sys.stderr.write(std_err.decode(errors='replace'))
         return executor.returncode
 
+    def _relay_stderr(self, executor, chunks):
+        """Relay the stderr of the operation to the wrapper's stderr
+        while collecting it.
+
+        The diagnostics stream live, the way they did when the
+        descriptor was inherited outright; the collected copy lets
+        the runner recognize the failure signatures of OpenTofu after
+        the operation ends. The incremental decoder keeps a multi-byte
+        character split across chunk boundaries intact.
+        """
+        decoder = codecs.getincrementaldecoder('utf-8')('replace')
+        try:
+            for chunk in iter(lambda: executor.stderr.read(4096), b''):
+                sys.stderr.write(decoder.decode(chunk))
+                sys.stderr.flush()
+                chunks.append(chunk)
+        finally:
+            executor.stderr.close()
+
+    def _hint_backend_change(self, stderr_text):
+        """Name the wrapper's way out of the backend-changed refusals.
+
+        OpenTofu refuses the operations whose recorded backend no
+        longer matches the view configuration, and names the raw
+        'tofu' commands in its report; the hint restates them as the
+        wrapper invocations, which compose the environment the
+        backend needs."""
+        if 'Backend configuration changed' in stderr_text:
+            logger.warning(
+                'The backend configuration of the view changed: run '
+                "'debops tofu init -reconfigure' to store the current "
+                "configuration, or 'debops tofu init -migrate-state' "
+                'to carry the state over.',
+                extra={'allow': ['stderr', 'syslog']})
+        elif 'Backend initialization required' in stderr_text:
+            logger.warning(
+                "The working directory of the view is stale or "
+                "uninitialized: run 'debops tofu init', or 'debops "
+                "tofu update', which runs it and reconciles the view "
+                'first.',
+                extra={'allow': ['stderr', 'syslog']})
+
     def execute(self, capture=False):
         """Run the operation with the hooks around it and the store
         cycled for the duration.
@@ -703,11 +749,21 @@ class TofuRunner(Runner):
             executor = subprocess.Popen(
                 self._tofu_command, cwd=self._view_root,
                 stdout=subprocess.PIPE if capture else None,
+                stderr=subprocess.PIPE,
                 env=self._subprocess_env(self._extra_env()))
-            std_out, std_err = executor.communicate()
-            rc = executor.returncode
+            stderr_chunks = []
+            stderr_relay = threading.Thread(
+                target=self._relay_stderr,
+                args=(executor, stderr_chunks), daemon=True)
+            stderr_relay.start()
             if capture:
-                collected = std_out.decode()
+                collected = executor.stdout.read().decode()
+            executor.wait()
+            stderr_relay.join(timeout=10)
+            rc = executor.returncode
+            if rc != 0:
+                self._hint_backend_change(
+                    b''.join(stderr_chunks).decode(errors='replace'))
 
             if self._plan_saved and rc in (0, 2):
                 # rc 2 is the '-detailed-exitcode' success: the plan
