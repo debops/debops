@@ -1006,6 +1006,15 @@ class ProjectDir(object):
                                               'gitignore.j2'))
                 .decode('utf-8'), trim_blocks=True)
 
+        default_pre_commit = jinja2.Template(
+                pkgutil.get_data('debops',
+                                 os.path.join('_data',
+                                              'templates',
+                                              'projectdir',
+                                              'modern',
+                                              'pre-commit-config.j2'))
+                .decode('utf-8'), trim_blocks=True)
+
         default_inventory_keyring = jinja2.Template(
                 pkgutil.get_data('debops',
                                  os.path.join('_data',
@@ -1018,6 +1027,11 @@ class ProjectDir(object):
                                               'all',
                                               'keyring.yml.j2'))
                 .decode('utf-8'), trim_blocks=True)
+
+        # Create .pre-commit-config.yaml with the OpenTofu format
+        # check of the views' trees
+        self._write_file(os.path.join(path, '.pre-commit-config.yaml'),
+                         default_pre_commit.render() + '\n')
 
         # Create .debops/conf.d/project.yml
         self._write_file(os.path.join(path, '.debops', 'conf.d',
