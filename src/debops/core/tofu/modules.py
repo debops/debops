@@ -18,7 +18,10 @@ their HCL equivalents, and strings which carry the 'hcl:' prefix carry
 raw HCL expressions which the rendered file emits verbatim. The
 prefix is a configuration convention defined in
 :mod:`debops.core.config`, which is not OpenTofu-specific.
-"""
+
+
+The 'tofu.mkview.default_modules' read is not guarded: the package defaults
+guarantee the table."""
 
 import logging
 import re
