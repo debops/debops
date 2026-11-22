@@ -462,12 +462,23 @@ class Interpreter(object):
     def _do_tofu_install(self, args, project):
         """Run the 'debops tofu install' operation: reconcile the
         OpenTofu binaries which the project's views pin with the
-        installed ones."""
+        installed ones. The '--eval' option reports the install
+        instead of running it."""
         try:
-            installed = reconcile_binaries(project, force=args.force)
+            installed = reconcile_binaries(project, force=args.force,
+                                           dry_run=args.eval)
         except ValueError as errmsg:
             print_error(errmsg)
             sys.exit(1)
+        if args.eval:
+            if installed:
+                for version in installed:
+                    print("Would install the pinned OpenTofu binary "
+                          "'{}'".format(version))
+            else:
+                print("The pinned binaries of the views of the project "
+                      "{!r} are installed".format(project.name))
+            return
         if not installed:
             logger.notice(
                 'The pinned binaries of the views of the project {!r} '
