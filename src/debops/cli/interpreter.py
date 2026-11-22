@@ -13,8 +13,9 @@ from ..core.projectvenv import ProjectVenv
 from ..core.ansible.ansiblerunner import AnsibleRunner
 from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
-from ..core.tofu.runner import (TofuRunner, PLAN_FILE_PREFIX,
-                                plan_rows, resolve_plan_file)
+from ..core.tofu.runner import TofuRunner
+from ..core.tofu.plans import (PLAN_FILE_PREFIX, plan_rows,
+                               resolve_plan_file)
 from ..core.tofu import cache
 from ..core.tofu.inventory import inventory_config, render_inventory
 from ..core.tofu.view import create_view
