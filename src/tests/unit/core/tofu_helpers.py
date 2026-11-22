@@ -57,7 +57,7 @@ def keyring_config(stub, tmp_path):
     return {
         'binaries': {'gpg': str(stub)},
         'gpg': {'debops': {'keyring': {
-            'path': str(tmp_path / 'keyring'),
+            'path': str(tmp_path / 'debops' / 'keyring'),
             'gpg_conf': {'keyserver': 'hkps://keyserver.ubuntu.com'},
         }}},
         'tofu': {'upstream': {
