@@ -4,6 +4,7 @@
 
 import fcntl
 import hashlib
+import json
 import logging
 import os
 import re
@@ -591,6 +592,72 @@ def test_plan_drift_exitcode_saves_and_announces(
     assert "Saved the plan file" in caplog.text
     assert os.path.isdir(os.path.join(
         project.path, "tofu", "views", project.view, "plans"))
+
+
+def test_failed_plan_does_not_announce_or_prune(
+        tofu_project, stub_tofu_subprocess, caplog):
+    """A plan which fails leaves the half-saved plan file alone:
+    nothing is announced and the retention does not run -- the
+    failure is not a success, and the half-written artifact is not
+    presented as a reviewable plan."""
+    project = tofu_project(project_type="modern")
+    stub_tofu_subprocess.return_value.returncode = 1
+    with caplog.at_level(logging.INFO):
+        TofuRunner(project, ["plan"]).execute()
+
+    assert "Saved the plan file" not in caplog.text
+
+
+def test_keyboard_interrupt_skips_the_post_hooks(
+        tofu_project, stub_tofu_subprocess):
+    """The interrupt releases the store lock and skips the post
+    hooks: the operation did not complete, and the post-operation
+    automation must not run on a half-finished state. The failure
+    paths run the hooks, the interrupt does not."""
+    project = tofu_project(project_type="modern")
+    stub_tofu_subprocess.return_value.communicate.side_effect = \
+        KeyboardInterrupt()
+
+    with pytest.raises(SystemExit):
+        TofuRunner(project, ["plan"]).execute()
+
+    post_calls = [call for call in runner_module.run_hooks.call_args_list
+                  if call.args[1] == 'post-tofu-plan']
+    assert not post_calls
+
+
+def test_backend_metadata_parses_the_recorded_document(
+        tofu_project, monkeypatch):
+    """The backend metadata drives the workspace layout: the
+    document the initialization records is parsed for the state
+    paths, and the non-local backends and the broken documents read
+    as 'no backend'."""
+    project = tofu_project(project_type="modern")
+    data_dir = os.path.join(project.path, '.tofu-data')
+    monkeypatch.setattr(runner_module.cache, "data_dir",
+                        lambda proj: data_dir)
+    metadata = os.path.join(data_dir, 'terraform.tfstate')
+    runner = TofuRunner(project, ["plan"])
+
+    os.makedirs(data_dir)
+    with open(metadata, "w") as handle:
+        json.dump({'backend': {'type': 'local', 'config': {
+            'path': 'state/terraform.tfstate',
+            'workspace_dir': 'state/workspaces'}}}, handle)
+    assert runner._backend_metadata() == {
+        'path': 'state/terraform.tfstate',
+        'workspace_dir': 'state/workspaces'}
+
+    with open(metadata, "w") as handle:
+        json.dump({'backend': {'type': 'http', 'config': {}}}, handle)
+    assert runner._backend_metadata() is None
+
+    with open(metadata, "w") as handle:
+        handle.write('not-json')
+    assert runner._backend_metadata() is None
+
+    os.remove(metadata)
+    assert runner._backend_metadata() is None
 
 
 def test_resolve_plan_file_by_the_sequence(tofu_project):

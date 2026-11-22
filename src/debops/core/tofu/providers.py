@@ -11,7 +11,10 @@ reconcile keeps in step. Each entry is a provider source address in
 the OpenTofu registry notation -- 'namespace/name', or
 'hostname/namespace/name' for providers outside the public registry --
 optionally with a version pin separated by '='.
-"""
+
+
+The 'tofu.mkview.default_providers' read is not guarded: the package defaults
+guarantee the table."""
 
 import logging
 
