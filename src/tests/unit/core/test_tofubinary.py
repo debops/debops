@@ -21,6 +21,7 @@ import pytest
 
 import debops.core.runner as runner_base_module
 import debops.core.tofu.binary as binary_module
+import debops.core.keyring as keyring_module
 import debops.core.tofu.runner as runner_module
 from debops.core.tofu import plans as plans_module
 from debops.core.tofu.plans import plan_rows, resolve_plan_file
@@ -34,7 +35,14 @@ from tests.unit.core.tofu_helpers import (
     RELEASE_KEY_FINGERPRINT, keyring_config, mkview, write_drop_in)
 
 
-RELEASE_KEY_FINGERPRINT = 'E3E6E43D84CB852EADB0051D0C0AF313E5FD9F80'
+@pytest.fixture(autouse=True)
+def patched_data_homes(tmp_path, monkeypatch):
+    """The module-level XDG data homes of the binary and the keyring
+    modules resolve under the test's tmp path: the managed binaries
+    and the keyring homedir land inside the test's own data
+    location."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    monkeypatch.setattr(keyring_module, "xdg_data_home", str(tmp_path))
 
 
 @pytest.mark.parametrize("known", ["", "  ", None, 1139])
