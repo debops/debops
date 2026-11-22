@@ -18,7 +18,7 @@ from ..core.tofu.runner import TofuOperationFailed, TofuRunner
 from ..core.tofu.plans import (PLAN_FILE_PREFIX, plan_rows,
                                resolve_plan_file)
 from ..core.tofu import cache
-from ..core.tofu.view import create_view
+from ..core.tofu.view import create_view, rekey_view
 from ..core.tofu.providers import resolve_providers
 from ..core.tofu.modules import resolve_modules
 from ..core.tofu.binary import reconcile_binaries
@@ -395,6 +395,13 @@ class Interpreter(object):
             self._do_tofu_plans(args, project)
             return
 
+        # The 'rekey' operation is a DebOps-level command: it
+        # rotates the state passphrase of the view through the
+        # fallback key provider of the OpenTofu encryption
+        if args.tofu_args[0] == 'rekey':
+            self._do_tofu_rekey(args, project)
+            return
+
         try:
             runner = TofuRunner(project, args.tofu_args, bell=args.bell,
                                 no_color=args.no_color,
@@ -551,6 +558,18 @@ class Interpreter(object):
         self._render_tofu_changes(
             changes, diff=args.diff, dry_run=args.dry_run,
             color=(sys.stdout.isatty() and not args.no_color))
+
+    def _do_tofu_rekey(self, args, project):
+        """Run the 'debops tofu rekey' operation: rotate the state
+        passphrase of the view through the fallback key provider of
+        the OpenTofu encryption."""
+        try:
+            rekey_view(project, project.view,
+                       workspace=args.workspace)
+        except (NoDefaultViewException, ValueError, FileNotFoundError,
+                ChildProcessError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
 
     def _do_tofu_plans(self, args, project):
         """Run the 'debops tofu plans' operation: list the plan files

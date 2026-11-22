@@ -121,6 +121,68 @@ output "inventory_seed" {
 
 @pytest.mark.skipif(shutil.which("tofu") is None,
                     reason="no 'tofu' binary on the PATH")
+def test_the_rekey_rotates_the_state_passphrase(run_debops, debops_env,
+                                                project_dir):
+    """The rotation end to end: the rekey generates the new
+    passphrase, re-encrypts the state through the fallback, verifies
+    with the new key alone and cleans up -- the plan after the
+    rekey succeeds, the environment carries no old marker, the
+    old-key plan files are gone."""
+    env_path = os.path.join(project_dir, "tofu", "views", "tfcoremock",
+                            "secret", "environment")
+    with open(env_path) as handle:
+        original = handle.read()
+    original_passphrase = [line.split("=", 1)[1] for line in
+                           original.splitlines()
+                           if line.startswith(
+                               "TF_VAR_state_passphrase=")][0]
+
+    main_tf = os.path.join(project_dir, "tofu", "views", "tfcoremock",
+                           "main.tf")
+    with open(main_tf, "a") as handle:
+        handle.write("""
+resource "tfcoremock_simple_resource" "probe" {
+  id = "integration-probe"
+}
+""")
+
+    run_debops("tofu", "-V", "tfcoremock", "init", cwd=project_dir,
+               env=debops_env, check=True)
+    plan = run_debops("tofu", "-V", "tfcoremock", "plan",
+                      cwd=project_dir, env=debops_env, check=True)
+    run_debops("tofu", "-V", "tfcoremock", "apply",
+               saved_plan_file(plan), cwd=project_dir,
+               env=debops_env, check=True)
+
+    run_debops("tofu", "-V", "tfcoremock", "rekey", cwd=project_dir,
+               env=debops_env, check=True)
+
+    # The rekey removed the plan files encrypted under the retired
+    # key; the post-rekey plan below saves a fresh one
+    plans_dir = os.path.join(project_dir, "tofu", "views",
+                             "tfcoremock", "plans")
+    assert not os.path.isdir(plans_dir) or not os.listdir(plans_dir)
+
+    with open(env_path) as handle:
+        env = handle.read()
+    assert "TF_VAR_old_state_passphrase" not in env
+    rotated_passphrase = [line.split("=", 1)[1] for line in
+                          env.splitlines()
+                          if line.startswith(
+                              "TF_VAR_state_passphrase=")][0]
+    assert rotated_passphrase != original_passphrase
+
+    # The state reads with the new passphrase alone: the plan
+    # succeeding is the proof
+    plan = run_debops("tofu", "-V", "tfcoremock", "plan",
+                      cwd=project_dir, env=debops_env, check=True)
+
+    with open(main_tf) as handle:
+        assert "old-state" not in handle.read()
+
+
+@pytest.mark.skipif(shutil.which("tofu") is None,
+                    reason="no 'tofu' binary on the PATH")
 def test_the_missing_state_refuses_on_an_initialized_view(
         run_debops, debops_env, project_dir):
     """The missing-state refusal holds against the real binary: the
