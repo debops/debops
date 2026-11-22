@@ -19,6 +19,8 @@ did not load is a broken installation, and the missing key fails loudly at the
 point of use."""
 
 from ..runner import Runner
+from git.exc import (GitCommandError, InvalidGitRepositoryError,
+                     NoSuchPathError)
 from ..hooks import run_hooks
 from . import cache
 from . import plans
@@ -411,6 +413,39 @@ class TofuRunner(Runner):
         return os.path.exists(os.path.join(self._data_dir,
                                            'terraform.tfstate'))
 
+    def _state_was_lost(self):
+        """Whether the view's state file existed and is gone.
+
+        The tracked state records every version in the git history:
+        a state file with history but without the file itself was
+        lost -- the silent re-initialization hazard the refusal
+        exists for. A state file without history was never created;
+        its first operation is the legitimate creation. The git
+        failures skip the check with a warning -- the degraded pass
+        is the old advisory behavior, not a protection."""
+        state_file = self._state_file()
+        if os.path.exists(state_file + '.backup'):
+            # The local backend's backup file: the just-in-case net
+            # of the state writes -- its existence proves the state
+            # existed
+            return True
+        if not self.project._is_git_repo(self.project.path):
+            return False
+        try:
+            with self.project._closing_repo() as repo:
+                log = repo.git.log(
+                    '--oneline', '--',
+                    os.path.relpath(state_file, self.project.path))
+        except (GitCommandError, InvalidGitRepositoryError,
+                NoSuchPathError, OSError, ValueError):
+            logger.warning(
+                'The state history of the view could not be checked '
+                'in git: the missing-state refusal is skipped for '
+                'this operation.',
+                extra={'allow': ['stderr', 'syslog']})
+            return False
+        return bool(log.strip())
+
     def _check_state_presence(self):
         """Refuse the operation when the state the view should have is
         not there.
@@ -452,24 +487,26 @@ class TofuRunner(Runner):
             return
 
         if self._initialized_before():
-            # The state file is missing on an initialized view: a
-            # fresh view holds none until its first operation, but a
-            # lost store looks the same. OpenTofu would silently
-            # re-initialize the state and plan to create all
-            # infrastructure -- the refusal protects the fleet, and
-            # the deliberate wipe-and-rebuild passes the
-            # '--allow-missing-state' option
-            if self._allow_missing_state:
-                return
-            raise ChildProcessError(
-                'The state file of the view ({}) is missing while '
-                'the view was initialized on this machine before. '
-                'The store may be locked or the state lost -- '
-                'OpenTofu would silently re-initialize the state '
-                'and plan to create all of the infrastructure '
-                'again. To proceed deliberately, pass the '
-                "'--allow-missing-state' option of the 'debops "
-                "tofu' section.".format(state_file))
+            if self._state_was_lost():
+                # The state file has git history and is gone: a lost
+                # store, and OpenTofu would silently re-initialize
+                # the state and plan to create all of the
+                # infrastructure -- the refusal protects the fleet;
+                # the deliberate wipe-and-rebuild passes the
+                # '--allow-missing-state' option
+                if self._allow_missing_state:
+                    return
+                raise ChildProcessError(
+                    'The state file of the view ({}) is missing while '
+                    'the view was initialized on this machine before. '
+                    'The store may be locked or the state lost -- '
+                    'OpenTofu would silently re-initialize the state '
+                    'and plan to create all of the infrastructure '
+                    'again. To proceed deliberately, pass the '
+                    "'--allow-missing-state' option of the 'debops "
+                    "tofu' section.".format(state_file))
+            # The state file has no history: the view was never
+            # applied, its first operation is the legitimate creation
 
     def _check_state_lock(self):
         """Refuse the operation while another process holds the state.
