@@ -16,7 +16,7 @@ from ..core.envrunner import EnvRunner
 from ..core.tofu.runner import (TofuRunner, PLAN_FILE_PREFIX,
                                 plan_rows, resolve_plan_file)
 from ..core.tofu import cache
-from ..core.tofu.inventory import render_inventory
+from ..core.tofu.inventory import inventory_config, render_inventory
 from ..core.tofu.view import create_view
 from ..core.tofu.providers import resolve_providers
 from ..core.tofu.modules import resolve_modules
@@ -540,6 +540,28 @@ class Interpreter(object):
         secret store of the view, which cycles around it -- the
         runner's own cycle has already locked the tofu store back,
         this one is a fresh unlock/lock pair."""
+        config = inventory_config(project)
+        if args.force or config['state_refresh']:
+            try:
+                runner = TofuRunner(project, ['refresh'],
+                                    bell=args.bell,
+                                    no_color=args.no_color,
+                                    workspace=args.workspace)
+            except (NoDefaultViewException, ValueError,
+                    FileNotFoundError) as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
+            try:
+                rc = runner.execute()
+            except (ChildProcessError, ValueError) as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
+            if rc != 0:
+                print_error("The 'tofu refresh' operation of the "
+                            'view {!r} failed with exit code '
+                            '{}'.format(project.view, rc))
+                sys.exit(rc)
+
         try:
             runner = TofuRunner(project, ['output', '-json'],
                                 bell=args.bell, no_color=True,
