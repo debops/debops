@@ -402,27 +402,8 @@ class Interpreter(object):
             self._do_tofu_rekey(args, project)
             return
 
-        try:
-            runner = TofuRunner(project, args.tofu_args, bell=args.bell,
-                                no_color=args.no_color,
-                                workspace=args.workspace,
-                                allow_missing_state=(
-                                    args.allow_missing_state))
-        except (NoDefaultViewException, ValueError,
-                FileNotFoundError) as errmsg:
-            print_error(errmsg)
-            sys.exit(1)
-
-        try:
-            if args.eval:
-                self._note_pending_view_creation(project)
-                print(runner.eval())
-                sys.exit(0)
-
-            sys.exit(runner.execute())
-        except (ChildProcessError, ValueError) as errmsg:
-            print_error(errmsg)
-            sys.exit(1)
+        self._run_wrapped_operation(args, project, args.tofu_args,
+                                    eval_first=args.eval)
 
     def _note_pending_view_creation(self, project):
         """Note on stderr when '--eval' would run before the view tree
@@ -475,25 +456,8 @@ class Interpreter(object):
         if args.dry_run:
             return
 
-        try:
-            runner = TofuRunner(project, ['init'], bell=args.bell,
-                                no_color=args.no_color,
-                                workspace=args.workspace)
-        except (NoDefaultViewException, ValueError,
-                FileNotFoundError) as errmsg:
-            print_error(errmsg)
-            sys.exit(1)
-
-        if args.eval:
-            self._note_pending_view_creation(project)
-            print(runner.eval())
-            sys.exit(0)
-
-        try:
-            sys.exit(runner.execute())
-        except (ChildProcessError, ValueError) as errmsg:
-            print_error(errmsg)
-            sys.exit(1)
+        self._run_wrapped_operation(args, project, ['init'],
+                                    eval_first=args.eval)
 
     def _do_tofu_install(self, args, project):
         """Run the 'debops tofu install' operation: reconcile the
@@ -559,6 +523,34 @@ class Interpreter(object):
             changes, diff=args.diff, dry_run=args.dry_run,
             color=(sys.stdout.isatty() and not args.no_color))
 
+    def _run_wrapped_operation(self, args, project, tofu_args,
+                               eval_first=False):
+        """Construct the runner, run the operation, map the failures
+        to the exit codes -- the boilerplate the tofu operations
+        share. With 'eval_first' the printed command replaces the
+        execution: the '--eval' dry-run of the update."""
+        try:
+            runner = TofuRunner(project, tofu_args, bell=args.bell,
+                                no_color=args.no_color,
+                                workspace=args.workspace,
+                                allow_missing_state=(
+                                    args.allow_missing_state))
+        except (NoDefaultViewException, ValueError,
+                FileNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        if eval_first:
+            self._note_pending_view_creation(project)
+            print(runner.eval())
+            sys.exit(0)
+
+        try:
+            sys.exit(runner.execute())
+        except (ChildProcessError, ValueError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
     def _do_tofu_rekey(self, args, project):
         """Run the 'debops tofu rekey' operation: rotate the state
         passphrase of the view through the fallback key provider of
@@ -603,23 +595,9 @@ class Interpreter(object):
                         project=view_root)
             print(plan_file)
             return
-        try:
-            runner = TofuRunner(
-                project,
-                [args.verb] + (['-json'] if args.json else [])
-                + [plan_file],
-                bell=args.bell, no_color=args.no_color,
-                workspace=args.workspace,
-                allow_missing_state=args.allow_missing_state)
-        except (NoDefaultViewException, ValueError,
-                FileNotFoundError) as errmsg:
-            print_error(errmsg)
-            sys.exit(1)
-        try:
-            sys.exit(runner.execute())
-        except (ChildProcessError, ValueError) as errmsg:
-            print_error(errmsg)
-            sys.exit(1)
+        self._run_wrapped_operation(
+            args, project,
+            [args.verb] + (['-json'] if args.json else []) + [plan_file])
 
     def _render_tofu_changes(self, changes, diff=False, dry_run=False,
                              color=False):
