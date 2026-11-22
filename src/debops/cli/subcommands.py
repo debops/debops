@@ -637,6 +637,8 @@ DebOps-level operations (not passed to the 'tofu' command):
              Ansible view's inventory
   plans      list the plan files the wrapper saves for the view and
              show, apply or delete one of them by its id
+  rekey      rotate the state passphrase of the view through the
+             fallback key provider of the OpenTofu encryption
   cache      list and clean the OpenTofu cache of the project''',
                 epilog="The operation and its arguments are passed to "
                        "the 'tofu' command; the DebOps options come "
@@ -696,7 +698,8 @@ DebOps-level operations (not passed to the 'tofu' command):
         if (not self.args.tofu_args
                 or self.args.tofu_args[0] not in ('mkview', 'update',
                                                   'install', 'inventory',
-                                                  'plans', 'cache')):
+                                                  'plans', 'rekey',
+                                                  'cache')):
             return
         if self.args.tofu_args[0] == 'mkview':
             parser = _argument_parser(
@@ -797,6 +800,21 @@ DebOps-level operations (not passed to the 'tofu' command):
             if self.args.verb and not self.args.plan_id:
                 parser.error("The '{}' verb needs the id of the "
                              'saved plan'.format(self.args.verb))
+            return
+        if self.args.tofu_args[0] == 'rekey':
+            parser = _argument_parser(
+                    usage='debops tofu rekey',
+                    description="rotate the state passphrase of the "
+                                "view: the new passphrase is "
+                                'generated, the state is '
+                                're-encrypted through the fallback '
+                                'key provider of the OpenTofu '
+                                'encryption, the saved plan files '
+                                'encrypted under the retired key '
+                                'are removed. An interrupted '
+                                'rotation resumes on a re-run')
+            self.args = parser.parse_args(self.args.tofu_args[1:],
+                                          namespace=self.args)
             return
         if self.args.tofu_args[0] == 'cache':
             parser = _argument_parser(

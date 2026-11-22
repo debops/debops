@@ -25,7 +25,7 @@ import debops.core.tofu.runner as runner_module
 from debops.core.tofu import plans as plans_module
 from debops.core.tofu.plans import plan_rows, resolve_plan_file
 from debops.core.tofu.runner import TofuRunner
-from debops.core.tofu.view import create_view, reconcile_view
+from debops.core.tofu.view import (create_view, rekey_view, reconcile_view)
 from debops.core.tofu.providers import resolve_providers
 from debops.core.tofu.modules import resolve_modules
 from debops.core.secrets import SecretManager
@@ -2476,3 +2476,144 @@ def test_reconcile_binaries_force_reinstalls_the_versions(
     assert len(downloads) == 6
     assert open(binary_module.managed_binary_path(version)).read() \
         == "#!/bin/sh\nexit 0\n"
+
+
+def test_rekey_rotates_the_passphrase(tofu_project,
+                                      stub_tofu_subprocess):
+    """The rekey inserts the fallback into the mkview-shaped
+    stanza, re-encrypts through the refresh, verifies with a plan
+    and removes the fallback: the environment carries only the new
+    passphrase afterwards, the user's own keys survive, the
+    old-key plan files are gone."""
+    project = tofu_project(project_type="modern")
+    os.remove(os.path.join(project.path, "tofu", "views",
+                           project.view, "main.tf"))
+    mkview(project)
+    env_path = os.path.join(project.path, "tofu", "views",
+                            project.view, "secret", "environment")
+    with open(env_path) as handle:
+        original = handle.read()
+    with open(env_path, "a") as handle:
+        handle.write("TF_VAR_probe_token=probe\n")
+    state_dir = os.path.join(project.path, "tofu", "views",
+                             project.view, "state")
+    os.makedirs(state_dir)
+    with open(os.path.join(state_dir, "terraform.tfstate"),
+              "w") as handle:
+        handle.write("{}")
+
+    rekey_view(project, project.view)
+
+    with open(env_path) as handle:
+        env = handle.read()
+    assert "TF_VAR_old_state_passphrase" not in env
+    assert "TF_VAR_probe_token=probe" in env
+    new_passphrase = [line.split("=", 1)[1] for line in
+                      env.splitlines()
+                      if line.startswith("TF_VAR_state_passphrase=")][0]
+    old_passphrase = [line.split("=", 1)[1] for line in
+                      original.splitlines()
+                      if line.startswith("TF_VAR_state_passphrase=")][0]
+    assert new_passphrase != old_passphrase
+    with open(os.path.join(project.path, "tofu", "views",
+                           project.view, "main.tf")) as handle:
+        main_tf = handle.read()
+    assert "old_state_passphrase" not in main_tf
+    # the new primary carries the next generation label
+    assert 'key_provider "pbkdf2" "state-2"' in main_tf
+    plans_dir = os.path.join(project.path, "tofu", "views",
+                             project.view, "plans")
+    assert not os.path.isdir(plans_dir) or not os.listdir(plans_dir)
+
+
+def test_rekey_resumes_by_the_markers(tofu_project,
+                                      stub_tofu_subprocess):
+    """An interrupted rotation resumes: the re-run reads the old
+    passphrase from the environment marker and does not regenerate
+    the new one -- the re-encrypted state stays readable."""
+    project = tofu_project(project_type="modern")
+    os.remove(os.path.join(project.path, "tofu", "views",
+                           project.view, "main.tf"))
+    mkview(project)
+    env_path = os.path.join(project.path, "tofu", "views",
+                            project.view, "secret", "environment")
+    with open(env_path) as handle:
+        original = handle.read()
+    interrupted_passphrase = "interrupted-new-passphrase"
+    old_passphrase = [line.split("=", 1)[1] for line in
+                      original.splitlines()
+                      if line.startswith("TF_VAR_state_passphrase=")][0]
+
+    rekey_view(project, project.view)
+    # Simulate the interruption of a second rotation: the markers of
+    # the interrupted rotation are in place -- the new passphrase in
+    # the environment, the old one beside it as the fallback's
+    # variable
+    with open(env_path, "w") as handle:
+        handle.write("TF_VAR_state_passphrase="
+                     + interrupted_passphrase + "\n"
+                     + "TF_VAR_old_state_passphrase="
+                     + old_passphrase + "\n")
+
+    rekey_view(project, project.view)
+
+    with open(env_path) as handle:
+        env = handle.read()
+    # The passphrase was NOT regenerated: the interrupted rotation's
+    # value is the one the state carries
+    assert ("TF_VAR_state_passphrase="
+            + interrupted_passphrase) in env
+    assert "TF_VAR_old_state_passphrase" not in env
+
+
+def test_rekey_reinserts_the_fallback_when_the_verification_fails(
+        tofu_project, stub_tofu_subprocess):
+    """The verification plan which fails re-inserts the fallback:
+    the state stays readable through the old passphrase while the
+    operator investigates."""
+    project = tofu_project(project_type="modern")
+    os.remove(os.path.join(project.path, "tofu", "views",
+                           project.view, "main.tf"))
+    mkview(project)
+    state_dir = os.path.join(project.path, "tofu", "views",
+                             project.view, "state")
+    os.makedirs(state_dir)
+    with open(os.path.join(state_dir, "terraform.tfstate"),
+              "w") as handle:
+        handle.write("{}")
+    process_ok = mock.Mock()
+    process_ok.returncode = 0
+    process_ok.communicate.return_value = (b"", b"")
+    process_fail = mock.Mock()
+    process_fail.returncode = 1
+    process_fail.communicate.return_value = (b"", b"")
+    stub_tofu_subprocess.side_effect = [process_ok, process_fail]
+
+    with pytest.raises(ChildProcessError, match="verification"):
+        rekey_view(project, project.view)
+
+    with open(os.path.join(project.path, "tofu", "views",
+                           project.view, "main.tf")) as handle:
+        main_tf = handle.read()
+    assert "fallback" in main_tf
+    assert "old_state_passphrase" in main_tf
+
+
+def test_rekey_refuses_the_missing_encryption_block(tofu_project):
+    """The view configuration without the encryption block refuses:
+    the rekey rotates what the template renders, and the encryption
+    block is rewritten per phase."""
+    project = tofu_project(project_type="modern")
+    os.remove(os.path.join(project.path, "tofu", "views",
+                           project.view, "main.tf"))
+    mkview(project)
+    main_tf_path = os.path.join(project.path, "tofu", "views",
+                                project.view, "main.tf")
+    with open(main_tf_path) as handle:
+        main_tf = handle.read()
+    main_tf = main_tf.replace("  encryption {", "  rekey_removed {")
+    with open(main_tf_path, "w") as handle:
+        handle.write(main_tf)
+
+    with pytest.raises(ValueError, match="no encryption block"):
+        rekey_view(project, project.view)
