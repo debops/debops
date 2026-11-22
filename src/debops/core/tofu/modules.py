@@ -133,6 +133,13 @@ def resolve_modules(project, modules=None):
     return project.config.raw['tofu']['mkview']['default_modules']
 
 
+# The source forms which the registry notation cannot name: the
+# scheme-prefixed sources resolve outside the registry protocol and
+# the local paths name no registry package
+_NON_REGISTRY_SOURCES = ('git::', 'hg::', 'oci://', 'http::', 'https::',
+                         's3::', 'gcs::', 'git@', './', '../', '/')
+
+
 def _local_name(source):
     """Derive the local name of a registry module source address.
 
@@ -141,9 +148,25 @@ def _local_name(source):
     segment of 'hostname/namespace/name[/submodule]'. A hostname is
     the first segment which carries a '.' or a ':', or the literal
     'localhost'.
-    """
+
+    The scheme-prefixed and local-path sources carry no registry
+    package name to derive and are refused with the way out: such
+    modules are instantiated in the view's configuration drop-in
+    directly, where the local name is the table key."""
+    if source.startswith(_NON_REGISTRY_SOURCES):
+        raise ValueError(
+            'The module source {!r} is not a registry address: the '
+            "module options record registry modules, whose local "
+            'name the source address derives. Instantiate the '
+            'scheme-prefixed and local-path modules in the view '
+            "configuration drop-in directly, keyed by the local "
+            'name.'.format(source))
     path = source.partition('//')[0]
     segments = path.split('/')
+    if len(segments) < 2:
+        raise ValueError(
+            'The module source {!r} is not a registry address in the '
+            "'namespace/name' notation at minimum.".format(source))
     if (len(segments) > 2 and ('.' in segments[0] or ':' in segments[0]
                                or segments[0] == 'localhost')):
         return segments[2]
