@@ -25,7 +25,8 @@ import debops.core.tofu.runner as runner_module
 from debops.core.tofu import plans as plans_module
 from debops.core.tofu.plans import plan_rows, resolve_plan_file
 from debops.core.tofu.runner import TofuRunner
-from debops.core.tofu.view import (create_view, rekey_view, reconcile_view)
+from debops.core.tofu.rekey import rekey_view
+from debops.core.tofu.view import create_view, reconcile_view
 from debops.core.tofu.providers import resolve_providers
 from debops.core.tofu.modules import resolve_modules
 from debops.core.secrets import SecretManager
