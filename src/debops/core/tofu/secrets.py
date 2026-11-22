@@ -23,9 +23,28 @@ class TofuSecretStore(SecretStore):
 
     def __init__(self, project, view, keys=None, encrypt=None):
         root_path = view_tofu_root(project, view)
+        self._root = root_path
 
         super().__init__(project,
                          secret_path=os.path.join(root_path, 'secret'),
                          encfs_path=os.path.join(root_path,
                                                  '.encfs.secret'),
                          keys=keys, encrypt=encrypt)
+
+    def unlock(self):
+        """Unlock the store of the view, or report it absent.
+
+        The project-wide store cycle ('debops env', the project
+        unlock) cycles every registered store: a project which opted
+        out of OpenTofu carries no view and no store, and the cycle
+        must not demand one -- the unlock reports absence instead of
+        the 'not found' refusal the generic store raises."""
+        if not os.path.isdir(self._root):
+            return False
+        return super().unlock()
+
+    def lock(self):
+        """Lock the store of the view, or report it absent."""
+        if not os.path.isdir(self._root):
+            return False
+        return super().lock()
