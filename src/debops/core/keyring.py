@@ -43,30 +43,59 @@ class KeyringManager(object):
         self._name = name
         self._gpg = config.raw['binaries']['gpg']
         keyring = config.raw['gpg'][name]['keyring']
-        self._path = os.path.expanduser(keyring['path']) \
-            if keyring['path'] else os.path.join(xdg_data_home, 'debops', 'gnupg')
+        self._path = self._contained_path(keyring['path'])
         self._gpg_conf = keyring.get('gpg_conf') or {}
+
+    def _contained_path(self, path):
+        """Resolve the keyring homedir path and keep it inside the
+        DebOps data location.
+
+        The keyring is DebOps-owned infrastructure: its homedir is
+        created and made private, which must not happen to an
+        arbitrary directory a project configuration names. The path
+        resolves strictly under the DebOps data location
+        ('~/.local/share/debops/'); anything outside refuses the
+        manager with the way out."""
+        expanded = os.path.expanduser(path) if path \
+            else os.path.join(xdg_data_home, 'debops', 'gnupg')
+        root = os.path.realpath(os.path.join(xdg_data_home, 'debops'))
+        resolved = os.path.realpath(expanded)
+        if resolved == root or not resolved.startswith(root + os.sep):
+            raise ValueError(
+                "The keyring path {!r} must stay inside the DebOps "
+                "data location '{}': the keyring directory is created "
+                'and made private, which must not reach the paths '
+                'outside it.'.format(path, root))
+        return expanded
 
     @property
     def path(self):
         """The keyring homedir path."""
         return self._path
 
-    def _run(self, args, stdin=None):
+    def _run(self, args, stdin=None, timeout=60):
         """Run gpg against the keyring homedir, returning the result.
 
         A missing gpg binary refuses the operation: the keyring
-        cannot verify without it.
-        """
+        cannot verify without it. A hung gpg -- a wedged keyserver
+        connection, a stuck agent -- is cut off at the timeout and
+        refused; the way out is the manual key import into the
+        DebOps keyring."""
         try:
             return subprocess.run(
                 [self._gpg, '--homedir', self._path] + args,
-                input=stdin, capture_output=True)
+                input=stdin, capture_output=True, timeout=timeout)
         except FileNotFoundError:
             raise ValueError(
                 "The '{}' binary which the 'binaries.gpg' option names "
                 'is not available: install it, or point the option at '
                 'the gpg binary of the system.'.format(self._gpg))
+        except subprocess.TimeoutExpired:
+            raise ValueError(
+                "The '{}' operation of gpg timed out after {} seconds; "
+                'the keyserver may be unreachable or the agent stuck. '
+                'Import the key manually into the DebOps keyring to '
+                'proceed.'.format(args[0] if args else 'gpg', timeout))
 
     def ensure_keyring(self):
         """Create the keyring homedir and its gpg.conf when missing.
@@ -135,7 +164,7 @@ class KeyringManager(object):
         if normalized in self._key_fingerprints():
             return False
 
-        result = self._run(['--recv-keys', normalized])
+        result = self._run(['--recv-keys', normalized], timeout=120)
         if result.returncode != 0:
             error = result.stderr.decode('utf-8', 'replace').strip()
             raise ValueError(
