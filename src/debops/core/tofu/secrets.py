@@ -5,27 +5,24 @@
 import os
 
 from ..secrets import SecretStore
+from .registry import view_tofu_root
 
 
 class TofuSecretStore(SecretStore):
     """The secret store of an OpenTofu infrastructure view.
 
-    The view keeps its state files in the ``secret/`` directory next
-    to its configuration, encrypted at rest with EncFS (the ciphertext
-    in ``.encfs.secret/``) or through the repository-wide git-crypt.
-    The OpenTofu-native state encryption carries the confidentiality
-    of the state contents themselves; the store guards the key
-    material and the unlock lifecycle.
+    The store guards the key material of the view and the unlock
+    lifecycle: the OpenTofu-native state encryption carries the
+    confidentiality of the state contents themselves. The state
+    lives in the view's ``state/`` directory, tracked in git as
+    native ciphertext; the ``secret/`` directory beside the view
+    configuration holds the passphrase and the credentials,
+    encrypted at rest with EncFS (the ciphertext in
+    ``.encfs.secret/``) or through the repository-wide git-crypt.
     """
 
     def __init__(self, project, view, keys=None, encrypt=None):
-        if project.project_type == 'legacy':
-            root_path = os.path.join(project.path, 'tofu')
-        else:
-            root_path = os.path.join(project.path,
-                                     'tofu',
-                                     'views',
-                                     view)
+        root_path = view_tofu_root(project, view)
 
         super().__init__(project,
                          secret_path=os.path.join(root_path, 'secret'),

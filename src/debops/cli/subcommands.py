@@ -794,8 +794,8 @@ DebOps-level operations (not passed to the 'tofu' command):
                                 'which predate the data dir relocation, '
                                 'and the shared plugin cache. The '
                                 'cleaned data is re-derivable: the '
-                                'state lives in the secret store, the '
-                                'next init rebuilds the rest')
+                                'state is tracked in the view tree, '
+                                'the next init rebuilds the rest')
             parser.add_argument('--clean', action='store_true',
                                 help='remove the cache entries of the '
                                      'selected scope: the resolved '
