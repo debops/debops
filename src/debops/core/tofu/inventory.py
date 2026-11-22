@@ -16,57 +16,29 @@ entries the seed dropped against it. The seed contract lives in
 manifest reconcile and the operation orchestration.
 """
 
-
 import json
-
-
 import logging
-
-
 import os
-
 
 import yaml
 
-
 from ..ansible.inventory import AnsibleInventory
-
-
 from ..secrets import SecretManager, unlocked_store
-
-
 from ..utils import remove_dir, remove_file, write_file
-
-
 from .changes import change_label, file_change
-
-
 from .inventory_formats import (DEFAULT_HOSTS_FILENAMES, FORMATS,
                                 _header, _hosts_filename, _is_scalar,
                                 _render_hosts_ini, _render_hosts_json,
                                 _render_hosts_toml, _render_hosts_yaml,
                                 _yaml_json_doc)
-
-
 from .inventory_seed import (_check_hierarchy, _collect_outputs,
                              _filter_hosts, _group_records,
                              _host_records, _mapping)
-
-
 from .plans import PLAN_DIR, PLAN_FILE_PREFIX, plan_file_names
-
-
 from .runner import TofuOperationFailed, TofuRunner
-
-
 from .secrets import TofuSecretStore
 
-
 logger = logging.getLogger(__name__)
-
-
-logger = logging.getLogger(__name__)
-
 
 MANIFEST_NAME = '.tofu-inventory-manifest.yml'
 

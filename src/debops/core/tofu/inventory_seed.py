@@ -12,13 +12,8 @@ anything the bridge cannot render safely is refused here, with the
 offending entry named.
 """
 
-
 import json
-
-
 import logging
-
-
 import re
 
 

@@ -10,28 +10,15 @@ module boundary and drive the bare interpreter instance, whose real
 '_render_tofu_changes' a Mock self would otherwise swallow.
 """
 
-
 import logging
-
-
 import os
-
-
 import time
-
-
 from types import SimpleNamespace
-
-
 from unittest import mock
-
 
 import pytest
 
-
 import debops.cli.interpreter as cli_module
-
-
 import debops.core.tofu.inventory as inventory_module
 
 

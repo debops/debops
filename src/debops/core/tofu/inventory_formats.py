@@ -13,15 +13,10 @@ the file content out; the file writes and the manifest stay in the
 bridge module.
 """
 
-
 import json
 
-
 import toml
-
-
 import yaml
-
 
 from .inventory_seed import _root_groups
 
