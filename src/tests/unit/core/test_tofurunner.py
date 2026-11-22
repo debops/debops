@@ -284,27 +284,43 @@ def test_empty_state_path_disables_the_checks(tofu_project):
     runner._check_state_lock()
 
 
-def test_missing_state_of_an_initialized_view_refuses(tofu_project):
-    """The missing state on an initialized view refuses: a lost
-    store and a deliberate wipe look the same, and OpenTofu would
-    silently re-initialize the state and plan a full recreate -- the
-    refusal names the escape option."""
+def test_lost_state_of_an_initialized_view_refuses(tofu_project):
+    """The state file with git history but without the file itself
+    was lost: OpenTofu would silently re-initialize the state and
+    plan a full recreate -- the refusal names the escape option."""
     project = tofu_project()
     runner = TofuRunner(project, ["apply"])
     with mock.patch.object(runner_module.TofuRunner,
-                           "_initialized_before", return_value=True):
+                           "_initialized_before", return_value=True), \
+            mock.patch.object(runner_module.TofuRunner,
+                              "_state_was_lost", return_value=True):
         with pytest.raises(ChildProcessError,
                            match="--allow-missing-state"):
             runner._check_state_presence()
 
 
-def test_missing_state_passes_with_the_escape_option(tofu_project):
+def test_lost_state_passes_with_the_escape_option(tofu_project):
     """The '--allow-missing-state' decision passes the check: the
     deliberate wipe-and-rebuild proceeds."""
     project = tofu_project()
     runner = TofuRunner(project, ["apply"], allow_missing_state=True)
     with mock.patch.object(runner_module.TofuRunner,
-                           "_initialized_before", return_value=True):
+                           "_initialized_before", return_value=True), \
+            mock.patch.object(runner_module.TofuRunner,
+                              "_state_was_lost", return_value=True):
+        runner._check_state_presence()
+
+
+def test_state_without_history_passes_the_check(tofu_project):
+    """A state file without git history was never created: the view
+    was initialized but not applied yet, and the first operation is
+    the legitimate creation."""
+    project = tofu_project()
+    runner = TofuRunner(project, ["apply"])
+    with mock.patch.object(runner_module.TofuRunner,
+                           "_initialized_before", return_value=True), \
+            mock.patch.object(runner_module.TofuRunner,
+                              "_state_was_lost", return_value=False):
         runner._check_state_presence()
 
 
