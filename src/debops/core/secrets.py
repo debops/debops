@@ -405,8 +405,10 @@ def environment_path(view_root):
 
 
 def environment_values(view_root):
-    """The TF_VAR_* values of the environment file, parsed without
-    interpolation -- the values are literal, host-independent."""
+    """The values of the tracked environment file, parsed without
+    interpolation -- the values are literal, host-independent. The
+    caller applies the TF_VAR_* keys and refuses the rest: the
+    general variables belong to the untracked '.env' files."""
     path = environment_path(view_root)
     if not os.path.exists(path):
         return {}
