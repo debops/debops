@@ -634,6 +634,8 @@ DebOps-level operations (not passed to the 'tofu' command):
   install    install the OpenTofu binaries which the views pin
   inventory  render the inventory outputs of the view into the
              Ansible view's inventory
+  plans      list the plan files the wrapper saves for the view and
+             show, apply or delete one of them by its id
   cache      list and clean the OpenTofu cache of the project''',
                 epilog="The operation and its arguments are passed to "
                        "the 'tofu' command; the DebOps options come "
@@ -687,7 +689,7 @@ DebOps-level operations (not passed to the 'tofu' command):
         if (not self.args.tofu_args
                 or self.args.tofu_args[0] not in ('mkview', 'update',
                                                   'install', 'inventory',
-                                                  'cache')):
+                                                  'plans', 'cache')):
             return
         if self.args.tofu_args[0] == 'mkview':
             parser = _argument_parser(
@@ -745,6 +747,37 @@ DebOps-level operations (not passed to the 'tofu' command):
                                      'changes instead of the paths')
             self.args = parser.parse_args(self.args.tofu_args[1:],
                                           namespace=self.args)
+            return
+        if self.args.tofu_args[0] == 'plans':
+            parser = _argument_parser(
+                    usage='debops tofu plans [<verb> [<id>]]',
+                    description="list the plan files the wrapper "
+                                "saves for the view -- the sequence "
+                                'id, the stamp, the size and the '
+                                'age -- and show, apply or delete '
+                                'one of them by its id. The ids are '
+                                'stable while the retention prunes '
+                                'the oldest files; the plan files '
+                                'are OpenTofu-encrypted')
+            parser.add_argument('--json', action='store_true',
+                                help='render the plan as JSON')
+            parser.add_argument('verb', nargs='?',
+                                choices=['show', 'apply', 'delete'],
+                                help='the operation on one saved '
+                                     'plan; the bare operation '
+                                     'lists them')
+            parser.add_argument('plan_id', nargs='?',
+                                help='the sequence id of the saved '
+                                     'plan, or the unique prefix of '
+                                     'its file name')
+            self.args = parser.parse_args(self.args.tofu_args[1:],
+                                          namespace=self.args)
+            if self.args.json and self.args.verb != 'show':
+                parser.error("'--json' renders a plan: it needs the "
+                             "'show' verb")
+            if self.args.verb and not self.args.plan_id:
+                parser.error("The '{}' verb needs the id of the "
+                             'saved plan'.format(self.args.verb))
             return
         if self.args.tofu_args[0] == 'cache':
             parser = _argument_parser(

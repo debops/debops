@@ -13,7 +13,8 @@ from ..core.projectvenv import ProjectVenv
 from ..core.ansible.ansiblerunner import AnsibleRunner
 from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
-from ..core.tofu.runner import TofuRunner
+from ..core.tofu.runner import (TofuRunner, PLAN_FILE_PREFIX,
+                                plan_rows, resolve_plan_file)
 from ..core.tofu import cache
 from ..core.tofu.inventory import render_inventory
 from ..core.tofu.view import create_view
@@ -30,9 +31,26 @@ import logging
 import getpass
 import shlex
 import sys
+import time
 import os
 
 logger = logging.getLogger(__name__)
+
+
+def human_age(then):
+    """The age of a modification time, human-sized: the seconds,
+    the minutes, the hours or the days."""
+    seconds = max(int(time.time()) - int(then), 0)
+    if seconds < 60:
+        return '{} second{} ago'.format(
+            seconds, 's' if seconds != 1 else '')
+    for span, unit in ((86400, 'day'), (3600, 'hour'),
+                       (60, 'minute')):
+        if seconds >= span:
+            count = seconds // span
+            return '{} {}{} ago'.format(
+                count, unit, 's' if count != 1 else '')
+    return '0 seconds ago'
 
 
 def _inspect_mode(args):
@@ -370,6 +388,13 @@ class Interpreter(object):
             self._do_tofu_inventory(args, project)
             return
 
+        # The 'plans' operation is a DebOps-level command: it lists
+        # the plan files the wrapper saves for the view and shows,
+        # applies or deletes one of them by its id
+        if args.tofu_args[0] == 'plans':
+            self._do_tofu_plans(args, project)
+            return
+
         try:
             runner = TofuRunner(project, args.tofu_args, bell=args.bell,
                                 no_color=args.no_color,
@@ -555,6 +580,54 @@ class Interpreter(object):
         self._render_tofu_changes(
             changes, diff=args.diff, dry_run=args.dry_run,
             color=(sys.stdout.isatty() and not args.no_color))
+
+    def _do_tofu_plans(self, args, project):
+        """Run the 'debops tofu plans' operation: list the plan files
+        the wrapper saves for the view, or show, apply or delete one
+        of them by its id.
+
+        The listing reads the view's plans directory -- the names
+        and the metadata are plaintext-side, no store cycle. The
+        show and the apply run through the runner machinery: the
+        plan files are OpenTofu-encrypted and the passphrase comes
+        from the store's environment file, which the cycle unlocks.
+        The delete is a file removal with the id resolved; it
+        reports the removed path, the reconcile convention."""
+        view_root = view_tofu_root(project, project.view)
+        try:
+            if args.verb is None:
+                rows = plan_rows(view_root)
+                for sequence, name, size, mtime in rows:
+                    stamp = name[len(PLAN_FILE_PREFIX):-len('.tfplan')]
+                    stamp = stamp.partition('-')[2]
+                    print('{:>4}  {}  {:>7}  {}'.format(
+                        sequence, stamp, cache.human_size(size),
+                        human_age(mtime)))
+                return
+            plan_file = resolve_plan_file(view_root, args.plan_id)
+        except ValueError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        if args.verb == 'delete':
+            os.remove(os.path.join(view_root, plan_file))
+            print(plan_file)
+            return
+        try:
+            runner = TofuRunner(
+                project,
+                [args.verb] + (['-json'] if args.json else [])
+                + [plan_file],
+                bell=args.bell, no_color=args.no_color,
+                workspace=args.workspace)
+        except (NoDefaultViewException, ValueError,
+                FileNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        try:
+            sys.exit(runner.execute())
+        except (ChildProcessError, ValueError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
 
     def _render_tofu_changes(self, changes, diff=False, dry_run=False,
                              color=False):
