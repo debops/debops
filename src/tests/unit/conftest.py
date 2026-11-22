@@ -473,11 +473,16 @@ def tofu_project(stub_project, tmp_path, monkeypatch):
 @pytest.fixture
 def stub_tofu_subprocess(monkeypatch):
     """A stubbed tofu subprocess: 'execute()' runs to completion
-    without the tofu binary, the hooks pass."""
+    without the tofu binary, the hooks pass. The pipes are reusable
+    mocks which read to EOF immediately: the stderr relay of the
+    runner closes the descriptor it drains, and a rotation runs
+    several operations against the same stub."""
     process = mock.Mock()
     process.returncode = 0
-    process.stdout = io.BytesIO(b"")
-    process.stderr = io.BytesIO(b"")
+    process.stdout = mock.Mock()
+    process.stdout.read.return_value = b""
+    process.stderr = mock.Mock()
+    process.stderr.read.return_value = b""
     process.communicate.return_value = (b"", b"")
     popen = mock.Mock(return_value=process)
     monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
