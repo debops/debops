@@ -4,6 +4,7 @@
 
 import fcntl
 import hashlib
+import io
 import json
 import logging
 import os
@@ -845,10 +846,12 @@ def test_rekey_reinserts_the_fallback_when_the_verification_fails(
         handle.write("{}")
     process_ok = mock.Mock()
     process_ok.returncode = 0
-    process_ok.communicate.return_value = (b"", b"")
+    process_ok.stdout = io.BytesIO(b"")
+    process_ok.stderr = io.BytesIO(b"")
     process_fail = mock.Mock()
     process_fail.returncode = 1
-    process_fail.communicate.return_value = (b"", b"")
+    process_fail.stdout = io.BytesIO(b"")
+    process_fail.stderr = io.BytesIO(b"")
     stub_tofu_subprocess.side_effect = [process_ok, process_fail]
 
     with pytest.raises(ChildProcessError, match="verification"):
