@@ -894,7 +894,8 @@ def inventory_operation(monkeypatch, rc=0, output='{}', changes=None,
         monkeypatch.setattr(cli_module, "render_inventory",
                             mock.Mock(return_value=changes or []))
     args = SimpleNamespace(bell=False, workspace=None, dry_run=dry_run,
-                           diff=diff, force=force, no_color=False)
+                           diff=diff, force=force, no_color=False,
+                           allow_missing_state=False)
     raw = {'tofu': {'inventory': {'state_refresh': state_refresh}}}
     project = SimpleNamespace(view='system', path='/tmp/opencode/x',
                               config=SimpleNamespace(raw=raw))
