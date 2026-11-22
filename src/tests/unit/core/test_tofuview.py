@@ -493,6 +493,19 @@ def test_module_version_pin_is_written(tofu_project,
     assert 'version = "5.0.0"' in modules_tf
 
 
+def test_module_schemes_are_refused(tofu_project):
+    """The scheme-prefixed and local-path module sources carry no
+    registry package name: the '--module' options refuse them with
+    the way out instead of deriving a broken local name. Such modules
+    are instantiated in the view configuration drop-in directly."""
+    for source in ('git::https://git.example.com/group/mod/system',
+                   'oci://registry.example/group/mod:1.0.0',
+                   './modules/vpc', '/abs/path/module', 'mod'):
+        with pytest.raises(ValueError, match='registry address'):
+            resolve_modules(tofu_project(project_type="modern"),
+                            modules=[source])
+
+
 def test_module_local_name_is_derived_from_the_source(
         tofu_project, stub_tofu_subprocess):
     """The '--module' arguments derive the local module name from the
