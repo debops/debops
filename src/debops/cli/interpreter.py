@@ -398,7 +398,9 @@ class Interpreter(object):
         try:
             runner = TofuRunner(project, args.tofu_args, bell=args.bell,
                                 no_color=args.no_color,
-                                workspace=args.workspace)
+                                workspace=args.workspace,
+                                allow_missing_state=(
+                                    args.allow_missing_state))
         except (NoDefaultViewException, ValueError,
                 FileNotFoundError) as errmsg:
             print_error(errmsg)
@@ -546,7 +548,9 @@ class Interpreter(object):
                 runner = TofuRunner(project, ['refresh'],
                                     bell=args.bell,
                                     no_color=args.no_color,
-                                    workspace=args.workspace)
+                                    workspace=args.workspace,
+                                    allow_missing_state=(
+                                        args.allow_missing_state))
             except (NoDefaultViewException, ValueError,
                     FileNotFoundError) as errmsg:
                 print_error(errmsg)
@@ -565,7 +569,9 @@ class Interpreter(object):
         try:
             runner = TofuRunner(project, ['output', '-json'],
                                 bell=args.bell, no_color=True,
-                                workspace=args.workspace)
+                                workspace=args.workspace,
+                                allow_missing_state=(
+                                    args.allow_missing_state))
         except (NoDefaultViewException, ValueError,
                 FileNotFoundError) as errmsg:
             print_error(errmsg)
@@ -641,7 +647,8 @@ class Interpreter(object):
                 [args.verb] + (['-json'] if args.json else [])
                 + [plan_file],
                 bell=args.bell, no_color=args.no_color,
-                workspace=args.workspace)
+                workspace=args.workspace,
+                allow_missing_state=args.allow_missing_state)
         except (NoDefaultViewException, ValueError,
                 FileNotFoundError) as errmsg:
             print_error(errmsg)

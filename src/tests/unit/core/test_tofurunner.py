@@ -29,13 +29,57 @@ from debops.core.tofu.modules import resolve_modules
 from debops.core.secrets import SecretManager
 
 
-def mkview(project, providers=None, modules=None, encrypt=None,
+def mkview(project, providers=None, modules=None, encrypt='plain',
            keys=None):
-    """Create the view the way 'debops tofu mkview' does."""
+    """Create the view the way 'debops tofu mkview' does; the tests
+    create store-less stub projects, so the explicit 'plain' decision
+    is the default here."""
     create_view(project, project.view,
                 providers=resolve_providers(project, providers),
                 modules=resolve_modules(project, modules),
                 encrypt=encrypt, keys=keys)
+
+
+def test_mkview_requires_the_encrypt_decision(tofu_project):
+    """The project without a secret store refuses the creation: the
+    '--encrypt' decision is required, 'plain' being the explicit
+    insecure one."""
+    project = tofu_project(project_type="modern")
+    with pytest.raises(ValueError,
+                       match="'--encrypt' option is required"):
+        create_view(project, "fresh", encrypt=None)
+
+
+def test_mkview_follows_the_detected_git_crypt_store(
+        tofu_project, monkeypatch):
+    """The git-crypt store detected in the repository is the
+    default: the view joins it, and the contradictory choices
+    refuse."""
+    project = tofu_project(project_type="modern")
+    os.makedirs(os.path.join(project.path, '.git', 'git-crypt', 'keys'))
+    monkeypatch.setattr(
+        "debops.core.tofu.secrets.TofuSecretStore.unlock",
+        lambda self: True)
+    monkeypatch.setattr(
+        "debops.core.tofu.secrets.TofuSecretStore.lock",
+        lambda self: None)
+    create_view(project, "fresh", encrypt=None)
+
+    with pytest.raises(ValueError, match="contradicts"):
+        create_view(project, "other", encrypt="encfs")
+    with pytest.raises(ValueError, match="'plain' is not a choice"):
+        create_view(project, "third", encrypt="plain")
+
+
+def test_mkview_detected_encfs_requires_the_keys(tofu_project):
+    """The EncFS store detected in the project makes the view join
+    with a volume of its own: the '--keys' recipients are required,
+    the '--encrypt' decision implied by the detection."""
+    project = tofu_project(project_type="modern")
+    os.makedirs(os.path.join(project.path, "ansible", "views",
+                             "system", ".encfs.secret"))
+    with pytest.raises(ValueError, match="'--keys'"):
+        create_view(project, "fresh", encrypt=None)
 
 
 @pytest.fixture(autouse=True)
@@ -238,17 +282,28 @@ def test_empty_state_path_disables_the_checks(tofu_project):
     runner._check_state_lock()
 
 
-def test_missing_state_of_an_initialized_view_warns(tofu_project, caplog):
-    """A fresh view holds no state until its first operation, which
-    looks the same as a lost store; the missing state warns instead of
-    refusing, and the plan surfaces a full recreate."""
+def test_missing_state_of_an_initialized_view_refuses(tofu_project):
+    """The missing state on an initialized view refuses: a lost
+    store and a deliberate wipe look the same, and OpenTofu would
+    silently re-initialize the state and plan a full recreate -- the
+    refusal names the escape option."""
     project = tofu_project()
     runner = TofuRunner(project, ["apply"])
     with mock.patch.object(runner_module.TofuRunner,
                            "_initialized_before", return_value=True):
-        with caplog.at_level(logging.WARNING):
+        with pytest.raises(ChildProcessError,
+                           match="--allow-missing-state"):
             runner._check_state_presence()
-    assert "is missing" in caplog.text
+
+
+def test_missing_state_passes_with_the_escape_option(tofu_project):
+    """The '--allow-missing-state' decision passes the check: the
+    deliberate wipe-and-rebuild proceeds."""
+    project = tofu_project()
+    runner = TofuRunner(project, ["apply"], allow_missing_state=True)
+    with mock.patch.object(runner_module.TofuRunner,
+                           "_initialized_before", return_value=True):
+        runner._check_state_presence()
 
 
 def test_fresh_view_without_state_is_allowed(tofu_project, caplog):
@@ -618,7 +673,8 @@ def plans_operation(monkeypatch, project, verb=None, plan_id=None,
     runner_stub = mock.Mock(return_value=runner)
     monkeypatch.setattr(cli_module, "TofuRunner", runner_stub)
     args = SimpleNamespace(bell=False, workspace=None, verb=verb,
-                           plan_id=plan_id, json=json, no_color=False)
+                           plan_id=plan_id, json=json, no_color=False,
+                           allow_missing_state=False)
     interpreter = cli_module.Interpreter.__new__(cli_module.Interpreter)
     interpreter._do_tofu_plans(args, project)
     return runner_stub, plans_dir
