@@ -302,6 +302,19 @@ def test_operations_allow_list_empty_allows_everything(tofu_project):
     assert runner._operation_allowed()
 
 
+def test_provider_options_are_refused_outside_mkview(tofu_project):
+    """The '--provider' and '--module' options apply when a view is
+    created: the runner refuses them on every other operation with
+    the placement named, instead of passing them to OpenTofu for a
+    cryptic refusal."""
+    with pytest.raises(ValueError, match="mkview"):
+        TofuRunner(tofu_project(),
+                   ["init", "--provider=hashicorp/random"])
+    with pytest.raises(ValueError, match="mkview"):
+        TofuRunner(tofu_project(),
+                   ["plan", "--module", "hashicorp/consul/aws"])
+
+
 def test_one_step_apply_without_approval_is_refused_when_not_a_tty(
         tofu_project, monkeypatch):
     monkeypatch.setattr("sys.stdin", mock.Mock(isatty=lambda: False))
@@ -316,6 +329,23 @@ def test_plan_file_apply_needs_no_approval(tofu_project, monkeypatch):
                         ["apply", "secret/plan.tfplan"])
     runner._check_approval()
     assert "-auto-approve" not in runner._tofu_command
+
+
+def test_one_step_apply_auto_approve_value_is_the_explicit_decision(
+        tofu_project, monkeypatch):
+    """The '-auto-approve=value' form the CI pipelines write carries
+    the explicit decision: an affirmative value satisfies the gate,
+    while '-auto-approve=false' declines it and the gate asks for the
+    approval instead -- refused without a terminal, like the bare
+    one-step apply."""
+    monkeypatch.setattr("sys.stdin", mock.Mock(isatty=lambda: False))
+    runner = TofuRunner(tofu_project(), ["apply", "-auto-approve=true"])
+    runner._check_approval()
+
+    declined = TofuRunner(tofu_project(),
+                          ["apply", "-auto-approve=false"])
+    with pytest.raises(ChildProcessError, match="approval"):
+        declined._check_approval()
 
 
 def test_plan_operation_saves_the_plan_file(tofu_project,
