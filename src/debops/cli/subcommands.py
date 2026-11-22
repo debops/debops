@@ -695,6 +695,12 @@ DebOps-level operations (not passed to the 'tofu' command):
         """Parse the options of the DebOps-level tofu operations: the
         operations which the wrapper does not pass to the 'tofu'
         command carry their own options and their own help screens."""
+        if self.args.tofu_args and self.args.tofu_args[0] == '--':
+            # The '--' separator the usage line promises between the
+            # wrapper options and the operation: a leading one must
+            # not turn the DebOps-level operations into raw
+            # passthrough
+            self.args.tofu_args.pop(0)
         if (not self.args.tofu_args
                 or self.args.tofu_args[0] not in ('mkview', 'update',
                                                   'install', 'inventory',
@@ -707,6 +713,9 @@ DebOps-level operations (not passed to the 'tofu' command):
                     description='create a new OpenTofu view with its '
                                 'encrypted store and the environment '
                                 'key file of the view')
+            parser.add_argument('-v', '--verbose', action='count',
+                                help='increase output verbosity '
+                                     '(e.g., -vv is more than -v)')
             parser.add_argument('-e', '--encrypt', type=str, nargs='?',
                                 choices=['encfs', 'git-crypt', 'plain'],
                                 help="the encryption of the view's "
@@ -781,6 +790,9 @@ DebOps-level operations (not passed to the 'tofu' command):
                                 'stable while the retention prunes '
                                 'the oldest files; the plan files '
                                 'are OpenTofu-encrypted')
+            parser.add_argument('-v', '--verbose', action='count',
+                                help='increase output verbosity '
+                                     '(e.g., -vv is more than -v)')
             parser.add_argument('--json', action='store_true',
                                 help='render the plan as JSON')
             parser.add_argument('verb', nargs='?',
@@ -813,6 +825,9 @@ DebOps-level operations (not passed to the 'tofu' command):
                                 'encrypted under the retired key '
                                 'are removed. An interrupted '
                                 'rotation resumes on a re-run')
+            parser.add_argument('-v', '--verbose', action='count',
+                                help='increase output verbosity '
+                                     '(e.g., -vv is more than -v)')
             self.args = parser.parse_args(self.args.tofu_args[1:],
                                           namespace=self.args)
             return
@@ -828,6 +843,9 @@ DebOps-level operations (not passed to the 'tofu' command):
                                 'cleaned data is re-derivable: the '
                                 'state is tracked in the view tree, '
                                 'the next init rebuilds the rest')
+            parser.add_argument('-v', '--verbose', action='count',
+                                help='increase output verbosity '
+                                     '(e.g., -vv is more than -v)')
             parser.add_argument('--clean', action='store_true',
                                 help='remove the cache entries of the '
                                      'selected scope: the resolved '
@@ -879,6 +897,9 @@ DebOps-level operations (not passed to the 'tofu' command):
                                 "configuration drop-in, and 'tofu init' "
                                 'runs through the wrapper to apply the '
                                 'changed requirement files')
+            parser.add_argument('-v', '--verbose', action='count',
+                                help='increase output verbosity '
+                                     '(e.g., -vv is more than -v)')
             parser.add_argument('-n', '--dry-run', action='store_true',
                                 help='only simulate the reconcile: '
                                      'report the changes without '
@@ -899,6 +920,9 @@ DebOps-level operations (not passed to the 'tofu' command):
                                 'verified against the release '
                                 'checksums, whose signature the '
                                 'DebOps-managed keyring authenticates')
+            parser.add_argument('-v', '--verbose', action='count',
+                                help='increase output verbosity '
+                                     '(e.g., -vv is more than -v)')
             parser.add_argument('--force', action='store_true',
                                 help='reinstall the binaries which are '
                                      'installed already: the download, '
