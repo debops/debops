@@ -140,7 +140,11 @@ def test_init_rejects_a_key_without_encryption_capability(
                         str(project_dir), env=gpg_env)
 
     assert result.returncode == 1
-    assert "cannot be used for encryption" in result.stderr
+    # The error printer wraps the message to the terminal width; the
+    # gpg stderr is localized, so the wrap point moves with the
+    # locale -- match the phrase against the unwrapped text
+    assert "cannot be used for encryption" \
+        in " ".join(result.stderr.split())
     assert not project_dir.exists()
 
 
