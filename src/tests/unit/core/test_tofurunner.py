@@ -521,6 +521,22 @@ def test_plan_retention_sorts_by_the_sequence(tofu_project,
         "debops-11-20240103T000000.tfplan"]
 
 
+def test_plan_drift_exitcode_saves_and_announces(
+        tofu_project, stub_tofu_subprocess, caplog):
+    """A '-detailed-exitcode' plan exits 2 when the plan carries
+    changes: the drift-detection success saves, announces and
+    retains the plan file the way the clean success does -- the
+    drift plan is not a failure and must not evade the retention."""
+    project = tofu_project(project_type="modern")
+    stub_tofu_subprocess.return_value.returncode = 2
+    with caplog.at_level(logging.INFO):
+        TofuRunner(project, ["plan", "-detailed-exitcode"]).execute()
+
+    assert "Saved the plan file" in caplog.text
+    assert os.path.isdir(os.path.join(
+        project.path, "tofu", "views", project.view, "plans"))
+
+
 def test_resolve_plan_file_by_the_sequence(tofu_project):
     """An integer id resolves against the parsed sequences of the
     saved plan files."""
