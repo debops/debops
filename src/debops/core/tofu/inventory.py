@@ -22,8 +22,10 @@ import toml
 import yaml
 
 from ..ansible.inventory import AnsibleInventory
+from ..secrets import SecretManager
 from ..utils import remove_dir, remove_file, write_file
 from .changes import change_label, file_change
+from .runner import TofuOperationFailed, TofuRunner
 
 logger = logging.getLogger(__name__)
 
@@ -801,6 +803,55 @@ def _render_vars_files(desired, changes, config, fmt, view_root,
         _write_vars_file(desired, changes, inventory_dir, kind, name,
                          config['secret_vars_filename'], lookups,
                          view, view_root, project_root, dry_run)
+
+
+def render_view_inventory(project, view, force=False, dry_run=False,
+                          allow_missing_state=False, bell=False):
+    """Run the 'debops tofu inventory' operation: refresh the state
+    when asked, collect the outputs through the runner machinery,
+    cycle the Ansible secret store around the render and return the
+    change records the render applies.
+
+    The captured 'tofu output -json' carries the sensitive values of
+    the seed in plaintext: the output is collected, never streamed
+    to the terminal. The render writes into the Ansible secret store
+    of the view, which cycles around it -- the runner's own cycle
+    has already locked the tofu store back, this one is a fresh
+    unlock/lock pair. The failures raise: 'TofuOperationFailed'
+    carries the return code of the failed tofu operation, the
+    renderer's 'ValueError' and 'FileNotFoundError' propagate.
+    """
+    config = inventory_config(project)
+    if force or config['state_refresh']:
+        runner = TofuRunner(project, ['refresh'], bell=bell,
+                            allow_missing_state=allow_missing_state)
+        rc = runner.execute()
+        if rc != 0:
+            raise TofuOperationFailed(
+                "The 'tofu refresh' operation of the view {!r} "
+                'failed with exit code {}'.format(view, rc), rc)
+
+    runner = TofuRunner(project, ['output', '-json'], no_color=True,
+                        allow_missing_state=allow_missing_state)
+    rc, output = runner.execute(capture=True)
+    if rc != 0:
+        raise TofuOperationFailed(
+            "The 'tofu output' operation of the view {!r} failed "
+            'with exit code {}'.format(view, rc), rc)
+
+    store = SecretManager(project, view).store('ansible')
+    unlocked = store.unlock()
+    if unlocked:
+        logger.debug("The Ansible store of the view '{}' "
+                     'unlocked'.format(view))
+    try:
+        return render_inventory(project, view, output,
+                                dry_run=dry_run)
+    finally:
+        if unlocked:
+            store.lock()
+            logger.debug("The Ansible store of the view '{}' "
+                         'locked back'.format(view))
 
 
 def render_inventory(project, view, output_json, dry_run=False):

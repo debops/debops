@@ -881,17 +881,17 @@ def inventory_operation(monkeypatch, rc=0, output='{}', changes=None,
     if force or state_refresh:
         runner.execute.side_effect = [refresh_rc, (rc, output)]
     runner_stub = mock.Mock(return_value=runner)
-    monkeypatch.setattr(cli_module, "TofuRunner", runner_stub)
+    monkeypatch.setattr(inventory_module, "TofuRunner", runner_stub)
     store = mock.Mock()
     store.unlock.return_value = unlock
-    monkeypatch.setattr(cli_module, "SecretManager",
+    monkeypatch.setattr(inventory_module, "SecretManager",
                         mock.Mock(return_value=mock.Mock(
                             store=mock.Mock(return_value=store))))
     if render_error is not None:
-        monkeypatch.setattr(cli_module, "render_inventory",
+        monkeypatch.setattr(inventory_module, "render_inventory",
                             mock.Mock(side_effect=render_error))
     else:
-        monkeypatch.setattr(cli_module, "render_inventory",
+        monkeypatch.setattr(inventory_module, "render_inventory",
                             mock.Mock(return_value=changes or []))
     args = SimpleNamespace(bell=False, workspace=None, dry_run=dry_run,
                            diff=diff, force=force, no_color=False,
@@ -903,7 +903,7 @@ def inventory_operation(monkeypatch, rc=0, output='{}', changes=None,
     # real '_render_tofu_changes', which a Mock self would swallow
     interpreter = cli_module.Interpreter.__new__(cli_module.Interpreter)
     interpreter._do_tofu_inventory(args, project)
-    return runner_stub, store, cli_module.render_inventory
+    return runner_stub, store, inventory_module.render_inventory
 
 
 def test_the_inventory_operation_collects_through_the_runner(
@@ -911,17 +911,15 @@ def test_the_inventory_operation_collects_through_the_runner(
     """The operation runs 'tofu output -json' with the capture mode
     and the machine-consumption color stripped, cycles the Ansible
     store around the render and prints the changes it applies."""
-    runner, store, render = inventory_operation(
+    runner_stub, store, render = inventory_operation(
         monkeypatch, output='{"inventory_seed": {}}',
         changes=[{'path': '/x/inventory/hosts', 'action': 'create',
                   'diff': None, 'secret': False}])
 
-    cli_runner = __import__('debops.cli.interpreter',
-                            fromlist=['TofuRunner']).TofuRunner
-    cli_runner.assert_called_once()
-    assert cli_runner.call_args.args[1] == ['output', '-json']
-    assert cli_runner.call_args.kwargs['no_color'] is True
-    runner = cli_runner.return_value
+    runner_stub.assert_called_once()
+    assert runner_stub.call_args.args[1] == ['output', '-json']
+    assert runner_stub.call_args.kwargs['no_color'] is True
+    runner = runner_stub.return_value
     runner.execute.assert_called_once_with(capture=True)
     render.assert_called_once()
     store.unlock.assert_called_once()
