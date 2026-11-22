@@ -13,15 +13,14 @@ from ..core.projectvenv import ProjectVenv
 from ..core.ansible.ansiblerunner import AnsibleRunner
 from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
-from ..core.tofu.runner import TofuRunner
+from ..core.tofu.inventory import render_view_inventory
+from ..core.tofu.runner import TofuOperationFailed, TofuRunner
 from ..core.tofu.plans import (PLAN_FILE_PREFIX, plan_rows,
                                resolve_plan_file)
 from ..core.tofu import cache
-from ..core.tofu.inventory import inventory_config, render_inventory
 from ..core.tofu.view import create_view
 from ..core.tofu.providers import resolve_providers
 from ..core.tofu.modules import resolve_modules
-from ..core.secrets import SecretManager
 from ..core.tofu.binary import reconcile_binaries
 from ..core.tofu.registry import view_drop_in_path, view_tofu_root
 from ..core.tofu.view import reconcile_view
@@ -533,78 +532,21 @@ class Interpreter(object):
                                          note))
 
     def _do_tofu_inventory(self, args, project):
-        """Run the 'debops tofu inventory' operation: collect the
-        inventory outputs of the view through the wrapper and render
-        them into the Ansible view's inventory.
-
-        The captured 'tofu output -json' carries the sensitive values
-        of the seed in plaintext: the output is collected, never
-        streamed to the terminal. The render writes into the Ansible
-        secret store of the view, which cycles around it -- the
-        runner's own cycle has already locked the tofu store back,
-        this one is a fresh unlock/lock pair."""
-        config = inventory_config(project)
-        if args.force or config['state_refresh']:
-            try:
-                runner = TofuRunner(project, ['refresh'],
-                                    bell=args.bell,
-                                    no_color=args.no_color,
-                                    workspace=args.workspace,
-                                    allow_missing_state=(
-                                        args.allow_missing_state))
-            except (NoDefaultViewException, ValueError,
-                    FileNotFoundError) as errmsg:
-                print_error(errmsg)
-                sys.exit(1)
-            try:
-                rc = runner.execute()
-            except (ChildProcessError, ValueError) as errmsg:
-                print_error(errmsg)
-                sys.exit(1)
-            if rc != 0:
-                print_error("The 'tofu refresh' operation of the "
-                            'view {!r} failed with exit code '
-                            '{}'.format(project.view, rc))
-                sys.exit(rc)
-
+        """Run the 'debops tofu inventory' operation through the
+        core machinery and print the changes it applies."""
         try:
-            runner = TofuRunner(project, ['output', '-json'],
-                                bell=args.bell, no_color=True,
-                                workspace=args.workspace,
-                                allow_missing_state=(
-                                    args.allow_missing_state))
-        except (NoDefaultViewException, ValueError,
-                FileNotFoundError) as errmsg:
+            changes = render_view_inventory(
+                project, project.view, force=args.force,
+                dry_run=args.dry_run,
+                allow_missing_state=args.allow_missing_state,
+                bell=args.bell)
+        except TofuOperationFailed as errmsg:
+            print_error(errmsg)
+            sys.exit(errmsg.return_code)
+        except (NoDefaultViewException, ValueError, FileNotFoundError,
+                ChildProcessError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
-
-        try:
-            rc, output = runner.execute(capture=True)
-        except (ChildProcessError, ValueError) as errmsg:
-            print_error(errmsg)
-            sys.exit(1)
-        if rc != 0:
-            print_error("The 'tofu output' operation of the view "
-                        '{!r} failed with exit code {}'.format(
-                            project.view, rc))
-            sys.exit(rc)
-
-        store = SecretManager(project, project.view).store('ansible')
-        unlocked = store.unlock()
-        if unlocked:
-            logger.debug("The Ansible store of the view '{}' "
-                         'unlocked'.format(project.view))
-        try:
-            changes = render_inventory(project, project.view, output,
-                                       dry_run=args.dry_run)
-        except (ValueError, FileNotFoundError) as errmsg:
-            print_error(errmsg)
-            sys.exit(1)
-        finally:
-            if unlocked:
-                store.lock()
-                logger.debug("The Ansible store of the view '{}' "
-                             'locked back'.format(project.view))
 
         self._render_tofu_changes(
             changes, diff=args.diff, dry_run=args.dry_run,

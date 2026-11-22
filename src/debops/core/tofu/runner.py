@@ -82,6 +82,15 @@ DESTRUCTIVE_OPERATIONS = frozenset(['apply', 'destroy'])
 USAGE_LINE = re.compile(r'^Usage: tofu(?=[\s$])', re.MULTILINE)
 
 
+class TofuOperationFailed(ChildProcessError):
+    """The tofu operation failed: the message carries the context,
+    the return code rides for the exit status."""
+
+    def __init__(self, message, return_code):
+        super().__init__(message)
+        self.return_code = return_code
+
+
 class TofuRunner(Runner):
 
     def __init__(self, project, tofu_args, bell=False, no_color=False,
