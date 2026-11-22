@@ -665,6 +665,12 @@ DebOps-level operations (not passed to the 'tofu' command):
                                  'named workspace of the view, '
                                  'overriding the workspace '
                                  'configured for the view')
+        parser.add_argument('-M', '--allow-missing-state',
+                            default=False, action='store_true',
+                            help='proceed with the state-touching '
+                                 'operations on a view whose state '
+                                 'file is missing: for the '
+                                 'deliberate wipe-and-rebuild')
         parser.add_argument('--eval', default=False,
                             help='print the OpenTofu command '
                                  'and exit',
@@ -697,11 +703,18 @@ DebOps-level operations (not passed to the 'tofu' command):
                     description='create a new OpenTofu view with its '
                                 'encrypted store and the environment '
                                 'key file of the view')
-            parser.add_argument('--encrypt', type=str, nargs='?',
-                                choices=['encfs', 'git-crypt'],
-                                help='enable encrypted secrets; the '
-                                     'default follows the project '
-                                     'convention')
+            parser.add_argument('-e', '--encrypt', type=str, nargs='?',
+                                choices=['encfs', 'git-crypt', 'plain'],
+                                help="the encryption of the view's "
+                                     'secret store: the mechanism '
+                                     'detected in the project is the '
+                                     "default -- 'git-crypt' for the "
+                                     'repository-wide setup, '
+                                     "'encfs' where the Ansible views "
+                                     'carry EncFS volumes; required '
+                                     'when the project carries no '
+                                     "store yet, and 'plain' commits "
+                                     'the passphrase unencrypted')
             parser.add_argument('--keys', type=str,
                                 help='list of GPG recipients with '
                                      'secret access, delimited by '
