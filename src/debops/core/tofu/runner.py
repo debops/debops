@@ -24,10 +24,12 @@ from git.exc import (GitCommandError, InvalidGitRepositoryError,
 from ..hooks import run_hooks
 from . import cache
 from . import plans
+from ..secrets import environment_values
 from .binary import resolve_binary
 from .providers import resolve_providers
 from .modules import resolve_modules
-from .registry import view_drop_in_path, view_tofu_root
+from .registry import view_drop_in_path, view_tofu_options, \
+    view_tofu_root
 import dotenv
 import fcntl
 import json
@@ -102,6 +104,25 @@ class TofuOperationFailed(ChildProcessError):
         self.return_code = return_code
 
 
+def run_tofu_operation(project, tofu_args, capture=False, **kwargs):
+    """Run one tofu operation through the runner machinery,
+    raising 'TofuOperationFailed' with the return code when it
+    fails -- the callers that sequence operations adopt the
+    exit-code contract without re-implementing the check."""
+    runner = TofuRunner(project, tofu_args, **kwargs)
+    if capture:
+        rc, output = runner.execute(capture=True)
+    else:
+        rc = runner.execute()
+        output = None
+    if rc != 0:
+        raise TofuOperationFailed(
+            "The 'tofu {}' operation of the view {!r} failed "
+            'with exit code {}'.format(tofu_args[0], project.view,
+                                       rc), rc)
+    return runner, output
+
+
 class TofuRunner(Runner):
 
     def __init__(self, project, tofu_args, bell=False, no_color=False,
@@ -164,11 +185,9 @@ class TofuRunner(Runner):
         """
         if workspace:
             return workspace
-        try:
-            return self.project.config.raw['views'][self.project.view][
-                'tofu']['workspace']
-        except (KeyError, TypeError):
-            return 'default'
+        return view_tofu_options(self.project,
+                                 self.project.view).get('workspace') \
+            or 'default'
 
     def _resolve_state_path(self):
         """Return the local state path of the view.
@@ -178,10 +197,10 @@ class TofuRunner(Runner):
         empty value marks a view with a remote backend: the local
         state checks are skipped.
         """
-        try:
-            state_path = self.project.config.raw['views'][
-                self.project.view]['tofu']['state_path']
-        except (KeyError, TypeError):
+        state_path = view_tofu_options(self.project,
+                                       self.project.view).get(
+            'state_path')
+        if state_path is None:
             try:
                 state_path = self.project.config.raw['tofu']['state_path']
             except (KeyError, TypeError):
@@ -327,10 +346,8 @@ class TofuRunner(Runner):
                             view_env).items()
                         if value is not None})
         env.update(self._tofu_env)
-        store_env = os.path.join(self._secret_dir(), 'environment')
-        if os.path.isfile(store_env):
-            store_values = dotenv.dotenv_values(store_env,
-                                                interpolate=False)
+        store_values = environment_values(self._view_root)
+        if store_values:
             refused = [key for key in store_values
                        if not key.startswith('TF_VAR_')]
             for key in refused:

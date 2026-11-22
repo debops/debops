@@ -2,6 +2,8 @@
 # Copyright (C) 2020-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import contextlib
+import dotenv
 import itertools
 import logging
 import os
@@ -374,6 +376,62 @@ class SecretStore:
             else:
                 raise NotADirectoryError('Cannot find encrypted secrets '
                                          'at ' + parent_path)
+
+
+@contextlib.contextmanager
+def unlocked_store(store, label=None):
+    """Cycle the store around the operation: unlock on entry, lock
+    back on exit only when the unlock transitioned the store -- the
+    lock-back carries the auto-commit of the changes the operation
+    made. The label, when given, names the store in the transition
+    debug notes."""
+    unlocked = store.unlock()
+    if unlocked and label:
+        logger.debug('{} unlocked'.format(label))
+    try:
+        yield store
+    finally:
+        if unlocked:
+            store.lock()
+            if label:
+                logger.debug('{} locked back'.format(label))
+
+
+def environment_path(view_root):
+    """The path of the environment file in the view's store: the
+    tracked TF_VAR_* values the runner composes and the encryption
+    passphrase lives behind."""
+    return os.path.join(view_root, 'secret', 'environment')
+
+
+def environment_values(view_root):
+    """The TF_VAR_* values of the environment file, parsed without
+    interpolation -- the values are literal, host-independent."""
+    path = environment_path(view_root)
+    if not os.path.exists(path):
+        return {}
+    return {key: value for key, value
+            in dotenv.dotenv_values(path, interpolate=False).items()
+            if value is not None}
+
+
+def passphrase_length(project):
+    """The length of the generated state passphrases, from the
+    'tofu.mkview.secret.passphrase_length' option."""
+    try:
+        return project.config.raw['tofu']['mkview']['secret'][
+            'passphrase_length']
+    except (KeyError, TypeError):
+        return 32
+
+
+def random_passphrase(length):
+    """A random state passphrase of the given length, drawn from the
+    URL-safe alphabet: the environment file carries the passphrase
+    without quoting, so the alphabet stays free of the characters
+    the file format would have to escape."""
+    alphabet = string.ascii_letters + string.digits + '-_'
+    return ''.join(random.choice(alphabet) for _ in range(length))
 
 
 class SecretManager:

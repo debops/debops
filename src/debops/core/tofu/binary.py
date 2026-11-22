@@ -38,6 +38,7 @@ import zipfile
 from xdg.BaseDirectory import xdg_data_home
 
 from ..keyring import KeyringManager
+from .registry import view_tofu_options
 
 logger = logging.getLogger(__name__)
 
@@ -119,11 +120,7 @@ def _resolve_pin(project, view):
     view; the binary is None when the version is recorded but the
     managed binary of the version is not installed.
     """
-    try:
-        version = project.config.raw['views'][view]['tofu'][
-            'binary_version']
-    except (KeyError, TypeError):
-        return None, None
+    version = view_tofu_options(project, view).get('binary_version')
     if not version:
         return None, None
     managed = managed_binary_path(version)
