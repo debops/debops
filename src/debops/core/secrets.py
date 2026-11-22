@@ -198,7 +198,6 @@ class SecretStore:
             self.lock()
 
             logger.debug('Encrypting EncFS configuration file')
-            logger.debug('Encrypting EncFS configuration file')
             gpg_cmd = subprocess.Popen([self._commands['gpg'], '--encrypt',
                                         '--armor',
                                         '--output', encfs_configfile + '.asc']

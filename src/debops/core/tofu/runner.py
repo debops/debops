@@ -760,7 +760,10 @@ class TofuRunner(Runner):
             if capture:
                 collected = std_out.decode()
 
-            if self._plan_saved and rc == 0:
+            if self._plan_saved and rc in (0, 2):
+                # rc 2 is the '-detailed-exitcode' success: the plan
+                # carries changes, and the drift-detection flow saves
+                # and reviews it the same way
                 self._announce_saved_plan()
                 self._prune_plans()
 
