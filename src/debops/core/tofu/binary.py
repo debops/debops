@@ -20,7 +20,9 @@ whose signature the DebOps-managed keyring authenticates against the
 pinned release key: the fingerprint of the key which signs the
 releases is the trust anchor, recorded in the
 'tofu.upstream.release_key' configuration.
-"""
+
+
+The 'binaries.tofu' read is not guarded: the package defaults guarantee the key."""
 
 import hashlib
 import logging

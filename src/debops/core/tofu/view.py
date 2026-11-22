@@ -156,6 +156,7 @@ def create_view(project, view, providers=None, modules=None,
         'secret_name': 'secret',
         'encfs_prefix': '.encfs.',
         'encrypted_secrets': encrypted_secrets,
+        'tofu_version': known_version(project),
     }
 
     os.makedirs(os.path.join(view_root, 'secret'), exist_ok=True)

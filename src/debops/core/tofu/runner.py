@@ -11,7 +11,12 @@ store unlocked for the duration. The tool-agnostic machinery lives in
 :class:`debops.core.runner.Runner`; this module adds the tofu argument
 parsing, the runner-owned environment of the tofu subprocess, the
 state lock pre-check and the missing-state refusal.
-"""
+
+
+The reads of the configuration keys the package defaults guarantee --
+'binaries.tofu', the 'tofu' section -- are not guarded: a project whose defaults
+did not load is a broken installation, and the missing key fails loudly at the
+point of use."""
 
 from ..runner import Runner
 from ..hooks import run_hooks
@@ -36,7 +41,11 @@ logger = logging.getLogger(__name__)
 # Flags of the tofu command line which take no value of their own.
 # Every other leading-dash token carries a value: either in the same
 # token ('-input=false', '-var=name=value') or in the token which
-# follows it.
+# follows it. The list is coupled to the OpenTofu releases: a future
+# valueless flag swallows the token which follows it -- the failures
+# fail closed (the approved-by-plan apply demanding approval), but
+# the root cause would be baffling. When OpenTofu ships new flags,
+# extend this list; the pinned binary's '-help' output is the check.
 TOFU_FLAGS = [
     '-auto-approve', '-compact-warnings', '-concise',
     '-consolidate-errors', '-destroy', '-detailed-exitcode', '-dry-run',

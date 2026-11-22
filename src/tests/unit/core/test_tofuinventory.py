@@ -701,6 +701,26 @@ def test_the_prune_removes_the_dropped_entries(inventory_project):
     assert 's3cr3t' not in str(secret_change)
 
 
+def test_the_empty_dir_prune_stops_at_the_view_children(
+        inventory_project):
+    """The directories a pruned file left behind are removed, but
+    the direct children of the view root -- the 'inventory/' and the
+    'secret/' directories -- survive even a render that empties
+    them."""
+    project = inventory_project()
+    render_inventory(project, 'system', outputs())
+
+    seed = {'cache-1': {'address': '10.42.7.103'}}
+    render_inventory(project, 'system', outputs(seed=seed, groups=None))
+
+    assert not os.path.exists(os.path.join(
+        view_root(project), 'inventory', 'host_vars'))
+    assert not os.path.exists(os.path.join(
+        view_root(project), 'secret', 'tofu'))
+    assert os.path.isdir(os.path.join(view_root(project), 'inventory'))
+    assert os.path.isdir(os.path.join(view_root(project), 'secret'))
+
+
 def test_a_prune_outside_the_view_root_refuses_the_render(
         inventory_project):
     """The manifest is recorded state: an entry which resolves
