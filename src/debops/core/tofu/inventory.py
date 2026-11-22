@@ -80,7 +80,7 @@ def _mapping(value):
     return value if isinstance(value, dict) else {}
 
 
-def _inventory_config(project):
+def inventory_config(project):
     """Return the bridge options of the project, with the defaults
     for the options the configuration does not carry."""
     try:
@@ -93,6 +93,7 @@ def _inventory_config(project):
     host_status = output.get('host_status')
     return {
         'hosts_format': section.get('hosts_format', 'ini'),
+        'state_refresh': section.get('state_refresh', False),
         'vars_filename': section.get('vars_filename',
                                      'tofu_inventory.yml'),
         'secret_vars_filename': secret.get('vars_filename',
@@ -300,14 +301,22 @@ def _host_records(seed):
     by the seed key, the tofu-side identity which survives a
     hostname change. The check runs after the status filter: a host
     which a status skip removes from the render never needs an
-    address -- a stopped instance exports none."""
+    address -- a stopped instance exports none. A host the filter
+    includes which still carries no address skips with the
+    staleness notice: the observable case is the lease which landed
+    late, and the way out is the '--force' option, which refreshes
+    the state before the render."""
     records = []
     hostnames = {}
     for key, entry in seed.items():
         if not entry.get('address'):
-            raise ValueError(
-                "The seed host '{}' carries no 'address' attribute: "
-                'the rendered inventory cannot reach it.'.format(key))
+            logger.notice(
+                "The state of the host '{}' carries no address: "
+                'the render skips it. Run \'debops tofu inventory '
+                "--force' to refresh the state if the address was "
+                'expected.'.format(key),
+                extra={'allow': 'stderr'})
+            continue
         name = entry.get('host') or key
         if name in hostnames:
             raise ValueError(
@@ -833,7 +842,7 @@ def render_inventory(project, view, output_json, dry_run=False):
     written -- the render reads the current files, which needs the
     Ansible store unlocked around it as a writing render does."""
     seed, groups = _collect_outputs(output_json)
-    config = _inventory_config(project)
+    config = inventory_config(project)
     seed = _filter_hosts(seed, config['host_status'])
     hosts = _host_records(seed)
     records = _group_records(groups, hosts)
