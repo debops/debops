@@ -13,7 +13,6 @@ manifest inside the inventory directory; the next render prunes the
 entries the seed dropped against it.
 """
 
-import difflib
 import json
 import logging
 import os
@@ -24,6 +23,7 @@ import yaml
 
 from ..ansible.inventory import AnsibleInventory
 from ..utils import remove_dir, remove_file, write_file
+from .changes import change_label, file_change
 
 logger = logging.getLogger(__name__)
 
@@ -602,26 +602,6 @@ def _manifest_path(view_root, path):
     return path
 
 
-def _unified_diff(old_content, new_content, label):
-    """Return the unified diff between two file contents, labeled with
-    the change label of the path."""
-    return ''.join(difflib.unified_diff(
-        (old_content or '').splitlines(keepends=True),
-        (new_content or '').splitlines(keepends=True),
-        fromfile='a/' + label, tofile='b/' + label))
-
-
-def _change_label(path, project_root):
-    """The path form the change records print and label: relative to
-    the project directory when the path is inside it, absolute
-    otherwise."""
-    path = os.path.normpath(path)
-    project_root = os.path.normpath(project_root)
-    if path.startswith(project_root + os.sep):
-        return os.path.relpath(path, project_root)
-    return path
-
-
 def _reconcile_file(path, content, changes, project_root, containment,
                     dry_run, secret=False):
     """Record the change of one file and apply it: create, update or
@@ -635,7 +615,7 @@ def _reconcile_file(path, content, changes, project_root, containment,
     must not reach the terminal -- the action line names the file
     instead. Nothing is written in the dry run. The containment
     root, when given, refuses a path which resolves outside of it."""
-    label = _change_label(path, project_root)
+    label = change_label(path, project_root)
     try:
         with open(path) as handle:
             existing = handle.read()
@@ -648,12 +628,8 @@ def _reconcile_file(path, content, changes, project_root, containment,
         action, old = 'create', ''
     else:
         action, old = 'update', existing
-    changes.append({
-        'path': path,
-        'action': action,
-        'diff': None if secret else _unified_diff(old, content, label),
-        'secret': secret,
-    })
+    changes.append(file_change(path, action, old, content, project_root,
+                               secret=secret))
     if not dry_run:
         write_file(path, content, overwrite=True, project=containment)
 
@@ -669,13 +645,8 @@ def _reconcile_removal(path, changes, project_root, containment,
             existing = handle.read()
     except OSError:
         return False
-    label = _change_label(path, project_root)
-    changes.append({
-        'path': path,
-        'action': 'remove',
-        'diff': None if secret else _unified_diff(existing, '', label),
-        'secret': secret,
-    })
+    changes.append(file_change(path, 'remove', existing, None,
+                               project_root, secret=secret))
     if dry_run:
         return False
     return remove_file(path, project=containment)

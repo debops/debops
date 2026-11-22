@@ -13,9 +13,10 @@ file, the write-once configuration drop-in and the diff which the
 '--diff' option renders.
 """
 
-import difflib
 import logging
 import os
+
+from .changes import file_change
 import pkgutil
 import re
 
@@ -205,15 +206,6 @@ def render_drop_in_modules(modules):
             for name, spec in modules.items()]
 
 
-def _unified_diff(old_content, new_content, label):
-    """Return the unified diff between two file contents, labeled with
-    the path relative to the project directory."""
-    return ''.join(difflib.unified_diff(
-        (old_content or '').splitlines(keepends=True),
-        (new_content or '').splitlines(keepends=True),
-        fromfile='a/' + label, tofile='b/' + label))
-
-
 def reconcile_managed_file(project, view, filename, expected, set_name,
                            entries_repr, force=False, dry_run=False):
     """Reconcile one generated file of a view.
@@ -235,7 +227,6 @@ def reconcile_managed_file(project, view, filename, expected, set_name,
     'force'.
     """
     path = os.path.join(view_tofu_root(project, view), filename)
-    label = os.path.relpath(path, project.path)
 
     existing = None
     if os.path.exists(path):
@@ -243,26 +234,17 @@ def reconcile_managed_file(project, view, filename, expected, set_name,
             existing = handle.read()
     generated = existing is not None and REGISTRY_MARKER in existing
 
+    planned = None      # (action, new_content): the write the
+    # reconcile proposes
     if expected is None:
         if existing is not None and generated:
-            changes = [{'path': path, 'action': 'remove',
-                        'content': None,
-                        'diff': _unified_diff(existing, '', label)}]
-        else:
-            changes = []
+            planned = ('remove', None)
     else:
         if existing is None:
-            changes = [{'path': path, 'action': 'create',
-                        'content': expected,
-                        'diff': _unified_diff('', expected, label)}]
+            planned = ('create', expected)
         elif generated:
             if existing != expected:
-                changes = [{'path': path, 'action': 'update',
-                            'content': expected,
-                            'diff': _unified_diff(existing, expected,
-                                                  label)}]
-            else:
-                changes = []
+                planned = ('update', expected)
         else:
             # A user-owned file: the reconcile refuses to touch it
             # unless '--force' hands the management back to DebOps
@@ -275,31 +257,32 @@ def reconcile_managed_file(project, view, filename, expected, set_name,
                     'DebOps.'.format(filename, view, project.name,
                                      set_name))
             if existing != expected:
-                changes = [{'path': path, 'action': 'update',
-                            'content': expected,
-                            'diff': _unified_diff(existing, expected,
-                                                  label)}]
-            else:
-                changes = []
+                planned = ('update', expected)
+
+    if planned is None:
+        return []
+
+    action, new_content = planned
+    old_content = '' if action == 'create' else existing
+    change = file_change(path, action, old_content, new_content,
+                         project.path)
 
     if not dry_run:
-        for change in changes:
-            if change['action'] == 'remove':
-                os.remove(change['path'])
-                logger.notice(
-                    'Removed the generated {} of the view {!r} in '
-                    'project {!r}: the recorded {} is empty'.format(
-                        filename, view, project.name, set_name),
-                    extra={'allow': ['stderr', 'syslog']})
-            else:
-                write_file(change['path'], change['content'],
-                           overwrite=True, project=project.path)
-                logger.notice(
-                    '{} the generated {} of the view {!r} in project '
-                    '{!r}: the {} is now {}'.format(
-                        'Created' if change['action'] == 'create'
-                        else 'Updated',
-                        filename, view, project.name, set_name,
-                        entries_repr),
-                    extra={'allow': ['stderr', 'syslog']})
-    return changes
+        if action == 'remove':
+            os.remove(path)
+            logger.notice(
+                'Removed the generated {} of the view {!r} in '
+                'project {!r}: the recorded {} is empty'.format(
+                    filename, view, project.name, set_name),
+                extra={'allow': ['stderr', 'syslog']})
+        else:
+            write_file(path, new_content,
+                       overwrite=True, project=project.path)
+            logger.notice(
+                '{} the generated {} of the view {!r} in project '
+                '{!r}: the {} is now {}'.format(
+                    'Created' if action == 'create' else 'Updated',
+                    filename, view, project.name, set_name,
+                    entries_repr),
+                extra={'allow': ['stderr', 'syslog']})
+    return [change]
