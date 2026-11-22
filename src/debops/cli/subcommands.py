@@ -96,6 +96,7 @@ Sections:
     check    run Ansible playbook(s) in check mode
     env      run shell commands in project environment
     config   manage DebOps configuration options
+    tofu     manage OpenTofu views, state and inventory
 
 SSH connections:
     ssh      connect to hosts over ssh and manage known_hosts
