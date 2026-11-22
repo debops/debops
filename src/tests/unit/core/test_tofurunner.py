@@ -31,6 +31,7 @@ from debops.core.tofu.view import create_view, reconcile_view
 from debops.core.tofu.providers import resolve_providers
 from debops.core.tofu.modules import resolve_modules
 from debops.core.secrets import SecretManager
+from debops.core.tofu.secrets import TofuSecretStore
 
 
 def test_command_starts_with_the_tofu_binary(tofu_project):
@@ -738,6 +739,27 @@ def test_declined_confirmation_aborts(tofu_project, monkeypatch):
         with pytest.raises(SystemExit):
             runner._check_approval()
     assert "-auto-approve" not in runner._tofu_command
+
+
+def test_the_store_of_a_viewless_project_reports_absence(tofu_project):
+    """The project-wide store cycle unlocks every registered store:
+    a project which opted out of OpenTofu carries no view and no
+    store, and its unlock reports absence instead of the 'not found'
+    refusal the generic store raises."""
+    project = tofu_project(project_type="modern")
+    shutil.rmtree(os.path.join(project.path, "tofu"))
+    store = TofuSecretStore(project, project.view)
+    assert store.unlock() is False
+    assert store.lock() is False
+
+
+def test_the_store_of_a_tofu_view_delegates_to_the_base(tofu_project):
+    """A project with the view has its store: the unlock runs the
+    base machinery, which finds nothing to unlock in the bare
+    fixture store and reports it."""
+    project = tofu_project(project_type="modern")
+    store = TofuSecretStore(project, project.view)
+    assert store.unlock() is False
 
 
 def test_execute_cycles_the_store_and_runs_the_operation(
