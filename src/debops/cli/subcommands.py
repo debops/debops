@@ -738,6 +738,11 @@ DebOps-level operations (not passed to the 'tofu' command):
             parser.add_argument('-v', '--verbose', action='count',
                                 help='increase output verbosity '
                                      '(e.g., -vv is more than -v)')
+            parser.add_argument('-f', '--force', action='store_true',
+                                help='refresh the state of the view '
+                                     'before the render: in-place '
+                                     'changes and late DHCP leases '
+                                     'land in the inventory')
             parser.add_argument('-n', '--dry-run', action='store_true',
                                 help='only simulate the render: '
                                      'report the changes without '

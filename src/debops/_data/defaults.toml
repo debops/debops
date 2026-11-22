@@ -207,6 +207,16 @@ hosts_filename_yaml = "hosts.yml"
 hosts_filename_json = "hosts.json"
 hosts_filename_toml = "hosts.toml"
 
+# Whether the 'debops tofu inventory' operation refreshes the state of
+# the view before it renders: 'true' runs 'tofu refresh' before the
+# outputs are collected, so in-place changes and late DHCP leases land
+# in the rendered inventory. The refresh churns the state -- its serial
+# bumps even with no changes, and the store records a commit per render
+# -- so the default renders the state as of the last refresh or apply;
+# the observable staleness (a host whose state carries no address) skips
+# with a notice naming the '--force' option.
+state_refresh = false
+
 # The name of the variables file which the 'debops tofu inventory'
 # bridge renders for a host or group in the 'host_vars/' and
 # 'group_vars/' directories of the Ansible view's inventory, carrying
