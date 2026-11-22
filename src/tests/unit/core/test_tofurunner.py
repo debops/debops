@@ -6,11 +6,13 @@ import fcntl
 import hashlib
 import logging
 import os
+import re
 import shutil
 import stat
 import subprocess
 import sys
 import textwrap
+import time
 from unittest import mock
 import zipfile
 
@@ -19,7 +21,8 @@ import pytest
 import debops.core.runner as runner_base_module
 import debops.core.tofu.binary as binary_module
 import debops.core.tofu.runner as runner_module
-from debops.core.tofu.runner import TofuRunner
+from debops.core.tofu.runner import (TofuRunner, plan_rows,
+                                     resolve_plan_file)
 from debops.core.tofu.view import create_view, reconcile_view
 from debops.core.tofu.providers import resolve_providers
 from debops.core.tofu.modules import resolve_modules
@@ -452,6 +455,260 @@ def test_plan_with_out_is_not_saved_by_the_runner(tofu_project,
     assert not os.path.isdir(os.path.join(
         project.path, "tofu", "views", project.view,
         "plans"))
+
+
+def test_plan_files_carry_the_sequence_id(tofu_project,
+                                          stub_tofu_subprocess):
+    """The plan file names carry the monotonic sequence id of the
+    view: the ids address the files while the retention prunes the
+    oldest ones, and the timestamp sorts the files of one id."""
+    project = tofu_project(project_type="modern")
+
+    TofuRunner(project, ["plan"]).execute()
+
+    command = stub_tofu_subprocess.call_args[0][0]
+    plan_path = [arg.split("=", 1)[1] for arg in command
+                 if arg.startswith("-out=")][0]
+    assert re.match(r"debops-1-\d{8}T\d{6}\.tfplan$",
+                    os.path.basename(plan_path))
+
+
+def test_plan_sequence_ids_keep_rising_over_the_retention(
+        tofu_project, stub_tofu_subprocess):
+    """The retention pruning never collides: the next plan saves
+    with the id one above the maximum of the live files, and a wiped
+    plans directory resets the counter."""
+    project = tofu_project(project_type="modern")
+    project.config.merge({'tofu': {'plan_retention': 1}})
+    plans_dir = os.path.join(project.path, "tofu", "views",
+                             project.view, "plans")
+    os.makedirs(plans_dir)
+    for name in ("debops-1-20240101T000000.tfplan",
+                 "debops-2-20240102T000000.tfplan"):
+        with open(os.path.join(plans_dir, name), "w") as handle:
+            handle.write("plan")
+
+    TofuRunner(project, ["plan"]).execute()
+
+    command = stub_tofu_subprocess.call_args[0][0]
+    plan_path = [arg.split("=", 1)[1] for arg in command
+                 if arg.startswith("-out=")][0]
+    assert os.path.basename(plan_path).startswith("debops-3-")
+    # the retention pruned the oldest sequenced file
+    assert sorted(os.listdir(plans_dir)) == [
+        "debops-2-20240102T000000.tfplan"]
+
+
+def test_plan_retention_sorts_by_the_sequence(tofu_project,
+                                              stub_tofu_subprocess):
+    """The retention sorts the sequenced plan files by the id: the
+    lexicographic order of the names would break at ten."""
+    project = tofu_project(project_type="modern")
+    project.config.merge({'tofu': {'plan_retention': 2}})
+    plans_dir = os.path.join(project.path, "tofu", "views",
+                             project.view, "plans")
+    os.makedirs(plans_dir)
+    for name in ("debops-9-20240101T000000.tfplan",
+                 "debops-10-20240102T000000.tfplan",
+                 "debops-11-20240103T000000.tfplan"):
+        with open(os.path.join(plans_dir, name), "w") as handle:
+            handle.write("plan")
+
+    TofuRunner(project, ["plan"]).execute()
+
+    assert sorted(os.listdir(plans_dir)) == [
+        "debops-10-20240102T000000.tfplan",
+        "debops-11-20240103T000000.tfplan"]
+
+
+def test_resolve_plan_file_by_the_sequence(tofu_project):
+    """An integer id resolves against the parsed sequences of the
+    saved plan files."""
+    project = tofu_project(project_type="modern")
+    plans_dir = os.path.join(project.path, "tofu", "views",
+                             project.view, "plans")
+    os.makedirs(plans_dir)
+    for name in ("debops-1-20240101T000000.tfplan",
+                 "debops-2-20240102T000000.tfplan"):
+        with open(os.path.join(plans_dir, name), "w") as handle:
+            handle.write("plan")
+
+    assert resolve_plan_file(
+        os.path.join(project.path, "tofu", "views", project.view),
+        "2") == os.path.join(
+        "plans", "debops-2-20240102T000000.tfplan")
+    assert [row[0] for row in plan_rows(
+        os.path.join(project.path, "tofu", "views",
+                     project.view))] == [1, 2]
+
+
+def test_resolve_plan_file_by_the_prefix(tofu_project):
+    """A non-integer id resolves by the unique prefix of the file
+    names: the operator's own '-out' plans and the pre-sequence
+    DebOps ones carry stamp-only names."""
+    project = tofu_project(project_type="modern")
+    plans_dir = os.path.join(project.path, "tofu", "views",
+                             project.view, "plans")
+    os.makedirs(plans_dir)
+    for name in ("manual.tfplan", "debops-20240101T000000.tfplan"):
+        with open(os.path.join(plans_dir, name), "w") as handle:
+            handle.write("plan")
+    view_root = os.path.join(project.path, "tofu", "views",
+                             project.view)
+
+    assert resolve_plan_file(view_root, "manual") == \
+        os.path.join("plans", "manual.tfplan")
+
+
+def test_resolve_plan_file_refuses_the_collisions(tofu_project):
+    """An id which matches several files -- a duplicated sequence,
+    an ambiguous prefix -- and an id which matches none refuse with
+    the names the view holds."""
+    project = tofu_project(project_type="modern")
+    plans_dir = os.path.join(project.path, "tofu", "views",
+                             project.view, "plans")
+    os.makedirs(plans_dir)
+    for name in ("debops-3-20240101T000000.tfplan",
+                 "debops-3-20240102T000000.tfplan"):
+        with open(os.path.join(plans_dir, name), "w") as handle:
+            handle.write("plan")
+    view_root = os.path.join(project.path, "tofu", "views",
+                             project.view)
+
+    with pytest.raises(ValueError, match="not unique"):
+        resolve_plan_file(view_root, "3")
+    with pytest.raises(ValueError, match="ambiguous"):
+        resolve_plan_file(view_root, "debops-3")
+    with pytest.raises(ValueError, match="No saved plan"):
+        resolve_plan_file(view_root, "7")
+
+
+# The 'debops tofu plans' operation: the listing without the store
+# cycle, the show and the apply through the runner machinery, the
+# delete with the id resolved.
+
+def plans_operation(monkeypatch, project, verb=None, plan_id=None,
+                    rc=0, json=False):
+    """Run the interpreter's plans operation with the runner
+    stubbed; returns the stub and the plans directory."""
+    from types import SimpleNamespace
+    import debops.cli.interpreter as cli_module
+
+    plans_dir = os.path.join(project.path, "tofu", "views",
+                             project.view, "plans")
+    os.makedirs(plans_dir, exist_ok=True)
+    runner = mock.Mock()
+    runner.execute.return_value = rc
+    runner_stub = mock.Mock(return_value=runner)
+    monkeypatch.setattr(cli_module, "TofuRunner", runner_stub)
+    args = SimpleNamespace(bell=False, workspace=None, verb=verb,
+                           plan_id=plan_id, json=json, no_color=False)
+    interpreter = cli_module.Interpreter.__new__(cli_module.Interpreter)
+    interpreter._do_tofu_plans(args, project)
+    return runner_stub, plans_dir
+
+
+def test_the_plans_operation_lists_the_saved_plans(
+        tofu_project, monkeypatch, capsys):
+    """The bare operation lists the sequenced plan files -- the
+    sequence id, the stamp, the size and the age -- without cycling
+    the store."""
+    project = tofu_project(project_type="modern")
+    _, plans_dir = plans_operation(monkeypatch, project)
+    for name in ("debops-1-20240101T000000.tfplan",
+                 "debops-2-20240102T000000.tfplan"):
+        with open(os.path.join(plans_dir, name), "w") as handle:
+            handle.write("plan")
+    plans_operation(monkeypatch, project)
+
+    out = capsys.readouterr().out
+    assert '  1  20240101T000000' in out
+    assert '  2  20240102T000000' in out
+
+
+def test_the_plans_operation_show_applies_through_the_runner(
+        tofu_project, monkeypatch, capsys):
+    """The 'show' verb renders the plan through the runner -- the
+    '--json' flag rides in; the 'apply' verb applies the resolved
+    file without the approval machinery."""
+    project = tofu_project(project_type="modern")
+    plans_dir = os.path.join(project.path, "tofu", "views",
+                             project.view, "plans")
+    os.makedirs(plans_dir)
+    for name in ("debops-1-20240101T000000.tfplan",
+                 "debops-2-20240102T000000.tfplan"):
+        with open(os.path.join(plans_dir, name), "w") as handle:
+            handle.write("plan")
+
+    with pytest.raises(SystemExit) as exc:
+        plans_operation(
+            monkeypatch, project, verb='show', plan_id='2',
+            json=True)
+    assert exc.value.code == 0
+    import debops.cli.interpreter as cli_module
+    runner_stub = cli_module.TofuRunner
+    assert runner_stub.call_args.args[1] == [
+        'show', '-json', 'plans/debops-2-20240102T000000.tfplan']
+
+    with pytest.raises(SystemExit):
+        plans_operation(
+            monkeypatch, project, verb='apply', plan_id='2')
+    assert cli_module.TofuRunner.call_args.args[1] == [
+        'apply', 'plans/debops-2-20240102T000000.tfplan']
+
+
+def test_the_plans_operation_deletes_the_resolved_plan(
+        tofu_project, monkeypatch, capsys):
+    """The 'delete' verb removes the resolved plan file and reports
+    its view-relative path."""
+    project = tofu_project(project_type="modern")
+    plans_dir = os.path.join(project.path, "tofu", "views",
+                             project.view, "plans")
+    os.makedirs(plans_dir)
+    for name in ("debops-1-20240101T000000.tfplan",
+                 "debops-2-20240102T000000.tfplan"):
+        with open(os.path.join(plans_dir, name), "w") as handle:
+            handle.write("plan")
+    runner_stub, _ = plans_operation(
+        monkeypatch, project, verb='delete', plan_id='2')
+
+    assert capsys.readouterr().out == (
+        'plans/debops-2-20240102T000000.tfplan\n')
+    assert not os.path.exists(os.path.join(
+        plans_dir, 'debops-2-20240102T000000.tfplan'))
+    runner_stub.assert_not_called()
+
+
+def test_the_plans_operation_refuses_the_unknown_ids(
+        tofu_project, monkeypatch, capsys):
+    """An id which resolves to nothing refuses the operation with
+    the names the view holds."""
+    project = tofu_project(project_type="modern")
+    _, plans_dir = plans_operation(monkeypatch, project)
+    with open(os.path.join(
+            plans_dir, 'debops-1-20240101T000000.tfplan'),
+            'w') as handle:
+        handle.write('plan')
+    with pytest.raises(SystemExit) as exc:
+        plans_operation(monkeypatch, project, verb='show',
+                        plan_id='7')
+
+    assert exc.value.code == 1
+    assert 'No saved plan' in capsys.readouterr().err
+
+
+def test_human_age_reports_the_seconds(monkeypatch):
+    """The age is precise to the second: the plans saved seconds
+    apart are distinguishable in the listing, and a file born in
+    the same second reports '0 seconds ago'."""
+    import debops.cli.interpreter as cli_module
+    now = time.time()
+    monkeypatch.setattr(cli_module.time, 'time', lambda: now)
+
+    assert cli_module.human_age(now) == '0 seconds ago'
+    assert cli_module.human_age(now - 8) == '8 seconds ago'
+    assert cli_module.human_age(now - 45) == '45 seconds ago'
+    assert cli_module.human_age(now - 61) == '1 minute ago'
 
 
 def test_plan_retention_zero_disables_the_saving(tofu_project,
