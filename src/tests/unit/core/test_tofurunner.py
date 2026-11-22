@@ -4,6 +4,7 @@
 
 import fcntl
 import hashlib
+import io
 import json
 import logging
 import os
@@ -480,6 +481,56 @@ def test_plan_drift_exitcode_saves_and_announces(
         project.path, "tofu", "views", project.view, "plans"))
 
 
+def test_backend_change_failure_hints_the_reconfigure(
+        tofu_project, stub_tofu_subprocess, caplog):
+    """A failed operation whose stderr reports the backend change
+    names the wrapper's way out: the raw OpenTofu report teaches the
+    invocations which bypass the wrapper, the hint restates them as
+    the wrapper invocations."""
+    project = tofu_project(project_type="modern")
+    process = stub_tofu_subprocess.return_value
+    process.returncode = 1
+    process.stderr = io.BytesIO(
+        b"Error: Backend configuration changed\n")
+    with caplog.at_level(logging.INFO):
+        TofuRunner(project, ["init"]).execute()
+
+    assert "-reconfigure" in caplog.text
+    assert "-migrate-state" in caplog.text
+
+
+def test_stale_data_dir_failure_hints_the_init(
+        tofu_project, stub_tofu_subprocess, caplog):
+    """The 'Backend initialization required' failure of the stale or
+    cleaned data directory hints the wrapper init -- and 'update',
+    which runs it and reconciles the view first."""
+    project = tofu_project(project_type="modern")
+    process = stub_tofu_subprocess.return_value
+    process.returncode = 1
+    process.stderr = io.BytesIO(
+        b'Error: Backend initialization required: '
+        b'please run "tofu init"\n')
+    with caplog.at_level(logging.INFO):
+        TofuRunner(project, ["plan"]).execute()
+
+    assert "debops tofu init" in caplog.text
+    assert "debops tofu update" in caplog.text
+
+
+def test_unrelated_failure_carries_no_backend_hint(
+        tofu_project, stub_tofu_subprocess, caplog):
+    """A failure which reports nothing about the backend gets no
+    hint: the runner does not guess at causes it did not see."""
+    project = tofu_project(project_type="modern")
+    process = stub_tofu_subprocess.return_value
+    process.returncode = 1
+    process.stderr = io.BytesIO(b"Error: something else failed\n")
+    with caplog.at_level(logging.INFO):
+        TofuRunner(project, ["plan"]).execute()
+
+    assert "-reconfigure" not in caplog.text
+
+
 def test_failed_plan_does_not_announce_or_prune(
         tofu_project, stub_tofu_subprocess, caplog):
     """A plan which fails leaves the half-saved plan file alone:
@@ -501,7 +552,7 @@ def test_keyboard_interrupt_skips_the_post_hooks(
     automation must not run on a half-finished state. The failure
     paths run the hooks, the interrupt does not."""
     project = tofu_project(project_type="modern")
-    stub_tofu_subprocess.return_value.communicate.side_effect = \
+    stub_tofu_subprocess.return_value.wait.side_effect = \
         KeyboardInterrupt()
 
     with pytest.raises(SystemExit):
@@ -666,7 +717,8 @@ def test_execute_cycles_the_store_and_runs_the_operation(
     popen = mock.Mock(returncode=3)
     process = mock.Mock()
     process.returncode = 3
-    process.communicate.return_value = (b"", b"")
+    process.stdout = io.BytesIO(b"")
+    process.stderr = io.BytesIO(b"")
     popen.return_value = process
     monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
     monkeypatch.setattr(runner_module, "run_hooks",
@@ -693,7 +745,8 @@ def test_execute_captures_the_operation_output(tofu_project,
     reaches the terminal."""
     process = mock.Mock()
     process.returncode = 0
-    process.communicate.return_value = (b'{"inventory_seed": {}}', b"")
+    process.stdout = io.BytesIO(b'{"inventory_seed": {}}')
+    process.stderr = io.BytesIO(b"")
     popen = mock.Mock(return_value=process)
     monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
     monkeypatch.setattr(runner_module, "run_hooks",
@@ -713,7 +766,8 @@ def test_execute_streams_the_output_without_capture(
     the subprocess is not piped, the return stays the exit code."""
     process = mock.Mock()
     process.returncode = 0
-    process.communicate.return_value = (b"", b"")
+    process.stdout = io.BytesIO(b"")
+    process.stderr = io.BytesIO(b"")
     popen = mock.Mock(return_value=process)
     monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
     monkeypatch.setattr(runner_module, "run_hooks",
@@ -740,7 +794,8 @@ def test_execute_composes_the_store_environment(tofu_project,
 
     process = mock.Mock()
     process.returncode = 0
-    process.communicate.return_value = (b"", b"")
+    process.stdout = io.BytesIO(b"")
+    process.stderr = io.BytesIO(b"")
     popen = mock.Mock(return_value=process)
     monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
     monkeypatch.setattr(runner_module, "run_hooks",
