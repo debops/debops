@@ -19,7 +19,9 @@ from unittest import mock
 import pytest
 
 import debops.cli.interpreter as cli_module
+import debops.core.tofu.binary as binary_module
 import debops.core.tofu.inventory as inventory_module
+from tests.unit.core.tofu_helpers import write_drop_in
 
 
 def plans_operation(monkeypatch, project, verb=None, plan_id=None,
@@ -145,3 +147,51 @@ def test_human_age_reports_the_seconds(monkeypatch):
     assert cli_module.human_age(now - 8) == '8 seconds ago'
     assert cli_module.human_age(now - 45) == '45 seconds ago'
     assert cli_module.human_age(now - 61) == '1 minute ago'
+
+
+def test_the_double_dash_separator_precedes_the_operation():
+    """The usage line promises the '[--]' placement between the
+    wrapper options and the operation: a leading separator must not
+    turn the DebOps-level operations into raw passthrough, where
+    OpenTofu would refuse them as unknown commands."""
+    parsed = cli_module.Subcommands(['debops', 'tofu', '--', 'plans'])
+    assert parsed.args.tofu_args == ['plans']
+
+
+def test_the_install_operation_eval_reports_the_pinned_binaries(
+        tofu_project, tmp_path, monkeypatch, capsys):
+    """The '--eval' install reports the binaries it would install
+    instead of running the verification chain: the download and the
+    keyring stay untouched."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    project = tofu_project(project_type="modern")
+    write_drop_in(project, [], binary_version="1.13.9")
+
+    args = SimpleNamespace(force=False, eval=True, no_color=False)
+    interpreter = cli_module.Interpreter.__new__(cli_module.Interpreter)
+    interpreter._do_tofu_install(args, project)
+
+    out = capsys.readouterr().out
+    assert "Would install the pinned OpenTofu binary '1.13.9'" in out
+
+
+def test_the_install_operation_eval_reports_nothing_to_install(
+        tofu_project, tmp_path, monkeypatch, capsys):
+    """The '--eval' install on a project whose pinned binaries are
+    installed reports the fact and exits clean."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    version = "1.13.9"
+    managed = binary_module.managed_binary_path(version)
+    os.makedirs(os.path.dirname(managed))
+    with open(managed, "w") as handle:
+        handle.write("#!/bin/sh\nexit 0\n")
+
+    project = tofu_project(project_type="modern")
+    write_drop_in(project, [], binary_version=version)
+
+    args = SimpleNamespace(force=False, eval=True, no_color=False)
+    interpreter = cli_module.Interpreter.__new__(cli_module.Interpreter)
+    interpreter._do_tofu_install(args, project)
+
+    out = capsys.readouterr().out
+    assert "are installed" in out

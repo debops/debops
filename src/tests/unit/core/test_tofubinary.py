@@ -364,7 +364,7 @@ def test_install_binary_refuses_a_missing_gpg(tofu_project, tmp_path,
     project = tofu_project(project_type="modern", raw={
         'binaries': {'gpg': str(tmp_path / 'missing-gpg')},
         'gpg': {'debops': {'keyring': {
-            'path': str(tmp_path / 'keyring')}}},
+            'path': str(tmp_path / 'debops' / 'keyring')}}},
         'tofu': {'upstream': {
             'release_base': ('https://github.com/opentofu/opentofu/'
                              'releases/download/v{version}'),
@@ -549,6 +549,44 @@ def test_reconcile_binaries_skips_the_installed_versions(
 
     assert binary_module.reconcile_binaries(project) == []
     download.assert_not_called()
+
+
+def test_reconcile_binaries_dry_run_reports_without_installing(
+        tofu_project, tmp_path, monkeypatch):
+    """The dry run reports the versions the install would run for
+    without downloading anything: the managed location stays empty."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    version = "1.13.9"
+    download = mock.Mock()
+    monkeypatch.setattr(binary_module, "_download", download)
+
+    project = tofu_project(project_type="modern")
+    write_drop_in(project, [], binary_version=version)
+
+    assert binary_module.reconcile_binaries(project, dry_run=True) \
+        == [version]
+    download.assert_not_called()
+    assert not os.path.isfile(
+        binary_module.managed_binary_path(version))
+
+
+def test_reconcile_binaries_dry_run_with_force_reports_reinstall(
+        tofu_project, tmp_path, monkeypatch):
+    """With 'force' the dry run reports the installed binaries too:
+    the reinstall runs for them, so the operator sees the whole
+    planned work."""
+    monkeypatch.setattr(binary_module, "xdg_data_home", str(tmp_path))
+    version = "1.13.9"
+    managed = binary_module.managed_binary_path(version)
+    os.makedirs(os.path.dirname(managed))
+    with open(managed, "w") as handle:
+        handle.write("#!/bin/sh\nexit 0\n")
+
+    project = tofu_project(project_type="modern")
+    write_drop_in(project, [], binary_version=version)
+
+    assert binary_module.reconcile_binaries(project, force=True,
+                                            dry_run=True) == [version]
 
 
 def test_reconcile_binaries_force_reinstalls_the_versions(
