@@ -75,13 +75,17 @@ def create_view(project, view, providers=None, modules=None,
     sets, and the store with its 'environment' key file written
     through the store-cycling window.
 
-    The store type comes from the caller: 'debops tofu mkview' passes
-    the operator's '--encrypt' decision, falling back to the project's
-    convention when unset. The git-crypt store requires the
-    repository-wide setup which the creation cannot initialize; the
-    EncFS store requires the GPG recipients ('keys') which encrypt the
-    volume keyfile; the plain store writes the key file tracked but
-    unencrypted -- the operator's decision, announced as such.
+    The store type is detection-driven: the project's detected
+    mechanism is the default, and the '--encrypt' decision of
+    'debops tofu mkview' is required only when the project carries
+    no secret store yet. A git-crypt store is repository-wide -- the
+    keys are global, the new view joins it for free; an EncFS store
+    is a per-view volume -- every creation needs the GPG recipients
+    ('keys') which encrypt the volume keyfile. The 'plain' choice is
+    the explicit insecure decision: the key file tracked
+    unencrypted, announced as such; it is refused when the project
+    already carries a store, because the routing or the volume would
+    encrypt the view's secrets anyway.
 
     An existing view is refused: its files are the user's. Returns
     True when the view was created.
@@ -99,8 +103,25 @@ def create_view(project, view, providers=None, modules=None,
             "The view {!r} already exists in the project; its files "
             'belong to the user'.format(view))
 
+    detected = detect_store_type(project)
     if encrypt is None:
-        encrypt = detect_store_type(project)
+        if detected is None:
+            raise ValueError(
+                "The '--encrypt' option is required: the project "
+                'carries no secret store yet -- the choices are '
+                "'encfs', 'git-crypt' and 'plain'")
+        encrypt = detected
+    if detected is not None:
+        if encrypt == 'plain':
+            raise ValueError(
+                'The project already carries a {!r} store: '
+                "'plain' is not a choice for its views".format(
+                    detected))
+        if encrypt != detected:
+            raise ValueError(
+                'The project already carries a {!r} store: the '
+                "'--encrypt {}' value contradicts it".format(
+                    detected, encrypt))
 
     if encrypt == 'git-crypt' and not os.path.exists(
             os.path.join(project.path, '.git', 'git-crypt', 'keys')):

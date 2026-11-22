@@ -183,7 +183,7 @@ def resolve_plan_file(view_root, plan_id):
 class TofuRunner(Runner):
 
     def __init__(self, project, tofu_args, bell=False, no_color=False,
-                 workspace=None):
+                 workspace=None, allow_missing_state=False):
         super().__init__(project, bell=bell, secrets_name='tofu')
 
         self._view_root = self._view_tofu_root()
@@ -194,6 +194,7 @@ class TofuRunner(Runner):
                     self._operation))
         self._workspace = self._resolve_workspace(workspace)
         self._state_path = self._resolve_state_path()
+        self._allow_missing_state = allow_missing_state
         self._data_dir = cache.data_dir(project)
         self._plugin_cache = cache.plugin_cache()
 
@@ -564,17 +565,20 @@ class TofuRunner(Runner):
             # fresh view holds none until its first operation, but a
             # lost store looks the same. OpenTofu would silently
             # re-initialize the state and plan to create all
-            # infrastructure -- the operator sees the plan, and the
-            # approval gate of the destructive operations shows it
-            # before the change runs
-            logger.warning(
-                'The state file of the view ({}) is missing while the '
-                'view was initialized on this machine before. If the '
-                'state was lost, OpenTofu will plan to create all of '
-                'the infrastructure again; the operations which '
-                'change state show the plan before '
-                'applying it.'.format(state_file),
-                extra={'allow': ['stderr', 'syslog']})
+            # infrastructure -- the refusal protects the fleet, and
+            # the deliberate wipe-and-rebuild passes the
+            # '--allow-missing-state' option
+            if self._allow_missing_state:
+                return
+            raise ChildProcessError(
+                'The state file of the view ({}) is missing while '
+                'the view was initialized on this machine before. '
+                'The store may be locked or the state lost -- '
+                'OpenTofu would silently re-initialize the state '
+                'and plan to create all of the infrastructure '
+                'again. To proceed deliberately, pass the '
+                "'--allow-missing-state' option of the 'debops "
+                "tofu' section.".format(state_file))
 
     def _check_state_lock(self):
         """Refuse the operation while another process holds the state.
