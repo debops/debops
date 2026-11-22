@@ -6,7 +6,9 @@
 
 import os
 import stat
+import subprocess
 import textwrap
+from unittest import mock
 
 import pytest
 
@@ -66,12 +68,14 @@ def keyring(tmp_path, monkeypatch):
     monkeypatch.setenv('GPG_IMPORTED_LOG',
                        str(tmp_path / 'gpg-imported.log'))
     monkeypatch.setenv('GPG_SIGNING_KEY', FINGERPRINT)
+    monkeypatch.setattr('debops.core.keyring.xdg_data_home',
+                        str(tmp_path))
 
     class StubConfig:
         raw = {
             'binaries': {'gpg': str(stub)},
             'gpg': {'debops': {'keyring': {
-                'path': str(tmp_path / 'keyring'),
+                'path': str(tmp_path / 'debops' / 'keyring'),
                 'gpg_conf': {
                     'keyserver': 'hkps://keyserver.ubuntu.com',
                     'fixed-list-mode': True,
@@ -106,6 +110,59 @@ def test_empty_path_resolves_to_the_xdg_data_location(keyring, tmp_path,
     xdg_path = os.path.join(str(tmp_path / 'xdg-data'),
                             'debops', 'gnupg')
     assert xdg_manager.path == xdg_path
+
+
+def test_keyring_path_outside_the_data_location_is_refused(
+        tmp_path, monkeypatch):
+    """A configured keyring path outside the DebOps data location
+    refuses the manager: the homedir is created and made private,
+    which must not reach the directories a project configuration
+    names elsewhere."""
+    monkeypatch.setattr('debops.core.keyring.xdg_data_home',
+                        str(tmp_path / 'xdg-data'))
+
+    class StubConfig:
+        raw = {
+            'binaries': {'gpg': 'gpg'},
+            'gpg': {'debops': {'keyring': {
+                'path': str(tmp_path / 'elsewhere'),
+            }}},
+        }
+
+    with pytest.raises(ValueError, match='data location'):
+        KeyringManager(StubConfig)
+
+
+def test_keyring_path_inside_the_data_location_is_accepted(
+        tmp_path, monkeypatch):
+    """The option relocates the keyring within the DebOps data
+    location: a path under it is honored as given."""
+    monkeypatch.setattr('debops.core.keyring.xdg_data_home',
+                        str(tmp_path / 'xdg-data'))
+
+    class StubConfig:
+        raw = {
+            'binaries': {'gpg': 'gpg'},
+            'gpg': {'debops': {'keyring': {
+                'path': str(tmp_path / 'xdg-data' / 'debops' / 'custom'),
+            }}},
+        }
+
+    manager = KeyringManager(StubConfig)
+    assert manager.path == str(tmp_path / 'xdg-data' / 'debops' / 'custom')
+
+
+def test_hung_gpg_is_refused_at_the_timeout(keyring, monkeypatch):
+    """A gpg which hangs past the timeout refuses the operation with
+    the way out instead of blocking the install forever: a wedged
+    keyserver connection must not stall the binary install."""
+    manager, config, argv_log = keyring
+    monkeypatch.setattr(
+        'debops.core.keyring.subprocess.run',
+        mock.Mock(side_effect=subprocess.TimeoutExpired('gpg', 60)))
+
+    with pytest.raises(ValueError, match='timed out'):
+        manager.ensure_key(FINGERPRINT)
 
 
 def test_gpg_conf_is_rendered_from_the_config(keyring):
