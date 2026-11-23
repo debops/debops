@@ -5,6 +5,7 @@
 """Tests for ``debops.core.config``."""
 
 import json
+import logging
 import os
 from unittest import mock
 
@@ -2160,3 +2161,194 @@ def test_shadowing_file_scans_the_parents_later_subdirectories(
                                           "custom.greeting")
 
     assert shadow[1] == "shadowed"
+
+
+def test_shadowing_file_skips_the_non_configuration_candidates(
+        tmp_path):
+    """The scan skips the files which are not configuration files,
+    the ones which do not parse and the ones which do not parse into
+    a table: the shadow warning names only the real shadows."""
+    override = tmp_path / "override"
+    override.mkdir()
+    managed = override / "99_config_set.json"
+    managed.write_text('{"custom": {"greeting": "set"}}\n')
+    (override / "zz_notes.txt").write_text("custom: {greeting: x}\n")
+    (override / "zz_broken.json").write_text('{"custom": {\n')
+    (override / "zz_list.yaml").write_text("- just\n- a list\n")
+    (override / "zz_partial.toml").write_text(
+        '[custom]\nother = "value"\n')
+
+    assert config_module.shadowing_file(str(managed),
+                                        "custom.greeting") is None
+
+
+def test_shadowing_file_reads_the_json_candidates(tmp_path):
+    """The json candidates parse like the toml and yaml ones: a set
+    value is shadowed by a json file which defines the option."""
+    override = tmp_path / "override"
+    override.mkdir()
+    managed = override / "99_config_set.json"
+    managed.write_text('{"custom": {"greeting": "set"}}\n')
+    (override / "zz_options.json").write_text(
+        '{"custom": {"greeting": "shadowed"}}\n')
+
+    shadow = config_module.shadowing_file(str(managed),
+                                          "custom.greeting")
+
+    assert shadow == (str(override / "zz_options.json"), "shadowed")
+
+
+def test_shadowing_file_continues_past_a_prefix_only_file(tmp_path):
+    """A candidate which defines only the first segments of the path
+    does not end the scan: the shadow search continues, the shadow
+    the scan finds is the file which carries the option."""
+    override = tmp_path / "override"
+    override.mkdir()
+    managed = override / "99_config_set.json"
+    managed.write_text('{"custom": {"greeting": "set"}}\n')
+    (override / "aa_prefix.toml").write_text(
+        '[custom]\nother = "value"\n')
+    (override / "zz_full.toml").write_text(
+        '[custom]\ngreeting = "shadowed"\n')
+
+    shadow = config_module.shadowing_file(str(managed),
+                                          "custom.greeting")
+
+    assert shadow == (str(override / "zz_full.toml"), "shadowed")
+
+
+def test_apply_env_overrides_takes_the_first_type_of_a_typed_list(
+        configuration, monkeypatch):
+    """A schema which types an option with a type list pins the
+    first type: the environment value converts to it."""
+    monkeypatch.setenv("DEBOPS_CONFIG__PROJECT__TYPE", "server")
+
+    configuration.apply_env_overrides()
+
+    assert configuration.raw["project"]["type"] == "server"
+
+
+def test_apply_env_overrides_refuses_an_object_of_the_wrong_shape(
+        configuration, monkeypatch, caplog):
+    """An object option needs a JSON object: a plain string is
+    reported and skipped, the configuration keeps its default."""
+    monkeypatch.setenv("DEBOPS_CONFIG__TOFU__MKVIEW__DEFAULT_MODULES",
+                       "registry")
+
+    with caplog.at_level(logging.WARNING):
+        configuration.apply_env_overrides()
+
+    assert 'must be a JSON object' in caplog.text
+    # the refused override recorded no layer
+    assert configuration._env_overrides == []
+
+
+def test_coerce_override_reaches_the_types_the_schema_does_not_name(
+        configuration, monkeypatch):
+    """The coercion branches the packaged schema cannot reach -- the
+    number option, the typeless node, the list and object values --
+    behave like their documented conversions."""
+    resolver = mock.Mock(return_value={"type": "number"})
+    monkeypatch.setattr(config_module, "_resolve_schema_node", resolver)
+
+    assert configuration._coerce_override(["x"], "2") == 2
+    assert configuration._coerce_override(["x"], "1.5") == 1.5
+
+    resolver.return_value = {}
+    assert configuration._coerce_override(["x"], "a,b") == ["a", "b"]
+    assert configuration._coerce_override(["x"], '[1, "two"]') == [1, "two"]
+
+    resolver.return_value = {"type": "object"}
+    with pytest.raises(ValueError, match='JSON object'):
+        configuration._coerce_override(["x"], "registry")
+
+
+def test_coerce_scalar_refuses_the_values_the_type_cannot_hold(
+        configuration):
+    """The '--type' coercion refuses instead of guessing: an integer
+    which is not one, a boolean which is neither, an object which is
+    not a JSON object -- and an unknown option raises the unknown
+    message."""
+    int_node = configuration._option_schema_node(["syslog", "port"])
+    with pytest.raises(config_module.OptionRefused, match='not an integer'):
+        configuration._coerce_scalar(["syslog", "port"], "five", "int",
+                                     int_node)
+
+    bool_node = configuration._option_schema_node(
+        ["version_check", "enabled"])
+    with pytest.raises(config_module.OptionRefused, match='not a boolean'):
+        configuration._coerce_scalar(["version_check", "enabled"], "maybe",
+                                     "bool", bool_node)
+
+    with pytest.raises(config_module.OptionRefused, match='JSON object'):
+        configuration._coerce_scalar(["x"], "registry", "dict",
+                                     {"type": "object"})
+
+    with pytest.raises(ValueError,
+                       match='custom options belong under'):
+        configuration._coerce_scalar(["no", "such", "option"], "value",
+                                     None, None)
+
+
+def test_coerce_element_follows_the_items_type(configuration):
+    """The elements of a list option convert by the schema's items
+    type: booleans, integers, numbers, strings -- and the values of
+    an untyped list parse as their JSON look-alikes."""
+    assert configuration._coerce_element("true", None,
+                                         {"type": "array",
+                                          "items": {"type": "boolean"}}) \
+        is True
+    assert configuration._coerce_element("5", None,
+                                         {"type": "array",
+                                          "items": {"type": "integer"}}) \
+        == 5
+    assert configuration._coerce_element("1.5", None,
+                                         {"type": "array",
+                                          "items": {"type": "number"}}) \
+        == 1.5
+    assert configuration._coerce_element("2", None,
+                                         {"type": "array",
+                                          "items": {"type": "number"}}) \
+        == 2
+    assert configuration._coerce_element("plain", None,
+                                         {"type": "array",
+                                          "items": {"type": "string"}}) \
+        == "plain"
+    assert configuration._coerce_element("3", None, None) == 3
+
+
+def test_load_defaults_reads_the_json_and_yaml_formats(configuration,
+                                                       tmp_path):
+    """The defaults load from the toml, json and yaml files; an
+    unsupported extension refuses the load."""
+    import json as json_module
+    json_defaults = tmp_path / "defaults.json"
+    json_defaults.write_text('{"custom": {"from": "json"}}\n')
+    configuration._load_defaults(str(json_defaults))
+    assert configuration.raw["custom"]["from"] == "json"
+
+    yaml_defaults = tmp_path / "defaults.yaml"
+    yaml_defaults.write_text("custom:\n  from: yaml\n")
+    configuration._load_defaults(str(yaml_defaults))
+    assert configuration.raw["custom"]["from"] == "yaml"
+
+    defaults = tmp_path / "defaults.ini"
+    defaults.write_text("custom:\n")
+    with pytest.raises(ValueError, match='Unsupported defaults'):
+        configuration._load_defaults(str(defaults))
+
+
+def test_the_report_names_the_file_of_a_root_level_violation(
+        configuration, caplog):
+    """A schema violation which names no option -- the document
+    root itself, which the merge guard catches before the schema in
+    the real files -- reports against the file."""
+    from jsonschema import ValidationError
+    error = ValidationError('the document root is not a table')
+    error.validator = 'type'
+
+    with caplog.at_level(logging.WARNING):
+        configuration._report_violation('options.yaml', {}, error)
+
+    assert 'the document root is not a table' in caplog.text
+    assert 'options.yaml' in caplog.text
