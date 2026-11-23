@@ -229,9 +229,9 @@ ProxyJump
 
 The ``jump`` attribute of a host composes
 ``ansible_ssh_common_args='-o ProxyJump=<jump>'`` on the rendered
-host line. The bastion needs no inventory presence of its own —
-containers on a bridge network are often reachable only through the
-host that runs them.
+host entry, in every hosts-file format. The bastion needs no
+inventory presence of its own -- containers on a bridge network are
+often reachable only through the host that runs them.
 
 If you need more SSH arguments than the jump, set
 ``ansible_ssh_common_args`` in your own :file:`host_vars/` file for

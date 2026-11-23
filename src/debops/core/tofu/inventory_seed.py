@@ -149,8 +149,8 @@ def _group_records(groups, hosts):
 
 def _host_records(seed, ansible_host_format='fqdn'):
     """Return the host records the inventory renders: the inventory
-    hostname, the seed key, the connection target, the jump host, the
-    declared groups and the plain and sensitive variables.
+    hostname, the seed key, the connection target, the declared
+    groups and the plain and sensitive variables.
 
     The inventory hostname is the 'label' attribute when the entry
     carries one, the 'host' attribute otherwise, the seed key when
@@ -170,7 +170,14 @@ def _host_records(seed, ansible_host_format='fqdn'):
     observable case is the lease which landed late, and the way out
     is the '--force' option, which refreshes the state before the
     render. The secret paths are keyed by the seed key, the
-    tofu-side identity which survives a hostname or label change."""
+    tofu-side identity which survives a hostname or label change.
+
+    The jump of a host composes into the 'ansible_ssh_common_args'
+    variable, the argument the ini format writes on the host line
+    and the other formats carry among the plain variables. The
+    seed's own variable wins over the composed one, the same
+    precedence the plain variables have over the auto-recorded
+    identity values."""
     records = []
     hostnames = {}
     for key, entry in seed.items():
@@ -205,12 +212,14 @@ def _host_records(seed, ansible_host_format='fqdn'):
         variables = dict(entry.get('vars') or {})
         for var, value in displaced.items():
             variables.setdefault(var, value)
+        if entry.get('jump'):
+            variables.setdefault('ansible_ssh_common_args',
+                                 '-o ProxyJump={}'.format(entry['jump']))
         records.append({
             'name': name,
             'key': key,
             'address': address,
             'ansible_host': connection,
-            'jump': entry.get('jump'),
             'groups': [group for group in entry.get('groups', [])
                        if group != 'all'],
             'vars': variables,
