@@ -23,6 +23,56 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.2: https://github.com/debops/debops/compare/v3.2.0...stable-3.2
 
+Added
+~~~~~
+
+General
+'''''''
+
+- The new :command:`debops tofu` section manages OpenTofu
+  infrastructure in the project views. See :ref:`the OpenTofu
+  integration <debops_tofu>` in the manual for the model, the
+  operations and the recipes.
+
+- The :command:`debops project init` command gains the ``--tofu``
+  option which creates the OpenTofu view of the default view at the
+  initialization, keyed by the ``--encrypt`` decision (which gains
+  the ``plain`` choice), and the ``--pre-commit`` option which
+  installs the project's pre-commit hook.
+
+- The new :command:`debops config set` command sets or removes
+  configuration options in the configuration files, in a project
+  directory or in the user configuration with ``--user``. The
+  values are converted to the type of the option. The managed file
+  lives in the ``override/`` subdirectory of the configuration
+  directory, which ranks above the directory's own files: the set
+  options win over the hand-written ones. The
+  ``config.override_filename`` option places the file, and the
+  legacy top-level files migrate into it. A file of the
+  subdirectory which sorts after the managed one and defines the
+  option still wins -- the command warns and names it.
+
+- The new ``config.default_output`` option names the output format
+  which :command:`debops config get` renders with when the
+  ``--format`` option is not given; it accepts ``unix``, ``yaml``,
+  ``json`` and ``toml``, and ``yaml`` is the default.
+
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- The :command:`debops config get` output changes: the ``unix``
+  format prints one option per line in the dotted ``path=value``
+  notation, the same notation the environment overrides use, with the
+  list values comma-separated, and the ``--show-origin`` table renders
+  its values the same way. The default format moves to the
+  ``config.default_output`` option: the tree and section dumps render
+  as before, the scalar and boolean queries drop the document-end
+  marker which PyYAML appends, and the list queries render in the YAML
+  list form.
+
 Fixed
 ~~~~~
 
@@ -75,34 +125,11 @@ General
   config get` and override them from the environment. DebOps does
   not use it and will not define options in it.
 
-- The new :command:`debops config set` command sets or removes
-  configuration options in the configuration files, in a project
-  directory or in the user configuration with ``--user``. The
-  values are converted to the type of the option. The managed file
-  lives in the ``override/`` subdirectory of the configuration
-  directory, which ranks above the directory's own files: the set
-  options win over the hand-written ones. The
-  ``config.override_filename`` option places the file, and the
-  legacy top-level files migrate into it. A file of the
-  subdirectory which sorts after the managed one and defines the
-  option still wins -- the command warns and names it.
-
 - The new :command:`debops config check` command checks the
   configuration for errors and exits with a non-zero status when an
   option was dropped or a file could not be parsed, which makes it
   usable in CI pipelines. The ``--strict`` option also fails the
   check on unknown options.
-
-- The new :command:`debops tofu` section manages OpenTofu
-  infrastructure in the project views. See :ref:`the OpenTofu
-  integration <debops_tofu>` in the manual for the model, the
-  operations and the recipes.
-
-- The :command:`debops project init` command gains the ``--tofu``
-  option which creates the OpenTofu view of the default view at the
-  initialization, keyed by the ``--encrypt`` decision (which gains
-  the ``plain`` choice), and the ``--pre-commit`` option which
-  installs the project's pre-commit hook.
 
 - The ``debops.core.config.Configuration`` class can now build a
   standalone configuration from caller-provided sources: defaults,
@@ -155,11 +182,6 @@ General
   when the zone publishes them, and rewrites only the entries of
   the hosts whose keys changed. The defaults of the verification
   and the prompting are configurable.
-
-- The new ``config.default_output`` option names the output format
-  which :command:`debops config get` renders with when the
-  ``--format`` option is not given; it accepts ``unix``, ``yaml``,
-  ``json`` and ``toml``, and ``yaml`` is the default.
 
 Changed
 ~~~~~~~
@@ -257,16 +279,6 @@ General
   :ref:`debops.global_handlers` role documentation. Plays that notify the
   shared handlers without the role will fail at runtime with a missing handler
   error.
-
-- The :command:`debops config get` output changes: the ``unix``
-  format prints one option per line in the dotted ``path=value``
-  notation, the same notation the environment overrides use, with the
-  list values comma-separated, and the ``--show-origin`` table renders
-  its values the same way. The default format moves to the
-  ``config.default_output`` option: the tree and section dumps render
-  as before, the scalar and boolean queries drop the document-end
-  marker which PyYAML appends, and the list queries render in the YAML
-  list form.
 
 Fixed
 ~~~~~
