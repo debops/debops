@@ -295,6 +295,11 @@ class StubProject:
         self.config = config if config is not None else StubConfig()
         self.ansible_cfg = ansible_cfg
 
+    def _is_git_repo(self, path=None):
+        """The stub project is not a git repository: the state
+        history checks degrade to the no-history branch."""
+        return False
+
     def environment(self):
         """The environment a project command runs in, composed the way
         the real ProjectDir composes it."""
