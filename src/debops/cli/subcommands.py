@@ -339,8 +339,13 @@ Commands:
                                no_help="don't configure the SSH "
                                        "known_hosts store")
         parser.add_argument('--encrypt', type=str, nargs='?',
-                            choices=['encfs', 'git-crypt'],
-                            help='enable encrypted secrets')
+                            choices=['encfs', 'git-crypt', 'plain'],
+                            help='enable encrypted secrets; plain commits '
+                                 'the passphrase unencrypted')
+        self.add_bool_argument(parser, 'tofu',
+                               help='create the OpenTofu view of the '
+                                    'default view after the initialization',
+                               no_help="don't create the OpenTofu view")
         parser.add_argument('--keys', type=str,
                             help='list of GPG recipients with secret access, '
                                  'delimited by commas')
