@@ -40,9 +40,12 @@ override earlier ones:
   overrides the option at the matching path of the tree. They rank above
   every file.
 
-Within one directory, the files are read in alphabetical order and merged
-together. A directory accepts files in TOML, JSON and YAML formats. The
-format is detected from the file extension.
+Within one directory, DebOps reads the files in alphabetical order and
+merges them together. The files of a subdirectory rank above every file
+of the directory itself. The subdirectories load in the alphabetical
+order too, each with its own files before its own subdirectories. A
+directory accepts files in TOML, JSON and YAML formats. DebOps detects
+the format from the file extension.
 
 The merge is recursive. A section defined in several files keeps the
 options of all of them. A list defined in several files combines the
@@ -98,7 +101,7 @@ When you need to know where a value comes from, add ``--show-origin`` or
 with its value joined by ``=``, and the columns separated by tabs::
 
   alice@controller:~$ debops config get --show-origin --show-scope syslog.level
-  user	~/.config/debops/conf.d/99_config_set.json	syslog.level=DEBUG
+  user	~/.config/debops/conf.d/override/99_config_set.json	syslog.level=DEBUG
 
 The scope is the layer which last set the option: ``defaults``,
 ``system``, ``user``, ``project``, ``runtime`` or ``override``. The
@@ -114,10 +117,24 @@ Changing the configuration
 
 The :command:`debops config set` command sets or removes options in the
 configuration files. In a project directory, the options land in the
-:file:`.debops/conf.d/99_config_set.json` file. Outside of one, they land
-in your user configuration::
+:file:`.debops/conf.d/override/99_config_set.json` file. Outside of
+one, they land in your user configuration::
 
   alice@controller:~$ debops config set syslog.level DEBUG
+
+The managed file lives in the ``override/`` subdirectory of the
+configuration directory, and the files of a subdirectory rank
+above every file of the directory itself. The set options
+therefore win over the options you wrote by hand in
+:file:`conf.d/`, regardless of the names. The
+``config.override_filename`` option places the managed file: a
+relative path without the ``.`` and ``..`` segments. The files
+which the command managed at the top level of the directory
+migrate into the configured location when the command writes.
+
+A file of the ``override/`` subdirectory which sorts after the
+managed one can still win. When it does, the command warns and
+names the file and the value which wins.
 
 The values are converted to the type of the option, so ``config set
 syslog.port 514`` stores an integer. The ``-u``/``--user`` option sets

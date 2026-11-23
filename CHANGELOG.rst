@@ -78,10 +78,14 @@ General
 - The new :command:`debops config set` command sets or removes
   configuration options in the configuration files, in a project
   directory or in the user configuration with ``--user``. The
-  values are converted to the type of the option. The command
-  manages files named ``*_config_set.json`` and uses a file with a
-  different numeric prefix when one exists, so the prefix decides
-  where the managed options rank among the files of the directory.
+  values are converted to the type of the option. The managed file
+  lives in the ``override/`` subdirectory of the configuration
+  directory, which ranks above the directory's own files: the set
+  options win over the hand-written ones. The
+  ``config.override_filename`` option places the file, and the
+  legacy top-level files migrate into it. A file of the
+  subdirectory which sorts after the managed one and defines the
+  option still wins -- the command warns and names it.
 
 - The new :command:`debops config check` command checks the
   configuration for errors and exits with a non-zero status when an
