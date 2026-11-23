@@ -282,6 +282,13 @@ class StubAnsibleConfig:
             return self._options[option]
         raise configparser.NoOptionError(option, section)
 
+    def option_file(self, directory):
+        """The stub carries no managed file: the writer's override
+        re-merge skips the read."""
+        import os as _os
+        path = _os.path.join(directory, 'override', '99_config_set.json')
+        return path if _os.path.isfile(path) else None
+
 
 class StubProject:
     """The minimum project a runner reads from its constructor."""

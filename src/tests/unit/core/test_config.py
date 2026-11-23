@@ -2141,3 +2141,22 @@ def test_option_file_migration_announces_the_move(configuration, tmp_path,
 
     assert 'moved to' in caplog.text
     assert 'override' in caplog.text
+
+
+def test_shadowing_file_scans_the_parents_later_subdirectories(
+        configuration, tmp_path):
+    """The subdirectories of the configuration directory which sort
+    after the override sublayer rank above the managed file: the
+    helper scans them, the same rule the loader applies."""
+    override = tmp_path / "override"
+    override.mkdir()
+    managed = override / "99_config_set.json"
+    managed.write_text('{"custom": {"greeting": "set"}}\n')
+    (tmp_path / "views-late").mkdir()
+    (tmp_path / "views-late" / "options.yml").write_text(
+        "custom:\n  greeting: shadowed\n")
+
+    shadow = config_module.shadowing_file(str(managed),
+                                          "custom.greeting")
+
+    assert shadow[1] == "shadowed"
