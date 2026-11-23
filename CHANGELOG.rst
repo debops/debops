@@ -86,6 +86,12 @@ General
   integration <debops_tofu>` in the manual for the model, the
   operations and the recipes.
 
+- The :command:`debops project init` command gains the ``--tofu``
+  option which creates the OpenTofu view of the default view at the
+  initialization, keyed by the ``--encrypt`` decision (which gains
+  the ``plain`` choice), and the ``--pre-commit`` option which
+  installs the project's pre-commit hook.
+
 - The ``debops.core.config.Configuration`` class can now build a
   standalone configuration from caller-provided sources: defaults,
   configuration files and directories, a JSON Schema, an
