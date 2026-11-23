@@ -154,7 +154,7 @@ old key. Run :command:`ssh-keygen -R` on it or expect the refusal.
 
 **Statuses gate the render.** Stopped containers carry a ``Stopped``
 status, and the bridge skips statuses it has no instruction for.
-Key the behaviour in ``tofu.inventory.output.host_status``: include
+Key the behaviour in ``tofu.inventory.host_status``: include
 ``running``, and decide what a stopped container should do.
 
 **The PKI runs on the controller.** The debops.pki role generates the
