@@ -124,7 +124,7 @@ def test_project_data_dirs_filter_the_relocated_project(tofu_cache):
     os.makedirs(stale)
 
     class RemoteProject:
-        path = '/tmp/opencode/tofu-live'
+        path = '/elsewhere/tofu-live'
         name = 'tofu-live'
         view = ''
 
