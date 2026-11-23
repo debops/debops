@@ -391,6 +391,17 @@ git_repo_url = ""
 # and 'toml' render the values in their respective formats.
 default_output = "yaml"
 
+# The file which the 'debops config set' command manages, relative to
+# the configuration directory of the layer -- the project's
+# '.debops/conf.d/' or the user configuration directory with '--user'.
+# The file ranks by its location: the 'override/' subdirectory loads
+# after the files of the directory itself, so the set options win over
+# the hand-written ones. The name is the operator's to place, as a
+# relative path without the '.' and '..' segments; the legacy files
+# the command managed at the top level of the directory migrate into
+# the configured location.
+override_filename = "override/99_config_set.json"
+
 [custom]
 
 # This section is reserved for custom configuration options defined
