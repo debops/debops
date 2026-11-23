@@ -451,7 +451,7 @@ def test_the_absolute_sensitive_path(inventory_project):
     the content file is written there and the lookup uses the path
     as-is."""
     import tempfile
-    external = tempfile.mkdtemp(dir='/tmp/opencode')
+    external = tempfile.mkdtemp()
     project = inventory_project({
         'secret': {'host_path': external + '/tofu/%s/%s'}})
     render_inventory(project, 'system', outputs())
@@ -813,7 +813,7 @@ def test_a_stale_absolute_sensitive_file_is_not_pruned(
     when the seed drops the host -- the operator cleans it by hand,
     the render names it."""
     import tempfile
-    external = tempfile.mkdtemp(dir='/tmp/opencode')
+    external = tempfile.mkdtemp()
     project = inventory_project({
         'secret': {'host_path': external + '/tofu/%s/%s'}})
     render_inventory(project, 'system', outputs())
@@ -982,7 +982,7 @@ def inventory_operation(monkeypatch, rc=0, output='{}', changes=None,
                            diff=diff, force=force, no_color=False,
                            allow_missing_state=False)
     raw = {'tofu': {'inventory': {'state_refresh': state_refresh}}}
-    project = SimpleNamespace(view='system', path='/tmp/opencode/x',
+    project = SimpleNamespace(view='system', path='/elsewhere/x',
                               config=SimpleNamespace(raw=raw))
     # A bare interpreter instance: the operation prints through the
     # real '_render_tofu_changes', which a Mock self would swallow
