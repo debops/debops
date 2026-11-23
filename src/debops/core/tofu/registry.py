@@ -73,16 +73,10 @@ def write_view_drop_in(project, view, providers, modules=None,
     of the OpenTofu binary the view runs with. The drop-in is
     written once, when the view is created: it is the user's file from
     then on, and the dependency set is changed by editing it. The
-    options are merged into the live configuration of the project, so
-    that the same process reads the recorded sets without reloading
-    it; a fresh process reads them through the ordinary configuration
-    loading.
-
-    The options are replace-semantics: the recorded sets are the whole
-    provider list and the whole module table, not an addition to them.
-    The configuration merge extends lists and merges tables by design,
-    so the recorded options are cleared from the live tree first and
-    the merge lands as the replacement.
+    configuration is reloaded from disk after the write, so that the
+    same process reads the recorded sets at the rank a fresh process
+    would read them -- the override sublayer, the hand-written files
+    and the drop-in itself rank exactly as the disk says.
 
     Returns True when the drop-in was written, False when it already
     existed and was kept.
@@ -98,33 +92,12 @@ def write_view_drop_in(project, view, providers, modules=None,
         project=project.path)
     if not written:
         return False
-    try:
-        del project.config.raw['views'][view]['tofu']['providers']
-    except (KeyError, TypeError):
-        pass
-    try:
-        del project.config.raw['views'][view]['tofu']['modules']
-    except (KeyError, TypeError):
-        pass
-    project.config.merge({'views': {view: {'tofu': {
-        'providers': providers or [],
-        'modules': modules or {},
-        'binary_version': binary_version}}}},
-        scope='project', origin=drop_in)
 
-    # The override sublayer of the configuration directory ranks
-    # above the drop-in by the subdirectory merge rule: the merge
-    # above landed as the last project layer, and an override file
-    # which carries the view's options must re-rank above it. The
-    # fresh process reads the same order from the disk.
-    try:
-        override_file = project.config.option_file(
-            os.path.join(project.path, '.debops', 'conf.d'))
-    except (ValueError, OSError, AttributeError):
-        return True
-    if override_file and os.path.isfile(override_file):
-        project.config.merge(override_file, scope='project',
-                             origin=override_file)
+    # A fresh process reads the drop-in through the ordinary
+    # configuration loading: the override sublayer and the
+    # hand-written files rank exactly as the disk says. The live
+    # tree gets the same rank through the reload.
+    project.reload()
     return True
 
 

@@ -244,7 +244,31 @@ class StubConfig:
         """Merge a dictionary into the raw tree, the way the real
         ``Configuration._merge_dict`` does for a dict: nested
         dictionaries merge recursively, every other value replaces the
-        recorded one."""
+        recorded one. A path string loads the configuration files the
+        way the real ``Configuration.load`` does: the files of a
+        directory in the sorted order, the subdirectories after
+        them."""
+        import toml as _toml
+        if isinstance(data, str):
+            if os.path.isfile(data):
+                parsed = _toml.loads(open(data).read())
+                self.merge(parsed, scope=scope, origin=origin)
+                return
+            if os.path.isdir(data):
+                for name in sorted(os.listdir(data)):
+                    path = os.path.join(data, name)
+                    if os.path.isfile(path) and name.endswith('.toml'):
+                        parsed = _toml.loads(open(path).read())
+                        self.merge(parsed, scope=scope, origin=origin)
+                    elif os.path.isdir(path):
+                        for root, _, files in os.walk(path):
+                            for f in sorted(files):
+                                if f.endswith('.toml'):
+                                    parsed = _toml.loads(
+                                        open(os.path.join(root, f)).read())
+                                    self.merge(parsed, scope=scope,
+                                               origin=origin)
+                return
         if isinstance(data, dict):
             for key, value in data.items():
                 if (isinstance(self.raw.get(key), dict)
@@ -313,6 +337,14 @@ class StubProject:
         """The stub project is not a git repository: the state
         history checks degrade to the no-history branch."""
         return False
+
+    def reload(self):
+        """Re-read the project's conf.d directory: the drop-in files
+        and the override sublayer merge into the tree at the rank
+        the disk gives them."""
+        self.config.merge(
+            os.path.join(self.path, '.debops', 'conf.d'),
+            scope='project')
 
     def environment(self):
         """The environment a project command runs in, composed the way

@@ -2,6 +2,7 @@
 # Copyright (C) 2020-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from .config import Configuration
 from .constants import DEBOPS_USER_HOME_DIR
 from .. import set_project_context
 from .exceptions import ViewNotFoundError
@@ -2074,6 +2075,27 @@ class ProjectDir(object):
         run_hooks(self.path, 'pre-unlock', env=self.environment())
         SecretManager(self, self.view).unlock()
         run_hooks(self.path, 'post-unlock', env=self.environment())
+
+    def reload(self):
+        """Re-read the configuration from disk.
+
+        The fresh Configuration reads the packaged defaults, the
+        system and user directories, and this project's conf.d
+        through the ordinary loading path -- the override sublayer,
+        the drop-in files and the hand-written options rank exactly
+        as a fresh process would read them. The runtime merges
+        re-run inside the ProjectDir constructor, the same way the
+        initial load runs them.
+
+        The view is preserved: the caller resolved it already, and
+        the configuration files which just changed do not change
+        which view the operation runs against."""
+        fresh_config = Configuration()
+        fresh = ProjectDir(path=self.path, config=fresh_config,
+                           view=self.view)
+        self.config = fresh.config
+        self.view = fresh.view
+        self._commands = fresh._commands
 
     def lock(self):
         run_hooks(self.path, 'pre-lock', env=self.environment())
