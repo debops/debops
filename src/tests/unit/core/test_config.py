@@ -178,12 +178,47 @@ def test_load_merges_a_directory_in_sorted_order(configuration, tmp_path):
     assert configuration.load(str(tmp_path)) == {"syslog": {"address": "two"}}
 
 
-def test_load_ignores_subdirectories(configuration, tmp_path):
-    (tmp_path / "nested").mkdir()
+def test_load_ranks_subdirectories_above_their_files(
+        configuration, tmp_path):
+    """The files of a subdirectory of a configuration directory rank
+    above every file of the directory itself: the override
+    directories work by the same rule the sorted file order uses."""
     (tmp_path / "options.toml").write_text('[git]\ninit_message = "msg"\n')
+    (tmp_path / "override").mkdir()
+    (tmp_path / "override" / "options.toml").write_text(
+        '[git]\ninit_message = "override"\n')
 
-    assert configuration.load(str(tmp_path)) == {"git": {"init_message":
-                                                         "msg"}}
+    assert configuration.load(str(tmp_path)) == {"git": {
+        "init_message": "override"}}
+
+
+def test_load_orders_the_subdirectories_in_sorted_order(
+        configuration, tmp_path):
+    """Several subdirectories of a configuration directory load in
+    the sorted order, the same way the files do."""
+    (tmp_path / "a-override").mkdir()
+    (tmp_path / "b-override").mkdir()
+    (tmp_path / "a-override" / "options.toml").write_text(
+        '[git]\ninit_message = "first"\n')
+    (tmp_path / "b-override" / "options.toml").write_text(
+        '[git]\ninit_message = "second"\n')
+
+    assert configuration.load(str(tmp_path)) == {"git": {
+        "init_message": "second"}}
+
+
+def test_load_records_the_origins_of_the_subdirectory_files(
+        configuration, tmp_path):
+    """The files of the subdirectories record their own origins: the
+    '--show-origin' output names the file which set each option."""
+    (tmp_path / "override").mkdir()
+    (tmp_path / "override" / "options.toml").write_text(
+        '[git]\ninit_message = "override"\n')
+    configuration.merge(str(tmp_path))
+
+    origins = configuration.config_get(
+        'git.init_message', show_origin=True)
+    assert 'override/options.toml' in origins
 
 
 def test_load_returns_empty_for_a_special_file(configuration, tmp_path):
