@@ -111,6 +111,20 @@ def write_view_drop_in(project, view, providers, modules=None,
         'modules': modules or {},
         'binary_version': binary_version}}}},
         scope='project', origin=drop_in)
+
+    # The override sublayer of the configuration directory ranks
+    # above the drop-in by the subdirectory merge rule: the merge
+    # above landed as the last project layer, and an override file
+    # which carries the view's options must re-rank above it. The
+    # fresh process reads the same order from the disk.
+    try:
+        override_file = project.config.option_file(
+            os.path.join(project.path, '.debops', 'conf.d'))
+    except (ValueError, OSError, AttributeError):
+        return True
+    if override_file and os.path.isfile(override_file):
+        project.config.merge(override_file, scope='project',
+                             origin=override_file)
     return True
 
 
