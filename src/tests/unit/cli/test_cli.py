@@ -975,3 +975,49 @@ def test_env_reports_a_runner_failure(monkeypatch, capsys, exception):
 
     assert caught.value.code == 1
     assert "Error: boom" in capsys.readouterr().err
+
+
+def test_config_get_names_the_undefined_option(monkeypatch, capsys):
+    """An undefined option exits non-zero and names the option: a
+    mistyped key -- or an option consumed as one -- must not fail
+    silently."""
+    from debops.core.exceptions import OptionNotFoundError
+    project = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    interpreter = make_interpreter()
+    interpreter.config.config_get.side_effect = OptionNotFoundError(
+        "not defined")
+
+    args = make_args(project_dir=".", key=["tofu.mistyped"],
+                     format=None, keys=False, root=False,
+                     show_origin=False, show_scope=False)
+    with pytest.raises(SystemExit):
+        interpreter.do_config_get(args)
+
+    err = capsys.readouterr().err
+    assert "The option 'tofu.mistyped' is not defined" in err
+
+
+def test_config_get_undefined_option_prints_empty_json(monkeypatch,
+                                                       capsys):
+    """The json consumers of the undefined-option path keep their
+    contract: the empty object on stdout, no error on stderr, the
+    non-zero exit."""
+    from debops.core.exceptions import OptionNotFoundError
+    project = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    interpreter = make_interpreter()
+    interpreter.config.config_get.side_effect = OptionNotFoundError(
+        "not defined")
+
+    args = make_args(project_dir=".", key=["tofu.mistyped"],
+                     format="json", keys=False, root=False,
+                     show_origin=False, show_scope=False)
+    with pytest.raises(SystemExit):
+        interpreter.do_config_get(args)
+
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "{}"
+    assert captured.err == ""

@@ -974,9 +974,15 @@ class Interpreter(object):
                         show_scope=args.show_scope)
                 except OptionNotFoundError:
                     # An undefined option is reported as an empty JSON
-                    # object and a non-zero exit code
+                    # object and a non-zero exit code; the other
+                    # formats name the option -- a silent exit would
+                    # hide a mistyped key or an option consumed as one
                     if args.format == 'json':
                         print('{}')
+                    else:
+                        print_error(
+                            "The option '{}' is not defined in the "
+                            'configuration'.format(option_name))
                     sys.exit(1)
                 except ValueError as errmsg:
                     print_error(errmsg)
