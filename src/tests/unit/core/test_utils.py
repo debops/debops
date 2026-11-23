@@ -352,3 +352,7 @@ def test_wrap_message_clamps_the_width():
     # Piped output without a size gets the deterministic default
     message = utils.wrap_message('Error: ' + 'x' * 100, width=None)
     assert len(message.splitlines()[0]) <= 80
+
+    # A wide terminal wraps at the 160-column cap
+    message = utils.wrap_message('Error: ' + 'x' * 200, width=200)
+    assert len(message.splitlines()[0]) <= 160
