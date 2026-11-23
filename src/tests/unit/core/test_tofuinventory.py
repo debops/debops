@@ -1187,3 +1187,38 @@ def read_at(project, view, relative):
     with open(os.path.join(project.path, 'ansible', 'views', view,
                            relative)) as handle:
         return handle.read()
+
+
+def test_the_label_is_validated_like_the_other_names(inventory_project):
+    """The 'label' attribute names the host in the rendered
+    inventory: a label outside of the name rules refuses the render,
+    the same way the 'host' attribute does."""
+    seed = {'cache': {'address': '10.42.7.101', 'label': 'redis 2'}}
+    project = inventory_project()
+    with pytest.raises(ValueError, match="the 'label' attribute"):
+        render_inventory(project, 'system',
+                         outputs(seed=seed, groups=None))
+
+    seed = {'cache': {'address': '10.42.7.101',
+                      'label': '../elsewhere'}}
+    with pytest.raises(ValueError, match="the 'label' attribute"):
+        render_inventory(project, 'system',
+                         outputs(seed=seed, groups=None))
+
+
+def test_non_string_addresses_and_jumps_are_refused(inventory_project):
+    """A non-string address or jump renders through str() into the
+    ini syntax: the value is checked in that form, and a list or a
+    map carries characters the host line and the SSH options cannot
+    carry."""
+    seed = {'web-1': {'address': ['10.42.7.101']}}
+    project = inventory_project()
+    with pytest.raises(ValueError, match='single token'):
+        render_inventory(project, 'system',
+                         outputs(seed=seed, groups=None))
+
+    seed = {'web-1': {'address': '10.42.7.101',
+                      'jump': {'host': 'bastion'}}}
+    with pytest.raises(ValueError, match='ansible_ssh_common_args'):
+        render_inventory(project, 'system',
+                         outputs(seed=seed, groups=None))
