@@ -73,15 +73,16 @@ def _render_hosts_ini(hosts, records, all_record, view):
     return _header(view) + '\n'.join(body).rstrip('\n') + '\n'
 
 
-def _hosts_filename(config, fmt):
-    """Return the hosts file name of one format, with the format's
-    canonical extension appended when the configured name carries
-    none of the extensions the inventory plugin claims."""
-    name = config['hosts_filenames'][fmt]
+def _hosts_filename(base, fmt):
+    """Return the hosts file name of one format: the configured base
+    name carries the format's canonical extension, appended when the
+    name lacks one of the extensions the inventory plugin claims.
+    The ini format needs no extension: the ini plugin accepts any
+    file name."""
     extensions = FORMAT_EXTENSIONS[fmt]
-    if extensions and not name.endswith(extensions):
-        name += DEFAULT_HOSTS_FILENAMES[fmt][len('hosts'):]
-    return name
+    if extensions and not base.endswith(extensions):
+        return base + extensions[0]
+    return base
 
 
 def _render_hosts_json(doc):
@@ -100,28 +101,23 @@ FORMATS = ('ini', 'yaml', 'json', 'toml')
 
 FORMAT_EXTENSIONS = {
     'ini': (),
-    'yaml': ('.yaml', '.yml'),
+    'yaml': ('.yml', '.yaml'),
     'json': ('.json',),
     'toml': ('.toml',),
 }
 
 
-DEFAULT_HOSTS_FILENAMES = {
-    'ini': 'hosts',
-    'yaml': 'hosts.yml',
-    'json': 'hosts.json',
-    'toml': 'hosts.toml',
-}
-
-
 def _yaml_json_doc(hosts, records, all_record):
     """The logical inventory of the 'yaml' and 'json' formats: the
-    hosts with their plain variables under 'all.hosts', the global
-    variables under 'all.vars', the group hierarchy under
-    'all.children'."""
+    hosts with their connection target and plain variables under
+    'all.hosts', the global variables under 'all.vars', the group
+    hierarchy under 'all.children'. The seed's own variables win
+    over the resolved connection target when they name one."""
     doc = {'all': {'hosts': {}}}
     for host in sorted(hosts, key=lambda host: host['name']):
-        doc['all']['hosts'][host['name']] = host['vars'] or None
+        mapping = {'ansible_host': host['ansible_host']}
+        mapping.update(host['vars'])
+        doc['all']['hosts'][host['name']] = mapping
     if all_record and all_record['vars']:
         doc['all']['vars'] = dict(sorted(all_record['vars'].items()))
     children = {name: _group_node(name, records)
@@ -135,14 +131,18 @@ def _yaml_json_doc(hosts, records, all_record):
 
 def _ini_host_line(host):
     """The host line of the 'ini' format: the inventory hostname,
-    the address, the composed jump arguments and the scalar plain
-    variables."""
+    the connection target, the composed jump arguments and the
+    scalar plain variables. The seed's own 'ansible_host' variable
+    wins over the resolved connection target."""
+    connection = host['vars'].get('ansible_host', host['ansible_host'])
     parts = [host['name'],
-             'ansible_host={}'.format(_ini_value(host['address']))]
+             'ansible_host={}'.format(_ini_value(connection))]
     if host['jump']:
         parts.append('ansible_ssh_common_args={}'.format(
             _ini_value('-o ProxyJump={}'.format(host['jump']))))
     for name in sorted(host['vars']):
+        if name == 'ansible_host':
+            continue
         if _is_scalar(host['vars'][name]):
             parts.append('{}={}'.format(name, _ini_value(
                 host['vars'][name])))
@@ -190,8 +190,9 @@ def _render_hosts_toml(hosts, records, all_record, view):
     mapping."""
     doc = {'all': {'hosts': {}}}
     for host in sorted(hosts, key=lambda host: host['name']):
-        doc['all']['hosts'][host['name']] = dict(
-            sorted(host['vars'].items()))
+        mapping = {'ansible_host': host['ansible_host']}
+        mapping.update(dict(sorted(host['vars'].items())))
+        doc['all']['hosts'][host['name']] = mapping
     if all_record and all_record['vars']:
         doc['all']['vars'] = dict(sorted(all_record['vars'].items()))
     top = _root_groups(records)
