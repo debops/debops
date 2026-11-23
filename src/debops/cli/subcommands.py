@@ -773,6 +773,11 @@ DebOps-level operations (not passed to the 'tofu' command):
                                 help='only simulate the render: '
                                      'report the changes without '
                                      'applying them')
+            parser.add_argument('-t', '--to-view', type=str,
+                                help="render into the named Ansible "
+                                     "view's inventory and store "
+                                     'instead of the mirror view of '
+                                     'the same name')
             parser.add_argument('--diff', action='store_true',
                                 help='print the unified diffs of the '
                                      'changes instead of the paths')

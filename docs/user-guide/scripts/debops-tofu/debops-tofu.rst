@@ -124,6 +124,12 @@ The DebOps-level operations
   Render the inventory outputs of the view into the Ansible view's
   inventory.
 
+  ``-t, --to-view <view>``
+    Render into the named Ansible view's inventory and store,
+    instead of the mirror view of the same name. The
+    ``views.<view>.tofu.inventory.to_view`` option sets the
+    default. The option on the command line wins.
+
   ``-f, --force``
     Refresh the state of the view before the render.
 
@@ -151,9 +157,9 @@ The DebOps-level operations
 
   ``--reset``
     Clean the whole cache root: the data directories of all the
-    projects, the shared plugin cache, and the stale entries of the
-    projects which moved away. The clean reaches the caches of the
-    other projects too.
+    projects, the shared plugin cache, and the stale entries of
+    the projects which moved away. The clean reaches the caches
+    of the other projects too.
 
 ``<tofu operation> [<args>]``
   Every other token runs the :command:`tofu` command with the
