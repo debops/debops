@@ -989,7 +989,7 @@ Commands:
                                  'last set each option',
                             action='store_true')
         parser.add_argument('key', type=str,
-                            nargs=argparse.REMAINDER,
+                            nargs='*',
                             help='name of the '
                                  'configuration option')
         self.args = parser.parse_args(self.args[3:])
