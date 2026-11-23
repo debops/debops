@@ -663,29 +663,68 @@ class Configuration(object):
     def option_file(self, directory):
         """Return the configuration file managed by 'config set'.
 
-        The files whose names end with '_config_set.json' are the ones
-        the command manages; the numeric prefix of the name decides
-        where the options rank among the files of the directory, so
-        when the operator creates a file with a different prefix, it
-        replaces the default one. Returns the path of the file to
-        operate on; the file itself is not created.
+        The file name comes from the 'config.override_filename'
+        option, relative to the directory -- 'override/
+        99_config_set.json' by default. The override subdirectory
+        ranks the managed file above the hand-written files of the
+        directory, the way the subdirectory merge orders them; the
+        name is the operator's to place, and it must stay inside the
+        directory: a relative path without the '.' and '..' segments.
+
+        The files the command managed at the top level of the
+        directory before the override sublayer existed -- the
+        '*_config_set.json' files -- migrate into the configured
+        location when the command writes: the same content, the
+        better rank. Returns the path of the file to operate on; the
+        file itself is not created.
         """
-        matches = []
+        section = self._config.get('config')
+        filename = section.get('override_filename') \
+            if isinstance(section, dict) else None
+        if not filename:
+            filename = 'override/99_config_set.json'
+        elif not filename.strip() or filename != filename.strip():
+            raise ValueError(
+                "The 'config.override_filename' option is "
+                '{!r}: the managed file is named by a relative '
+                'path'.format(filename))
+        segments = filename.split('/')
+        if filename.startswith('/') or '.' in segments \
+                or '..' in segments or not all(segments):
+            raise ValueError(
+                "The 'config.override_filename' option is {!r}: the "
+                'managed file lives inside the configuration '
+                'directory, as a relative path without the \'.\' and '
+                "'..' segments".format(filename))
+        target = os.path.join(directory, *segments)
+        if os.path.isfile(target):
+            return target
+
+        legacy = []
         if os.path.isdir(directory):
             for name in sorted(os.listdir(directory)):
                 path = os.path.join(directory, name)
-                if (os.path.isfile(path)
+                if (os.path.isfile(path) and path != target
                         and name.endswith('_config_set.json')
                         and not name.startswith('.')):
-                    matches.append(path)
-        if not matches:
-            return os.path.join(directory, '99_config_set.json')
-        if len(matches) > 1:
+                    legacy.append(path)
+        if len(legacy) > 1:
             raise ValueError(
                 'Multiple configuration files managed by '
                 "'debops config set' in " + directory + ': '
-                + ', '.join(unexpanduser(m) for m in matches))
-        return matches[0]
+                + ', '.join(unexpanduser(m) for m in legacy))
+        if legacy:
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            os.rename(legacy[0], target)
+            logger.notice(
+                "The configuration file managed by "
+                "'debops config set' moved to %s: the override "
+                'location ranks it above the hand-written files '
+                'of the directory',
+                'above the hand-written files of the directory',
+                unexpanduser(target),
+                extra={'allow': ['stderr', 'syslog']})
+        return target
 
     def write_option(self, path, key, values=None, delete=False,
                      option_type=None):
@@ -1539,3 +1578,54 @@ class Configuration(object):
                 return _yaml_render(_config)
             elif format in ['json', 'toml']:
                 return json.dumps(_config)
+
+
+def shadowing_file(managed_path, key):
+    """Return the file which loads after the managed file and defines
+    the option: (the path, the value), or None.
+
+    The candidates are the files of the managed file's directory
+    which sort after its name, and the files of its subdirectories:
+    by the subdirectory merge rule, both rank above the managed
+    file. The files of the parent directory and of its other
+    subdirectories are not scanned -- the managed file lives in the
+    override sublayer, whose siblings the operator places
+    deliberately."""
+    managed_directory = os.path.dirname(managed_path)
+    managed_name = os.path.basename(managed_path)
+    if not os.path.isdir(managed_directory):
+        return None
+    candidates = []
+    for name in sorted(os.listdir(managed_directory)):
+        path = os.path.join(managed_directory, name)
+        if os.path.isdir(path):
+            for root, _, files in os.walk(path):
+                for file_name in sorted(files):
+                    candidates.append(os.path.join(root, file_name))
+        elif name > managed_name:
+            candidates.append(path)
+    segments = [segment.lower() for segment in key.split('.') if segment]
+    for path in candidates:
+        if not path.endswith(('.toml', '.json', '.yaml', '.yml')):
+            continue
+        try:
+            with open(path, 'r') as handle:
+                content = handle.read()
+            if path.endswith('.toml'):
+                data = _plain_tree(toml.loads(content))
+            elif path.endswith('.json'):
+                data = json.loads(content)
+            else:
+                data = yaml.safe_load(content)
+        except (OSError, toml.TomlDecodeError, json.JSONDecodeError,
+                yaml.YAMLError):
+            continue
+        node = data
+        for segment in segments:
+            if not isinstance(node, dict) or segment not in node:
+                node = None
+                break
+            node = node[segment]
+        if node is not None:
+            return path, node
+    return None

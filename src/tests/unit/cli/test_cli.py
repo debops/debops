@@ -653,7 +653,8 @@ def test_config_set_writes_to_the_project_configuration(
                                         delete=False, key="syslog.level",
                                         values=["DEBUG"], type=None))
 
-    path = tmp_path / ".debops" / "conf.d" / "99_config_set.json"
+    path = (tmp_path / ".debops" / "conf.d" / "override" /
+            "99_config_set.json")
     assert json.loads(path.read_text()) == {"syslog": {"level": "DEBUG"}}
 
 
@@ -668,7 +669,8 @@ def test_config_set_writes_to_the_user_configuration(
                                         delete=False, key="syslog.level",
                                         values=["DEBUG"], type=None))
 
-    path = tmp_path / "debops" / "conf.d" / "99_config_set.json"
+    path = (tmp_path / "debops" / "conf.d" / "override" /
+            "99_config_set.json")
     assert json.loads(path.read_text()) == {"syslog": {"level": "DEBUG"}}
 
 
@@ -684,7 +686,8 @@ def test_config_set_user_flag_skips_the_project_resolution(
                                         values=["DEBUG"], type=None))
 
     project_dir_mock.assert_not_called()
-    path = tmp_path / "debops" / "conf.d" / "99_config_set.json"
+    path = (tmp_path / "debops" / "conf.d" / "override" /
+            "99_config_set.json")
     assert json.loads(path.read_text()) == {"syslog": {"level": "DEBUG"}}
 
 
@@ -694,7 +697,8 @@ def test_config_set_deletes_from_the_project_configuration(
     project.path = str(tmp_path)
     monkeypatch.setattr(cli_module, "ProjectDir",
                         mock.Mock(return_value=project))
-    option_file = tmp_path / ".debops" / "conf.d" / "99_config_set.json"
+    option_file = (tmp_path / ".debops" / "conf.d" /
+                   "override" / "99_config_set.json")
     option_file.parent.mkdir(parents=True)
     option_file.write_text('{"syslog": {"level": "DEBUG", '
                            '"facility": "user"}}\n')
@@ -1021,3 +1025,49 @@ def test_config_get_undefined_option_prints_empty_json(monkeypatch,
     captured = capsys.readouterr()
     assert captured.out.strip() == "{}"
     assert captured.err == ""
+
+
+def test_config_set_warns_when_the_value_is_shadowed(
+        configuration, tmp_path, caplog, monkeypatch):
+    """A file of the override directory which sorts after the managed
+    one shadows the value 'debops config set' just wrote: the command
+    names it, so the set does not fail silently."""
+    directory = tmp_path / ".debops" / "conf.d"
+    (directory / "override").mkdir(parents=True)
+    (directory / "override" / "z-late.toml").write_text(
+        "[syslog]\nport = 514\n")
+    project = mock.Mock(path=str(tmp_path))
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    configuration.merge({"config": {
+        "override_filename": "override/99_config_set.json"}})
+    interpreter = make_interpreter(config=configuration)
+
+    args = make_args(project_dir=str(tmp_path), key="syslog.port",
+                     values=["514"], delete=False, type=None,
+                     user=False)
+    with caplog.at_level(logging.WARNING):
+        interpreter.do_config_set(args)
+
+    assert "shadowed by" in caplog.text
+    assert "z-late.toml" in caplog.text
+
+
+def test_config_set_is_silent_without_a_shadow(
+        configuration, tmp_path, caplog, monkeypatch):
+    """The set without a shadowing file stays silent: the warning
+    fires only when another file actually wins."""
+    project = mock.Mock(path=str(tmp_path))
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    configuration.merge({"config": {
+        "override_filename": "override/99_config_set.json"}})
+    interpreter = make_interpreter(config=configuration)
+
+    args = make_args(project_dir=str(tmp_path), key="syslog.port",
+                     values=["514"], delete=False, type=None,
+                     user=False)
+    with caplog.at_level(logging.WARNING):
+        interpreter.do_config_set(args)
+
+    assert "shadowed by" not in caplog.text
