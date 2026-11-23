@@ -524,25 +524,28 @@ class TofuRunner(Runner):
             # legitimate creation
             return
 
-        if self._initialized_before():
-            if self._state_was_lost():
-                # The state file has git history and is gone: a lost
-                # store, and OpenTofu would silently re-initialize
-                # the state and plan to create all of the
-                # infrastructure -- the refusal protects the fleet;
-                # the deliberate wipe-and-rebuild passes the
-                # '--allow-missing-state' option
-                if self._allow_missing_state:
-                    return
-                raise ChildProcessError(
-                    'The state file of the view ({}) is missing while '
-                    'the view was initialized on this machine before. '
-                    'The store may be locked or the state lost -- '
-                    'OpenTofu would silently re-initialize the state '
-                    'and plan to create all of the infrastructure '
-                    'again. To proceed deliberately, pass the '
-                    "'--allow-missing-state' option of the 'debops "
-                    "tofu' section.".format(state_file))
+        if self._state_was_lost():
+            # The state file has git history and is gone: a lost
+            # store, and OpenTofu would silently re-initialize the
+            # state and plan to create all of the infrastructure --
+            # the refusal protects the fleet; the deliberate
+            # wipe-and-rebuild passes the '--allow-missing-state'
+            # option. The check runs unconditionally: the git history
+            # of the state is the strongest loss signal, and gating
+            # it on the backend metadata of the data directory made
+            # a routine 'debops tofu cache --clean' silently disarm
+            # the refusal.
+            if self._allow_missing_state:
+                return
+            raise ChildProcessError(
+                'The state file of the view ({}) is missing while '
+                'the view was initialized on this machine before. '
+                'The store may be locked or the state lost -- '
+                'OpenTofu would silently re-initialize the state '
+                'and plan to create all of the infrastructure '
+                'again. To proceed deliberately, pass the '
+                "'--allow-missing-state' option of the 'debops "
+                "tofu' section.".format(state_file))
             # The state file has no history: the view was never
             # applied, its first operation is the legitimate creation
 
