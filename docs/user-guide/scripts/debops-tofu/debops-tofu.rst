@@ -73,7 +73,8 @@ The DebOps-level operations
   the store. The mechanism detected in the project is the default:
   ``git-crypt`` for the repository-wide setup, ``encfs`` where the
   Ansible views carry EncFS volumes. The option is required when the
-  project carries no store yet.
+  project carries no store yet. ``plain`` commits the passphrase
+  unencrypted.
 
   ``--keys <recipients>``
     The list of the GPG recipients with secret access, delimited by
