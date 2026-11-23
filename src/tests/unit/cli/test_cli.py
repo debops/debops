@@ -164,7 +164,8 @@ def test_project_init_creates_the_project(monkeypatch):
                      default_view="system", venv=False, requirements=True,
                      git=True, encrypt=None, keys=None, spec_sources=None,
                      allow_io=False, dry_run=False, force=False,
-                     graph=False, list=False, host=None, ssh=False)
+                     graph=False, list=False, host=None, ssh=False,
+                     tofu=False)
 
     interpreter.do_project_init(args)
 
@@ -190,7 +191,8 @@ def test_project_init_installs_the_virtual_environment(monkeypatch):
                      default_view="system", venv=True, requirements=True,
                      git=True, encrypt=None, keys=None, spec_sources=None,
                      allow_io=False, dry_run=False, force=False,
-                     graph=False, list=False, host=None, ssh=False)
+                     graph=False, list=False, host=None, ssh=False,
+                     tofu=False)
 
     interpreter.do_project_init(args)
 
@@ -209,7 +211,8 @@ def test_project_init_skips_the_venv_install_without_requirements(monkeypatch):
                      default_view="system", venv=True, requirements=False,
                      git=True, encrypt=None, keys=None, spec_sources=None,
                      allow_io=False, dry_run=False, force=False,
-                     graph=False, list=False, host=None, ssh=False)
+                     graph=False, list=False, host=None, ssh=False,
+                     tofu=False)
 
     interpreter.do_project_init(args)
 
@@ -1071,3 +1074,93 @@ def test_config_set_is_silent_without_a_shadow(
         interpreter.do_config_set(args)
 
     assert "shadowed by" not in caplog.text
+
+
+def test_project_init_creates_the_tofu_view(monkeypatch):
+    """The '--tofu' option creates the OpenTofu view of the default
+    view after the project is created: a fresh project open, the
+    seeded dependency sets and the plain store when no encryption
+    decision was made -- silently, the refusals belong to the
+    existing projects and 'debops tofu mkview'."""
+    project = mock.Mock()
+    fresh = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(side_effect=[project, fresh]))
+    create_view = mock.Mock()
+    monkeypatch.setattr(cli_module, "create_view", create_view)
+    monkeypatch.setattr(cli_module, "resolve_providers",
+                        mock.Mock(return_value=["lxc/incus"]))
+    monkeypatch.setattr(cli_module, "resolve_modules",
+                        mock.Mock(return_value={}))
+    interpreter = make_interpreter()
+    args = make_args(project_dir="/tmp/example", type="modern",
+                     default_view="system", venv=False, requirements=True,
+                     git=True, encrypt=None, keys=None, spec_sources=None,
+                     allow_io=False, dry_run=False, force=False,
+                     graph=False, list=False, host=None, ssh=False,
+                     tofu=True)
+
+    interpreter.do_project_init(args)
+
+    assert cli_module.ProjectDir.call_args_list[1] == mock.call(
+        path="/tmp/example", config=interpreter.config,
+        cwd="/shell/cwd", view="system")
+    create_view.assert_called_once_with(
+        fresh, "system", providers=["lxc/incus"], modules={},
+        encrypt="plain", keys=None)
+
+
+def test_project_init_carries_the_encryption_decision(monkeypatch):
+    """The '--encrypt' decision of the initialization carries over to
+    the view's store: 'git-crypt' joins the repository-wide store
+    with the '--keys' recipients, the '--tofu' option adds no
+    encryption decision of its own."""
+    project = mock.Mock()
+    fresh = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(side_effect=[project, fresh]))
+    create_view = mock.Mock()
+    monkeypatch.setattr(cli_module, "create_view", create_view)
+    monkeypatch.setattr(cli_module, "resolve_providers", mock.Mock())
+    monkeypatch.setattr(cli_module, "resolve_modules", mock.Mock())
+    interpreter = make_interpreter()
+    args = make_args(project_dir="/tmp/example", type="modern",
+                     default_view="system", venv=False, requirements=True,
+                     git=True, encrypt="git-crypt", keys="a@example.com",
+                     spec_sources=None, allow_io=False, dry_run=False,
+                     force=False, graph=False, list=False, host=None,
+                     ssh=False, tofu=True)
+
+    interpreter.do_project_init(args)
+
+    create_view.assert_called_once_with(
+        fresh, "system", providers=mock.ANY, modules=mock.ANY,
+        encrypt="git-crypt", keys="a@example.com")
+
+
+def test_project_init_refuses_the_failed_view_creation(
+        monkeypatch, capsys):
+    """A failed view creation fails the initialization: the operator
+    explicitly asked for the view."""
+    project = mock.Mock()
+    fresh = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(side_effect=[project, fresh]))
+    monkeypatch.setattr(cli_module, "create_view",
+                        mock.Mock(side_effect=ValueError(
+                            "the view 'system' already exists")))
+    monkeypatch.setattr(cli_module, "resolve_providers", mock.Mock())
+    monkeypatch.setattr(cli_module, "resolve_modules", mock.Mock())
+    interpreter = make_interpreter()
+    args = make_args(project_dir="/tmp/example", type="modern",
+                     default_view="system", venv=False, requirements=True,
+                     git=True, encrypt="git-crypt", keys=None,
+                     spec_sources=None, allow_io=False, dry_run=False,
+                     force=False, graph=False, list=False, host=None,
+                     ssh=False, tofu=True)
+
+    with pytest.raises(SystemExit) as exc:
+        interpreter.do_project_init(args)
+
+    assert exc.value.code == 1
+    assert 'already exists' in capsys.readouterr().err
