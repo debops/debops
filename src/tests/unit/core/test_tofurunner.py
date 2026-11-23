@@ -1073,3 +1073,244 @@ def test_lost_state_refuses_even_after_the_cache_clean(tofu_project):
             runner._check_state_presence()
 
     assert lost_calls
+
+
+def _git_commit_all(path):
+    """Initialize a git repository in the project directory and
+    commit everything; the identity comes from the environment, the
+    test host carries none."""
+    env = dict(os.environ,
+               GIT_AUTHOR_NAME='Test',
+               GIT_AUTHOR_EMAIL='test@example.com',
+               GIT_COMMITTER_NAME='Test',
+               GIT_COMMITTER_EMAIL='test@example.com')
+    subprocess.run(['git', 'init', '-q'], cwd=path, check=True)
+    subprocess.run(['git', 'add', '-A'], cwd=path, check=True)
+    subprocess.run(['git', 'commit', '-q', '-m', 'the state'],
+                   cwd=path, check=True, env=env)
+
+
+def test_the_backup_file_proves_the_state_existed(tofu_project):
+    """The local backend's backup file is the just-in-case net of the
+    state writes: its existence proves the state existed, and the
+    loss signal fires without the git machinery."""
+    project = tofu_project()
+    runner = TofuRunner(project, ["plan"])
+    state_file = runner._state_file()
+    os.makedirs(os.path.dirname(state_file), exist_ok=True)
+    with open(state_file + '.backup', 'w') as handle:
+        handle.write('backup')
+
+    assert runner._state_was_lost() is True
+
+
+def test_the_state_history_check_reads_the_git_log(tofu_project):
+    """The tracked state records every version in the git history:
+    a state file with history but without the file itself was lost,
+    a state file without history was never created."""
+    import types
+    from debops.core.projectdir import ProjectDir
+    project = tofu_project()
+    runner = TofuRunner(project, ["plan"])
+    state_file = runner._state_file()
+    os.makedirs(os.path.dirname(state_file), exist_ok=True)
+
+    # a repository without the state in its history: the view was
+    # never applied
+    _git_commit_all(project.path)
+    project._is_git_repo = lambda path=None: True
+    project._closing_repo = types.MethodType(ProjectDir._closing_repo,
+                                             project)
+    assert runner._state_was_lost() is False
+
+    # the state committed and gone: a lost store
+    with open(state_file, 'w') as handle:
+        handle.write('{"version": 4}')
+    _git_commit_all(project.path)
+    os.remove(state_file)
+    assert runner._state_was_lost() is True
+
+
+def test_the_state_history_check_degrades_on_git_failure(
+        tofu_project, caplog):
+    """The git failures skip the check with a warning: the degraded
+    pass is the old advisory behavior, not a protection."""
+    import contextlib
+    project = tofu_project()
+    runner = TofuRunner(project, ["plan"])
+    project._is_git_repo = lambda path=None: True
+
+    @contextlib.contextmanager
+    def broken_repo():
+        raise runner_module.InvalidGitRepositoryError('not a repo')
+        yield None
+
+    project._closing_repo = broken_repo
+    with caplog.at_level(logging.WARNING):
+        assert runner._state_was_lost() is False
+    assert 'could not be checked' in caplog.text
+
+
+def test_a_free_state_lock_passes_the_precheck(tofu_project):
+    """The lock pre-check attempts the exclusive record lock tofu
+    takes and releases it again: a free state passes quietly."""
+    project = tofu_project()
+    runner = TofuRunner(project, ["plan"])
+    state_file = runner._state_file()
+    os.makedirs(os.path.dirname(state_file), exist_ok=True)
+    with open(state_file, 'w') as handle:
+        handle.write('{"version": 4}')
+
+    runner._check_state_lock()
+
+
+def test_a_held_state_lock_refuses_the_operation(tofu_project):
+    """A state locked by another process refuses the operation: the
+    exclusion is the record lock, the metadata file proves nothing.
+    POSIX record locks belong to the process -- a lock the test
+    process holds itself would never conflict -- so the holder is a
+    real second process."""
+    project = tofu_project()
+    runner = TofuRunner(project, ["plan"])
+    state_file = runner._state_file()
+    os.makedirs(os.path.dirname(state_file), exist_ok=True)
+    with open(state_file, 'w') as handle:
+        handle.write('{"version": 4}')
+
+    holder = subprocess.Popen(
+        [sys.executable, '-c',
+         'import fcntl, sys, time\n'
+         'handle = open(sys.argv[1], "r+")\n'
+         'fcntl.lockf(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)\n'
+         'print("locked", flush=True)\n'
+         'time.sleep(30)\n',
+         state_file],
+        stdout=subprocess.PIPE)
+    try:
+        assert holder.stdout.readline().strip() == b'locked'
+        with pytest.raises(ChildProcessError,
+                           match='locked by another process'):
+            runner._check_state_lock()
+    finally:
+        holder.terminate()
+        holder.wait()
+
+
+def test_an_unwritable_state_file_refuses_the_precheck(tofu_project):
+    """A state file which cannot be opened for writing is its own
+    failure, reported as one."""
+    project = tofu_project()
+    runner = TofuRunner(project, ["plan"])
+    state_file = runner._state_file()
+    os.makedirs(os.path.dirname(state_file), exist_ok=True)
+    with open(state_file, 'w') as handle:
+        handle.write('{"version": 4}')
+    os.chmod(state_file, 0)
+
+    try:
+        with pytest.raises(ChildProcessError, match='not writable'):
+            runner._check_state_lock()
+    finally:
+        os.chmod(state_file, 0o644)
+
+
+def test_a_state_directory_refuses_the_precheck(tofu_project):
+    """A state path which opens as nothing readable reports the open
+    failure through the pre-check."""
+    project = tofu_project()
+    runner = TofuRunner(project, ["plan"])
+    state_file = runner._state_file()
+    os.makedirs(state_file)
+
+    with pytest.raises(ChildProcessError, match='Cannot open'):
+        runner._check_state_lock()
+
+
+def test_the_disabled_state_checks_skip_the_lock(tofu_project):
+    """A view with a remote backend carries an empty state path: the
+    local lock pre-check has nothing to check."""
+    project = tofu_project(raw={'tofu': {'state_path': ''}})
+    runner = TofuRunner(project, ["plan"])
+
+    runner._check_state_lock()
+
+
+def test_the_view_plan_retention_overrides_the_root(tofu_project,
+                                                    monkeypatch):
+    """The plans live in the view, the retention follows them: the
+    view's own option wins, the root default follows, the shipped
+    fallback is three."""
+    project = tofu_project()
+    runner = TofuRunner(project, ["plan"])
+
+    monkeypatch.setattr(runner_module, 'view_tofu_options',
+                        lambda p, v: {'plan_retention': 7})
+    assert runner._plan_retention() == 7
+
+    monkeypatch.setattr(runner_module, 'view_tofu_options',
+                        lambda p, v: {})
+    assert runner._plan_retention() == 3
+
+    del project.config.raw['tofu']['plan_retention']
+    assert runner._plan_retention() == 3
+
+
+def test_the_state_path_resolution_follows_the_layers(tofu_project,
+                                                      monkeypatch):
+    """The state path comes from the view's options, the root
+    configuration or the shipped default, in that order."""
+    project = tofu_project()
+    runner = TofuRunner(project, ["plan"])
+
+    monkeypatch.setattr(runner_module, 'view_tofu_options',
+                        lambda p, v: {'state_path': 'custom/state.tfstate'})
+    assert runner._resolve_state_path() == 'custom/state.tfstate'
+
+    monkeypatch.setattr(runner_module, 'view_tofu_options',
+                        lambda p, v: {})
+    assert runner._resolve_state_path() == 'state/terraform.tfstate'
+
+    del project.config.raw['tofu']['state_path']
+    assert runner._resolve_state_path() == 'state/terraform.tfstate'
+
+
+def test_the_operations_allow_list_gates_the_operation(tofu_project):
+    """The 'operations' list names the operations the wrapper runs:
+    an empty list runs every one, a named list refuses the others,
+    and without the option nothing is refused."""
+    project = tofu_project(raw={'tofu': {'operations': ['plan']}})
+    assert TofuRunner(project, ["plan"])._operation_allowed() is True
+    assert TofuRunner(project, ["apply"])._operation_allowed() is False
+
+    project.config.raw['tofu']['operations'] = []
+    assert TofuRunner(project, ["apply"])._operation_allowed() is True
+
+    del project.config.raw['tofu']['operations']
+    assert TofuRunner(project, ["apply"])._operation_allowed() is True
+
+
+def test_the_tracked_environment_applies_only_the_tf_vars(
+        tofu_project, caplog):
+    """The store's tracked environment file composes last: the
+    TF_VAR_* values reach the subprocess, the general variables are
+    refused with a warning -- they belong in the '.env' files."""
+    project = tofu_project()
+    runner = TofuRunner(project, ["plan"])
+    view_root = runner._view_tofu_root()
+    env_path = os.path.join(view_root, 'secret', 'environment')
+    os.makedirs(os.path.dirname(env_path), exist_ok=True)
+    with open(env_path, 'w') as handle:
+        handle.write('TF_VAR_region=eu-central\n'
+                     'TF_LDAP_PASSWORD=secret\n')
+
+    with caplog.at_level(logging.WARNING):
+        env = runner._extra_env()
+
+    assert env.get('TF_VAR_region') == 'eu-central'
+    assert 'TF_LDAP_PASSWORD' not in env
+    assert 'not a TF_VAR_* variable' in caplog.text
+
+    with open(os.path.join(view_root, '.env'), 'w') as handle:
+        handle.write('TF_VAR_local=1\n')
+    env = runner._extra_env()
+    assert env.get('TF_VAR_local') == '1'
