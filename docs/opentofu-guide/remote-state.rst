@@ -222,7 +222,8 @@ environment.
 See also
 --------
 
-- :ref:`debops_tofu` for the wrapper section and the view model
+- :ref:`debops_tofu` for the OpenTofu integration and the view
+  model
 - :ref:`tofu_registry_modules` for hosting the OpenTofu modules on
   the same GitLab instance
 - :ref:`tofu_state_adoption` for moving an existing fleet to a view
