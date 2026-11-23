@@ -254,10 +254,17 @@ class StubConfig:
                     self.raw[key] = value
 
     def _merge_dict(self, d1, d2):
+        """The merge semantics of the real Configuration: the lists
+        union with the dedup, the tables merge recursively -- the
+        stub merges the way the production code does, so a
+        regression that relies on the stub's simpler semantics
+        cannot pass the tests and break against the real tree."""
         for key, value in d2.items():
-            if (isinstance(d1.get(key), dict)
-                    and isinstance(value, dict)):
+            if isinstance(d1.get(key), dict) and isinstance(value, dict):
                 self._merge_dict(d1[key], value)
+            elif isinstance(d1.get(key), list) and isinstance(value, list):
+                d1[key] = d1[key] + [item for item in value
+                                     if item not in d1[key]]
             else:
                 d1[key] = value
 
