@@ -215,11 +215,20 @@ something like this:
    │   │   └── views/
    │   └── venv/
    │       └── bin/
+   ├── .pre-commit-config.yaml
    └── .gitignore
 
 The :file:`.debops/ssh/` directory holds the known_hosts store of the
 project views when the project mode of the :ref:`SSH suite <ssh_suite>` is
 active.
+
+The :file:`.pre-commit-config.yaml` file carries the project's pre-commit
+hooks -- the OpenTofu format check of the views' trees. The hook engages
+after :command:`pre-commit install`, which the ``--pre-commit`` option of
+:command:`debops project init` runs; it checks the staged :file:`.tf` files
+and fails the commit when the OpenTofu binary is not available. See the
+:ref:`the OpenTofu integration <debops_tofu>` for the formatting and the
+hook details.
 
 The OpenTofu side of a view lives in :file:`tofu/views/<view>/`,
 beside the Ansible view of the same name: the state, the plan files
