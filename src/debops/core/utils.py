@@ -89,14 +89,16 @@ def wrap_message(text, width=None):
     error details, code blocks -- survive the wrapping. The home
     directory path inside the text is unexpanded to '~' first.
 
-    The width is clamped to 72-80 columns: terminal reports without a
-    size (piped output) and narrow terminals both get a comfortable,
-    deterministic width. The wrapping is for the terminal only; journal
-    and syslog records keep their single-line form.
+    The width is clamped to 72-160 columns: narrow terminals get a
+    comfortable deterministic floor, wide terminals keep the messages
+    on one line up to the cap, and terminal reports without a size
+    (piped output) keep the 80-column default of the terminal size
+    query. The wrapping is for the terminal only; journal and syslog
+    records keep their single-line form.
     """
     if width is None:
         width = shutil.get_terminal_size().columns
-    width = max(72, min(80, width))
+    width = max(72, min(160, width))
 
     text = _unexpand_homes(text)
     lines = []
