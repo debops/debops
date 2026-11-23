@@ -25,7 +25,7 @@ from ..secrets import (environment_path, environment_values,
                        unlocked_store)
 from .changes import file_change
 from .plans import remove_saved
-from .registry import view_tofu_root
+from .registry import view_tofu_options, view_tofu_root
 from .runner import TofuOperationFailed, \
     run_tofu_operation
 from .secrets import TofuSecretStore
@@ -201,10 +201,26 @@ def rekey_view(project, view, workspace=None):
 
     The saved plan files are removed and announced: they are
     encrypted under the retired key and the plan stanza carries no
-    fallback. The named workspaces carry separate state files and
-    need a rekey each. Returns True when the rotation completed.
+    fallback. A view with named workspaces refuses the rotation: the
+    workspaces share one encryption block, and the cleanup would
+    leave the other workspaces' states keyless. Returns the change
+    records of the rotation.
     """
     view_root = view_tofu_root(project, view)
+    state_path = view_tofu_options(project, view).get('state_path') or \
+        'state/terraform.tfstate'
+    workspaces_dir = os.path.join(view_root, os.path.dirname(state_path),
+                                  'terraform.tfstate.d')
+    named_workspaces = sorted(os.listdir(workspaces_dir)) \
+        if os.path.isdir(workspaces_dir) else []
+    if named_workspaces:
+        raise ValueError(
+            'The view {!r} carries the named workspaces {}; the '
+            'rotation rewrites one encryption block shared by every '
+            "workspace, and the cleanup would leave the other "
+            "workspaces' states keyless. The multi-workspace rotation "
+            'is not supported yet.'.format(view,
+                                           ', '.join(named_workspaces)))
     records = []
     main_tf_path = os.path.join(view_root, 'main.tf')
     with open(main_tf_path) as handle:
@@ -244,25 +260,33 @@ def rekey_view(project, view, workspace=None):
                          old_passphrase)
 
     # The rotation phase: the fallback inherits the label the state
-    # envelope references, the new primary takes the next generation
-    next_primary = _next_primary_label(primary)
-    previous_main_tf = main_tf
-    main_tf = main_tf.replace(
-        block,
-        REKEY_ENCRYPTION_ROTATED.format(fallback=primary,
-                                        primary=next_primary))
-    if REKEY_OLD_STATE_VAR not in main_tf:
-        state_var = ('variable "state_passphrase" {\n'
-                     '  type      = string\n  sensitive = true\n}')
+    # envelope references, the new primary takes the next generation.
+    # A resume keeps the labels the interrupted rotation already
+    # wrote: the primary on disk is the rotation's own primary, and
+    # deriving a new generation here would leave the state envelope
+    # referencing a label the configuration no longer carries.
+    if resuming:
+        next_primary = primary
+    else:
+        next_primary = _next_primary_label(primary)
+        previous_main_tf = main_tf
         main_tf = main_tf.replace(
-            state_var, state_var + REKEY_OLD_STATE_VAR)
-    write_file(main_tf_path, main_tf, overwrite=True,
-               project=project.path)
-    records.append(file_change(main_tf_path, 'update',
-                               previous_main_tf, main_tf,
-                               project.path))
-    records.append(file_change(_rekey_env_path(view_root), 'update',
-                               None, None, project.path, secret=True))
+            block,
+            REKEY_ENCRYPTION_ROTATED.format(fallback=primary,
+                                            primary=next_primary))
+        if REKEY_OLD_STATE_VAR not in main_tf:
+            state_var = ('variable "state_passphrase" {\n'
+                         '  type      = string\n  sensitive = true\n}')
+            main_tf = main_tf.replace(
+                state_var, state_var + REKEY_OLD_STATE_VAR)
+        write_file(main_tf_path, main_tf, overwrite=True,
+                   project=project.path)
+        records.append(file_change(main_tf_path, 'update',
+                                   previous_main_tf, main_tf,
+                                   project.path))
+        records.append(file_change(_rekey_env_path(view_root), 'update',
+                                   None, None, project.path,
+                                   secret=True))
 
     # The re-encryption: the state reads through the fallback, writes
     # under the new primary
@@ -314,15 +338,20 @@ def rekey_view(project, view, workspace=None):
             'the cleanup runs.'.format(view, verification_error))
 
     # The cleanup: the old variable out of the environment, the
-    # old-key plan files removed
-    _rekey_env_write(project, view_root, new_passphrase)
-    records.append(file_change(_rekey_env_path(view_root), 'update',
-                               None, None, project.path, secret=True))
-    for path in remove_saved(view_root):
-        records.append(file_change(os.path.join(view_root, path),
-                                   'remove', None, None,
-                                   project.path, secret=True))
-        logger.notice(
+    # old-key plan files removed. The writes hit the encrypted store
+    # after the runner locked it back around the verification plan --
+    # the store cycles around them.
+    store = TofuSecretStore(project, view)
+    with unlocked_store(store):
+        _rekey_env_write(project, view_root, new_passphrase)
+        records.append(file_change(_rekey_env_path(view_root), 'update',
+                                   None, None, project.path,
+                                   secret=True))
+        for path in remove_saved(view_root):
+            records.append(file_change(os.path.join(view_root, path),
+                                       'remove', None, None,
+                                       project.path, secret=True))
+            logger.notice(
                 "Removed the plan file '{}' of the view {!r}: the "
                 'plan is encrypted under the retired '
                 'passphrase'.format(path, view),
