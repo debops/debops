@@ -233,8 +233,9 @@ def reconcile_managed_file(project, view, filename, expected, set_name,
             existing = handle.read()
     generated = existing is not None and REGISTRY_MARKER in existing
 
-    planned = None      # (action, new_content): the write the
-    # reconcile proposes
+    # The proposed reconcile: the (action, new_content) pair, or None
+    # when the file already matches
+    planned = None
     if expected is None:
         if existing is not None and generated:
             planned = ('remove', None)
