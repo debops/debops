@@ -120,9 +120,10 @@ SSH connections:
                           required=False, help=None, no_help=None):
         group = parser.add_mutually_exclusive_group(
                 required=required)
-        group.add_argument('--' + name, dest=name,
+        option = name.replace('_', '-')
+        group.add_argument('--' + option, dest=name,
                            help=help, action='store_true')
-        group.add_argument('--no-' + name, dest=name,
+        group.add_argument('--no-' + option, dest=name,
                            help=no_help, action='store_false')
         parser.set_defaults(**{name: default})
 
@@ -346,6 +347,10 @@ Commands:
                                help='create the OpenTofu view of the '
                                     'default view after the initialization',
                                no_help="don't create the OpenTofu view")
+        self.add_bool_argument(parser, 'pre_commit',
+                               help='install the pre-commit hook after '
+                                    'the initialization',
+                               no_help="don't install the pre-commit hook")
         parser.add_argument('--keys', type=str,
                             help='list of GPG recipients with secret access, '
                                  'delimited by commas')

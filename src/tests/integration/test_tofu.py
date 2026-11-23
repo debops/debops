@@ -230,3 +230,26 @@ resource "tfcoremock_simple_resource" "probe" {
                          cwd=project_dir, env=debops_env,
                          check=True)
     assert "Saved the plan file" in (allowed.stdout + allowed.stderr)
+
+
+@pytest.mark.skipif(shutil.which("pre-commit") is None,
+                    reason="no 'pre-commit' binary on the PATH")
+def test_the_init_creates_the_tofu_view_and_the_hook(run_debops, debops_env,
+                                                     tmp_path):
+    """The '--tofu' option of the initialization creates the view of
+    the default view with the plain store when no encryption decision
+    was made, and '--pre-commit' engages the shipped hook."""
+    directory = str(tmp_path / "init-tofu")
+    run_debops("project", "init", "--no-requirements",
+               "-t", "modern", "--tofu", "--pre-commit",
+               directory, env=debops_env, check=True)
+
+    view_root = os.path.join(directory, "tofu", "views", "system")
+    assert os.path.exists(os.path.join(view_root, "main.tf"))
+    assert os.path.exists(os.path.join(view_root, "secret",
+                                       "environment"))
+    # the plain store: no encryption artifacts in the view tree
+    assert not os.path.exists(os.path.join(view_root, ".encfs6.xml"))
+    # the shipped hook engaged at creation
+    assert os.path.exists(os.path.join(directory, ".git", "hooks",
+                                       "pre-commit"))

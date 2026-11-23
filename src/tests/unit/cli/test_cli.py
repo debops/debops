@@ -165,7 +165,7 @@ def test_project_init_creates_the_project(monkeypatch):
                      git=True, encrypt=None, keys=None, spec_sources=None,
                      allow_io=False, dry_run=False, force=False,
                      graph=False, list=False, host=None, ssh=False,
-                     tofu=False)
+                     tofu=False, pre_commit=False)
 
     interpreter.do_project_init(args)
 
@@ -192,7 +192,7 @@ def test_project_init_installs_the_virtual_environment(monkeypatch):
                      git=True, encrypt=None, keys=None, spec_sources=None,
                      allow_io=False, dry_run=False, force=False,
                      graph=False, list=False, host=None, ssh=False,
-                     tofu=False)
+                     tofu=False, pre_commit=False)
 
     interpreter.do_project_init(args)
 
@@ -212,7 +212,7 @@ def test_project_init_skips_the_venv_install_without_requirements(monkeypatch):
                      git=True, encrypt=None, keys=None, spec_sources=None,
                      allow_io=False, dry_run=False, force=False,
                      graph=False, list=False, host=None, ssh=False,
-                     tofu=False)
+                     tofu=False, pre_commit=False)
 
     interpreter.do_project_init(args)
 
@@ -1098,7 +1098,7 @@ def test_project_init_creates_the_tofu_view(monkeypatch):
                      git=True, encrypt=None, keys=None, spec_sources=None,
                      allow_io=False, dry_run=False, force=False,
                      graph=False, list=False, host=None, ssh=False,
-                     tofu=True)
+                     tofu=True, pre_commit=False)
 
     interpreter.do_project_init(args)
 
@@ -1129,7 +1129,7 @@ def test_project_init_carries_the_encryption_decision(monkeypatch):
                      git=True, encrypt="git-crypt", keys="a@example.com",
                      spec_sources=None, allow_io=False, dry_run=False,
                      force=False, graph=False, list=False, host=None,
-                     ssh=False, tofu=True)
+                     ssh=False, tofu=True, pre_commit=False)
 
     interpreter.do_project_init(args)
 
@@ -1157,10 +1157,112 @@ def test_project_init_refuses_the_failed_view_creation(
                      git=True, encrypt="git-crypt", keys=None,
                      spec_sources=None, allow_io=False, dry_run=False,
                      force=False, graph=False, list=False, host=None,
-                     ssh=False, tofu=True)
+                     ssh=False, tofu=True, pre_commit=False)
 
     with pytest.raises(SystemExit) as exc:
         interpreter.do_project_init(args)
 
     assert exc.value.code == 1
     assert 'already exists' in capsys.readouterr().err
+
+
+def test_project_init_installs_the_pre_commit_hook(monkeypatch, caplog,
+                                                   capsys):
+    """The '--pre-commit' option runs 'pre-commit install' in the
+    project directory; the tool's own output reports the hook path."""
+    project = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    result = mock.Mock(returncode=0,
+                       stdout="pre-commit installed at .git/hooks/pre-commit\n",
+                       stderr="")
+    run = mock.Mock(return_value=result)
+    monkeypatch.setattr(cli_module.subprocess, "run", run)
+    interpreter = make_interpreter()
+    args = make_args(project_dir="/tmp/example", type="modern",
+                     default_view="system", venv=False, requirements=True,
+                     git=True, encrypt=None, keys=None, spec_sources=None,
+                     allow_io=False, dry_run=False, force=False,
+                     graph=False, list=False, host=None, ssh=False,
+                     tofu=False, pre_commit=True)
+
+    with caplog.at_level(logging.INFO):
+        interpreter.do_project_init(args)
+
+    run.assert_called_once_with(["pre-commit", "install"],
+                                cwd="/tmp/example",
+                                capture_output=True, text=True)
+    assert '.git/hooks/pre-commit' in capsys.readouterr().out
+    assert 'installed' in caplog.text
+
+
+def test_project_init_skips_the_hook_without_the_tool(monkeypatch, caplog):
+    """A missing 'pre-commit' binary notices and skips: the hook
+    engages when the operator installs the tool and runs the install
+    by hand."""
+    project = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    run = mock.Mock(side_effect=FileNotFoundError("pre-commit"))
+    monkeypatch.setattr(cli_module.subprocess, "run", run)
+    interpreter = make_interpreter()
+    args = make_args(project_dir="/tmp/example", type="modern",
+                     default_view="system", venv=False, requirements=True,
+                     git=True, encrypt=None, keys=None, spec_sources=None,
+                     allow_io=False, dry_run=False, force=False,
+                     graph=False, list=False, host=None, ssh=False,
+                     tofu=False, pre_commit=True)
+
+    with caplog.at_level(logging.INFO):
+        interpreter.do_project_init(args)
+
+    run.assert_called_once()
+    assert 'not on the PATH' in caplog.text
+
+
+def test_project_init_skips_the_hook_without_the_git_repository(
+        monkeypatch, caplog):
+    """The '--no-git' option leaves no repository for the hook to
+    attach to: the install is skipped with the way out named."""
+    project = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    run = mock.Mock()
+    monkeypatch.setattr(cli_module.subprocess, "run", run)
+    interpreter = make_interpreter()
+    args = make_args(project_dir="/tmp/example", type="modern",
+                     default_view="system", venv=False, requirements=True,
+                     git=False, encrypt=None, keys=None, spec_sources=None,
+                     allow_io=False, dry_run=False, force=False,
+                     graph=False, list=False, host=None, ssh=False,
+                     tofu=False, pre_commit=True)
+
+    with caplog.at_level(logging.INFO):
+        interpreter.do_project_init(args)
+
+    run.assert_not_called()
+    assert 'without a git repository' in caplog.text
+
+
+def test_project_init_notices_the_failed_hook_install(monkeypatch, caplog):
+    """A failed 'pre-commit install' reports the tool's output and
+    skips: the initialization does not fail over the optional
+    development tool."""
+    project = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    result = mock.Mock(returncode=1, stdout="", stderr="cyclic dependency\n")
+    monkeypatch.setattr(cli_module.subprocess, "run",
+                        mock.Mock(return_value=result))
+    interpreter = make_interpreter()
+    args = make_args(project_dir="/tmp/example", type="modern",
+                     default_view="system", venv=False, requirements=True,
+                     git=True, encrypt=None, keys=None, spec_sources=None,
+                     allow_io=False, dry_run=False, force=False,
+                     graph=False, list=False, host=None, ssh=False,
+                     tofu=False, pre_commit=True)
+
+    with caplog.at_level(logging.INFO):
+        interpreter.do_project_init(args)
+
+    assert 'cyclic dependency' in caplog.text

@@ -30,6 +30,7 @@ from xdg.BaseDirectory import xdg_config_home
 import logging
 import getpass
 import shlex
+import subprocess
 import sys
 import time
 import os
@@ -160,6 +161,8 @@ class Interpreter(object):
             print(output)
         if args.tofu:
             self._init_tofu_view(args)
+        if args.pre_commit:
+            self._install_pre_commit(args)
 
     def _init_tofu_view(self, args):
         """Create the OpenTofu view of the default view after the
@@ -183,6 +186,44 @@ class Interpreter(object):
                 FileNotFoundError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
+
+    def _install_pre_commit(self, args):
+        """Install the pre-commit hook of the fresh project.
+
+        The configuration file ships with the project; the hook
+        engages after 'pre-commit install'. The tool is optional at
+        initialization: a missing binary, a missing git repository
+        and a failed install notice and skip -- the initialization
+        does not fail over the optional development tool."""
+        if not args.git:
+            logger.notice(
+                "The '--no-git' option left the project without a git "
+                'repository: run \'pre-commit install\' after '
+                "'git init'.",
+                extra={'allow': ['stderr', 'syslog']})
+            return
+        try:
+            result = subprocess.run(['pre-commit', 'install'],
+                                    cwd=args.project_dir,
+                                    capture_output=True, text=True)
+        except FileNotFoundError:
+            logger.notice(
+                "The 'pre-commit' tool is not on the PATH: install it "
+                "and run 'pre-commit install' in the project to engage "
+                'the hook.',
+                extra={'allow': ['stderr', 'syslog']})
+            return
+        if result.returncode != 0:
+            logger.notice(
+                'The pre-commit hook install failed: {}'.format(
+                    (result.stderr or result.stdout).strip()),
+                extra={'allow': ['stderr', 'syslog']})
+            return
+        if result.stdout.strip():
+            print(result.stdout.strip())
+        logger.notice(
+            'The pre-commit hook is installed.',
+            extra={'allow': ['stderr', 'syslog']})
 
     def do_project_refresh(self, args):
         try:
