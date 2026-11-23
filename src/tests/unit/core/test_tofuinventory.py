@@ -214,24 +214,82 @@ def test_the_complex_ini_variables_ride_the_vars_file(inventory_project):
     assert data['tags'] == ['a', 'b']
     assert data['host_token'] == (
         '{{ lookup("file", inventory_dir + '
-        '"/../secret/tofu/web-1/sensitive/host_token/content") }}')
+        '"/../secret/tofu/host_vars/web-1/sensitive/host_token/content") }}')
 
 
-def test_the_distinct_vars_filenames_split_the_files(inventory_project):
-    """When the plain and the sensitive file names differ, the two
-    file kinds split: the complex plain variables in the one, the
-    sensitive lookups in the other."""
-    project = inventory_project({
-        'vars_filename': 'plain.yml',
-        'secret': {'vars_filename': 'secret.yml'}})
-    render_inventory(project, 'system', outputs())
+def test_the_label_overrides_the_inventory_hostname(inventory_project):
+    """The 'label' attribute of a seed entry names the host in the
+    inventory: it wins over the 'host' attribute and the seed key,
+    and the identity the connection target does not carry renders as
+    a plain variable under its seed name."""
+    seed = {'cache': {'address': '10.42.7.101',
+                      'host': 'cache.example.com',
+                      'label': 'redis',
+                      'vars': {'roles': ['cache']}}}
+    project = inventory_project()
+    render_inventory(project, 'system', outputs(seed=seed, groups=None))
 
-    plain = yaml.safe_load(read(
-        project, 'inventory/host_vars/web.example.com/plain.yml'))
-    secret = yaml.safe_load(read(
-        project, 'inventory/host_vars/web.example.com/secret.yml'))
-    assert plain == {'tags': ['a', 'b']}
-    assert list(secret) == ['host_token']
+    content = read(project, 'inventory/hosts')
+    assert 'redis ansible_host=' in content
+    assert "ansible_host='cache.example.com'" in content
+    assert "address='10.42.7.101'" in content
+    assert os.path.isdir(os.path.join(
+        inventory_dir(project), 'host_vars', 'redis'))
+    assert not os.path.isdir(os.path.join(
+        inventory_dir(project), 'host_vars', 'cache'))
+
+
+def test_the_label_with_the_ip_format_connects_by_address(
+        inventory_project):
+    """The 'ansible_host_format' option composes the connection
+    target of a labelled host: 'ip' uses the address, and the FQDN
+    rides the plain variable instead."""
+    seed = {'cache': {'address': '10.42.7.101',
+                      'host': 'cache.example.com',
+                      'label': 'redis'}}
+    project = inventory_project({'ansible_host_format': 'ip'})
+    render_inventory(project, 'system', outputs(seed=seed, groups=None))
+
+    content = read(project, 'inventory/hosts')
+    assert "redis ansible_host='10.42.7.101' " in content
+    assert "host='cache.example.com'" in content
+
+
+def test_the_hostname_resolution_without_a_label_is_unchanged(
+        inventory_project):
+    """Without a label the 'host' attribute is the inventory hostname
+    and the address is the connection target, whatever the format
+    option carries: the tethys-shaped seed re-renders unchanged."""
+    seed = {'web-1': {'address': '10.42.7.101',
+                      'host': 'web.example.com'}}
+    project = inventory_project({'ansible_host_format': 'ip'})
+    render_inventory(project, 'system', outputs(seed=seed, groups=None))
+
+    content = read(project, 'inventory/hosts')
+    assert "web.example.com ansible_host='10.42.7.101'" in content
+
+
+def test_a_host_and_a_group_with_one_name_do_not_collide(
+        inventory_project):
+    """The host sensitive values key by the seed key under the
+    'host_vars' namespace, the group values by the group name under
+    the 'group_vars' one: a group which shares its name with a host
+    writes its own files."""
+    seed = {'web': {'address': '10.42.7.101',
+                    'sensitive_vars': {'token': 'host-secret'}}}
+    groups = {'web': {'sensitive_vars': {'token': 'group-secret'}}}
+    project = inventory_project()
+    render_inventory(project, 'system', outputs(seed=seed,
+                                                groups=groups))
+
+    assert read(
+        project,
+        'secret/tofu/host_vars/web/sensitive/token/content'
+    ) == 'host-secret'
+    assert read(
+        project,
+        'secret/tofu/group_vars/web/sensitive/token/content'
+    ) == 'group-secret'
 
 
 def test_the_native_formats_carry_the_plain_vars_inline(inventory_project):
@@ -302,15 +360,14 @@ def test_the_configured_hosts_name_gets_the_extension(inventory_project):
     extensions the inventory plugin claims gets the format's
     canonical suffix appended; the ini name is left alone."""
     project = inventory_project({
-        'hosts_format': 'yaml', 'hosts_filename_yaml': 'rendered'})
+        'hosts_format': 'yaml', 'hosts_filename': 'rendered'})
     render_inventory(project, 'system', outputs())
     assert read(project, 'inventory/rendered.yml')
 
     project.config.merge({'tofu': {'inventory': {
-        'hosts_format': 'ini',
-        'hosts_filename_ini': 'rendered-hosts'}}})
+        'hosts_format': 'ini'}}})
     render_inventory(project, 'system', outputs())
-    assert read(project, 'inventory/rendered-hosts')
+    assert read(project, 'inventory/rendered')
 
 
 def test_the_first_render_claims_the_scaffold(inventory_project):
@@ -365,8 +422,9 @@ def test_the_sensitive_values_land_in_the_store(inventory_project):
     project = inventory_project()
     render_inventory(project, 'system', outputs())
 
-    content = read(project,
-                   'secret/tofu/web-1/sensitive/host_token/content')
+    content = read(
+        project,
+        'secret/tofu/host_vars/web-1/sensitive/host_token/content')
     assert content == 's3cr3t'
 
 
@@ -379,10 +437,12 @@ def test_non_string_sensitive_values_are_serialized(inventory_project):
     project = inventory_project()
     render_inventory(project, 'system', outputs(seed=seed, groups=None))
 
-    assert read(project,
-                'secret/tofu/web-1/sensitive/count/content') == '3'
-    assert read(project,
-                'secret/tofu/web-1/sensitive/tokens/content') == \
+    assert read(
+        project,
+        'secret/tofu/host_vars/web-1/sensitive/count/content') == '3'
+    assert read(
+        project,
+        'secret/tofu/host_vars/web-1/sensitive/tokens/content') == \
         '["a", "b"]'
 
 
@@ -393,7 +453,7 @@ def test_the_absolute_sensitive_path(inventory_project):
     import tempfile
     external = tempfile.mkdtemp(dir='/tmp/opencode')
     project = inventory_project({
-        'secret': {'sensitive_path': external + '/tofu/%s/%s'}})
+        'secret': {'host_path': external + '/tofu/%s/%s'}})
     render_inventory(project, 'system', outputs())
 
     with open(os.path.join(external, 'tofu', 'web-1',
@@ -409,8 +469,8 @@ def test_the_sensitive_path_template_is_validated(inventory_project):
     """A sensitive path template with a broken placeholder is
     refused with the option named."""
     project = inventory_project({
-        'secret': {'sensitive_path': 'secret/tofu/%s/%s/extra/%z'}})
-    with pytest.raises(ValueError, match='sensitive_path'):
+        'secret': {'host_path': 'secret/tofu/%s/%s/extra/%z'}})
+    with pytest.raises(ValueError, match='host_path'):
         render_inventory(project, 'system', outputs())
 
 
@@ -419,14 +479,15 @@ def test_the_lookup_expression_escapes_the_path(inventory_project):
     quote anywhere in the composed path cannot break out of the
     Jinja string literal it rides in."""
     project = inventory_project({
-        'secret': {'sensitive_path': 'secret/to"fu/%s/sensitive/%s/content'}})
+        'secret': {'host_path': 'secret/to"fu/host_vars/%s/sensitive/%s/content'}})
     render_inventory(project, 'system', outputs())
 
     data = yaml.safe_load(read(
         project, 'inventory/host_vars/web.example.com/tofu_inventory.yml'))
     assert data['host_token'] == (
         '{{ lookup("file", inventory_dir + '
-        '"/../secret/to\\"fu/web-1/sensitive/host_token/content") }}')
+        '"/../secret/to\\"fu/host_vars/web-1/sensitive/'
+        'host_token/content") }}')
 
 
 def test_the_status_filter_skips_the_unconfigured_statuses(
@@ -471,8 +532,8 @@ def test_the_status_map_accepts_future_statuses(inventory_project):
             'stopped-1': {'address': '10.42.7.102',
                           'status': 'Stopped'}}
     project = inventory_project({
-        'output': {'host_status': {'running': 'skip',
-                                   'stopped': 'include'}}})
+        'host_status': {'running': 'skip',
+                        'stopped': 'include'}})
     render_inventory(project, 'system', outputs(seed=seed, groups=None))
 
     content = read(project, 'inventory/hosts')
@@ -482,7 +543,7 @@ def test_the_status_map_accepts_future_statuses(inventory_project):
 
 def test_an_invalid_status_handling_is_refused(inventory_project):
     project = inventory_project({
-        'output': {'host_status': {'running': 'bogus'}}})
+        'host_status': {'running': 'bogus'}})
     with pytest.raises(ValueError, match="'include' or 'skip'"):
         render_inventory(project, 'system', outputs())
 
@@ -747,14 +808,14 @@ def test_a_prune_outside_the_view_root_refuses_the_render(
 
 def test_a_stale_absolute_sensitive_file_is_not_pruned(
         inventory_project, caplog):
-    """An absolute 'sensitive_path' template writes outside of the
+    """An absolute store path template writes outside of the
     view root: the render records the file but does not prune it
     when the seed drops the host -- the operator cleans it by hand,
     the render names it."""
     import tempfile
     external = tempfile.mkdtemp(dir='/tmp/opencode')
     project = inventory_project({
-        'secret': {'sensitive_path': external + '/tofu/%s/%s'}})
+        'secret': {'host_path': external + '/tofu/%s/%s'}})
     render_inventory(project, 'system', outputs())
     with caplog.at_level(logging.INFO):
         render_inventory(project, 'system', outputs(seed={
@@ -800,8 +861,9 @@ def test_the_dry_run_writes_nothing(inventory_project):
         inventory_dir(project), MANIFEST_NAME))
 
     render_inventory(project, 'system', outputs())
-    assert read(project,
-                'secret/tofu/web-1/sensitive/host_token/content') == \
+    assert read(
+        project,
+        'secret/tofu/host_vars/web-1/sensitive/host_token/content') == \
         's3cr3t'
     assert render_inventory(project, 'system', outputs(),
                             dry_run=True) == []
@@ -872,7 +934,9 @@ def test_the_render_internals_report_at_debug(inventory_project,
                 if record.levelno == logging.DEBUG]
     assert any('Rendering the inventory' in message
                for message in messages)
-    assert any('sensitive_path' in message for message in messages)
+    assert any('hosts_filename' in message for message in messages)
+    assert any('ansible_host_format' in message
+               for message in messages)
 
 
 def test_the_unknown_hosts_format_is_refused(inventory_project):

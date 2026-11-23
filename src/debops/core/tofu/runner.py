@@ -307,7 +307,15 @@ class TofuRunner(Runner):
 
     def _plan_retention(self):
         """How many plan files the DebOps flows keep in the view's
-        store."""
+        store. The view's own option overrides the root default: the
+        plans live in the view, the retention follows them."""
+        try:
+            retention = view_tofu_options(
+                self.project, self.project.view).get('plan_retention')
+        except (KeyError, TypeError):
+            retention = None
+        if retention is not None:
+            return retention
         try:
             return self.project.config.raw['tofu']['plan_retention']
         except (KeyError, TypeError):

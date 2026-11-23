@@ -395,6 +395,25 @@ def test_plan_retention_prunes_the_expired_plans(tofu_project,
         "debops-20240105T000000.tfplan"]
 
 
+def test_plan_retention_follows_the_view_option(tofu_project,
+                                                stub_tofu_subprocess):
+    """The view's own 'plan_retention' option overrides the root
+    default: the plans live in the view, the retention follows
+    them. A view option of 0 keeps no plans while the root carries
+    3."""
+    project = tofu_project(project_type="modern")
+    project.config.merge({'tofu': {'plan_retention': 3},
+                          'views': {project.view: {'tofu': {
+                              'plan_retention': 0}}}})
+    plans_dir = os.path.join(project.path, "tofu", "views",
+                             project.view, "plans")
+    os.makedirs(plans_dir)
+
+    TofuRunner(project, ["plan"]).execute()
+
+    assert os.listdir(plans_dir) == []
+
+
 def test_plan_retention_never_touches_the_operator_plans(
         tofu_project, stub_tofu_subprocess):
     """The plan files the operator saves with the '-out' option are
