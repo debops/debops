@@ -24,8 +24,8 @@ from .inventory_seed import _root_groups
 def _render_hosts_ini(hosts, records, all_record, view):
     """Render the hosts file in the 'ini' format.
 
-    The full host line -- the hostname, the address, the jump
-    arguments and the scalar variables -- is written once, in the
+    The full host line -- the hostname, the address and the scalar
+    variables -- is written once, in the
     first group section of the host or in '[ungrouped]' when the
     host declares no groups; the other group sections list the host
     bare, the inline variables apply to the host regardless of the
@@ -131,15 +131,13 @@ def _yaml_json_doc(hosts, records, all_record):
 
 def _ini_host_line(host):
     """The host line of the 'ini' format: the inventory hostname,
-    the connection target, the composed jump arguments and the
-    scalar plain variables. The seed's own 'ansible_host' variable
-    wins over the resolved connection target."""
+    the connection target and the scalar plain variables. The
+    seed's own 'ansible_host' variable wins over the resolved
+    connection target; the jump rides 'ansible_ssh_common_args'
+    among the plain variables, composed at the seed record."""
     connection = host['vars'].get('ansible_host', host['ansible_host'])
     parts = [host['name'],
              'ansible_host={}'.format(_ini_value(connection))]
-    if host['jump']:
-        parts.append('ansible_ssh_common_args={}'.format(
-            _ini_value('-o ProxyJump={}'.format(host['jump']))))
     for name in sorted(host['vars']):
         if name == 'ansible_host':
             continue
