@@ -699,6 +699,50 @@ def test_an_empty_jump_and_host_are_the_fallbacks(inventory_project):
     assert 'ProxyJump' not in content
 
 
+def test_the_jump_composes_in_every_hosts_format(inventory_project):
+    """The jump of a host composes into 'ansible_ssh_common_args'
+    in every hosts-file format: the 'ini' one writes the argument
+    on the host line, the other formats carry the plain variables
+    natively and the composed argument rides them."""
+    project = inventory_project({'hosts_format': 'yaml'})
+    render_inventory(project, 'system', outputs())
+    data = yaml.safe_load(read(project, 'inventory/hosts.yml'))
+    assert data['all']['hosts']['web.example.com'][
+        'ansible_ssh_common_args'] == '-o ProxyJump=tethys.example.com'
+
+    project.config.merge({'tofu': {'inventory': {'hosts_format': 'json'}}})
+    render_inventory(project, 'system', outputs())
+    data = json.loads(read(project, 'inventory/hosts.json'))
+    assert data['all']['hosts']['web.example.com'][
+        'ansible_ssh_common_args'] == '-o ProxyJump=tethys.example.com'
+
+    project.config.merge({'tofu': {'inventory': {'hosts_format': 'toml'}}})
+    render_inventory(project, 'system', outputs())
+    content = read(project, 'inventory/hosts.toml')
+    assert ("ansible_ssh_common_args = "
+            '"-o ProxyJump=tethys.example.com"') in content
+
+
+def test_the_seed_ssh_args_outrank_the_composed_jump(inventory_project):
+    """A seed which carries its own 'ansible_ssh_common_args' wins
+    over the jump-composed argument: the seed's own variables win
+    over the auto-recorded ones, the precedence the connection
+    target follows as well."""
+    seed = {'web-1': {'address': '10.42.7.101',
+                      'host': 'web.example.com',
+                      'jump': 'tethys.example.com',
+                      'vars': {'ansible_ssh_common_args':
+                               '-o ConnectTimeout=5'}}}
+    project = inventory_project({'hosts_format': 'yaml'})
+    render_inventory(project, 'system', outputs(seed=seed))
+
+    data = yaml.safe_load(read(project, 'inventory/hosts.yml'))
+    args = data['all']['hosts']['web.example.com'][
+        'ansible_ssh_common_args']
+    assert args == '-o ConnectTimeout=5'
+    assert 'ProxyJump' not in args
+
+
 def test_a_broken_output_document_is_refused(inventory_project):
     """The 'tofu output -json' document is validated: a document
     which is not JSON and a missing 'inventory_seed' output are
