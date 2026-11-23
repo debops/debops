@@ -1222,3 +1222,24 @@ def test_non_string_addresses_and_jumps_are_refused(inventory_project):
     with pytest.raises(ValueError, match='ansible_ssh_common_args'):
         render_inventory(project, 'system',
                          outputs(seed=seed, groups=None))
+
+
+def test_a_stale_file_of_a_custom_store_path_records_no_diff(
+        inventory_project):
+    """A store path template which does not live under 'secret/'
+    still masks the removal record: the sensitivity comes from the
+    writer's knowledge, not from the path prefix, so a removed
+    value cannot leak through the '--diff' output."""
+    seed = {'web-1': {'address': '10.42.7.101',
+                      'sensitive_vars': {'host_token': 's3cr3t'}}}
+    project = inventory_project()
+    render_inventory(project, 'system', outputs(seed=seed, groups=None))
+
+    changes = render_inventory(project, 'system', outputs(
+        seed={'other': {'address': '10.42.7.102'}}, groups=None),
+        dry_run=True)
+    removals = [change for change in changes
+                if change.get('action') == 'remove'
+                and 'host_token' in change.get('path', '')]
+    assert removals
+    assert all(not removal['diff'] for removal in removals)
