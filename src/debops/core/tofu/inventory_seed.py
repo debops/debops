@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 GROUP_ATTRIBUTES = ('children', 'sensitive_vars', 'vars')
 
 
-HOST_ATTRIBUTES = ('address', 'groups', 'host', 'jump', 'status',
-                   'sensitive_vars', 'vars')
+HOST_ATTRIBUTES = ('address', 'groups', 'host', 'jump', 'label',
+                   'status', 'sensitive_vars', 'vars')
 
 
 def _check_hierarchy(records):
@@ -147,21 +147,30 @@ def _group_records(groups, hosts):
     return records
 
 
-def _host_records(seed):
+def _host_records(seed, ansible_host_format='fqdn'):
     """Return the host records the inventory renders: the inventory
-    hostname, the secret key, the address, the jump host, the
+    hostname, the seed key, the connection target, the jump host, the
     declared groups and the plain and sensitive variables.
 
-    The inventory hostname is the 'host' attribute when the entry
-    carries one, the seed key otherwise; the secret paths are keyed
-    by the seed key, the tofu-side identity which survives a
-    hostname change. The check runs after the status filter: a host
-    which a status skip removes from the render never needs an
-    address -- a stopped instance exports none. A host the filter
-    includes which still carries no address skips with the
-    staleness notice: the observable case is the lease which landed
-    late, and the way out is the '--force' option, which refreshes
-    the state before the render."""
+    The inventory hostname is the 'label' attribute when the entry
+    carries one, the 'host' attribute otherwise, the seed key when
+    neither is present. The 'ansible_host' connection target follows
+    the 'ansible_host_format' option: with a label, the FQDN
+    ('fqdn') or the address ('ip'); without one, the FQDN is the
+    inventory hostname and the address is the connection target, the
+    format does not apply. The identity the connection target does
+    not carry renders as a plain variable under its seed name, so
+    both identities of a labelled host stay visible; the seed's own
+    variables win over the auto-recorded ones.
+
+    The check runs after the status filter: a host which a status
+    skip removes from the render never needs an address -- a stopped
+    instance exports none. A host the filter includes which still
+    carries no address skips with the staleness notice: the
+    observable case is the lease which landed late, and the way out
+    is the '--force' option, which refreshes the state before the
+    render. The secret paths are keyed by the seed key, the
+    tofu-side identity which survives a hostname or label change."""
     records = []
     hostnames = {}
     for key, entry in seed.items():
@@ -173,21 +182,38 @@ def _host_records(seed):
                 'expected.'.format(key),
                 extra={'allow': 'stderr'})
             continue
-        name = entry.get('host') or key
+        label = entry.get('label')
+        fqdn = entry.get('host')
+        address = str(entry['address'])
+        if label:
+            name = label
+        elif fqdn:
+            name = fqdn
+        else:
+            name = key
+        if label and ansible_host_format == 'fqdn' and fqdn:
+            connection, displaced = fqdn, {'address': address}
+        else:
+            connection = address
+            displaced = {'host': fqdn} if label and fqdn else {}
         if name in hostnames:
             raise ValueError(
                 "The seed hosts '{}' and '{}' both render as the "
                 "inventory hostname '{}'.".format(
                     hostnames[name], key, name))
         hostnames[name] = key
+        variables = dict(entry.get('vars') or {})
+        for var, value in displaced.items():
+            variables.setdefault(var, value)
         records.append({
             'name': name,
             'key': key,
-            'address': str(entry['address']),
+            'address': address,
+            'ansible_host': connection,
             'jump': entry.get('jump'),
             'groups': [group for group in entry.get('groups', [])
                        if group != 'all'],
-            'vars': dict(entry.get('vars') or {}),
+            'vars': variables,
             'sensitive_vars': dict(entry.get('sensitive_vars') or {}),
         })
     return records

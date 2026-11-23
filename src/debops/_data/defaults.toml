@@ -127,7 +127,6 @@ operations = []
 # touched.
 plan_retention = 3
 
-
 [tofu.mkview]
 
 # The OpenTofu providers which the tofu views of the project use. The
@@ -191,21 +190,26 @@ passphrase_length = 32
 # renders in the Ansible view's inventory directory: 'ini' (the classic
 # Ansible inventory), 'yaml' or 'json' (parsed by the YAML inventory
 # plugin, JSON being a YAML subset) and 'toml' (parsed by the TOML
-# inventory plugin). The format selects which 'hosts_filename_<format>'
-# option names the rendered file; the other three files are removed when
-# the renderer owns them or when they hold only the scaffold placeholder
-# the project init writes.
+# inventory plugin). The rendered file name is the 'hosts_filename'
+# option with the format's canonical extension appended; the files of
+# the other formats are removed when the renderer owns them or when
+# they hold only the scaffold placeholder the project init writes.
 hosts_format = "ini"
 
-# The name of the hosts file the bridge renders for each format. The
-# 'yaml', 'json' and 'toml' names carry the extensions the respective
-# inventory plugins claim; the bridge appends the extension when the
-# configured name lacks one. The 'ini' format needs no extension: the
-# ini plugin accepts any file name.
-hosts_filename_ini = "hosts"
-hosts_filename_yaml = "hosts.yml"
-hosts_filename_json = "hosts.json"
-hosts_filename_toml = "hosts.toml"
+# The base name of the hosts file which the bridge renders. The
+# 'yaml', 'json' and 'toml' formats append their canonical extension
+# ('.yml', '.json', '.toml') when the configured name lacks one; the
+# 'ini' format renders the name as-is, the ini inventory plugin
+# accepts any file name.
+hosts_filename = "hosts"
+
+# What the 'ansible_host' variable of a labelled host carries: 'fqdn'
+# uses the 'host' attribute of the inventory seed as the connection
+# target, 'ip' uses the 'address' attribute. Without a label the FQDN
+# is the inventory hostname and the address is the connection target,
+# so the format does not apply. The identity the connection target
+# does not carry renders as a plain variable under its seed name.
+ansible_host_format = "fqdn"
 
 # Whether the 'debops tofu inventory' operation refreshes the state of
 # the view before it renders: 'true' runs 'tofu refresh' before the
@@ -227,25 +231,7 @@ state_refresh = false
 # view, who may reference it in their own files.
 vars_filename = "tofu_inventory.yml"
 
-[tofu.inventory.secret]
-
-# The path template of the sensitive content files which the
-# 'debops tofu inventory' bridge writes, relative to the Ansible view's
-# root directory. The two '%s' placeholders carry the host or group name
-# and the variable name, in that order. The rendered inventory variables
-# reference the files with the 'file' lookup, composed from the same
-# template. A template starting with '/' is absolute: the lookup uses it
-# as-is.
-sensitive_path = "secret/tofu/%s/sensitive/%s/content"
-
-# The name of the variables file which the bridge renders for a host or
-# group in the 'host_vars/' and 'group_vars/' directories of the Ansible
-# view's inventory, carrying the sensitive variables as 'file' lookup
-# references. Distinct from the plain 'tofu.inventory.vars_filename'
-# when the two file kinds must not share a name.
-vars_filename = "tofu_inventory.yml"
-
-[tofu.inventory.output.host_status]
+[tofu.inventory.host_status]
 
 # What the bridge does with the hosts which the 'status' attribute of
 # the inventory seed marks, keyed by the status value, lowercased:
@@ -255,6 +241,22 @@ vars_filename = "tofu_inventory.yml"
 # included. New status keys are accepted when a provider starts
 # exporting them.
 running = "include"
+
+[tofu.inventory.secret]
+
+# The path templates of the sensitive content files which the
+# 'debops tofu inventory' bridge writes, relative to the Ansible view's
+# root directory: the host values under 'host_path', keyed by the seed
+# key of the host -- the tofu-side identity which survives a hostname
+# or label change -- and the group values under 'group_path', keyed by
+# the group name. The two namespaces keep a group which shares its
+# name with a host from colliding with it. The '%s' placeholders carry
+# the host key or group name and the variable name, in that order. The
+# rendered inventory variables reference the files with the 'file'
+# lookup, composed from the same templates. A template starting with
+# '/' is absolute: the lookup uses it as-is.
+host_path = "secret/tofu/host_vars/%s/sensitive/%s/content"
+group_path = "secret/tofu/group_vars/%s/sensitive/%s/content"
 
 [tofu.upstream]
 

@@ -26,11 +26,10 @@ from ..ansible.inventory import AnsibleInventory
 from ..secrets import SecretManager, unlocked_store
 from ..utils import remove_dir, remove_file, write_file
 from .changes import change_label, file_change
-from .inventory_formats import (DEFAULT_HOSTS_FILENAMES, FORMATS,
-                                _header, _hosts_filename, _is_scalar,
-                                _render_hosts_ini, _render_hosts_json,
-                                _render_hosts_toml, _render_hosts_yaml,
-                                _yaml_json_doc)
+from .inventory_formats import (FORMATS, _header, _hosts_filename,
+                                _is_scalar, _render_hosts_ini,
+                                _render_hosts_json, _render_hosts_toml,
+                                _render_hosts_yaml, _yaml_json_doc)
 from .inventory_seed import (_check_hierarchy, _collect_outputs,
                              _filter_hosts, _group_records,
                              _host_records, _mapping)
@@ -52,29 +51,31 @@ def inventory_config(project):
         section = {}
     section = _mapping(section)
     secret = _mapping(section.get('secret'))
-    output = _mapping(section.get('output'))
-    host_status = output.get('host_status')
     return {
         'hosts_format': section.get('hosts_format', 'ini'),
+        'hosts_filename': section.get('hosts_filename', 'hosts'),
+        'ansible_host_format': section.get('ansible_host_format',
+                                           'fqdn'),
         'state_refresh': section.get('state_refresh', False),
         'vars_filename': section.get('vars_filename',
                                      'tofu_inventory.yml'),
-        'secret_vars_filename': secret.get('vars_filename',
-                                           'tofu_inventory.yml'),
-        'sensitive_path': secret.get(
-            'sensitive_path', 'secret/tofu/%s/sensitive/%s/content'),
-        'host_status': dict(_mapping(host_status)) or
+        'host_path': secret.get(
+            'host_path', 'secret/tofu/host_vars/%s/sensitive/%s/content'),
+        'group_path': secret.get(
+            'group_path',
+            'secret/tofu/group_vars/%s/sensitive/%s/content'),
+        'host_status': dict(_mapping(section.get('host_status'))) or
         {'running': 'include'},
-        'hosts_filenames': {
-            fmt: section.get('hosts_filename_' + fmt,
-                             DEFAULT_HOSTS_FILENAMES[fmt])
-            for fmt in FORMATS},
     }
 
 
-def _sensitive_location(config, view_root, name, var):
+def _sensitive_location(config, view_root, kind, name, var):
     """Return the write path, the lookup path expression and the
-    containment root of one sensitive value. A template which starts
+    containment root of one sensitive value. The kind selects the
+    template: the host values key by the seed key under the
+    'host_path' template, the group values by the group name under
+    the 'group_path' one -- the two namespaces do not collide when a
+    group carries the name of a host. A template which starts
     with '/' is absolute: the content file is written there, the
     lookup uses it as-is and the write carries no containment root --
     the operator configured the destination. A relative template is
@@ -83,12 +84,18 @@ def _sensitive_location(config, view_root, name, var):
     the write stays inside the view root. The expression composes
     through 'json.dumps': the path rides a Jinja string literal, a
     quote in it must not break out of it."""
+    if kind == 'host':
+        template = config['host_path']
+        option = 'tofu.inventory.secret.host_path'
+    else:
+        template = config['group_path']
+        option = 'tofu.inventory.secret.group_path'
     try:
-        relative = config['sensitive_path'] % (name, var)
+        relative = template % (name, var)
     except (TypeError, ValueError) as errmsg:
         raise ValueError(
-            "The 'tofu.inventory.secret.sensitive_path' option is "
-            'not a valid path template: {}'.format(errmsg))
+            "The '{}' option is not a valid path template: "
+            '{}'.format(option, errmsg))
     if relative.startswith('/'):
         return relative, json.dumps(relative), None
     return (os.path.join(view_root, relative),
@@ -223,11 +230,11 @@ def _prune_stale(view_root, project_root, owned, desired, changes,
     The removals stay inside the view root: an entry which resolves
     outside of it refuses the render, the manifest is recorded state
     and a tampered one must not delete files elsewhere. The absolute
-    entries which an absolute 'sensitive_path' template records by
-    design are skipped with a notice -- their stale files the
-    operator cleans by hand. The removals ride the change records;
-    the sensitive ones record no diff, the removed content is the
-    secret itself."""
+    entries which an absolute store path template records by design
+    are skipped with a notice -- their stale files the operator
+    cleans by hand. The removals ride the change records; the
+    sensitive ones record no diff, the removed content is the secret
+    itself."""
     for relative in owned:
         if relative in desired:
             continue
@@ -247,12 +254,13 @@ def _prune_stale(view_root, project_root, owned, desired, changes,
 
 
 def _reconcile_sensitive(desired, changes, config, view_root,
-                         project_root, name, sensitive_vars, dry_run):
+                         project_root, kind, name, sensitive_vars,
+                         dry_run):
     """Record and apply the sensitive values of one host or group
     into the store, recording the content files in the desired set."""
     for var in sorted(sensitive_vars):
-        path, _, containment = _sensitive_location(config, view_root,
-                                                   name, var)
+        path, _, containment = _sensitive_location(
+            config, view_root, kind, name, var)
         _reconcile_file(path, _sensitive_value(sensitive_vars[var]),
                         changes, project_root, containment, dry_run,
                         secret=True)
@@ -276,42 +284,33 @@ def _write_vars_file(desired, changes, inventory_dir, kind, name,
 
 def _render_vars_files(desired, changes, config, fmt, view_root,
                        inventory_dir, project_root, kind, name, plain,
-                       sensitive, secret_name, view, dry_run):
-    """Render the variables files of one host or group.
+                       sensitive, store_key, view, dry_run):
+    """Render the variables file of one host or group.
 
     The 'ini' hosts file carries the scalar plain variables inline;
-    the complex ones ride the plain variables file. The other
-    formats carry every plain variable natively, so their plain
-    variables file is never written. The sensitive variables ride
-    their own file in every format, as 'file' lookup references
-    into the store. When the two file names are distinct the file
-    kinds split; the shared default name merges them into one
-    file."""
+    the complex ones ride the variables file. The other formats
+    carry every plain variable natively, so nothing plain rides the
+    file for them. The sensitive variables ride the same file in
+    every format, as 'file' lookup references into the store,
+    keyed by the seed key of the host or the name of the group."""
     if fmt == 'ini':
         complex_vars = {key: plain[key] for key in sorted(plain)
                         if not _is_scalar(plain[key])}
     else:
         complex_vars = {}
     lookups = {}
+    sensitive_kind = 'host' if kind == 'host_vars' else 'group'
     for var in sorted(sensitive):
         expression = _sensitive_location(
-            config, view_root, secret_name, var)[1]
+            config, view_root, sensitive_kind, store_key, var)[1]
         # No str.format() here: the doubled braces of the Jinja
         # delimiters would be read as literal-brace escapes
         lookups[var] = '{{ lookup("file", ' + expression + ') }}'
-    if config['vars_filename'] == config['secret_vars_filename']:
-        merged = dict(complex_vars)
-        merged.update(lookups)
-        _write_vars_file(desired, changes, inventory_dir, kind, name,
-                         config['vars_filename'], merged, view,
-                         view_root, project_root, dry_run)
-    else:
-        _write_vars_file(desired, changes, inventory_dir, kind, name,
-                         config['vars_filename'], complex_vars, view,
-                         view_root, project_root, dry_run)
-        _write_vars_file(desired, changes, inventory_dir, kind, name,
-                         config['secret_vars_filename'], lookups,
-                         view, view_root, project_root, dry_run)
+    merged = dict(complex_vars)
+    merged.update(lookups)
+    _write_vars_file(desired, changes, inventory_dir, kind, name,
+                     config['vars_filename'], merged, view,
+                     view_root, project_root, dry_run)
 
 
 def render_view_inventory(project, view, force=False, dry_run=False,
@@ -367,8 +366,13 @@ def render_inventory(project, view, output_json, dry_run=False):
     Ansible store unlocked around it as a writing render does."""
     seed, groups = _collect_outputs(output_json)
     config = inventory_config(project)
+    if config['ansible_host_format'] not in ('fqdn', 'ip'):
+        raise ValueError(
+            "The 'tofu.inventory.ansible_host_format' option is "
+            "'{}': the bridge composes the connection target as an "
+            "'fqdn' or an 'ip'.".format(config['ansible_host_format']))
     seed = _filter_hosts(seed, config['host_status'])
-    hosts = _host_records(seed)
+    hosts = _host_records(seed, config['ansible_host_format'])
     records = _group_records(groups, hosts)
     _check_hierarchy(records)
     all_record = records.pop('all', None)
@@ -394,10 +398,10 @@ def render_inventory(project, view, output_json, dry_run=False):
             view, len(hosts), len(records), fmt))
     logger.debug(
         "The inventory options of the view '{}': hosts_format={}, "
-        'vars_filename={}, secret.vars_filename={}, '
-        'sensitive_path={}'.format(
-            view, fmt, config['vars_filename'],
-            config['secret_vars_filename'], config['sensitive_path']))
+        'hosts_filename={}, ansible_host_format={}, '
+        'vars_filename={}'.format(
+            view, fmt, config['hosts_filename'],
+            config['ansible_host_format'], config['vars_filename']))
 
     desired = set()
 
@@ -405,15 +409,15 @@ def render_inventory(project, view, output_json, dry_run=False):
     # reference them
     if all_record:
         _reconcile_sensitive(desired, changes, config, view_root,
-                             project_root, 'all',
+                             project_root, 'group', 'all',
                              all_record['sensitive_vars'], dry_run)
     for host in hosts:
         _reconcile_sensitive(desired, changes, config, view_root,
-                             project_root, host['key'],
+                             project_root, 'host', host['key'],
                              host['sensitive_vars'], dry_run)
     for name in sorted(records):
         _reconcile_sensitive(desired, changes, config, view_root,
-                             project_root, name,
+                             project_root, 'group', name,
                              records[name]['sensitive_vars'], dry_run)
 
     # The hosts file in the configured format
@@ -427,7 +431,7 @@ def render_inventory(project, view, output_json, dry_run=False):
             _yaml_json_doc(hosts, records, all_record))
     else:
         content = _render_hosts_toml(hosts, records, all_record, view)
-    hosts_name = _hosts_filename(config, fmt)
+    hosts_name = _hosts_filename(config['hosts_filename'], fmt)
     _reconcile_file(os.path.join(inventory_dir, hosts_name), content,
                     changes, project_root, view_root, dry_run)
     desired.add(os.path.join('inventory', hosts_name))
@@ -439,7 +443,9 @@ def render_inventory(project, view, output_json, dry_run=False):
     for other in FORMATS:
         if other == fmt:
             continue
-        path = os.path.join(inventory_dir, _hosts_filename(config, other))
+        path = os.path.join(inventory_dir,
+                            _hosts_filename(config['hosts_filename'],
+                                            other))
         if os.path.isfile(path) and _is_scaffold(path):
             _reconcile_removal(path, changes, project_root, view_root,
                                dry_run)
