@@ -27,6 +27,7 @@ from debops.core.tofu import plans as plans_module
 from debops.core.tofu.plans import plan_rows, resolve_plan_file
 from debops.core.tofu.runner import TofuRunner
 from debops.core.tofu.rekey import rekey_view
+from debops.core.tofu.runner import TofuOperationFailed
 from debops.core.tofu.view import create_view, reconcile_view
 from debops.core.tofu.providers import resolve_providers
 from debops.core.tofu.modules import resolve_modules
@@ -882,3 +883,63 @@ def test_rekey_refuses_the_missing_encryption_block(tofu_project):
 
     with pytest.raises(ValueError, match="no encryption block"):
         rekey_view(project, project.view)
+
+
+def test_rekey_refuses_views_with_named_workspaces(tofu_project):
+    """A view with named workspaces refuses the rotation: the
+    workspaces share one encryption block, and the cleanup would
+    leave the other workspaces' states keyless."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    os.remove(os.path.join(view_dir, "main.tf"))
+    mkview(project)
+    workspaces_dir = os.path.join(view_dir, "state", "terraform.tfstate.d",
+                                  "deploy")
+    os.makedirs(workspaces_dir)
+
+    with pytest.raises(ValueError, match="named workspaces.*deploy"):
+        rekey_view(project, project.view)
+
+
+def test_rekey_resume_keeps_the_rotation_labels(tofu_project,
+                                                stub_tofu_subprocess):
+    """A rotation interrupted by a failed refresh resumes with the
+    labels the interrupted rotation already wrote: the re-run's
+    refresh re-encrypts under the same primary, and the cleanup does
+    not derive a new generation -- deriving one would leave the
+    state envelope referencing a label the configuration no longer
+    carries."""
+    project = tofu_project(project_type="modern")
+    view_dir = os.path.join(project.path, "tofu", "views", project.view)
+    os.remove(os.path.join(view_dir, "main.tf"))
+    mkview(project)
+    state_dir = os.path.join(view_dir, "state")
+    os.makedirs(state_dir)
+    with open(os.path.join(state_dir, "terraform.tfstate"),
+              "w") as handle:
+        handle.write("{}")
+    process_fail = mock.Mock()
+    process_fail.returncode = 1
+    process_fail.stdout = io.BytesIO(b"")
+    process_fail.stderr = io.BytesIO(b"")
+    stub_tofu_subprocess.side_effect = [process_fail]
+
+    with pytest.raises(TofuOperationFailed):
+        rekey_view(project, project.view)
+
+    main_tf = open(os.path.join(view_dir, "main.tf")).read()
+    assert "state-2" in main_tf
+
+    process_ok = mock.Mock()
+    process_ok.returncode = 0
+    process_ok.stdout = io.BytesIO(b"")
+    process_ok.stderr = io.BytesIO(b"")
+    stub_tofu_subprocess.side_effect = None
+    stub_tofu_subprocess.return_value = process_ok
+
+    rekey_view(project, project.view)
+
+    main_tf = open(os.path.join(view_dir, "main.tf")).read()
+    assert "state-3" not in main_tf
+    assert "fallback" not in main_tf
+    assert "state-2" in main_tf
