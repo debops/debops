@@ -721,7 +721,6 @@ class Configuration(object):
                 "'debops config set' moved to %s: the override "
                 'location ranks it above the hand-written files '
                 'of the directory',
-                'above the hand-written files of the directory',
                 unexpanduser(target),
                 extra={'allow': ['stderr', 'syslog']})
         return target

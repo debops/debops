@@ -2125,3 +2125,19 @@ def test_load_keeps_the_hcl_prefix_through_the_formats(configuration,
     assert loaded == {"syslog": {"address": "hcl:var.address"}}
     assert config_module.hcl_value(
         loaded["syslog"]["address"]) == ("raw", "var.address")
+
+
+def test_option_file_migration_announces_the_move(configuration, tmp_path,
+                                                  caplog):
+    """The legacy-file migration announces the move: the rendered
+    notice formats without a logging error -- a test of the file
+    effects alone cannot catch a format error, because logging
+    swallows it at emit time and the file effects still land."""
+    import logging
+    (tmp_path / "50_config_set.json").write_text("{}\n")
+
+    with caplog.at_level(logging.INFO):
+        path = configuration.option_file(str(tmp_path))
+
+    assert 'moved to' in caplog.text
+    assert 'override' in caplog.text
