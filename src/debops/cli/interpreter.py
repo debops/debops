@@ -4,23 +4,54 @@
 
 from . import print_error
 from ..core.exceptions import (NoDefaultViewException, InventorySpecError,
-                               OptionNotFoundError, ViewNotFoundError)
-from ..core.config import Configuration
+                               OptionNotFoundError, OptionRefused,
+                               ViewNotFoundError)
+from ..core.config import Configuration, shadowing_file
 from .subcommands import Subcommands
 from ..core.projectdir import ProjectDir
 from ..core.projectvenv import ProjectVenv
 from ..core.ansible.ansiblerunner import AnsibleRunner
 from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
+from ..core.tofu.inventory import render_view_inventory
+from ..core.tofu import plans as plans_module
+from ..core.tofu.plans import plan_rows, resolve_plan_file
+from ..core.tofu import cache
+from ..core.tofu.rekey import rekey_view
+from ..core.tofu.runner import TofuOperationFailed, TofuRunner
+from ..core.tofu.providers import resolve_providers
+from ..core.tofu.modules import resolve_modules
+from ..core.tofu.binary import reconcile_binaries
+from ..core.tofu.registry import view_drop_in_path, view_tofu_root
+from ..core.tofu.view import create_view, reconcile_view
 from ..core import ssh
+from ..core.utils import remove_file, unexpanduser
 from xdg.BaseDirectory import xdg_config_home
 import logging
 import getpass
 import shlex
+import subprocess
 import sys
+import time
 import os
 
 logger = logging.getLogger(__name__)
+
+
+def human_age(then):
+    """The age of a modification time, human-sized: the seconds,
+    the minutes, the hours or the days."""
+    seconds = max(int(time.time()) - int(then), 0)
+    if seconds < 60:
+        return '{} second{} ago'.format(
+            seconds, 's' if seconds != 1 else '')
+    for span, unit in ((86400, 'day'), (3600, 'hour'),
+                       (60, 'minute')):
+        if seconds >= span:
+            count = seconds // span
+            return '{} {}{} ago'.format(
+                count, unit, 's' if count != 1 else '')
+    return '0 seconds ago'
 
 
 def _inspect_mode(args):
@@ -78,6 +109,9 @@ class Interpreter(object):
         elif self.parsed_args.section == 'env':
             self.do_env(self.parsed_args.args)
 
+        elif self.parsed_args.section == 'tofu':
+            self.do_tofu(self.parsed_args.args)
+
         elif self.parsed_args.section == 'ssh':
             if self.parsed_args.command == 'rescan':
                 self.do_ssh_rescan(self.parsed_args.args)
@@ -125,6 +159,71 @@ class Interpreter(object):
             sys.exit(1)
         if output:
             print(output)
+        if args.tofu:
+            self._init_tofu_view(args)
+        if args.pre_commit:
+            self._install_pre_commit(args)
+
+    def _init_tofu_view(self, args):
+        """Create the OpenTofu view of the default view after the
+        project initialization.
+
+        The '--encrypt' decision of the initialization carries over:
+        'git-crypt' joins the repository-wide store, 'encfs' mounts
+        the view's own volume keyed by the '--keys' recipients, and
+        without the option the view's store stays plain -- the choice
+        belongs to the operator at init; the refusals belong to the
+        existing projects and 'debops tofu mkview'."""
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd, view=args.default_view)
+            create_view(project, args.default_view,
+                        providers=resolve_providers(project),
+                        modules=resolve_modules(project),
+                        encrypt=args.encrypt or 'plain',
+                        keys=args.keys)
+        except (NoDefaultViewException, ValueError, ChildProcessError,
+                FileNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+    def _install_pre_commit(self, args):
+        """Install the pre-commit hook of the fresh project.
+
+        The configuration file ships with the project; the hook
+        engages after 'pre-commit install'. The tool is optional at
+        initialization: a missing binary, a missing git repository
+        and a failed install notice and skip -- the initialization
+        does not fail over the optional development tool."""
+        if not args.git:
+            logger.notice(
+                "The '--no-git' option left the project without a git "
+                'repository: run \'pre-commit install\' after '
+                "'git init'.",
+                extra={'allow': ['stderr', 'syslog']})
+            return
+        try:
+            result = subprocess.run(['pre-commit', 'install'],
+                                    cwd=args.project_dir,
+                                    capture_output=True, text=True)
+        except FileNotFoundError:
+            logger.notice(
+                "The 'pre-commit' tool is not on the PATH: install it "
+                "and run 'pre-commit install' in the project to engage "
+                'the hook.',
+                extra={'allow': ['stderr', 'syslog']})
+            return
+        if result.returncode != 0:
+            logger.notice(
+                'The pre-commit hook install failed: {}'.format(
+                    (result.stderr or result.stdout).strip()),
+                extra={'allow': ['stderr', 'syslog']})
+            return
+        if result.stdout.strip():
+            print(result.stdout.strip())
+        logger.notice(
+            'The pre-commit hook is installed.',
+            extra={'allow': ['stderr', 'syslog']})
 
     def do_project_refresh(self, args):
         try:
@@ -188,7 +287,7 @@ class Interpreter(object):
             project = ProjectDir(path=args.project_dir, config=self.config, cwd=self.cwd)
             project.commit(interactive=True)
         except (IsADirectoryError, NotADirectoryError,
-                PermissionError) as errmsg:
+                PermissionError, ViewNotFoundError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
 
@@ -209,7 +308,8 @@ class Interpreter(object):
                 venv.freeze(scope=args.scope)
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError, FileNotFoundError,
-                ChildProcessError, ValueError) as errmsg:
+                ChildProcessError, ValueError,
+                ViewNotFoundError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
 
@@ -294,6 +394,320 @@ class Interpreter(object):
             for line in runner.show_env(scope=args.scope):
                 print(line)
             sys.exit(0)
+
+    def do_tofu(self, args):
+        if not args.tofu_args and not args.help:
+            print_error('At least one operand is required: the OpenTofu '
+                        'operation to run; see \'debops tofu --help\'')
+            sys.exit(2)
+
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd, view=args.view)
+        except (IsADirectoryError, NotADirectoryError,
+                ViewNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        # The '--help' option composes the help screen: the OpenTofu
+        # help -- its usage lines name the wrapper -- followed by the
+        # options of the wrapper
+        if args.help:
+            runner = TofuRunner(project, ['help'], no_color=args.no_color,
+                                workspace=args.workspace)
+            runner.execute()
+            sys.stdout.write(args.help_body)
+            sys.exit(0)
+
+        # The 'mkview' operation is a DebOps-level command: it creates
+        # the view tree, its encrypted store and the environment key
+        # file, with the store cycled around the key material
+        if args.tofu_args[0] == 'mkview':
+            self._do_tofu_mkview(args, project)
+            return
+
+        # The 'update' operation is a DebOps-level command: it
+        # reconciles the files DebOps owns in the view and runs 'tofu
+        # init' through the wrapper
+        if args.tofu_args[0] == 'update':
+            self._do_tofu_update(args, project)
+            return
+
+        # The 'install' operation is a DebOps-level command: it
+        # reconciles the OpenTofu binaries which the project's views
+        # pin with the installed ones
+        if args.tofu_args[0] == 'install':
+            self._do_tofu_install(args, project)
+            return
+
+        # The 'cache' operation is a DebOps-level command: it lists
+        # and cleans the OpenTofu cache of the project. It runs no
+        # 'tofu' command, so no hooks fire around it.
+        if args.tofu_args[0] == 'cache':
+            self._do_tofu_cache(args, project)
+            return
+
+        # The 'inventory' operation is a DebOps-level command: it
+        # collects the inventory outputs of the view through the
+        # wrapper and renders them into the Ansible view's inventory
+        if args.tofu_args[0] == 'inventory':
+            self._do_tofu_inventory(args, project)
+            return
+
+        # The 'plans' operation is a DebOps-level command: it lists
+        # the plan files the wrapper saves for the view and shows,
+        # applies or deletes one of them by its id
+        if args.tofu_args[0] == 'plans':
+            self._do_tofu_plans(args, project)
+            return
+
+        # The 'rekey' operation is a DebOps-level command: it
+        # rotates the state passphrase of the view through the
+        # fallback key provider of the OpenTofu encryption
+        if args.tofu_args[0] == 'rekey':
+            self._do_tofu_rekey(args, project)
+            return
+
+        self._run_wrapped_operation(args, project, args.tofu_args,
+                                    eval_first=args.eval)
+
+    def _note_pending_view_creation(self, project):
+        """Note on stderr when '--eval' would run before the view tree
+        is created: the printed command is the one which runs after the
+        template application."""
+        if os.path.exists(os.path.join(view_tofu_root(project,
+                                                      project.view),
+                                       'main.tf')):
+            return
+        logger.warning(
+            "The view tree of the view '{}' does not exist yet; the "
+            'printed command runs after the template is applied to '
+            'it.'.format(project.view),
+            extra={'allow': ['stderr', 'syslog']})
+
+    def _do_tofu_mkview(self, args, project):
+        """Run the 'debops tofu mkview' operation: create the view
+        tree, its encrypted store and the environment key file, with
+        the store cycled around the key material."""
+        try:
+            create_view(project, args.new_view,
+                        providers=resolve_providers(project,
+                                                    args.provider),
+                        modules=resolve_modules(project,
+                                                args.module),
+                        encrypt=args.encrypt, keys=args.keys)
+        except (NoDefaultViewException, ValueError,
+                ChildProcessError, FileNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+    def _do_tofu_update(self, args, project):
+        """Run the 'debops tofu update' operation: reconcile the files
+        DebOps owns in the view, then run 'tofu init' through the
+        wrapper."""
+        # The '--eval' option implies the dry-run behavior: the
+        # reconcile shows its changes and the printed command is the
+        # one which runs after them
+        try:
+            changes = reconcile_view(project, project.view,
+                                     force=args.force,
+                                     dry_run=(args.dry_run or args.eval))
+        except ValueError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        self._render_tofu_changes(changes, diff=args.diff,
+                                  dry_run=(args.dry_run or args.eval),
+                                  color=(sys.stdout.isatty()
+                                         and not args.no_color))
+        if args.dry_run:
+            return
+
+        self._run_wrapped_operation(args, project, ['init'],
+                                    eval_first=args.eval)
+
+    def _do_tofu_install(self, args, project):
+        """Run the 'debops tofu install' operation: reconcile the
+        OpenTofu binaries which the project's views pin with the
+        installed ones. The '--eval' option reports the install
+        instead of running it."""
+        try:
+            installed = reconcile_binaries(project, force=args.force,
+                                           dry_run=args.eval)
+        except ValueError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        if args.eval:
+            if installed:
+                for version in installed:
+                    print("Would install the pinned OpenTofu binary "
+                          "'{}'".format(version))
+            else:
+                print("The pinned binaries of the views of the project "
+                      "{!r} are installed".format(project.name))
+            return
+        if not installed:
+            logger.notice(
+                'The pinned binaries of the views of the project {!r} '
+                'are installed'.format(project.name),
+                extra={'allow': ['stderr', 'syslog']})
+
+    def _do_tofu_cache(self, args, project):
+        """Run the 'debops tofu cache' operation: list the cache
+        entries of the project, or remove the ones of the selected
+        scope and print the removed paths."""
+        if args.reset:
+            removed = [cache.reset_cache()]
+        elif args.clean:
+            if args.project:
+                removed = cache.clean_project(project)
+            elif args.plugins:
+                removed = [cache.clean_plugins()]
+            else:
+                removed = [cache.clean_data_dir(project)]
+        else:
+            removed = None
+        if removed is not None:
+            for path in removed:
+                if path:
+                    print(path)
+            return
+        rows = [(unexpanduser(path), size, note)
+                for path, size, note in cache.cache_rows(project)]
+        width = max(len(path) for path, _, _ in rows) if rows else 0
+        for path, size, note in rows:
+            print('{}  {:>7}  {}'.format(path.ljust(width),
+                                         cache.human_size(size),
+                                         note))
+
+    def _do_tofu_inventory(self, args, project):
+        """Run the 'debops tofu inventory' operation through the
+        core machinery and print the changes it applies."""
+        try:
+            changes = render_view_inventory(
+                project, project.view, force=args.force,
+                dry_run=args.dry_run,
+                allow_missing_state=args.allow_missing_state,
+                bell=args.bell, to_view=args.to_view)
+        except TofuOperationFailed as errmsg:
+            print_error(errmsg)
+            sys.exit(errmsg.return_code)
+        except (NoDefaultViewException, ValueError, FileNotFoundError,
+                ChildProcessError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        self._render_tofu_changes(
+            changes, diff=args.diff, dry_run=args.dry_run,
+            color=(sys.stdout.isatty() and not args.no_color))
+
+    def _run_wrapped_operation(self, args, project, tofu_args,
+                               eval_first=False):
+        """Construct the runner, run the operation, map the failures
+        to the exit codes -- the boilerplate the tofu operations
+        share. With 'eval_first' the printed command replaces the
+        execution: the '--eval' dry-run of the update."""
+        try:
+            runner = TofuRunner(project, tofu_args, bell=args.bell,
+                                no_color=args.no_color,
+                                workspace=args.workspace,
+                                allow_missing_state=(
+                                    args.allow_missing_state))
+        except (NoDefaultViewException, ValueError,
+                FileNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        if eval_first:
+            self._note_pending_view_creation(project)
+            print(runner.eval())
+            sys.exit(0)
+
+        try:
+            sys.exit(runner.execute())
+        except (ChildProcessError, ValueError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+    def _do_tofu_rekey(self, args, project):
+        """Run the 'debops tofu rekey' operation: rotate the state
+        passphrase of the view through the fallback key provider of
+        the OpenTofu encryption, printing the change records the
+        rotation applies."""
+        try:
+            changes = rekey_view(project, project.view,
+                                 workspace=args.workspace)
+        except (NoDefaultViewException, ValueError, FileNotFoundError,
+                ChildProcessError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        self._render_tofu_changes(changes)
+
+    def _do_tofu_plans(self, args, project):
+        """Run the 'debops tofu plans' operation: list the plan files
+        the wrapper saves for the view, or show, apply or delete one
+        of them by its id.
+
+        The listing reads the view's plans directory -- the names
+        and the metadata are plaintext-side, no store cycle. The
+        show and the apply run through the runner machinery: the
+        plan files are OpenTofu-encrypted and the passphrase comes
+        from the store's environment file, which the cycle unlocks.
+        The delete is a file removal with the id resolved; it
+        reports the removed path, the reconcile convention."""
+        view_root = view_tofu_root(project, project.view)
+        try:
+            if args.verb is None:
+                rows = plan_rows(view_root)
+                for sequence, name, size, mtime in rows:
+                    print('{:>4}  {}  {:>7}  {}'.format(
+                        sequence, plans_module.plan_stamp(name),
+                        cache.human_size(size), human_age(mtime)))
+                return
+            plan_file = resolve_plan_file(view_root, args.plan_id)
+        except ValueError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        if args.verb == 'delete':
+            remove_file(os.path.join(view_root, plan_file),
+                        project=view_root)
+            print(plan_file)
+            return
+        self._run_wrapped_operation(
+            args, project,
+            [args.verb] + (['-json'] if args.json else []) + [plan_file])
+
+    def _render_tofu_changes(self, changes, diff=False, dry_run=False,
+                             color=False):
+        """Print the changes which the operation applies: the paths
+        and the actions, or the unified diffs with '--diff'. A change
+        without a diff -- the sensitive files of the inventory render
+        -- prints its action line in both modes: the values must not
+        reach the terminal."""
+        for change in changes:
+            if diff and change.get('diff') is not None:
+                self._print_colored_diff(change['diff'], color=color)
+                continue
+            action = change['action']
+            if dry_run:
+                action = 'Would ' + action
+            else:
+                action = action.capitalize()
+            print('{} {}'.format(action, change['path']))
+
+    @staticmethod
+    def _print_colored_diff(diff_text, color=False):
+        """Print a unified diff, coloring the '+' and '-' lines when
+        the output is a terminal."""
+        if not color:
+            print(diff_text, end='')
+            return
+        for line in diff_text.splitlines():
+            if line.startswith('+') and not line.startswith('+++'):
+                print('\033[32m' + line + '\033[0m')
+            elif line.startswith('-') and not line.startswith('---'):
+                print('\033[31m' + line + '\033[0m')
+            else:
+                print(line)
 
     def do_scp(self, args):
         try:
@@ -599,6 +1013,9 @@ class Interpreter(object):
             # This is not a project directory, so no project-dependent
             # configuration is included
             pass
+        except ViewNotFoundError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
 
         for line in self.config.config_list():
             print(line)
@@ -610,6 +1027,9 @@ class Interpreter(object):
             # This is not a project directory, so no project-dependent
             # configuration is included
             pass
+        except ViewNotFoundError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
 
         if args.key:
             for option_name in args.key:
@@ -620,9 +1040,15 @@ class Interpreter(object):
                         show_scope=args.show_scope)
                 except OptionNotFoundError:
                     # An undefined option is reported as an empty JSON
-                    # object and a non-zero exit code
+                    # object and a non-zero exit code; the other
+                    # formats name the option -- a silent exit would
+                    # hide a mistyped key or an option consumed as one
                     if args.format == 'json':
                         print('{}')
+                    else:
+                        print_error(
+                            "The option '{}' is not defined in the "
+                            'configuration'.format(option_name))
                     sys.exit(1)
                 except ValueError as errmsg:
                     print_error(errmsg)
@@ -653,25 +1079,46 @@ class Interpreter(object):
                 # Outside of a project directory, the options are set
                 # in the user configuration
                 directory = None
+            except ViewNotFoundError as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
         if directory is None:
             directory = os.path.join(xdg_config_home, 'debops', 'conf.d')
 
         try:
             option_file = self.config.option_file(directory)
-            self.config.write_option(option_file, args.key,
-                                     value=args.value,
-                                     delete=args.delete)
+            action = self.config.write_option(
+                option_file, args.key, values=args.values,
+                delete=args.delete, option_type=args.type)
+        except OptionRefused:
+            # The refusal is reported through the log
+            sys.exit(1)
         except (ValueError, OSError) as errmsg:
             print_error(errmsg)
             sys.exit(1)
 
-        if args.delete:
-            logger.notice("Removed '%s' from %s", args.key, option_file,
-                          extra={'allow': ['stderr', 'syslog']})
-        else:
-            logger.notice("Set '%s' to '%s' in %s", args.key, args.value,
-                          option_file,
-                          extra={'allow': ['stderr', 'syslog']})
+        if action == 'set':
+            logger.info("Set '%s' to '%s' in %s", args.key,
+                        ' '.join(args.values), option_file,
+                        extra={'allow': ['stderr', 'syslog']})
+        elif action == 'create':
+            logger.info("Created the '%s' option in %s", args.key,
+                        option_file,
+                        extra={'allow': ['stderr', 'syslog']})
+        elif action == 'append':
+            logger.info("Added the values to the '%s' list in %s",
+                        args.key, option_file,
+                        extra={'allow': ['stderr', 'syslog']})
+
+        shadow = shadowing_file(option_file, args.key)
+        if shadow:
+            shadow_path, shadow_value = shadow
+            logger.warning(
+                "The value of '%s' set in '%s' is shadowed by '%s', "
+                'which loads after it: its value %r wins', args.key,
+                unexpanduser(option_file), unexpanduser(shadow_path),
+                shadow_value,
+                extra={'allow': ['stderr', 'syslog']})
 
     def do_config_check(self, args):
         try:
@@ -681,6 +1128,9 @@ class Interpreter(object):
             # The configuration is checked without the project's files
             # when there is no project directory to work on
             pass
+        except ViewNotFoundError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
 
         failures = [violation for violation in self.config._violations
                     if violation['dropped']]

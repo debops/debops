@@ -131,6 +131,12 @@ it. Because of that, a :command:`debops config get` call inside the hook
 sees the same effective configuration as that command: the same file
 layers, and the same ``DEBOPS_CONFIG__*`` overrides.
 
+The example reads the ``custom.maintenance.enabled`` option, which the
+project creates once with the boolean type:
+:command:`debops config set -t bool custom.maintenance.enabled false`.
+The boolean type accepts only ``true`` and ``false``, so a typo is
+refused instead of stored as a string.
+
 .. code-block:: shell
 
    #!/bin/bash

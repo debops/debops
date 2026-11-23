@@ -2,12 +2,13 @@
 # Copyright (C) 2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Tests for ``debops.core.ansible.secrets``.
+"""Tests for ``debops.core.ansible.secrets`` and
+``debops.core.tofu.secrets``.
 
-``AnsibleSecretStore`` manages one encrypted secret directory of a
-project view: the EncFS and git-crypt detection, the unlock and lock
-operations and the initial encryption setup. Operations that would run
-real subcommands are isolated with mocks.
+``AnsibleSecretStore`` and ``TofuSecretStore`` manage one encrypted
+secret directory of a project view: the EncFS and git-crypt detection,
+the unlock and lock operations and the initial encryption setup.
+Operations that would run real subcommands are isolated with mocks.
 """
 
 import logging
@@ -20,10 +21,15 @@ import pytest
 import debops.core.secrets as secrets_module
 from debops.core.ansible.secrets import AnsibleSecretStore
 from debops.core.secrets import SecretManager
+from debops.core.tofu.secrets import TofuSecretStore
 
 
 def make_store(project, view="system", **kwargs):
     return AnsibleSecretStore(project, view=view, **kwargs)
+
+
+def make_tofu_store(project, view="system", **kwargs):
+    return TofuSecretStore(project, view=view, **kwargs)
 
 
 def test_encfs_secrets_are_detected(stub_project):
@@ -511,6 +517,59 @@ def test_manager_unlock_returns_one_result_per_store(stub_project):
     assert manager.unlock() == [True, False]
 
 
+def test_tofu_encfs_secrets_are_detected(stub_project):
+    """The tofu store of a modern project lives in the view's
+    'tofu' directory, beside the view configuration."""
+    project = stub_project(project_type="modern", view="prod")
+    os.makedirs(os.path.join(project.path, "tofu", "views", "prod",
+                             ".encfs.secret"))
+
+    store = make_tofu_store(project, view="prod")
+
+    assert store.encrypted
+    assert store.crypt_method == "encfs"
+    assert store.secret_path == os.path.join(
+        project.path, "tofu", "views", "prod", "secret")
+    assert not store.decrypted
+
+
+def test_tofu_legacy_project_store_is_not_view_scoped(stub_project):
+    """A legacy project keeps the tofu store at the project root,
+    without the views level."""
+    project = stub_project(project_type="legacy", view="system")
+    os.makedirs(os.path.join(project.path, "tofu", ".encfs.secret"))
+
+    store = make_tofu_store(project, view="system")
+
+    assert store.encrypted
+    assert store.secret_path == os.path.join(project.path, "tofu",
+                                             "secret")
+
+
+def test_tofu_git_crypt_secrets_are_detected(stub_project, monkeypatch):
+    project = stub_project(project_type="modern", view="prod")
+    os.makedirs(os.path.join(project.path, ".git", "git-crypt", "keys"))
+    monkeypatch.setattr(TofuSecretStore, "_git_crypt_locked",
+                        mock.Mock(return_value=True))
+
+    store = make_tofu_store(project, view="prod")
+
+    assert store.encrypted
+    assert store.crypt_method == "git-crypt"
+    assert not store.decrypted
+
+
+def test_secret_manager_resolves_the_tofu_store(stub_project):
+    """The manager constructs the tofu store for the project's view."""
+    project = stub_project(project_type="modern", view="prod")
+
+    store = SecretManager(project, project.view).store("tofu")
+
+    assert isinstance(store, TofuSecretStore)
+    assert store.secret_path == os.path.join(
+        project.path, "tofu", "views", "prod", "secret")
+
+
 def test_manager_unlock_selects_a_named_store(stub_project):
     ansible = mock.Mock()
     ansible.unlock.return_value = True
@@ -619,3 +678,52 @@ def test_git_crypt_encrypted_changes_filters_by_the_filter_attribute(
     stdin = attrs.communicate.call_args.args[0].decode()
     assert "secret/new-file.txt" in stdin
     assert "README.md" in stdin
+
+
+def test_passphrase_length_refuses_a_value_below_the_floor(stub_project):
+    """A configured passphrase length below the 16-character floor
+    refuses the view creation: the passphrase is the only protection
+    of the tracked state ciphertext, and a short one is a legal
+    integer away."""
+    project = stub_project(project_type='modern', raw={
+        'tofu': {'mkview': {'secret': {'passphrase_length': 4}}}})
+
+    with pytest.raises(ValueError, match='passphrase_length'):
+        secrets_module.passphrase_length(project)
+
+
+def test_passphrase_length_bounds_and_defaults(stub_project):
+    """The floor, the packaged default and the missing option resolve
+    to legal lengths; the non-integer values refuse."""
+    project = stub_project(project_type='modern', raw={
+        'tofu': {'mkview': {'secret': {'passphrase_length': 16}}}})
+    assert secrets_module.passphrase_length(project) == 16
+
+    project = stub_project(project_type='modern', raw={})
+    assert secrets_module.passphrase_length(project) == 32
+
+    project = stub_project(project_type='modern', raw={
+        'tofu': {'mkview': {'secret': {'passphrase_length': None}}}})
+    assert secrets_module.passphrase_length(project) == 32
+
+    project = stub_project(project_type='modern', raw={
+        'tofu': {'mkview': {'secret': {'passphrase_length': True}}}})
+    with pytest.raises(ValueError, match='passphrase_length'):
+        secrets_module.passphrase_length(project)
+
+
+def test_random_passphrase_draws_from_the_secure_generator(monkeypatch):
+    """The passphrase draws from the 'secrets' module's generator, not
+    the Mersenne Twister of the 'random' module."""
+    draws = []
+
+    def fake_choice(alphabet):
+        draws.append(alphabet)
+        return 'A'
+
+    monkeypatch.setattr(secrets_module.secrets, 'choice', fake_choice)
+    passphrase = secrets_module.random_passphrase(32)
+
+    assert passphrase == 'A' * 32
+    assert len(draws) == 32
+    assert draws[0] == (string.ascii_letters + string.digits + '-_')

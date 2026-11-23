@@ -40,9 +40,12 @@ override earlier ones:
   overrides the option at the matching path of the tree. They rank above
   every file.
 
-Within one directory, the files are read in alphabetical order and merged
-together. A directory accepts files in TOML, JSON and YAML formats. The
-format is detected from the file extension.
+Within one directory, DebOps reads the files in alphabetical order and
+merges them together. The files of a subdirectory rank above every file
+of the directory itself. The subdirectories load in the alphabetical
+order too, each with its own files before its own subdirectories. A
+directory accepts files in TOML, JSON and YAML formats. DebOps detects
+the format from the file extension.
 
 The merge is recursive. A section defined in several files keeps the
 options of all of them. A list defined in several files combines the
@@ -72,11 +75,22 @@ An option is addressed by its dotted path::
   alice@controller:~$ debops config get syslog.level
   NOTICE
 
-The ``--format`` option switches the output to ``json``, ``toml`` or
-``yaml``. The ``-k``/``--keys`` option lists the subkeys of an option
-instead of its value. The ``-r``/``--root`` option prints the option
-nested under its full path, so the output shows where in the tree the
-option lives::
+The output format comes from the ``config.default_output`` option; it
+is ``yaml``. The ``-f``/``--format`` option switches the format for
+one invocation. The ``unix`` format prints one option per line in the
+dotted ``path=value`` notation, the same notation the environment
+overrides use, with the list values comma-separated::
+
+  alice@controller:~$ debops config get -f unix syslog
+  syslog.address=/dev/log
+  syslog.facility=user
+  syslog.level=NOTICE
+  syslog.port=514
+
+The ``-k``/``--keys`` option lists the subkeys of an option instead of
+its value; in the ``unix`` format the subkeys print as dotted paths.
+The ``-r``/``--root`` option prints the option nested under its full
+path, so the output shows where in the tree the option lives::
 
   alice@controller:~$ debops config get -r syslog.facility
   syslog:
@@ -87,7 +101,7 @@ When you need to know where a value comes from, add ``--show-origin`` or
 with its value joined by ``=``, and the columns separated by tabs::
 
   alice@controller:~$ debops config get --show-origin --show-scope syslog.level
-  user	~/.config/debops/conf.d/99_config_set.json	syslog.level=DEBUG
+  user	~/.config/debops/conf.d/override/99_config_set.json	syslog.level=DEBUG
 
 The scope is the layer which last set the option: ``defaults``,
 ``system``, ``user``, ``project``, ``runtime`` or ``override``. The
@@ -103,19 +117,52 @@ Changing the configuration
 
 The :command:`debops config set` command sets or removes options in the
 configuration files. In a project directory, the options land in the
-:file:`.debops/conf.d/99_config_set.json` file. Outside of one, they land
-in your user configuration::
+:file:`.debops/conf.d/override/99_config_set.json` file. Outside of
+one, they land in your user configuration::
 
   alice@controller:~$ debops config set syslog.level DEBUG
-  Set 'syslog.level' to 'DEBUG' in /home/alice/projects/infra/.debops/conf.d/99_config_set.json
+
+The managed file lives in the ``override/`` subdirectory of the
+configuration directory, and the files of a subdirectory rank
+above every file of the directory itself. The set options
+therefore win over the options you wrote by hand in
+:file:`conf.d/`, regardless of the names. The
+``config.override_filename`` option places the managed file: a
+relative path without the ``.`` and ``..`` segments. The files
+which the command managed at the top level of the directory
+migrate into the configured location when the command writes.
+
+A file of the ``override/`` subdirectory which sorts after the
+managed one can still win. When it does, the command warns and
+names the file and the value which wins.
 
 The values are converted to the type of the option, so ``config set
 syslog.port 514`` stores an integer. The ``-u``/``--user`` option sets
-the option in the user configuration even inside a project. The
-``-d``/``--delete`` option removes an option from the file::
+the option in the user configuration even inside a project.
+
+An option which holds a list gains the values which the command gives
+it. The values which the option already holds are skipped, so a
+repeated command adds nothing::
+
+  alice@controller:~$ debops config set -t list custom.tools ansible lxc
+  alice@controller:~$ debops config set custom.tools tofu
+
+An option which holds a single value takes one value and replaces the
+old one. Several values to such an option are refused. The
+``-t``/``--type`` option states the type of an option which DebOps
+does not define, and creates an option with the empty value of the
+type: ``list`` creates an empty list, ``int`` creates ``0``, ``str``
+creates an empty string, ``dict`` creates an empty object. The option
+must not be set yet; remove it first to change its type.
+
+The ``-d``/``--delete`` option removes an option from the file. Given
+values, it removes those values from a list option. The removal is
+silent, and a value which another configuration layer still carries
+is reported as a warning::
 
   alice@controller:~$ debops config set -d syslog.level
-  Removed 'syslog.level' from /home/alice/projects/infra/.debops/conf.d/99_config_set.json
+
+  alice@controller:~$ debops config set -d custom.tools lxc
 
 The command manages files whose names end with
 :file:`_config_set.json`. The numeric prefix of the file name decides
@@ -144,6 +191,12 @@ does not accept hyphens in variable assignments, so such overrides are
 set through the :command:`env` command::
 
   alice@controller:~$ env DEBOPS_CONFIG__BINARIES__ANSIBLE=/opt/ansible/bin/ansible debops run site.yml
+
+A value for a list option, or for an option which DebOps does not type,
+is a comma-separated string: ``web1,web2`` gives the list with the
+values ``web1`` and ``web2``. A value which starts with ``[`` or ``{``
+is parsed as JSON. To keep a comma inside one value, give the value as
+a JSON string: ``'"web1,web2"'`` gives the string ``web1,web2``.
 
 Overrides apply above every configuration file. They are meant for a
 single invocation, a CI job or a container, not for permanent changes.

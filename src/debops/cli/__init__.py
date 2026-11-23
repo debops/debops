@@ -13,6 +13,8 @@ owns the translation into exit codes and terminal output.
 import logging
 import sys
 
+from ..core.utils import wrap_message
+
 
 def print_error(errmsg):
     """Print a failure message to standard error.
@@ -22,9 +24,10 @@ def print_error(errmsg):
     never appear there. The failure is also recorded in the journal; the
     record is skipped when the logging subsystem is not wired up (the test
     runs), since the logging fallback would print the message a second
-    time.
+    time. The terminal output is wrapped to the terminal width; the
+    journal record keeps its single-line form.
     """
     debops_log = logging.getLogger('debops')
     if debops_log.handlers:
         debops_log.error(str(errmsg), extra={'allow': 'syslog'})
-    print('Error:', errmsg, file=sys.stderr)
+    print(wrap_message('Error: ' + str(errmsg)), file=sys.stderr)

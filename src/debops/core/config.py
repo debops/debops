@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .constants import DEBOPS_PACKAGE_DATA
-from .exceptions import OptionNotFoundError
+from .exceptions import OptionNotFoundError, OptionRefused
 from .utils import unexpanduser, strtobool, write_file
 import copy
 import os
@@ -67,6 +67,15 @@ def _violation_reason(error):
 # JSON when it looks like JSON and kept as a string otherwise.
 _UNTYPED = object()
 
+# The '--type' choices of the 'debops config set' command, mapped to
+# the types of the configuration schema
+_OPTION_TYPES = {'bool': 'boolean', 'list': 'array', 'str': 'string',
+                 'int': 'integer', 'dict': 'object'}
+
+# The empty values which create an option without one, per the
+# '--type' choice; the boolean options carry no empty value
+_EMPTY_VALUES = {'str': '', 'int': 0, 'dict': {}, 'list': []}
+
 
 def _parse_scalar(value):
     """Parse an environment value as JSON, or keep it as a string."""
@@ -74,6 +83,35 @@ def _parse_scalar(value):
         return json.loads(value)
     except ValueError:
         return value
+
+
+def _parse_untyped_value(value):
+    """Parse an environment value for an option which has no type.
+
+    A comma-separated value becomes a list of the parsed elements, so
+    the environment can carry a list for the options which DebOps does
+    not type. A value which carries JSON structure -- an array, an
+    object or a quoted string -- is parsed as a whole: a JSON string is
+    the way to keep a comma inside one value.
+    """
+    if value.lstrip().startswith(('[', '{', '"')):
+        return _parse_scalar(value)
+    if ',' in value:
+        return [_parse_scalar(entry.strip())
+                for entry in value.split(',') if entry.strip()]
+    return _parse_scalar(value)
+
+
+def _option_schema_type_name(schema_node):
+    """Return the type name of the schema node, for the refusal
+    messages."""
+    if isinstance(schema_node, dict):
+        schema_type = schema_node.get('type')
+        if isinstance(schema_type, list):
+            schema_type = schema_type[0] if schema_type else None
+        if schema_type:
+            return schema_type
+    return 'untyped'
 
 
 def _config_leaves(path, node, leaves):
@@ -87,6 +125,21 @@ def _config_leaves(path, node, leaves):
             _config_leaves(path + [key], node[key], leaves)
     else:
         leaves.append((path, node))
+
+
+def _plain_tree(data):
+    """Normalize a parsed configuration tree to plain dictionaries.
+
+    The toml package parses inline tables as a dict subclass which
+    leaks into YAML dumps of the tree as a Python object tag; the
+    normalization copies the parsed tree into plain dicts, so that
+    the parser's internal types do not cross the library's boundary.
+    """
+    if isinstance(data, dict):
+        return {key: _plain_tree(value) for key, value in data.items()}
+    if isinstance(data, list):
+        return [_plain_tree(item) for item in data]
+    return data
 
 
 def _prune_empty(data, segments):
@@ -106,6 +159,47 @@ def _prune_empty(data, segments):
         for segment in segments[:depth - 1]:
             parent = parent[segment]
         del parent[segments[depth - 1]]
+
+
+def _render_value(value):
+    """Render one scalar value in the assignment notation of the unix
+    format: strings raw, the other JSON types through 'json.dumps', so
+    the notation matches the environment override values."""
+    if isinstance(value, str):
+        return value
+    return json.dumps(value)
+
+
+def _render_assignment(value):
+    """Render one option value in the assignment notation: lists with
+    the elements comma-separated, the other values as one scalar."""
+    if isinstance(value, list):
+        return ','.join(_render_value(entry) for entry in value)
+    return _render_value(value)
+
+
+def _render_dotted(path, value, lines):
+    """Extend 'lines' with the dotted 'path=value' renderings of the
+    value: one line per option, the dictionaries recursed into the
+    sub-paths, the segments sorted."""
+    if isinstance(value, dict):
+        if not value:
+            lines.append('='.join([path, _render_value(value)]))
+            return
+        for segment in sorted(value):
+            _render_dotted('.'.join([path, segment]) if path else segment,
+                           value[segment], lines)
+        return
+    lines.append('='.join([path, _render_assignment(value)]))
+
+
+def _yaml_render(value):
+    """Render a value as YAML, without the document-end marker which
+    PyYAML appends after the scalar documents."""
+    rendered = yaml.dump(value)
+    if rendered.endswith('\n...\n'):
+        rendered = rendered[:-4]
+    return rendered.strip()
 
 
 def _resolve_schema_node(schema, segments):
@@ -133,6 +227,36 @@ def _resolve_schema_node(schema, segments):
         else:
             return _UNTYPED
     return node
+
+
+# The prefix which marks a configuration string value as a raw HCL
+# expression: the prefix is consumed once and the remainder is emitted
+# verbatim by the consumer which renders the value. A value which
+# carries the prefix twice is an escaped literal -- 'hcl:hcl:hello'
+# means the literal string 'hcl:hello'.
+HCL_PREFIX = 'hcl:'
+
+
+def hcl_value(value):
+    """Split a string value against the 'hcl:' prefix.
+
+    Returns None when the value is not a string which carries the
+    prefix. Otherwise returns a tuple of the kind and the payload:
+    'raw' when the value carries the prefix once -- the payload is
+    the HCL expression which the consumer emits verbatim -- and
+    'literal' when the value carries the prefix twice -- the payload
+    is the literal string. A prefix with an empty payload is a
+    mistake and is refused: an empty expression renders nothing.
+    """
+    if not isinstance(value, str) or not value.startswith(HCL_PREFIX):
+        return None
+    payload = value[len(HCL_PREFIX):]
+    if payload.startswith(HCL_PREFIX):
+        return 'literal', payload
+    if not payload:
+        raise ValueError("The '{}' prefix carries an empty HCL "
+                         'expression'.format(HCL_PREFIX))
+    return 'raw', payload
 
 
 class Configuration(object):
@@ -241,7 +365,7 @@ class Configuration(object):
             template = jinja2.Template(fp.read(), trim_blocks=True)
         rendered = template.render(env=os.environ)
         if path.endswith('.toml'):
-            data = toml.loads(rendered)
+            data = _plain_tree(toml.loads(rendered))
         elif path.endswith('.json'):
             data = json.loads(rendered)
         elif path.endswith('.yaml') or path.endswith('.yml'):
@@ -279,7 +403,8 @@ class Configuration(object):
         in d1 is a dictionary (or dict-like), *and* the corresponding
         value in d2 is also a dictionary, then merge them in-place.
         If any value in d1 is a list and corresponding value in d2 is also
-        a list, the lists are combined together.
+        a list, the lists are combined together, without repeating the
+        entries which are already present.
         """
         if d2:
             for k, v2 in d2.items():
@@ -289,7 +414,9 @@ class Configuration(object):
                     self._merge_dict(v1, v2)
                 elif (isinstance(v1, list) and
                         isinstance(v2, list)):
-                    d1[k].extend(v2)
+                    for entry in v2:
+                        if entry not in d1[k]:
+                            d1[k].append(entry)
                 else:
                     d1[k] = v2
 
@@ -372,18 +499,34 @@ class Configuration(object):
                 self._merge_env_file(path)
 
     def load(self, path, scope=None):
+        """Load a configuration file or directory.
+
+        A directory loads its files in the sorted order, and the
+        files of its subdirectories after them -- each subdirectory
+        in the sorted order, its own files before its own
+        subdirectories. A file of a subdirectory therefore ranks
+        above every file of the directory itself, which is how the
+        configuration override directories rank their options above
+        the hand-written ones."""
         if os.path.exists(path):
             if os.path.isfile(path):
                 return self._load_config_file(path, scope=scope)
             elif os.path.isdir(path):
                 data = {}
                 for config_file in sorted(os.listdir(path)):
-                    if os.path.isfile(os.path.join(path, config_file)):
+                    file_path = os.path.join(path, config_file)
+                    if os.path.isfile(file_path):
                         self._merge_dict(
                             data,
                             self._load_config_file(
-                                os.path.join(path, config_file),
+                                file_path,
                                 scope=scope))
+                for subdirectory in sorted(os.listdir(path)):
+                    directory_path = os.path.join(path, subdirectory)
+                    if os.path.isdir(directory_path):
+                        self._merge_dict(
+                            data,
+                            self.load(directory_path, scope=scope))
                 return data
 
         # Path doesn't exist, return empty dictionary for merging
@@ -408,7 +551,7 @@ class Configuration(object):
     def apply_env_overrides(self, environ=None):
         """Apply configuration overrides from the environment.
 
-        Each variable named '<PREFIX>__<SECTION>__<KEY>' sets the
+        Each variable named '<PREFIX>__<SECTION>__<KEY>' merges the
         value at the matching path of the configuration tree, with the
         path segments separated by '__' -- for the DebOps
         configuration the prefix is 'DEBOPS_CONFIG__', for a
@@ -470,17 +613,17 @@ class Configuration(object):
         """
         validator = self._schema()
         if validator is None:
-            return _parse_scalar(value)
+            return _parse_untyped_value(value)
         node = _resolve_schema_node(validator.schema, segments)
         if node is None:
             return None
         if node is _UNTYPED:
-            return _parse_scalar(value)
+            return _parse_untyped_value(value)
         schema_type = node.get('type')
         if isinstance(schema_type, list):
             schema_type = schema_type[0]
         if schema_type is None:
-            return _parse_scalar(value)
+            return _parse_untyped_value(value)
         if schema_type == 'boolean':
             return bool(strtobool(value))
         if schema_type == 'integer':
@@ -520,53 +663,114 @@ class Configuration(object):
     def option_file(self, directory):
         """Return the configuration file managed by 'config set'.
 
-        The files whose names end with '_config_set.json' are the ones
-        the command manages; the numeric prefix of the name decides
-        where the options rank among the files of the directory, so
-        when the operator creates a file with a different prefix, it
-        replaces the default one. Returns the path of the file to
-        operate on; the file itself is not created.
+        The file name comes from the 'config.override_filename'
+        option, relative to the directory -- 'override/
+        99_config_set.json' by default. The override subdirectory
+        ranks the managed file above the hand-written files of the
+        directory, the way the subdirectory merge orders them; the
+        name is the operator's to place, and it must stay inside the
+        directory: a relative path without the '.' and '..' segments.
+
+        The files the command managed at the top level of the
+        directory before the override sublayer existed -- the
+        '*_config_set.json' files -- migrate into the configured
+        location when the command writes: the same content, the
+        better rank. Returns the path of the file to operate on; the
+        file itself is not created.
         """
-        matches = []
+        section = self._config.get('config')
+        filename = section.get('override_filename') \
+            if isinstance(section, dict) else None
+        if not filename:
+            filename = 'override/99_config_set.json'
+        elif not filename.strip() or filename != filename.strip():
+            raise ValueError(
+                "The 'config.override_filename' option is "
+                '{!r}: the managed file is named by a relative '
+                'path'.format(filename))
+        segments = filename.split('/')
+        if filename.startswith('/') or '.' in segments \
+                or '..' in segments or not all(segments):
+            raise ValueError(
+                "The 'config.override_filename' option is {!r}: the "
+                'managed file lives inside the configuration '
+                'directory, as a relative path without the \'.\' and '
+                "'..' segments".format(filename))
+        target = os.path.join(directory, *segments)
+        if os.path.isfile(target):
+            return target
+
+        legacy = []
         if os.path.isdir(directory):
             for name in sorted(os.listdir(directory)):
                 path = os.path.join(directory, name)
-                if (os.path.isfile(path)
+                if (os.path.isfile(path) and path != target
                         and name.endswith('_config_set.json')
                         and not name.startswith('.')):
-                    matches.append(path)
-        if not matches:
-            return os.path.join(directory, '99_config_set.json')
-        if len(matches) > 1:
+                    legacy.append(path)
+        if len(legacy) > 1:
             raise ValueError(
                 'Multiple configuration files managed by '
                 "'debops config set' in " + directory + ': '
-                + ', '.join(unexpanduser(m) for m in matches))
-        return matches[0]
+                + ', '.join(unexpanduser(m) for m in legacy))
+        if legacy:
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            os.rename(legacy[0], target)
+            logger.notice(
+                "The configuration file managed by "
+                "'debops config set' moved to %s: the override "
+                'location ranks it above the hand-written files '
+                'of the directory',
+                unexpanduser(target),
+                extra={'allow': ['stderr', 'syslog']})
+        return target
 
-    def write_option(self, path, key, value=None, delete=False):
+    def write_option(self, path, key, values=None, delete=False,
+                     option_type=None):
         """Set or remove a configuration option in a JSON file.
 
         The option is addressed by its dotted path in the
-        configuration tree. When set, the value is converted to the
-        type the configuration schema defines for the option, and
-        options unknown to the schema are refused, except under the
-        'custom' section, which is reserved for options defined
-        outside of DebOps. When removed, the option is deleted from
-        the file together with the sections left empty by its removal;
-        options unknown to the schema are removed as well, so that the
-        command can clean up configurations which predate the schema.
+        configuration tree. The values are raw: one value sets a
+        singular option, one or more values are appended to a list
+        option. The values are converted to the type the
+        configuration schema defines for the option, and options
+        unknown to the schema are refused, except under the sections
+        the schema leaves open -- the 'custom' section and the option
+        trees of the project views -- where the '--type' option
+        governs. A singular value is never converted to a list or the
+        other way around: the type changes through the removal of the
+        option and its re-creation.
 
-        Raises ValueError when the option cannot be set or removed;
-        the file is written only when the operation succeeds.
+        The list values are deduplicated against the effective
+        configuration: the values which the merged tree carries
+        already are skipped, the file records the values the operator
+        adds.
+
+        When values are removed from a list option, they are dropped
+        from the list of the file; a list which empties removes the
+        option together with the sections left empty, and the values
+        which stay present in the effective configuration through
+        other layers are reported through the log.
+
+        Returns the operation which the file received: 'set' for a
+        singular value, 'create' for the empty value of a new option,
+        'append' for the appended list values, 'delete' for the
+        removed option, 'prune' for the removed list elements, 'none'
+        when the effective configuration already carries the
+        requested state.
+
+        Raises OptionRefused when the operation is refused -- the
+        refusal is reported through the log -- and ValueError when
+        the option cannot be addressed; the file is written only
+        when the operation succeeds.
         """
         segments = [segment.lower() for segment in key.split('.')
                     if segment]
         if not segments:
             raise ValueError('No configuration option specified')
-        if not delete and value is None:
-            raise ValueError("No value specified for the '{}' option"
-                             .format(_dotted(segments)))
+        if isinstance(values, str):
+            values = [values]
+        values = list(values or [])
 
         data = {}
         if os.path.isfile(path):
@@ -581,6 +785,252 @@ class Configuration(object):
                              'dictionary of options'.format(path))
 
         if delete:
+            return self._remove_option(path, data, segments, values)
+
+        if not values and option_type is None:
+            raise ValueError("No value specified for the '{}' option"
+                             .format(_dotted(segments)))
+        return self._set_option(path, data, segments, values, option_type)
+
+    def _effective_option(self, segments):
+        """Return the effective value of the option in the merged
+        configuration tree, None when no layer carries one."""
+        node = self._config
+        for segment in segments:
+            if not isinstance(node, dict) or segment not in node:
+                return None
+            node = node[segment]
+        return node
+
+    def _file_option(self, data, segments):
+        """Return the value of the option in the file, None when the
+        file does not carry one."""
+        node = data
+        for segment in segments:
+            if not isinstance(node, dict) or segment not in node:
+                return None
+            node = node[segment]
+        return node
+
+    def _option_schema_node(self, segments):
+        """Return the schema node of the option, None when the schema
+        does not know it, the _UNTYPED marker when the schema leaves
+        it open."""
+        validator = self._schema()
+        if validator is None:
+            return _UNTYPED
+        return _resolve_schema_node(validator.schema, segments)
+
+    def _refuse_option(self, message):
+        """Report the refusal of an option operation through the log
+        and raise: the callers exit without reporting it again."""
+        logger.error(message, extra={'allow': ['stderr', 'syslog']})
+        raise OptionRefused(message)
+
+    def _check_option_type(self, segments, option_type, schema_node):
+        """Refuse the '--type' option when the schema types the option
+        differently: the schema is the contract of the typed options,
+        the '--type' option governs the sections the schema leaves
+        open."""
+        if not isinstance(schema_node, dict):
+            return
+        schema_type = schema_node.get('type')
+        if isinstance(schema_type, list):
+            schema_type = schema_type[0] if schema_type else None
+        if schema_type is None:
+            return
+        wanted = _OPTION_TYPES[option_type]
+        if wanted == schema_type:
+            return
+        if wanted == 'integer' and schema_type == 'number':
+            return
+        self._refuse_option(
+                "The '{}' option is typed '{}' by the configuration "
+                "schema: the '--type {}' value cannot be set.".format(
+                    _dotted(segments), schema_type, option_type))
+
+    def _option_kind(self, option_type, schema_node, effective):
+        """Return the kind of the option: 'list' when the values
+        accumulate, 'scalar' when one value replaces the current one.
+
+        The schema type of the option decides; the effective value
+        decides for the sections the schema leaves open."""
+        if option_type == 'list':
+            return 'list'
+        if option_type is not None:
+            return 'scalar'
+        if isinstance(schema_node, dict):
+            schema_type = schema_node.get('type')
+            if schema_type == 'array':
+                return 'list'
+            if schema_type in ('string', 'integer', 'number', 'boolean',
+                               'object'):
+                return 'scalar'
+        if isinstance(effective, list):
+            return 'list'
+        return 'scalar'
+
+    def _coerce_scalar(self, segments, value, option_type, schema_node):
+        """Coerce one singular value of the option."""
+        if option_type == 'str':
+            return value
+        if option_type == 'int':
+            try:
+                return int(value)
+            except ValueError:
+                self._refuse_option(
+                        "The value '{}' is not an integer.".format(value))
+        if option_type == 'bool':
+            try:
+                return bool(strtobool(value))
+            except (ValueError, TypeError):
+                self._refuse_option(
+                        "The value '{}' is not a boolean: the boolean "
+                        'options carry true or false.'.format(value))
+        if option_type == 'dict':
+            parsed = _parse_scalar(value)
+            if not isinstance(parsed, dict):
+                self._refuse_option('The value must be a JSON object.')
+            return parsed
+        try:
+            coerced = self._coerce_override(segments, value)
+        except (ValueError, TypeError):
+            self._refuse_option(
+                    "The '{}' option is typed '{}' by the configuration "
+                    'schema: the value {!r} does not fit it.'.format(
+                        _dotted(segments),
+                        _option_schema_type_name(schema_node), value))
+        if coerced is None:
+            raise ValueError(
+                self._unknown_option_message(_dotted(segments)))
+        return coerced
+
+    def _coerce_element(self, value, option_type, schema_node):
+        """Coerce one element of a list option."""
+        if option_type == 'str':
+            return value
+        if isinstance(schema_node, dict):
+            items = schema_node.get('items')
+            if isinstance(items, dict):
+                items_type = items.get('type')
+                if items_type == 'boolean':
+                    return bool(strtobool(value))
+                if items_type == 'integer':
+                    return int(value)
+                if items_type == 'number':
+                    try:
+                        return int(value)
+                    except ValueError:
+                        return float(value)
+                if items_type == 'string':
+                    return value
+        return _parse_scalar(value)
+
+    def _write_option_value(self, path, data, segments, value):
+        """Write the value of the option into the file's tree,
+        creating the parent sections on the way."""
+        node = data
+        for segment in segments[:-1]:
+            child = node.get(segment)
+            if not isinstance(child, dict):
+                child = {}
+                node[segment] = child
+            node = child
+        node[segments[-1]] = value
+        write_file(path, json.dumps(data, indent=2, sort_keys=True)
+                   + '\n', overwrite=True)
+
+    def _set_option(self, path, data, segments, values, option_type):
+        """Set the option in the file: a singular value replaces the
+        current one, a list option accumulates the values."""
+        schema_node = self._option_schema_node(segments)
+        if schema_node is None:
+            raise ValueError(
+                self._unknown_option_message(_dotted(segments)))
+        effective = self._effective_option(segments)
+        file_value = self._file_option(data, segments)
+        # The effective configuration carries the file's value; the
+        # file's value stands in when the effective tree is unknown
+        current = effective if effective is not None else file_value
+
+        if option_type is not None:
+            self._check_option_type(segments, option_type, schema_node)
+        kind = self._option_kind(option_type, schema_node, effective)
+
+        if kind == 'list':
+            if not values:
+                if current is not None:
+                    self._refuse_option(
+                            "The '{}' option is already set: the empty "
+                            'value would replace it.'.format(
+                                _dotted(segments)))
+                self._write_option_value(path, data, segments, [])
+                return 'create'
+            return self._append_option(
+                path, data, segments, values, option_type, schema_node,
+                current, file_value)
+
+        # A singular option: one value replaces the current one, the
+        # empty value creates the option when it is effectively unset
+        if len(values) > 1:
+            self._refuse_option(
+                    "The '{}' option holds a singular value: the "
+                    'multiple values cannot replace it.'.format(
+                        _dotted(segments)))
+        if not values:
+            if option_type == 'bool':
+                self._refuse_option(
+                        "The '{}' option needs a value: the boolean "
+                        'options carry no empty value.'.format(
+                            _dotted(segments)))
+            if current is not None:
+                self._refuse_option(
+                        "The '{}' option is already set: the empty "
+                        'value would replace it.'.format(
+                            _dotted(segments)))
+            value = _EMPTY_VALUES[option_type]
+        else:
+            value = self._coerce_scalar(segments, values[0], option_type,
+                                        schema_node)
+        self._write_option_value(path, data, segments,
+                                 self._expand_env_vars(value))
+        return 'set'
+
+    def _append_option(self, path, data, segments, values, option_type,
+                       schema_node, current, file_value):
+        """Append the values to the list option of the file.
+
+        The values which the effective list carries already are
+        skipped: the effective configuration decides what the list
+        contains, the file records the values the operator adds. A
+        singular value is never converted to a list: the type changes
+        through the removal of the option and its re-creation."""
+        if current is not None and not isinstance(current, list):
+            self._refuse_option(
+                    "The '{}' option holds a singular value: the type "
+                    'changes through the removal of the option and its '
+                    're-creation.'.format(_dotted(segments)))
+        base = list(file_value) if isinstance(file_value, list) else []
+        effective_list = current if isinstance(current, list) else []
+        appended = []
+        for value in values:
+            coerced = self._coerce_element(value, option_type, schema_node)
+            coerced = self._expand_env_vars(coerced)
+            if (coerced in effective_list or coerced in base
+                    or coerced in appended):
+                continue
+            appended.append(coerced)
+        if not appended:
+            return 'none'
+        self._write_option_value(path, data, segments, base + appended)
+        return 'append'
+
+    def _remove_option(self, path, data, segments, values):
+        """Remove the option or the list elements from the file.
+
+        The values which stay present in the effective configuration
+        through other layers are reported through the log."""
+        if not values:
             node = data
             for segment in segments[:-1]:
                 if not isinstance(node, dict) or segment not in node:
@@ -593,27 +1043,71 @@ class Configuration(object):
                                  .format(_dotted(segments), path))
             del node[leaf]
             _prune_empty(data, segments)
+            write_file(path, json.dumps(data, indent=2, sort_keys=True)
+                       + '\n', overwrite=True)
+            return 'delete'
+
+        schema_node = self._option_schema_node(segments)
+        file_value = self._file_option(data, segments)
+        coerced = [self._coerce_element(value, None, schema_node)
+                   for value in values]
+        if file_value is None:
+            self._report_value_conflicts(segments, coerced, path)
+            return 'none'
+        if not isinstance(file_value, list):
+            self._refuse_option(
+                    "The '{}' option holds a singular value: the "
+                    'values cannot be removed from it.'.format(
+                        _dotted(segments)))
+        removed = [value for value in file_value if value in coerced]
+        if not removed:
+            self._report_value_conflicts(segments, coerced, path)
+            return 'none'
+        remaining = [value for value in file_value
+                     if value not in coerced]
+        if remaining:
+            self._write_option_value(path, data, segments, remaining)
+            action = 'prune'
         else:
-            try:
-                option_value = self._coerce_override(segments, value)
-            except (ValueError, TypeError) as errmsg:
-                raise ValueError('{}: {}'.format(_dotted(segments),
-                                                 errmsg))
-            if option_value is None:
-                raise ValueError(
-                    self._unknown_option_message(_dotted(segments)))
-            option_value = self._expand_env_vars(option_value)
             node = data
             for segment in segments[:-1]:
-                child = node.get(segment)
-                if not isinstance(child, dict):
-                    child = {}
-                    node[segment] = child
-                node = child
-            node[segments[-1]] = option_value
+                node = node[segment]
+            del node[segments[-1]]
+            _prune_empty(data, segments)
+            write_file(path, json.dumps(data, indent=2, sort_keys=True)
+                       + '\n', overwrite=True)
+            action = 'delete'
+        self._report_value_conflicts(segments, coerced, path)
+        return action
 
-        write_file(path, json.dumps(data, indent=2, sort_keys=True)
-                   + '\n', overwrite=True)
+    def _report_value_conflicts(self, segments, values, written_path):
+        """Report the values which stay present in the effective
+        configuration after the removal, through the other
+        configuration layers.
+
+        The file which the operation wrote is excluded: its
+        contribution is the one the removal changed."""
+        for value in values:
+            origins = []
+            for scope, origin, data in self._layers:
+                if origin == written_path:
+                    continue
+                node = data
+                for segment in segments:
+                    if not isinstance(node, dict) or segment not in node:
+                        node = None
+                        break
+                    node = node[segment]
+                if isinstance(node, list) and value in node:
+                    origins.append(origin or scope)
+            if origins:
+                logger.warning(
+                    "The value {!r} of the '{}' option is still "
+                    'present in the effective configuration, '
+                    'contributed by: {}'.format(
+                        value, _dotted(segments),
+                        ', '.join(sorted(set(origins)))),
+                    extra={'allow': ['stderr', 'syslog']})
 
     def config_set(self, key, value):
         """Set a configuration option in the configuration tree.
@@ -808,7 +1302,7 @@ class Configuration(object):
             self._config_files.append(path)
             with open(path, 'r') as fp:
                 try:
-                    data = toml.loads(fp.read())
+                    data = _plain_tree(toml.loads(fp.read()))
                 except toml.TomlDecodeError as errmsg:
                     self._record_violation(
                         'parse', path, None, True,
@@ -949,14 +1443,39 @@ class Configuration(object):
                             value))
         return origins
 
-    def config_get(self, key, format='unix', keys=False, root=False,
+    def default_output_format(self, show_origin=False, show_scope=False):
+        """Return the format which the 'config_get' method renders
+        with when the caller does not name one: the origin table of
+        the 'show_origin' and 'show_scope' options renders as plain
+        text, the other renderings take the 'config.default_output'
+        option, with 'yaml' as the fallback."""
+        if show_origin or show_scope:
+            return 'unix'
+        section = self._config.get('config')
+        value = (section.get('default_output')
+                 if isinstance(section, dict) else None)
+        return value if isinstance(value, str) and value else 'yaml'
+
+    def config_get(self, key, format=None, keys=False, root=False,
                    show_origin=False, show_scope=False):
         """Return the value of a configuration option, rendered in the
         requested format.
 
+        Without an explicit format, the rendering takes the
+        'config.default_output' option, with 'yaml' as the fallback; the
+        origin table of the 'show_origin' and 'show_scope' options is
+        its own plain-text rendering and does not take the option.
+
+        The 'unix' format renders one option per line in the dotted
+        'path=value' notation: the notation the environment overrides
+        use, with the list values comma-separated and the dictionaries
+        recursed into the sub-paths.
+
         With 'root' set, the option is rendered nested under its full
         path from the root of the configuration tree, which shows where
-        in the tree the option is defined.
+        in the tree the option is defined. The dotted unix rendering
+        carries the full path on every line, so the option does not
+        change it.
 
         With 'show_origin' or 'show_scope' set, the options are
         rendered as plain text, one line per option: the columns asked
@@ -969,6 +1488,8 @@ class Configuration(object):
         Raises OptionNotFoundError when the option is not defined; the
         clients decide how absence is presented.
         """
+        if format is None:
+            format = self.default_output_format(show_origin, show_scope)
         if show_origin or show_scope:
             if format != 'unix' or keys or root:
                 raise ValueError('The origin of the options is rendered '
@@ -976,8 +1497,7 @@ class Configuration(object):
                                  'with other formats or options')
             lines = []
             for option, scope, origin, value in self.config_origins(key):
-                rendered = (value if isinstance(value, str)
-                            else json.dumps(value))
+                rendered = _render_assignment(value)
                 columns = []
                 if show_scope:
                     columns.append(scope or 'unknown')
@@ -993,6 +1513,8 @@ class Configuration(object):
         key_path = ['.']
         if key != '.':
             key_path = list(filter(None, key.split('.')))
+        prefix = '.'.join(segment for segment in key_path
+                          if segment != '.')
         key_found = True
 
         _config = self._config
@@ -1022,36 +1544,98 @@ class Configuration(object):
             raise OptionNotFoundError('The "' + key + '" option is not '
                                       'defined in the DebOps configuration')
 
-        if root and key != '.':
+        if root and key != '.' and format != 'unix':
             for element in reversed(key_path):
                 _config = {element: _config}
 
+        if format == 'unix':
+            if keys:
+                # The subkeys render as dotted paths, one per line, so
+                # each line names a queryable option
+                lines = ['.'.join([prefix, name]) if prefix else name
+                         for name in sorted(_config)]
+                return '\n'.join(lines) if lines else None
+            if isinstance(_config, dict):
+                lines = []
+                _render_dotted(prefix, _config, lines)
+                return '\n'.join(lines) if lines else None
+            return '='.join([prefix, _render_assignment(_config)])
         if isinstance(_config, dict):
-            if format in ['unix', 'yaml']:
-                return yaml.dump(_config).strip()
+            if format == 'yaml':
+                return _yaml_render(_config)
             elif format == 'json':
                 return json.dumps(_config, sort_keys=True, indent=2)
             elif format == 'toml':
                 return toml.dumps(_config).strip()
-        elif isinstance(_config, bool):
-            if format == 'unix':
-                return json.dumps(_config)
-            elif format == 'yaml':
-                return yaml.dump(_config).strip()
-            elif format in ['json', 'toml']:
-                return json.dumps(_config)
         elif isinstance(_config, list):
-            if format == 'unix':
-                # An empty list renders as nothing at all
-                return '\n'.join(str(entry) for entry in _config) or None
-            elif format == 'yaml':
-                return yaml.dump(_config).strip()
+            if format == 'yaml':
+                return _yaml_render(_config)
             elif format in ['json', 'toml']:
                 return json.dumps(_config, sort_keys=True)
         else:
-            if format == 'unix':
-                return str(_config)
-            elif format == 'yaml':
-                return yaml.dump(_config).strip()
+            if format == 'yaml':
+                return _yaml_render(_config)
             elif format in ['json', 'toml']:
                 return json.dumps(_config)
+
+
+def shadowing_file(managed_path, key):
+    """Return the file which loads after the managed file and defines
+    the option: (the path, the value), or None.
+
+    The candidates are the files of the managed file's directory
+    which sort after its name, the files of its subdirectories, and
+    the files of the parent directory's subdirectories which sort
+    after the managed file's own subdirectory: by the subdirectory
+    merge rule, all of them rank above the managed file. The parent
+    directory's own files load before any subdirectory and are not
+    candidates."""
+    managed_directory = os.path.dirname(managed_path)
+    managed_name = os.path.basename(managed_path)
+    if not os.path.isdir(managed_directory):
+        return None
+    candidates = []
+    for name in sorted(os.listdir(managed_directory)):
+        path = os.path.join(managed_directory, name)
+        if os.path.isdir(path):
+            for root, _, files in os.walk(path):
+                for file_name in sorted(files):
+                    candidates.append(os.path.join(root, file_name))
+        elif name > managed_name:
+            candidates.append(path)
+    parent = os.path.dirname(managed_directory)
+    managed_subdir = os.path.basename(managed_directory)
+    if parent != managed_directory and os.path.isdir(parent):
+        for name in sorted(os.listdir(parent)):
+            path = os.path.join(parent, name)
+            if os.path.isdir(path) and name > managed_subdir:
+                for root, _, files in os.walk(path):
+                    for file_name in sorted(files):
+                        candidates.append(os.path.join(root, file_name))
+    segments = [segment.lower() for segment in key.split('.') if segment]
+    for path in candidates:
+        if not path.endswith(('.toml', '.json', '.yaml', '.yml')):
+            continue
+        try:
+            with open(path, 'r') as handle:
+                content = handle.read()
+            if path.endswith('.toml'):
+                data = _plain_tree(toml.loads(content))
+            elif path.endswith('.json'):
+                data = json.loads(content)
+            else:
+                data = yaml.safe_load(content)
+        except (OSError, toml.TomlDecodeError, json.JSONDecodeError,
+                yaml.YAMLError):
+            continue
+        node = data
+        if not isinstance(node, dict):
+            continue
+        for segment in segments:
+            if not isinstance(node, dict) or segment not in node:
+                node = None
+                break
+            node = node[segment]
+        if node is not None:
+            return path, node
+    return None

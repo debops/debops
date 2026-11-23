@@ -103,6 +103,38 @@ def test_main_adds_the_stderr_and_syslog_handlers(clean_logging, monkeypatch):
     assert isinstance(syslog_handler(), SysLogHandler)
 
 
+def test_main_wraps_the_terminal_records(clean_logging, monkeypatch):
+    stub_main_collaborators(monkeypatch)
+
+    main_module.main()
+
+    long_message = ' '.join(['word'] * 30)
+    record = logging.LogRecord('debops', logging.WARNING, __file__, 1,
+                               long_message, (), None)
+    formatted = stream_handler().formatter.format(record)
+    assert len(formatted.splitlines()) > 1
+    assert all(len(line) <= 80 for line in formatted.splitlines())
+
+    # The journal record keeps its single-line form
+    assert len(syslog_handler().formatter.format(record).splitlines()) == 1
+
+
+def test_main_shortens_home_paths_in_the_terminal_records(clean_logging,
+                                                          monkeypatch):
+    stub_main_collaborators(monkeypatch)
+
+    main_module.main()
+
+    home = os.path.expanduser('~')
+    record = logging.LogRecord('debops', logging.WARNING, __file__, 1,
+                               'stored at ' + os.path.join(home, 'state'),
+                               (), None)
+    assert '~' in stream_handler().formatter.format(record)
+
+    # The journal record keeps the absolute path
+    assert home in syslog_handler().formatter.format(record)
+
+
 @pytest.mark.parametrize(("verbosity", "passed_level", "blocked_level",
                           "logger_level"), [
     (3, logging.DEBUG, None, logging.DEBUG),

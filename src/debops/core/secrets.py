@@ -2,10 +2,12 @@
 # Copyright (C) 2020-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import contextlib
+import dotenv
 import itertools
 import logging
+import secrets
 import os
-import random
 import stat
 import string
 import subprocess
@@ -134,7 +136,7 @@ class SecretStore:
 
     def _get_random_string(self):
         all_chars = string.digits + string.ascii_letters + string.punctuation
-        random_string = (''.join(random.choice(all_chars)
+        random_string = (''.join(secrets.choice(all_chars)
                          for i in range(64)))
         return random_string
 
@@ -166,8 +168,10 @@ class SecretStore:
                           extra={'allow': ['stderr', 'syslog']})
             os.makedirs(self.encfs_path)
             logger.debug('Encrypting EncFS keyfile')
-            gpg_cmd = subprocess.Popen([self._commands['gpg'], '--encrypt', '--armor',
-                                        '--output', encfs_keyfile] + gpg_recipients,
+            gpg_cmd = subprocess.Popen([self._commands['gpg'], '--encrypt',
+                                        '--armor',
+                                        '--output', encfs_keyfile]
+                                       + gpg_recipients,
                                        stdin=subprocess.PIPE)
             gpg_cmd.communicate(encfs_password.encode('utf-8'))
             if (gpg_cmd.returncode != 0 or
@@ -196,7 +200,8 @@ class SecretStore:
             self.lock()
 
             logger.debug('Encrypting EncFS configuration file')
-            gpg_cmd = subprocess.Popen([self._commands['gpg'], '--encrypt', '--armor',
+            gpg_cmd = subprocess.Popen([self._commands['gpg'], '--encrypt',
+                                        '--armor',
                                         '--output', encfs_configfile + '.asc']
                                        + gpg_recipients + [encfs_configfile])
             gpg_cmd.communicate()
@@ -373,6 +378,86 @@ class SecretStore:
                                          'at ' + parent_path)
 
 
+@contextlib.contextmanager
+def unlocked_store(store, label=None):
+    """Cycle the store around the operation: unlock on entry, lock
+    back on exit only when the unlock transitioned the store -- the
+    lock-back carries the auto-commit of the changes the operation
+    made. The label, when given, names the store in the transition
+    debug notes."""
+    unlocked = store.unlock()
+    if unlocked and label:
+        logger.debug('{} unlocked'.format(label))
+    try:
+        yield store
+    finally:
+        if unlocked:
+            store.lock()
+            if label:
+                logger.debug('{} locked back'.format(label))
+
+
+def environment_path(view_root):
+    """The path of the environment file in the view's store: the
+    tracked TF_VAR_* values the runner composes and the encryption
+    passphrase lives behind."""
+    return os.path.join(view_root, 'secret', 'environment')
+
+
+def environment_values(view_root):
+    """The values of the tracked environment file, parsed without
+    interpolation -- the values are literal, host-independent. The
+    caller applies the TF_VAR_* keys and refuses the rest: the
+    general variables belong to the untracked '.env' files."""
+    path = environment_path(view_root)
+    if not os.path.exists(path):
+        return {}
+    return {key: value for key, value
+            in dotenv.dotenv_values(path, interpolate=False).items()
+            if value is not None}
+
+
+PASSPHRASE_LENGTH_FLOOR = 16
+
+
+def passphrase_length(project):
+    """The length of the generated state passphrases, from the
+    'tofu.mkview.secret.passphrase_length' option, bounded by the
+    16-character floor.
+
+    The passphrase is the only barrier protecting the tracked state
+    ciphertext from anyone who obtains a copy of the repository, so a
+    configured length below the floor is refused instead of silently
+    generating a weak key."""
+    try:
+        length = project.config.raw['tofu']['mkview']['secret'][
+            'passphrase_length']
+    except (KeyError, TypeError):
+        length = 32
+    if length is None:
+        length = 32
+    if not isinstance(length, int) or isinstance(length, bool) \
+            or length < PASSPHRASE_LENGTH_FLOOR:
+        raise ValueError(
+            "The 'tofu.mkview.secret.passphrase_length' option is "
+            '{!r}: the generated passphrases are the only protection '
+            'of the tracked state ciphertext and are at least {} '
+            'characters long'.format(length, PASSPHRASE_LENGTH_FLOOR))
+    return length
+
+
+def random_passphrase(length):
+    """A random state passphrase of the given length, drawn from the
+    URL-safe alphabet with the 'secrets' generator: the environment
+    file carries the passphrase without quoting, so the alphabet
+    stays free of the characters the file format would have to
+    escape. The passphrase encrypts the tracked state ciphertext and
+    is drawn from the cryptographically secure source, not the
+    Mersenne Twister."""
+    alphabet = string.ascii_letters + string.digits + '-_'
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
+
+
 class SecretManager:
     """Coordinate the secret stores of a project's tools.
 
@@ -394,7 +479,9 @@ class SecretManager:
         # Imported lazily: the tool subpackages import this module for
         # the SecretStore base
         from .ansible.secrets import AnsibleSecretStore
-        return {'ansible': AnsibleSecretStore}
+        from .tofu.secrets import TofuSecretStore
+        return {'ansible': AnsibleSecretStore,
+                'tofu': TofuSecretStore}
 
     def store(self, name='ansible'):
         """Return the secret store of a tool, constructing it on demand."""

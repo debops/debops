@@ -69,6 +69,222 @@ scp = "{{ env['DEBOPS_CMD_SCP'] | d('scp') }}"
 # system's $PATH.
 sftp = "{{ env['DEBOPS_CMD_SFTP'] | d('sftp') }}"
 
+# Path to binary which will be used to execute 'tofu' (OpenTofu) commands.
+# By default it will rely on the system's $PATH. At runtime the option
+# points at the managed binary of the version which the used view pins,
+# when it is installed; the configured value is the fallback which the
+# hand-made views run, unmanaged.
+tofu = "{{ env['DEBOPS_CMD_TOFU'] | d('tofu') }}"
+
+[gpg.debops.keyring]
+
+# The GnuPG homedir of the DebOps-managed keyring, separate from the
+# user's own GnuPG home. The keyring holds the public keys of the
+# parties which sign the artifacts DebOps downloads and verifies: the
+# trust anchor is the fingerprint of the expected signing key,
+# recorded in the configuration of the party which uses it.
+#
+# An empty path resolves to the 'debops/gnupg' directory of the XDG
+# data location, shared across projects.
+path = ""
+
+# The options of the keyring's 'gpg.conf' file, rendered literally:
+# a string value renders as 'name value', a list as 'name v1 v2' --
+# the multi-value syntax of gpg.conf -- a boolean 'true' emits the
+# option name alone, and 'false' omits the line, letting the
+# option's gpg default apply.
+[gpg.debops.keyring.gpg_conf]
+keyserver = "hkps://keyserver.ubuntu.com"
+fixed-list-mode = true
+no-greeting = true
+no-emit-version = true
+no-comments = true
+
+[tofu]
+
+# Path to the state file of the local backend, relative to the view's
+# 'tofu' directory. The backend block of the view's OpenTofu
+# configuration should point at the same path: the 'debops tofu' wrapper
+# uses it for the state lock pre-check and to detect the missing-state
+# condition before state-touching operations. Set it to an empty string
+# in views which use a remote backend; the wrapper then skips the local
+# state checks.
+state_path = "state/terraform.tfstate"
+
+# The OpenTofu operations which the 'debops tofu' wrapper is allowed to
+# run. An empty list allows every operation; a non-empty list restricts
+# the wrapper to the named operations, for example:
+#
+#     operations = ["plan", "apply", "destroy", "output"]
+#
+# The raw 'tofu' command is not affected by this option.
+operations = []
+
+# How many plan files the DebOps flows keep in the view's 'plans/'
+# directory. The
+# plan files which DebOps itself saves are pruned to the newest ones;
+# plan files which the user saves with the '-out' option are never
+# touched.
+plan_retention = 3
+
+[tofu.mkview]
+
+# The OpenTofu providers which the tofu views of the project use. The
+# list is written into the generated 'providers.tf' file of a view when
+# it is created; the '--provider' options of the 'debops tofu mkview'
+# command replace it for one invocation. Each entry is a provider
+# source address in the OpenTofu registry notation -- 'namespace/name',
+# or 'hostname/namespace/name' for providers outside the public
+# registry -- optionally with a version pin separated by '=':
+#
+#     default_providers = ["lxc/incus=1.2.1", "hashicorp/tfcoremock"]
+#
+# An empty list creates providerless views. The option is consulted
+# only when a view is created: the provider set of an existing view is
+# changed by editing the view's configuration drop-in, which the
+# 'debops tofu update' command reconciles into the generated files.
+default_providers = []
+
+# The OpenTofu modules which the tofu views of the project
+# instantiate. The table is written into the generated 'modules.tf'
+# file of a view when it is created; the '--module' options of the
+# 'debops tofu mkview' command replace it for one invocation. The table
+# keys are the local module names which the generated file
+# instantiates; each entry carries the module source address in the
+# OpenTofu registry notation -- 'namespace/name[/submodule]', or
+# 'hostname/...' for modules outside the public registry -- an
+# optional version pin and the inputs of the module instance:
+#
+#     [tofu.mkview.default_modules.consul]
+#     source = "hashicorp/consul/aws"
+#     version = "5.0.0"
+#
+#     [tofu.mkview.default_modules.consul.inputs]
+#     datacenter = "dc1"
+#
+# The input values are configuration values: the literals render as
+# the HCL literals of the generated file, and strings which carry the
+# 'hcl:' prefix carry raw HCL expressions which the file emits
+# verbatim -- 'image = "hcl:var.image_name"' instantiates the module
+# with 'image = var.image_name'. An empty table creates views without
+# modules. The option is consulted only when a view is created: the
+# module set of an existing view is changed by editing the view's
+# configuration drop-in, which the 'debops tofu update' command
+# reconciles into the generated files.
+default_modules = {}
+
+[tofu.mkview.secret]
+
+# The state passphrase of the view is always generated at creation;
+# users can re-encrypt the view afterwards if they want to.
+
+# The length in characters of the generated state passphrase. The
+# passphrase is drawn from the URL-safe alphabet -- letters, digits,
+# dashes and underscores -- which the environment file carries without
+# quoting.
+passphrase_length = 32
+
+[tofu.inventory]
+
+# The format of the hosts file which the 'debops tofu inventory' bridge
+# renders in the Ansible view's inventory directory: 'ini' (the classic
+# Ansible inventory), 'yaml' or 'json' (parsed by the YAML inventory
+# plugin, JSON being a YAML subset) and 'toml' (parsed by the TOML
+# inventory plugin). The rendered file name is the 'hosts_filename'
+# option with the format's canonical extension appended; the files of
+# the other formats are removed when the renderer owns them or when
+# they hold only the scaffold placeholder the project init writes.
+hosts_format = "ini"
+
+# The base name of the hosts file which the bridge renders. The
+# 'yaml', 'json' and 'toml' formats append their canonical extension
+# ('.yml', '.json', '.toml') when the configured name lacks one; the
+# 'ini' format renders the name as-is, the ini inventory plugin
+# accepts any file name.
+hosts_filename = "hosts"
+
+# What the 'ansible_host' variable of a labelled host carries: 'fqdn'
+# uses the 'host' attribute of the inventory seed as the connection
+# target, 'ip' uses the 'address' attribute. Without a label the FQDN
+# is the inventory hostname and the address is the connection target,
+# so the format does not apply. The identity the connection target
+# does not carry renders as a plain variable under its seed name.
+ansible_host_format = "fqdn"
+
+# Whether the 'debops tofu inventory' operation refreshes the state of
+# the view before it renders: 'true' runs 'tofu refresh' before the
+# outputs are collected, so in-place changes and late DHCP leases land
+# in the rendered inventory. The refresh churns the state -- its serial
+# bumps even with no changes, and the store records a commit per render
+# -- so the default renders the state as of the last refresh or apply;
+# the observable staleness (a host whose state carries no address) skips
+# with a notice naming the '--force' option.
+state_refresh = false
+
+# The name of the variables file which the 'debops tofu inventory'
+# bridge renders for a host or group in the 'host_vars/' and
+# 'group_vars/' directories of the Ansible view's inventory, carrying
+# the variables which the hosts file cannot carry inline: the complex
+# plain variables and the sensitive variable lookups when the
+# 'hosts_format' option is 'ini', the sensitive variable lookups for the
+# other formats. The file name is a convention with the users of the
+# view, who may reference it in their own files.
+vars_filename = "tofu_inventory.yml"
+
+[tofu.inventory.host_status]
+
+# What the bridge does with the hosts which the 'status' attribute of
+# the inventory seed marks, keyed by the status value, lowercased:
+# 'include' renders the hosts into the inventory, 'skip' leaves them
+# out. A status without a configured key is skipped, with a notice
+# naming the hosts; hosts without a 'status' attribute are always
+# included. New status keys are accepted when a provider starts
+# exporting them.
+running = "include"
+
+[tofu.inventory.secret]
+
+# The path templates of the sensitive content files which the
+# 'debops tofu inventory' bridge writes, relative to the Ansible view's
+# root directory: the host values under 'host_path', keyed by the seed
+# key of the host -- the tofu-side identity which survives a hostname
+# or label change -- and the group values under 'group_path', keyed by
+# the group name. The two namespaces keep a group which shares its
+# name with a host from colliding with it. The '%s' placeholders carry
+# the host key or group name and the variable name, in that order. The
+# rendered inventory variables reference the files with the 'file'
+# lookup, composed from the same templates. A template starting with
+# '/' is absolute: the lookup uses it as-is.
+host_path = "secret/tofu/host_vars/%s/sensitive/%s/content"
+group_path = "secret/tofu/group_vars/%s/sensitive/%s/content"
+
+[tofu.upstream]
+
+# The OpenTofu version which the debops package is verified with: the
+# known-good version which the 'binary_version' option of a new view's
+# configuration drop-in is seeded with at creation. Bumping the option
+# in a debops release changes the seed of the new views; the views
+# which exist keep their recorded version -- the drop-in is written
+# once, the pin is the user's record from then on.
+known_version = "1.13.9"
+
+# The base of the OpenTofu release downloads: the GitHub releases of
+# the opentofu/opentofu repository. The '{version}' placeholder is
+# substituted with the version of the release to install; the option
+# points the 'debops tofu install' command at a mirror of the
+# releases when the GitHub downloads are not reachable.
+release_base = "https://github.com/opentofu/opentofu/releases/download/v{version}"
+
+[tofu.upstream.release_key]
+
+# The fingerprint of the GnuPG key which signs the OpenTofu releases.
+# The 'debops tofu install' command verifies the signature of the
+# release checksums against the DebOps-managed keyring, and the
+# signing key's fingerprint must match this pin: the fingerprint is
+# the trust anchor, not the key material. The key is imported from
+# the keyserver of the DebOps keyring when it is missing.
+fingerprint = "E3E6E43D84CB852EADB0051D0C0AF313E5FD9F80"
+
 [git]
 
 # The default commit message used for new git repositories.
@@ -166,6 +382,25 @@ git_remote = "origin"
 # for self-hosted mirrors. When empty, the git_remote name is used and
 # the user's existing git credentials and configuration are respected.
 git_repo_url = ""
+
+[config]
+
+# The output format which the 'debops config get' command renders with
+# when the '--format' option is not given. The 'unix' format prints one
+# option per line in the dotted 'path=value' notation; 'yaml', 'json'
+# and 'toml' render the values in their respective formats.
+default_output = "yaml"
+
+# The file which the 'debops config set' command manages, relative to
+# the configuration directory of the layer -- the project's
+# '.debops/conf.d/' or the user configuration directory with '--user'.
+# The file ranks by its location: the 'override/' subdirectory loads
+# after the files of the directory itself, so the set options win over
+# the hand-written ones. The name is the operator's to place, as a
+# relative path without the '.' and '..' segments; the legacy files
+# the command managed at the top level of the directory migrate into
+# the configured location.
+override_filename = "override/99_config_set.json"
 
 [custom]
 

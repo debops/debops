@@ -10,7 +10,9 @@ import logging
 import os
 import platform
 import re
+import shutil
 import subprocess
+import textwrap
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +65,52 @@ def unexpanduser(path):
         return path.replace(DEBOPS_USER_HOME_DIR, '~', 1)
     else:
         return path
+
+
+def _unexpand_homes(text):
+    """Replace the occurrences of the home directory path with '~'.
+
+    The unexpansion applies to the whole message text: paths can appear
+    anywhere in it, not only at the start. A replacement happens when the
+    home path is followed by a path separator or by a non-word character,
+    so that '/home/<user>' and '/home/<user>/src/...' unexpand, while a
+    different user's '/home/<user2>/...' stays absolute.
+    """
+    pattern = re.escape(DEBOPS_USER_HOME_DIR) + r'(?=[^A-Za-z0-9_]|$)'
+    return re.sub(pattern, '~', text)
+
+
+def wrap_message(text, width=None):
+    """Wrap a message to the terminal width.
+
+    Lines which are longer than the terminal width are wrapped with a
+    hanging indent; shorter lines and their indentation are left alone,
+    so that multi-line messages with their own structure -- indented
+    error details, code blocks -- survive the wrapping. The home
+    directory path inside the text is unexpanded to '~' first.
+
+    The width is clamped to 72-160 columns: narrow terminals get a
+    comfortable deterministic floor, wide terminals keep the messages
+    on one line up to the cap, and terminal reports without a size
+    (piped output) keep the 80-column default of the terminal size
+    query. The wrapping is for the terminal only; journal and syslog
+    records keep their single-line form.
+    """
+    if width is None:
+        width = shutil.get_terminal_size().columns
+    width = max(72, min(160, width))
+
+    text = _unexpand_homes(text)
+    lines = []
+    for line in text.splitlines():
+        if len(line) <= width:
+            lines.append(line)
+        else:
+            lines.extend(textwrap.wrap(line, width=width,
+                                       break_long_words=False,
+                                       break_on_hyphens=False,
+                                       subsequent_indent='    '))
+    return '\n'.join(lines)
 
 
 def path_key(path, name, view=''):
@@ -135,6 +183,46 @@ def write_file(path, content, overwrite=False, project=None):
     with open(path, 'w', encoding='utf-8') as fh:
         fh.write(content)
 
+    return True
+
+
+def remove_file(path, project=None):
+    """Remove the file at path.
+
+    When the project directory is given, the removal is refused when
+    the target path resolves outside of it, so that a stale record
+    cannot delete files elsewhere on the file system.
+
+    Returns True if the file was removed, False if it did not exist.
+    """
+    if project is not None and not path_inside_project(path, project):
+        raise ValueError('Refusing to remove outside of the project '
+                         'directory: ' + path)
+
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        return False
+    return True
+
+
+def remove_dir(path, project=None):
+    """Remove the empty directory at path.
+
+    When the project directory is given, the removal is refused when
+    the target path resolves outside of it.
+
+    Returns True if the directory was removed, False when it did not
+    exist or was not empty.
+    """
+    if project is not None and not path_inside_project(path, project):
+        raise ValueError('Refusing to remove outside of the project '
+                         'directory: ' + path)
+
+    try:
+        os.rmdir(path)
+    except OSError:
+        return False
     return True
 
 

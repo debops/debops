@@ -192,21 +192,49 @@ something like this:
    │           ├── secret/
    │           ├── .gitattributes
    │           └── .gitignore
+   ├── tofu/
+   │   └── views/
+   │       └── system/
+   │           ├── main.tf
+   │           ├── providers.tf
+   │           ├── .terraform.lock.hcl
+   │           ├── .gitattributes
+   │           ├── .gitignore
+   │           ├── state/
+   │           ├── plans/
+   │           └── secret/
+   │               └── environment
    ├── .debops/
    │   ├── conf.d/
    │   │   ├── project.yml
-   │   │   └── view-system.yml
+   │   │   ├── view-system.yml
+   │   │   └── view-system-tofu.toml
    │   │── environment
    │   │── requirements.txt
    │   ├── ssh/
    │   │   └── views/
    │   └── venv/
    │       └── bin/
+   ├── .pre-commit-config.yaml
    └── .gitignore
 
 The :file:`.debops/ssh/` directory holds the known_hosts store of the
 project views when the project mode of the :ref:`SSH suite <ssh_suite>` is
 active.
+
+The :file:`.pre-commit-config.yaml` file carries the project's pre-commit
+hooks -- the OpenTofu format check of the views' trees. The hook engages
+after :command:`pre-commit install`, which the ``--pre-commit`` option of
+:command:`debops project init` runs; it checks the staged :file:`.tf` files
+and fails the commit when the OpenTofu binary is not available. See the
+:ref:`the OpenTofu integration <debops_tofu>` for the formatting and the
+hook details.
+
+The OpenTofu side of a view lives in :file:`tofu/views/<view>/`,
+beside the Ansible view of the same name: the state, the plan files
+and the encrypted store of the infrastructure the view creates. See
+:ref:`the OpenTofu integration <debops_tofu>` for the layout and
+the operations.
 
 You can compare this with the "legacy" directory structure above. The important
 changes with the previous layout are:

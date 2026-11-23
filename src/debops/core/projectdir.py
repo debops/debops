@@ -2,6 +2,7 @@
 # Copyright (C) 2020-2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from .config import Configuration
 from .constants import DEBOPS_USER_HOME_DIR
 from .. import set_project_context
 from .exceptions import ViewNotFoundError
@@ -13,6 +14,7 @@ from .ansible.ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
 from .ansible.secrets import AnsibleSecretStore
 from .secrets import SecretManager
+from .tofu.binary import effective_binary
 from . import ssh
 from .ansible.inventoryspec import (parse_spec, merge_specs, apply_spec,
                                     render_keep,
@@ -53,18 +55,34 @@ INSPECT_CONFIG = """\
 host_pattern_mismatch = warning
 """
 
+# The tool directories which carry the complementary view trees of a
+# project: the same view names the Ansible inventory root, the Ansible
+# secrets and the OpenTofu workdir
+VIEW_TOOL_ROOTS = ('ansible', 'tofu')
+
 
 class ProjectDir(object):
 
     @staticmethod
-    def resolve_view(root, cwd, views, explicit=None, default=None):
+    def resolve_view(root, cwd, views, explicit=None, default=None,
+                     strict=True):
         """Resolve the active view of a project.
 
         An explicitly selected view wins, but must be one the project
         defines. Otherwise the working directory selects the view when
-        it lies inside the project's 'ansible/views/<name>' tree, and
-        the configured default view applies last, with 'system' as the
-        final fallback.
+        it lies inside one of the project's view trees -- the
+        'ansible/views/<name>' directory beside the 'tofu/views/<name>'
+        directory: the views of the tools are complementary, the same
+        view names the Ansible inventory root, the Ansible secrets and
+        the OpenTofu workdir. The configured default view applies
+        last, with 'system' as the final fallback.
+
+        A view directory which the project does not define is a
+        misconfiguration: the resolution refuses it instead of falling
+        back to the default view, which would run the operation
+        against a different view than the directory the operator
+        stands in. The creation of a project resolves leniently: the
+        views of the new project do not exist yet.
 
         The cwd is the directory the command runs from, passed
         explicitly: the resolution never consults the process working
@@ -76,7 +94,9 @@ class ProjectDir(object):
         explicitly or through the configuration.
 
         Raises ViewNotFoundError when the explicit selection is not a
-        view of the project.
+        view of the project, or when the working directory names a
+        view which the project does not define and the resolution is
+        strict.
         """
         if explicit:
             if explicit in views:
@@ -92,13 +112,25 @@ class ProjectDir(object):
 
             while current_dir != '/' and not view_dir:
                 view_path.insert(0, os.path.basename(current_dir))
-                if os.path.dirname(current_dir).endswith('/ansible/views'):
+                view_parent = os.path.dirname(current_dir)
+                if (os.path.basename(view_parent) == 'views'
+                        and os.path.basename(
+                            os.path.dirname(view_parent))
+                        in VIEW_TOOL_ROOTS):
                     view_dir = current_dir
                 else:
                     current_dir = os.path.dirname(current_dir)
 
-            # A single view matching the current directory wins; none
-            # or several fall through to the default view
+            # The project root itself is not a view directory: a
+            # project nested inside the view tree of another project
+            # resolves through its configuration
+            if view_dir and os.path.relpath(view_dir, root) == '.':
+                view_dir = None
+
+            # A single view matching the current directory wins; a
+            # view directory which names an undefined view refuses the
+            # resolution; several matches fall through to the default
+            # view
             if view_dir:
                 view_name = os.path.join(*view_path)
                 matching_views = ([path for path in list(views)
@@ -106,6 +138,16 @@ class ProjectDir(object):
                                        [path, view_name]) == path])
                 if len(matching_views) == 1:
                     return matching_views[0]
+                if not matching_views and strict:
+                    raise ViewNotFoundError(
+                        "The '{}' directory of the '{}' project names "
+                        "the '{}' view, which the project does not "
+                        'define: the views of the tools are '
+                        'complementary. Register the view in the '
+                        'project configuration, or remove the '
+                        'directory.'.format(
+                            os.path.relpath(view_dir, root),
+                            os.path.basename(root), view_path[0]))
 
         if default is not None:
             return default
@@ -216,7 +258,8 @@ class ProjectDir(object):
         self.view = self.resolve_view(
             root=self.path, cwd=cwd,
             views=list(self.config.raw['views'].keys()),
-            explicit=view, default=config_default_view)
+            explicit=view, default=config_default_view,
+            strict=not create)
 
         # Record the project context for the journal's correlation, and
         # set up the view environment
@@ -303,6 +346,10 @@ class ProjectDir(object):
         self.ansible_cfg.load_config()
         self.config.set_env('ANSIBLE_CONFIG',
                             unexpanduser(self.ansible_cfg.path))
+
+        # Point the 'binaries.tofu' option at the managed binary of
+        # the version which the view pins, when it is installed
+        self._apply_tofu_runtime()
 
     def environment(self):
         """Return the environment the project's commands run in.
@@ -420,6 +467,21 @@ class ProjectDir(object):
         if venv_bin in path.split(os.pathsep):
             return
         self.config.set_env('PATH', venv_bin + os.pathsep + path)
+
+    def _apply_tofu_runtime(self):
+        """Point the 'binaries.tofu' option at the managed binary of
+        the version which the view pins, when it is installed.
+
+        The resolution is conditional: the managed binary wins over
+        the configured option only when it is present, the configured
+        binary stands in otherwise. A project whose binary is
+        installed nowhere keeps the configured option; the tofu
+        runner reports the missing binary and refuses the operation
+        at run time.
+        """
+        self.config.merge(
+            {'binaries': {'tofu': effective_binary(self, self.view)}},
+            scope='runtime', origin='debops')
 
     def _inventory_spec_config(self):
         """Read the 'project.inventory_spec' configuration tree.
@@ -945,6 +1007,15 @@ class ProjectDir(object):
                                               'gitignore.j2'))
                 .decode('utf-8'), trim_blocks=True)
 
+        default_pre_commit = jinja2.Template(
+                pkgutil.get_data('debops',
+                                 os.path.join('_data',
+                                              'templates',
+                                              'projectdir',
+                                              'modern',
+                                              'pre-commit-config.j2'))
+                .decode('utf-8'), trim_blocks=True)
+
         default_inventory_keyring = jinja2.Template(
                 pkgutil.get_data('debops',
                                  os.path.join('_data',
@@ -957,6 +1028,11 @@ class ProjectDir(object):
                                               'all',
                                               'keyring.yml.j2'))
                 .decode('utf-8'), trim_blocks=True)
+
+        # Create .pre-commit-config.yaml with the OpenTofu format
+        # check of the views' trees
+        self._write_file(os.path.join(path, '.pre-commit-config.yaml'),
+                         default_pre_commit.render() + '\n')
 
         # Create .debops/conf.d/project.yml
         self._write_file(os.path.join(path, '.debops', 'conf.d',
@@ -1999,6 +2075,27 @@ class ProjectDir(object):
         run_hooks(self.path, 'pre-unlock', env=self.environment())
         SecretManager(self, self.view).unlock()
         run_hooks(self.path, 'post-unlock', env=self.environment())
+
+    def reload(self):
+        """Re-read the configuration from disk.
+
+        The fresh Configuration reads the packaged defaults, the
+        system and user directories, and this project's conf.d
+        through the ordinary loading path -- the override sublayer,
+        the drop-in files and the hand-written options rank exactly
+        as a fresh process would read them. The runtime merges
+        re-run inside the ProjectDir constructor, the same way the
+        initial load runs them.
+
+        The view is preserved: the caller resolved it already, and
+        the configuration files which just changed do not change
+        which view the operation runs against."""
+        fresh_config = Configuration()
+        fresh = ProjectDir(path=self.path, config=fresh_config,
+                           view=self.view)
+        self.config = fresh.config
+        self.view = fresh.view
+        self._commands = fresh._commands
 
     def lock(self):
         run_hooks(self.path, 'pre-lock', env=self.environment())

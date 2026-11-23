@@ -110,6 +110,19 @@ infrastructure environments.
    admin-guide/local-apt-repository
 
 .. toctree::
+   :caption: OpenTofu Guide
+   :maxdepth: 2
+   :hidden:
+
+   opentofu-guide/index
+   opentofu-guide/inventory-bridge
+   opentofu-guide/remote-state
+   opentofu-guide/registry-modules
+   opentofu-guide/state-adoption
+   opentofu-guide/ci
+   opentofu-guide/incus
+
+.. toctree::
    :caption: Developer Guide
    :maxdepth: 2
    :hidden:

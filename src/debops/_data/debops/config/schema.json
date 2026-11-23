@@ -53,6 +53,30 @@
         },
         "sftp": {
           "type": "string"
+        },
+        "tofu": {
+          "type": "string",
+          "description": "The OpenTofu binary which the hand-made views run, found through the system-wide or user-wide installation; the fallback of the views which pin a version whose managed binary is not installed. At runtime the option resolves to the managed binary of the version which the used view pins, when it is installed."
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "default_output": {
+          "type": "string",
+          "enum": [
+            "unix",
+            "yaml",
+            "json",
+            "toml"
+          ],
+          "description": "The output format which the 'debops config get' command renders with when the '--format' option is not given. The 'unix' format prints one option per line in the dotted 'path=value' notation; 'yaml', 'json' and 'toml' render the values in their respective formats."
+        },
+        "override_filename": {
+          "type": "string",
+          "description": "The file which the 'debops config set' command manages, relative to the configuration directory of the layer -- the project's '.debops/conf.d/' or the user configuration directory with '--user'. The file ranks by its location: the 'override/' subdirectory loads after the files of the directory itself, so the set options win over the hand-written ones. The name is the operator's to place, as a relative path without the '.' and '..' segments; the legacy files the command managed at the top level of the directory migrate into the configured location."
         }
       }
     },
@@ -66,6 +90,42 @@
       "properties": {
         "init_message": {
           "type": "string"
+        }
+      }
+    },
+    "gpg": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "debops": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "keyring": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "The GnuPG homedir of the DebOps-managed keyring, separate from the user's own GnuPG home. The keyring holds the public keys of the parties which sign the artifacts DebOps downloads and verifies; the trust anchor is the fingerprint of the expected signing key, recorded in the configuration of the party which uses it. An empty path resolves to the 'debops/gnupg' directory of the XDG data location, shared across projects."
+                },
+                "gpg_conf": {
+                  "type": "object",
+                  "description": "The options of the keyring's 'gpg.conf' file, rendered literally into the keyring: a string value renders as 'name value', a list as 'name v1 v2' -- the multi-value syntax of gpg.conf -- a boolean 'true' emits the option name alone, and 'false' omits the line, letting the option's gpg default apply.",
+                  "additionalProperties": {
+                    "type": [
+                      "string",
+                      "boolean",
+                      "array"
+                    ],
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -320,6 +380,244 @@
                   "project"
                 ],
                 "description": "Where the SSH host keys of the view are stored: in the user's own known_hosts file ('user') or in the project's per-view store ('project')."
+              }
+            }
+          },
+          "tofu": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "OpenTofu integration options of the view.",
+            "properties": {
+              "workspace": {
+                "type": "string",
+                "description": "The OpenTofu workspace the view targets by default. When unset, the view targets the 'default' workspace: one state directory per view."
+              },
+              "state_path": {
+                "type": "string",
+                "description": "Per-view override of the 'tofu.state_path' option."
+              },
+              "providers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "The OpenTofu provider sources which the view requires, in the 'namespace/name' or 'hostname/namespace/name' notation, optionally with a version pin separated by '='. The generated 'providers.tf' file of the view is derived from this option; an empty list marks a providerless view. The option is recorded in the view's configuration drop-in, which the user owns: the 'debops tofu update' command reconciles the generated files with it."
+              },
+              "modules": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "type": "string",
+                      "description": "The module source address in the OpenTofu registry notation: 'namespace/name[/submodule]', or 'hostname/namespace/name[/submodule]' for modules outside the public registry."
+                    },
+                    "version": {
+                      "type": "string",
+                      "description": "The version of the module which the view instantiates."
+                    },
+                    "inputs": {
+                      "type": "object",
+                      "description": "The inputs of the module instance. The values are configuration values: the literals render as the HCL literals of the generated file, and strings which carry the 'hcl:' prefix carry raw HCL expressions which the file emits verbatim."
+                    }
+                  },
+                  "required": [
+                    "source"
+                  ]
+                },
+                "description": "The OpenTofu modules which the view instantiates. The table keys are the local module names which the generated 'modules.tf' file instantiates; each entry carries the module source address, an optional version pin and the inputs of the module instance. The generated file is derived from this option; an empty table marks a view without modules. The option is recorded in the view's configuration drop-in, which the user owns: the 'debops tofu update' command reconciles the generated files with it."
+              },
+              "binary_version": {
+                "type": "string",
+                "description": "The version of the OpenTofu binary which the view runs with, recorded in the view's configuration drop-in when the view is created: the 'tofu.upstream.known_version' option seeds it with the known-good version. The pinned binary is installed into the DebOps data directory, version-keyed, through the 'debops tofu install' command; the view runs it when it is present. A view without a recorded version -- a hand-made one -- runs the 'binaries.tofu' configured binary, unmanaged."
+              },
+              "plan_retention": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "How many plan files the DebOps flows keep in the plan directory of this view. The view option overrides the 'tofu.plan_retention' option of the root; the plans live in the view, the retention follows them."
+              },
+              "inventory": {
+                "type": "object",
+                "properties": {
+                  "to_view": {
+                    "type": "string",
+                    "description": "The Ansible view the inventory render targets, instead of the mirror view of the same name. The hosts file, the variables files and the sensitive values land in the named view."
+                  }
+                },
+                "additionalProperties": false,
+                "description": "The per-view options of the inventory bridge: the target of the render, when the pairing with the same-named Ansible view is not the shape the deployment needs."
+              }
+            }
+          }
+        }
+      }
+    },
+    "tofu": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Integration options of the 'debops tofu' wrapper. The OpenTofu language itself is configured in the project's tofu files, not here.",
+      "properties": {
+        "mkview": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The options consulted when a view is created through 'debops tofu mkview'; the existing views keep their recorded state.",
+          "properties": {
+            "default_providers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "The OpenTofu provider sources which new views of the project are created with, recorded in the view's configuration drop-in at creation. Each entry is a provider source address in the OpenTofu registry notation, optionally with a version pin separated by \"=\". An empty list creates providerless views. The option is consulted only when a view is created; the provider set of an existing view is changed by editing the 'views.<view>.tofu.providers' option of its configuration drop-in."
+            },
+            "default_modules": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string",
+                    "description": "The module source address in the OpenTofu registry notation: 'namespace/name[/submodule]', or 'hostname/namespace/name[/submodule]' for modules outside the public registry."
+                  },
+                  "version": {
+                    "type": "string",
+                    "description": "The version of the module which the view instantiates."
+                  },
+                  "inputs": {
+                    "type": "object",
+                    "description": "The inputs of the module instance. The values are configuration values: the literals render as the HCL literals of the generated file, and strings which carry the 'hcl:' prefix carry raw HCL expressions which the file emits verbatim."
+                  }
+                },
+                "required": [
+                  "source"
+                ]
+              },
+              "description": "The OpenTofu modules which new views of the project instantiate, recorded in the view's configuration drop-in at creation. The table keys are the local module names which the generated 'modules.tf' file instantiates; each entry carries the module source address, an optional version pin and the inputs of the module instance. An empty table creates views without modules. The option is consulted only when a view is created; the module set of an existing view is changed by editing the 'views.<view>.tofu.modules' option of its configuration drop-in."
+            },
+            "secret": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "The state passphrase generation of the view creation, written into the store's 'environment' file.",
+              "properties": {
+                "passphrase_length": {
+                  "type": "integer",
+                  "description": "The length in characters of the generated state passphrase. The passphrase is drawn from the URL-safe alphabet -- letters, digits, dashes and underscores -- which the environment file carries without quoting.",
+                  "minimum": 16
+                }
+              }
+            }
+          }
+        },
+        "state_path": {
+          "type": "string",
+          "description": "Path to the state file of the local backend, relative to the view's 'tofu' directory. Empty string marks a view with a remote backend: the local state checks are skipped."
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The OpenTofu operations the 'debops tofu' wrapper is allowed to run. An empty list allows every operation."
+        },
+        "plan_retention": {
+          "type": "integer",
+          "description": "How many plan files the DebOps flows keep in the state directory."
+        },
+        "inventory": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Options of the 'debops tofu inventory' bridge: the static renderer which renders the OpenTofu inventory outputs of a view into the Ansible view's inventory.",
+          "properties": {
+            "hosts_format": {
+              "type": "string",
+              "enum": [
+                "ini",
+                "yaml",
+                "json",
+                "toml"
+              ],
+              "description": "The format of the hosts file which the 'debops tofu inventory' bridge renders in the Ansible view's inventory directory: 'ini' (the classic Ansible inventory), 'yaml' or 'json' (parsed by the YAML inventory plugin, JSON being a YAML subset) and 'toml' (parsed by the TOML inventory plugin). The rendered file name is the 'hosts_filename' option with the format's canonical extension appended; the files of the other formats are removed when the renderer owns them or when they hold only the scaffold placeholder the project init writes."
+            },
+            "state_refresh": {
+              "type": "boolean",
+              "description": "Whether the 'debops tofu inventory' operation refreshes the state of the view before it renders: 'true' runs 'tofu refresh' before the outputs are collected, so in-place changes and late DHCP leases land in the rendered inventory. The refresh churns the state -- its serial bumps even with no changes, and the store records a commit per render -- so the default renders the state as of the last refresh or apply; the observable staleness (a host whose state carries no address) skips with a notice naming the '--force' option."
+            },
+            "vars_filename": {
+              "type": "string",
+              "description": "The name of the variables file which the bridge renders for a host or group in the 'host_vars/' and 'group_vars/' directories of the Ansible view's inventory. The plain variables of the seed are written there; the file name is a convention with the users of the view, who may reference it in their own files."
+            },
+            "secret": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Where the bridge stores the sensitive variable values it receives from the OpenTofu outputs.",
+              "properties": {
+                "host_path": {
+                  "type": "string",
+                  "description": "The path template of the sensitive content files which the bridge writes for the hosts, relative to the Ansible view's root directory: the '%s' placeholders carry the seed key of the host -- the tofu-side identity which survives a hostname or label change -- and the variable name, in that order. The rendered inventory variables reference the files with the 'file' lookup, composed from the same template. A template starting with '/' is absolute: the lookup uses it as-is."
+                },
+                "group_path": {
+                  "type": "string",
+                  "description": "The path template of the sensitive content files which the bridge writes for the groups, relative to the Ansible view's root directory: the '%s' placeholders carry the group name and the variable name, in that order. The host and group namespaces keep a group which shares its name with a host from colliding with it."
+                }
+              }
+            },
+            "hosts_filename": {
+              "type": "string",
+              "description": "The base name of the hosts file which the bridge renders. The 'yaml', 'json' and 'toml' formats append their canonical extension ('.yml', '.json', '.toml') when the configured name lacks one; the 'ini' format renders the name as-is, the ini inventory plugin accepts any file name."
+            },
+            "ansible_host_format": {
+              "type": "string",
+              "enum": [
+                "fqdn",
+                "ip"
+              ],
+              "description": "What the 'ansible_host' variable of a labelled host carries: 'fqdn' uses the 'host' attribute of the inventory seed as the connection target, 'ip' uses the 'address' attribute. Without a label the FQDN is the inventory hostname and the address is the connection target, so the format does not apply. The identity the connection target does not carry renders as a plain variable under its seed name."
+            },
+            "host_status": {
+              "type": "object",
+              "description": "What the bridge does with the hosts which the 'status' attribute of the inventory seed marks, keyed by the status value, lowercased: 'include' renders the hosts into the inventory, 'skip' leaves them out. A status without a configured key is skipped, with a notice naming the hosts; hosts without a 'status' attribute are always included.",
+              "additionalProperties": {
+                "type": "string",
+                "enum": [
+                  "skip",
+                  "include"
+                ]
+              },
+              "properties": {
+                "running": {
+                  "type": "string",
+                  "enum": [
+                    "skip",
+                    "include"
+                  ],
+                  "description": "The handling of the hosts whose status is 'running': the status the bridge renders by default. The other statuses are skipped until a key names their handling."
+                }
+              }
+            }
+          }
+        },
+        "upstream": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "known_version": {
+              "type": "string",
+              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+              "description": "The OpenTofu version which the debops package is verified with: the known-good version which the 'views.<view>.tofu.binary_version' option of a new view's configuration drop-in is seeded with at creation. The views which exist keep their recorded version: the drop-in is written once, the pin is the user's record from then on."
+            },
+            "release_base": {
+              "type": "string",
+              "pattern": "\\{version\\}",
+              "description": "The base of the OpenTofu release downloads, a URL template whose '{version}' placeholder is substituted with the version of the release to install. The 'debops tofu install' command downloads the release archive, the release checksums and their signature from the base; the option points the install at a mirror of the releases."
+            },
+            "release_key": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "fingerprint": {
+                  "type": "string",
+                  "pattern": "^[0-9A-Fa-f]{40}$",
+                  "description": "The fingerprint of the GnuPG key which signs the OpenTofu releases. The 'debops tofu install' command verifies the signature of the release checksums against the DebOps-managed keyring, and the signing key's fingerprint must match this pin: the fingerprint is the trust anchor, not the key material. The key is imported from the keyserver of the DebOps keyring when it is missing."
+                }
               }
             }
           }

@@ -5,14 +5,24 @@
 """Fixtures shared by the unit tests."""
 
 import configparser
+import io
 import os
 import shlex
 import stat
 
 import pytest
+from unittest import mock
+
+import textwrap
+
+import debops.core.tofu.runner as runner_module
 
 from debops import set_project_context
+from debops.core import runner as runner_base_module
 from debops.core.config import Configuration
+from debops.core.secrets import SecretManager
+from debops.core.tofu import runner as runner_module
+from tests.unit.core.tofu_helpers import RELEASE_KEY_FINGERPRINT
 
 HOST_VARS = ('{"ansible_host": "192.0.2.10", "ansible_user": "admin", '
              '"ansible_port": 2222,'
@@ -230,6 +240,58 @@ class StubConfig:
         self.raw = raw if raw is not None else {}
         self._env_vars = env_vars if env_vars is not None else {}
 
+    def merge(self, data, scope=None, origin=None):
+        """Merge a dictionary into the raw tree, the way the real
+        ``Configuration._merge_dict`` does for a dict: nested
+        dictionaries merge recursively, every other value replaces the
+        recorded one. A path string loads the configuration files the
+        way the real ``Configuration.load`` does: the files of a
+        directory in the sorted order, the subdirectories after
+        them."""
+        import toml as _toml
+        if isinstance(data, str):
+            if os.path.isfile(data):
+                parsed = _toml.loads(open(data).read())
+                self.merge(parsed, scope=scope, origin=origin)
+                return
+            if os.path.isdir(data):
+                for name in sorted(os.listdir(data)):
+                    path = os.path.join(data, name)
+                    if os.path.isfile(path) and name.endswith('.toml'):
+                        parsed = _toml.loads(open(path).read())
+                        self.merge(parsed, scope=scope, origin=origin)
+                    elif os.path.isdir(path):
+                        for root, _, files in os.walk(path):
+                            for f in sorted(files):
+                                if f.endswith('.toml'):
+                                    parsed = _toml.loads(
+                                        open(os.path.join(root, f)).read())
+                                    self.merge(parsed, scope=scope,
+                                               origin=origin)
+                return
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if (isinstance(self.raw.get(key), dict)
+                        and isinstance(value, dict)):
+                    self._merge_dict(self.raw[key], value)
+                else:
+                    self.raw[key] = value
+
+    def _merge_dict(self, d1, d2):
+        """The merge semantics of the real Configuration: the lists
+        union with the dedup, the tables merge recursively -- the
+        stub merges the way the production code does, so a
+        regression that relies on the stub's simpler semantics
+        cannot pass the tests and break against the real tree."""
+        for key, value in d2.items():
+            if isinstance(d1.get(key), dict) and isinstance(value, dict):
+                self._merge_dict(d1[key], value)
+            elif isinstance(d1.get(key), list) and isinstance(value, list):
+                d1[key] = d1[key] + [item for item in value
+                                     if item not in d1[key]]
+            else:
+                d1[key] = value
+
 
 class StubAnsibleConfig:
     """A stand-in for ``debops.core.ansible.ansibleconfig.AnsibleConfig``.
@@ -251,6 +313,13 @@ class StubAnsibleConfig:
             return self._options[option]
         raise configparser.NoOptionError(option, section)
 
+    def option_file(self, directory):
+        """The stub carries no managed file: the writer's override
+        re-merge skips the read."""
+        import os as _os
+        path = _os.path.join(directory, 'override', '99_config_set.json')
+        return path if _os.path.isfile(path) else None
+
 
 class StubProject:
     """The minimum project a runner reads from its constructor."""
@@ -263,6 +332,19 @@ class StubProject:
         self.project_type = project_type
         self.config = config if config is not None else StubConfig()
         self.ansible_cfg = ansible_cfg
+
+    def _is_git_repo(self, path=None):
+        """The stub project is not a git repository: the state
+        history checks degrade to the no-history branch."""
+        return False
+
+    def reload(self):
+        """Re-read the project's conf.d directory: the drop-in files
+        and the override sublayer merge into the tree at the rank
+        the disk gives them."""
+        self.config.merge(
+            os.path.join(self.path, '.debops', 'conf.d'),
+            scope='project')
 
     def environment(self):
         """The environment a project command runs in, composed the way
@@ -373,3 +455,134 @@ def configuration():
     config._env_prefix = "DEBOPS_CONFIG__"
     config._env_vars = {}
     return config
+
+
+@pytest.fixture(autouse=True)
+def stub_project_secrets(monkeypatch):
+    """A real SecretManager over a stub store.
+
+    The manager's list-shaped unlock and lock results stay live in
+    these tests, so a change of the manager's return shape fails here
+    instead of hiding behind a mock configured with the shape of an
+    older interface; only the store mechanics are stubbed. The store
+    mock is handed to the tests which configure or inspect it.
+    """
+    store = mock.Mock()
+    store.unlock.return_value = False
+    store.lock.return_value = False
+
+    class StubStores(SecretManager):
+        def _factories(self):
+            return {"tofu": lambda project, view: store}
+
+    monkeypatch.setattr(runner_base_module, "SecretManager", StubStores)
+    return store
+
+
+@pytest.fixture
+def tofu_project(stub_project, tmp_path, monkeypatch):
+    """A stub project whose configuration carries the tofu section,
+    with the view's tofu directory in place. A stub 'tofu' binary on
+    the PATH stands in for the system-wide installation, so that the
+    binary resolution does not depend on the test host."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    stub_tofu = bin_dir / "tofu"
+    stub_tofu.write_text("#!/bin/sh\nexit 0\n")
+    stub_tofu.chmod(0o755)
+    monkeypatch.setenv("PATH", str(bin_dir) + os.pathsep +
+                       os.environ.get("PATH", ""))
+
+    def _make(**kwargs):
+        raw = {"binaries": {"tofu": "tofu"},
+               "tofu": {"state_path": "state/terraform.tfstate",
+                        "operations": [], "plan_retention": 3,
+                        "mkview": {"default_providers": [],
+                                   "default_modules": {}},
+                        "upstream": {"known_version": "1.13.9"}}}
+        if "raw" in kwargs:
+            for key, value in kwargs.pop("raw").items():
+                if key in raw and isinstance(raw[key], dict):
+                    raw[key].update(value)
+                else:
+                    raw[key] = value
+        project = stub_project(raw=raw, **kwargs)
+        if project.project_type == "legacy":
+            view_dir = os.path.join(project.path, "tofu")
+        else:
+            view_dir = os.path.join(project.path, "tofu", "views",
+                                    project.view)
+        os.makedirs(os.path.join(view_dir, "secret"), exist_ok=True)
+        # A view whose template is applied: the runner finds it in
+        # place and does not re-create it
+        with open(os.path.join(view_dir, "main.tf"), "w") as handle:
+            handle.write("terraform { backend \"local\" {} }\n")
+        return project
+    return _make
+
+
+@pytest.fixture
+def stub_tofu_subprocess(monkeypatch):
+    """A stubbed tofu subprocess: 'execute()' runs to completion
+    without the tofu binary, the hooks pass. The pipes are reusable
+    mocks which read to EOF immediately: the stderr relay of the
+    runner closes the descriptor it drains, and a rotation runs
+    several operations against the same stub."""
+    process = mock.Mock()
+    process.returncode = 0
+    process.stdout = mock.Mock()
+    process.stdout.read.return_value = b""
+    process.stderr = mock.Mock()
+    process.stderr.read.return_value = b""
+    process.communicate.return_value = (b"", b"")
+    popen = mock.Mock(return_value=process)
+    monkeypatch.setattr(runner_module.subprocess, "Popen", popen)
+    monkeypatch.setattr(runner_module, "run_hooks",
+                        mock.Mock(return_value=True))
+    return popen
+
+
+@pytest.fixture
+def stub_gpg(tmp_path, monkeypatch):
+    """A stub gpg(1) binary for the install tests: it imports the
+    requested keys into a fake keyring and reports the pinned
+    fingerprint on verification. The environment variables steer the
+    canned behavior; the keyring holds the keys the stub imports."""
+    bin_dir = tmp_path / "gpg-bin"
+    bin_dir.mkdir()
+    stub = bin_dir / "gpg"
+    stub.write_text(textwrap.dedent('''\
+        #!/bin/sh
+        case " $* " in
+          *" --list-keys "*)
+            cat "$GPG_IMPORTED_LOG" 2>/dev/null || true
+            exit 0
+            ;;
+          *" --recv-keys "*)
+            if [ -n "$GPG_RECV_FAIL" ]; then
+              echo "gpg: keyserver error" >&2
+              exit 1
+            fi
+            fpr="$*"
+            if [ -n "$GPG_RECV_KEY" ]; then
+              fpr="$GPG_RECV_KEY"
+            fi
+            echo "fpr:::::::::${fpr##* }:" >> "$GPG_IMPORTED_LOG"
+            exit 0
+            ;;
+          *" --verify "*)
+            if [ -n "$GPG_VERIFY_FAIL" ]; then
+              echo "gpg: Bad signature" >&2
+              exit 1
+            fi
+            echo "[GNUPG:] VALIDSIG $GPG_SIGNING_KEY 0 0 0 0 0 0 0 0 $GPG_SIGNING_KEY"
+            exit 0
+            ;;
+        esac
+        exit 0
+        '''))
+    stub.chmod(stub.stat().st_mode | stat.S_IXUSR)
+    monkeypatch.setenv('GPG_IMPORTED_LOG',
+                       str(tmp_path / 'gpg-imported.log'))
+    monkeypatch.setenv('GPG_SIGNING_KEY', RELEASE_KEY_FINGERPRINT)
+    return stub

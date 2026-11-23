@@ -1,0 +1,22 @@
+{# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# The pre-commit hooks of the project: the OpenTofu format check of
+# the views' trees. The hook runs the 'tofu' binary from the PATH --
+# the version-pinned managed binary the 'debops tofu' wrapper runs
+# is the one to keep in sync with.
+#
+# The validation hook is left out on purpose: 'tofu validate' needs
+# the views initialized ('debops tofu init') and runs per view, so
+# it cannot be a one-liner here. Run it per view after the
+# initialization when the configuration changes.
+repos:
+  - repo: local
+    hooks:
+      - id: tofu-fmt
+        name: OpenTofu format check
+        entry: tofu fmt --check --recursive tofu
+        language: system
+        pass_filenames: false
+        files: ^tofu/.*\.tf$

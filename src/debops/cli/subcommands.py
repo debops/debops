@@ -96,6 +96,7 @@ Sections:
     check    run Ansible playbook(s) in check mode
     env      run shell commands in project environment
     config   manage DebOps configuration options
+    tofu     manage OpenTofu views, state and inventory
 
 SSH connections:
     ssh      connect to hosts over ssh and manage known_hosts
@@ -119,9 +120,10 @@ SSH connections:
                           required=False, help=None, no_help=None):
         group = parser.add_mutually_exclusive_group(
                 required=required)
-        group.add_argument('--' + name, dest=name,
+        option = name.replace('_', '-')
+        group.add_argument('--' + option, dest=name,
                            help=help, action='store_true')
-        group.add_argument('--no-' + name, dest=name,
+        group.add_argument('--no-' + option, dest=name,
                            help=no_help, action='store_false')
         parser.set_defaults(**{name: default})
 
@@ -338,8 +340,17 @@ Commands:
                                no_help="don't configure the SSH "
                                        "known_hosts store")
         parser.add_argument('--encrypt', type=str, nargs='?',
-                            choices=['encfs', 'git-crypt'],
-                            help='enable encrypted secrets')
+                            choices=['encfs', 'git-crypt', 'plain'],
+                            help='enable encrypted secrets; plain commits '
+                                 'the passphrase unencrypted')
+        self.add_bool_argument(parser, 'tofu',
+                               help='create the OpenTofu view of the '
+                                    'default view after the initialization',
+                               no_help="don't create the OpenTofu view")
+        self.add_bool_argument(parser, 'pre_commit',
+                               help='install the pre-commit hook after '
+                                    'the initialization',
+                               no_help="don't install the pre-commit hook")
         parser.add_argument('--keys', type=str,
                             help='list of GPG recipients with secret access, '
                                  'delimited by commas')
@@ -622,6 +633,319 @@ Actions:
                             help='command and arguments to execute')
         self.args = parser.parse_args(self.args[2:])
 
+    def do_tofu(self):
+        parser = _argument_parser(
+                parents=[self.global_parser], add_help=False,
+                usage='''debops tofu [<args>] [--] <operation> [<operation args>]
+
+DebOps-level operations (not passed to the 'tofu' command):
+  mkview     create a new view with its store and the environment file
+  update     reconcile the files DebOps owns in the view and run
+             'tofu init' through the wrapper
+  install    install the OpenTofu binaries which the views pin
+  inventory  render the inventory outputs of the view into the
+             Ansible view's inventory
+  plans      list the plan files the wrapper saves for the view and
+             show, apply or delete one of them by its id
+  rekey      rotate the state passphrase of the view through the
+             fallback key provider of the OpenTofu encryption
+  cache      list and clean the OpenTofu cache of the project''',
+                epilog="The operation and its arguments are passed to "
+                       "the 'tofu' command; the DebOps options come "
+                       'before the operation, the options of the '
+                       'operation after it.')
+        # The options of the section and the ones inherited from the
+        # global parser share the 'DebOps options' section of the
+        # composed help screen
+        parser._optionals.title = 'DebOps options'
+        parser.add_argument(
+                '-h', '--help', action='store_true',
+                help='show the OpenTofu help followed by the options '
+                     'of the wrapper')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view '
+                                 'to use for the "tofu" command')
+        parser.add_argument('-E', '--bell', default=False,
+                            help='notify the user at the end '
+                                 'of the OpenTofu operation',
+                            action='store_true')
+        parser.add_argument('--no-color', default=False,
+                            help='strip the ANSI color codes '
+                                 'from the operation output',
+                            action='store_true')
+        parser.add_argument('-w', '--workspace', type=str,
+                            help='run the operation against the '
+                                 'named workspace of the view, '
+                                 'overriding the workspace '
+                                 'configured for the view')
+        parser.add_argument('-M', '--allow-missing-state',
+                            default=False, action='store_true',
+                            help='proceed with the state-touching '
+                                 'operations on a view whose state '
+                                 'file is missing: for the '
+                                 'deliberate wipe-and-rebuild')
+        parser.add_argument('--eval', default=False,
+                            help='print the OpenTofu command '
+                                 'and exit',
+                            action='store_true')
+        parser.add_argument('tofu_args', type=str, nargs=argparse.REMAINDER,
+                            help=argparse.SUPPRESS)
+        self.args = parser.parse_args(self.args[2:])
+        self._parse_tofu_operation()
+        if self.args.help:
+            self.args.help_body = self._tofu_help_body(parser)
+
+    def _tofu_help_body(self, parser):
+        """The help of the wrapper without the usage synopsis: the
+        composed help screen prints the OpenTofu help first, whose
+        rewritten usage line stands in for ours."""
+        return parser.format_help().split('\n', 1)[1]
+
+    def _parse_tofu_operation(self):
+        """Parse the options of the DebOps-level tofu operations: the
+        operations which the wrapper does not pass to the 'tofu'
+        command carry their own options and their own help screens."""
+        if self.args.tofu_args and self.args.tofu_args[0] == '--':
+            # The '--' separator the usage line promises between the
+            # wrapper options and the operation: a leading one must
+            # not turn the DebOps-level operations into raw
+            # passthrough
+            self.args.tofu_args.pop(0)
+        if (not self.args.tofu_args
+                or self.args.tofu_args[0] not in ('mkview', 'update',
+                                                  'install', 'inventory',
+                                                  'plans', 'rekey',
+                                                  'cache')):
+            return
+        if self.args.tofu_args[0] == 'mkview':
+            parser = _argument_parser(
+                    usage='debops tofu mkview [<options>] <new_view>',
+                    description='create a new OpenTofu view with its '
+                                'encrypted store and the environment '
+                                'key file of the view')
+            parser.add_argument('-v', '--verbose', action='count',
+                                help='increase output verbosity '
+                                     '(e.g., -vv is more than -v)')
+            parser.add_argument('-e', '--encrypt', type=str, nargs='?',
+                                choices=['encfs', 'git-crypt', 'plain'],
+                                help="the encryption of the view's "
+                                     'secret store: the mechanism '
+                                     'detected in the project is the '
+                                     "default -- 'git-crypt' for the "
+                                     'repository-wide setup, '
+                                     "'encfs' where the Ansible views "
+                                     'carry EncFS volumes; required '
+                                     'when the project carries no '
+                                     "store yet, and 'plain' commits "
+                                     'the passphrase unencrypted')
+            parser.add_argument('--keys', type=str,
+                                help='list of GPG recipients with '
+                                     'secret access, delimited by '
+                                     'commas; required for EncFS')
+            mkview_options = parser.add_argument_group(
+                    "the 'debops tofu mkview' options")
+            mkview_options.add_argument('-p', '--provider', type=str,
+                                        action='append', default=None,
+                                        help='require the OpenTofu provider '
+                                             'in the created view, as a '
+                                             'registry source address; '
+                                             'repeatable')
+            mkview_options.add_argument('-m', '--module', type=str,
+                                        action='append', default=None,
+                                        help='instantiate the OpenTofu module '
+                                             'in the created view, as a '
+                                             'registry source address; '
+                                             'repeatable')
+            parser.add_argument('new_view', type=str,
+                                help='name of the view to create')
+            self.args = parser.parse_args(self.args.tofu_args[1:],
+                                          namespace=self.args)
+            return
+        if self.args.tofu_args[0] == 'inventory':
+            parser = _argument_parser(
+                    usage='debops tofu inventory [<options>]',
+                    description="render the inventory outputs of the "
+                                "view into the Ansible view's "
+                                'inventory: the hosts file in the '
+                                'configured format, the variables '
+                                'files of the hosts and groups, and '
+                                'the sensitive values into the '
+                                "view's secret store")
+            parser.add_argument('-v', '--verbose', action='count',
+                                help='increase output verbosity '
+                                     '(e.g., -vv is more than -v)')
+            parser.add_argument('-f', '--force', action='store_true',
+                                help='refresh the state of the view '
+                                     'before the render: in-place '
+                                     'changes and late DHCP leases '
+                                     'land in the inventory')
+            parser.add_argument('-n', '--dry-run', action='store_true',
+                                help='only simulate the render: '
+                                     'report the changes without '
+                                     'applying them')
+            parser.add_argument('-t', '--to-view', type=str,
+                                help="render into the named Ansible "
+                                     "view's inventory and store "
+                                     'instead of the mirror view of '
+                                     'the same name')
+            parser.add_argument('--diff', action='store_true',
+                                help='print the unified diffs of the '
+                                     'changes instead of the paths')
+            self.args = parser.parse_args(self.args.tofu_args[1:],
+                                          namespace=self.args)
+            return
+        if self.args.tofu_args[0] == 'plans':
+            parser = _argument_parser(
+                    usage='debops tofu plans [<verb> [<id>]]',
+                    description="list the plan files the wrapper "
+                                "saves for the view -- the sequence "
+                                'id, the stamp, the size and the '
+                                'age -- and show, apply or delete '
+                                'one of them by its id. The ids are '
+                                'stable while the retention prunes '
+                                'the oldest files; the plan files '
+                                'are OpenTofu-encrypted')
+            parser.add_argument('-v', '--verbose', action='count',
+                                help='increase output verbosity '
+                                     '(e.g., -vv is more than -v)')
+            parser.add_argument('--json', action='store_true',
+                                help='render the plan as JSON')
+            parser.add_argument('verb', nargs='?',
+                                choices=['show', 'apply', 'delete'],
+                                help='the operation on one saved '
+                                     'plan; the bare operation '
+                                     'lists them')
+            parser.add_argument('plan_id', nargs='?',
+                                help='the sequence id of the saved '
+                                     'plan, or the unique prefix of '
+                                     'its file name')
+            self.args = parser.parse_args(self.args.tofu_args[1:],
+                                          namespace=self.args)
+            if self.args.json and self.args.verb != 'show':
+                parser.error("'--json' renders a plan: it needs the "
+                             "'show' verb")
+            if self.args.verb and not self.args.plan_id:
+                parser.error("The '{}' verb needs the id of the "
+                             'saved plan'.format(self.args.verb))
+            return
+        if self.args.tofu_args[0] == 'rekey':
+            parser = _argument_parser(
+                    usage='debops tofu rekey',
+                    description="rotate the state passphrase of the "
+                                "view: the new passphrase is "
+                                'generated, the state is '
+                                're-encrypted through the fallback '
+                                'key provider of the OpenTofu '
+                                'encryption, the saved plan files '
+                                'encrypted under the retired key '
+                                'are removed. An interrupted '
+                                'rotation resumes on a re-run')
+            parser.add_argument('-v', '--verbose', action='count',
+                                help='increase output verbosity '
+                                     '(e.g., -vv is more than -v)')
+            self.args = parser.parse_args(self.args.tofu_args[1:],
+                                          namespace=self.args)
+            return
+        if self.args.tofu_args[0] == 'cache':
+            parser = _argument_parser(
+                    usage='debops tofu cache [<options>]',
+                    description="list and clean the OpenTofu cache of "
+                                'the project: the data directories of '
+                                'its views, the in-tree '
+                                "'.terraform/ leftovers of the views "
+                                'which predate the data dir relocation, '
+                                'and the shared plugin cache. The '
+                                'cleaned data is re-derivable: the '
+                                'state is tracked in the view tree, '
+                                'the next init rebuilds the rest')
+            parser.add_argument('-v', '--verbose', action='count',
+                                help='increase output verbosity '
+                                     '(e.g., -vv is more than -v)')
+            parser.add_argument('--clean', action='store_true',
+                                help='remove the cache entries of the '
+                                     'selected scope: the resolved '
+                                     "view's data dir by default")
+            parser.add_argument('--project', action='store_true',
+                                help="scope the clean to the data "
+                                     'dirs of all the views of the '
+                                     'project')
+            parser.add_argument('--plugins', action='store_true',
+                                help='scope the clean to the shared '
+                                     'plugin cache of all views and '
+                                     'projects')
+            parser.add_argument('--reset', action='store_true',
+                                help='clean the whole cache root: '
+                                     'the data dirs of all projects, '
+                                     'the shared plugin cache and the '
+                                     'stale entries of the projects '
+                                     'which moved away')
+            parser.epilog = (
+                'The scopes rank from the narrow to the whole: '
+                "'--clean' cleans the resolved view, '--project' the "
+                'views of the project, \'--plugins\' the shared '
+                'provider cache, and \'--reset\' the entire cache '
+                'root. Provider binaries live in the shared cache and '
+                're-download on the next init; the module state lives '
+                'in the data dirs.')
+            self.args = parser.parse_args(self.args.tofu_args[1:],
+                                          namespace=self.args)
+            if self.args.reset and (self.args.project
+                                    or self.args.plugins):
+                parser.error("'--reset' cleans the whole cache root: "
+                             "it does not combine with '--project' "
+                             "or '--plugins'")
+            if self.args.project and self.args.plugins:
+                parser.error("'--project' and '--plugins' are separate "
+                             'scopes: choose one')
+            if ((self.args.project or self.args.plugins or self.args.reset)
+                    and not self.args.clean):
+                parser.error("'--project', '--plugins' and '--reset' are "
+                             "scopes of '--clean': give both options")
+            return
+        if self.args.tofu_args[0] == 'update':
+            parser = _argument_parser(
+                    usage='debops tofu update [<options>]',
+                    description="reconcile the files DebOps owns in the "
+                                "view: the generated 'providers.tf' and "
+                                "'modules.tf' files follow the "
+                                'dependency sets recorded in the view '
+                                "configuration drop-in, and 'tofu init' "
+                                'runs through the wrapper to apply the '
+                                'changed requirement files')
+            parser.add_argument('-v', '--verbose', action='count',
+                                help='increase output verbosity '
+                                     '(e.g., -vv is more than -v)')
+            parser.add_argument('-n', '--dry-run', action='store_true',
+                                help='only simulate the reconcile: '
+                                     'report the changes without '
+                                     'applying them')
+            parser.add_argument('--diff', action='store_true',
+                                help='print the unified diffs of the '
+                                     'changes instead of the paths')
+            parser.add_argument('--force', action='store_true',
+                                help='overwrite, clear or remove paths '
+                                     'which already exist')
+        else:
+            parser = _argument_parser(
+                    usage='debops tofu install [<options>]',
+                    description='install the OpenTofu binaries which '
+                                'the views of the project pin, '
+                                'version-keyed in the DebOps data '
+                                'directory; the release archives are '
+                                'verified against the release '
+                                'checksums, whose signature the '
+                                'DebOps-managed keyring authenticates')
+            parser.add_argument('-v', '--verbose', action='count',
+                                help='increase output verbosity '
+                                     '(e.g., -vv is more than -v)')
+            parser.add_argument('--force', action='store_true',
+                                help='reinstall the binaries which are '
+                                     'installed already: the download, '
+                                     'the verification and the install '
+                                     'run again')
+        self.args = parser.parse_args(self.args.tofu_args[1:],
+                                      namespace=self.args)
+
     def do_config(self):
         parser = _argument_parser(
                 description='manage DebOps configuration state',
@@ -658,10 +982,11 @@ Commands:
                 parents=[self.global_parser],
                 usage='debops config get [<args>] [--] <key>',
                 description='return value of specific DebOps option')
-        parser.add_argument('--format', type=str, nargs='?',
+        parser.add_argument('-f', '--format', type=str, nargs='?',
                             choices=['json', 'toml', 'unix', 'yaml'],
-                            default='unix',
-                            help='output format (default: %(default)s)')
+                            default=None,
+                            help="output format (default: from the "
+                                 "'config.default_output' option, 'yaml')")
         parser.add_argument('-k', '--keys', default=False,
                             help='list configuration keys '
                                  'at the specified level',
@@ -679,7 +1004,7 @@ Commands:
                                  'last set each option',
                             action='store_true')
         parser.add_argument('key', type=str,
-                            nargs=argparse.REMAINDER,
+                            nargs='*',
                             help='name of the '
                                  'configuration option')
         self.args = parser.parse_args(self.args[3:])
@@ -687,7 +1012,8 @@ Commands:
     def do_config_set(self):
         parser = _argument_parser(
                 parents=[self.global_parser],
-                usage='debops config set [<args>] [--] <key> [<value>]',
+                usage='debops config set [<args>] [--] <key> '
+                      '[<values>...]',
                 description='set or remove a DebOps configuration '
                             'option in the configuration files')
         parser.add_argument('-u', '--user', default=False,
@@ -697,12 +1023,22 @@ Commands:
                             action='store_true')
         parser.add_argument('-d', '--delete', default=False,
                             help='remove the option from the '
-                                 'configuration file',
+                                 'configuration file; with values, '
+                                 'remove the values from a list option',
                             action='store_true')
+        parser.add_argument('-t', '--type', default=None,
+                            choices=['bool', 'list', 'str', 'int',
+                                     'dict'],
+                            help='the type of the option: with no '
+                                 'values, the option is created with '
+                                 "the empty value of the type "
+                                 "('bool' options need a value)")
         parser.add_argument('key', type=str,
                             help='path of the configuration option')
-        parser.add_argument('value', type=str, nargs='?',
-                            help='value to set the option to')
+        parser.add_argument('values', type=str, nargs='*',
+                            help='the values of the option: multiple '
+                                 'values are appended to a list '
+                                 'option')
         self.args = parser.parse_args(self.args[3:])
 
     def do_config_check(self):

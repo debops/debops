@@ -102,6 +102,21 @@ def test_init_dispatches_the_env_section(monkeypatch):
     method.assert_called_once_with(args)
 
 
+def test_init_dispatches_the_tofu_section(monkeypatch):
+    args = make_args(project_dir=".")
+    monkeypatch.setattr(cli_module, "Configuration",
+                        mock.Mock(return_value=SimpleNamespace()))
+    monkeypatch.setattr(cli_module, "Subcommands",
+                        mock.Mock(return_value=make_parsed("tofu", None,
+                                                           args)))
+    method = mock.Mock()
+    monkeypatch.setattr(cli_module.Interpreter, "do_tofu", method)
+
+    Interpreter(["debops"])
+
+    method.assert_called_once_with(args)
+
+
 @pytest.mark.parametrize("command", ["list", "get", "set", "check"])
 def test_init_dispatches_the_config_commands(monkeypatch, command):
     args = make_args(project_dir=".")
@@ -149,7 +164,8 @@ def test_project_init_creates_the_project(monkeypatch):
                      default_view="system", venv=False, requirements=True,
                      git=True, encrypt=None, keys=None, spec_sources=None,
                      allow_io=False, dry_run=False, force=False,
-                     graph=False, list=False, host=None, ssh=False)
+                     graph=False, list=False, host=None, ssh=False,
+                     tofu=False, pre_commit=False)
 
     interpreter.do_project_init(args)
 
@@ -175,7 +191,8 @@ def test_project_init_installs_the_virtual_environment(monkeypatch):
                      default_view="system", venv=True, requirements=True,
                      git=True, encrypt=None, keys=None, spec_sources=None,
                      allow_io=False, dry_run=False, force=False,
-                     graph=False, list=False, host=None, ssh=False)
+                     graph=False, list=False, host=None, ssh=False,
+                     tofu=False, pre_commit=False)
 
     interpreter.do_project_init(args)
 
@@ -194,7 +211,8 @@ def test_project_init_skips_the_venv_install_without_requirements(monkeypatch):
                      default_view="system", venv=True, requirements=False,
                      git=True, encrypt=None, keys=None, spec_sources=None,
                      allow_io=False, dry_run=False, force=False,
-                     graph=False, list=False, host=None, ssh=False)
+                     graph=False, list=False, host=None, ssh=False,
+                     tofu=False, pre_commit=False)
 
     interpreter.do_project_init(args)
 
@@ -636,9 +654,10 @@ def test_config_set_writes_to_the_project_configuration(
 
     interpreter.do_config_set(make_args(project_dir=".", user=False,
                                         delete=False, key="syslog.level",
-                                        value="DEBUG"))
+                                        values=["DEBUG"], type=None))
 
-    path = tmp_path / ".debops" / "conf.d" / "99_config_set.json"
+    path = (tmp_path / ".debops" / "conf.d" / "override" /
+            "99_config_set.json")
     assert json.loads(path.read_text()) == {"syslog": {"level": "DEBUG"}}
 
 
@@ -651,9 +670,10 @@ def test_config_set_writes_to_the_user_configuration(
 
     interpreter.do_config_set(make_args(project_dir=".", user=False,
                                         delete=False, key="syslog.level",
-                                        value="DEBUG"))
+                                        values=["DEBUG"], type=None))
 
-    path = tmp_path / "debops" / "conf.d" / "99_config_set.json"
+    path = (tmp_path / "debops" / "conf.d" / "override" /
+            "99_config_set.json")
     assert json.loads(path.read_text()) == {"syslog": {"level": "DEBUG"}}
 
 
@@ -666,10 +686,11 @@ def test_config_set_user_flag_skips_the_project_resolution(
 
     interpreter.do_config_set(make_args(project_dir=".", user=True,
                                         delete=False, key="syslog.level",
-                                        value="DEBUG"))
+                                        values=["DEBUG"], type=None))
 
     project_dir_mock.assert_not_called()
-    path = tmp_path / "debops" / "conf.d" / "99_config_set.json"
+    path = (tmp_path / "debops" / "conf.d" / "override" /
+            "99_config_set.json")
     assert json.loads(path.read_text()) == {"syslog": {"level": "DEBUG"}}
 
 
@@ -679,7 +700,8 @@ def test_config_set_deletes_from_the_project_configuration(
     project.path = str(tmp_path)
     monkeypatch.setattr(cli_module, "ProjectDir",
                         mock.Mock(return_value=project))
-    option_file = tmp_path / ".debops" / "conf.d" / "99_config_set.json"
+    option_file = (tmp_path / ".debops" / "conf.d" /
+                   "override" / "99_config_set.json")
     option_file.parent.mkdir(parents=True)
     option_file.write_text('{"syslog": {"level": "DEBUG", '
                            '"facility": "user"}}\n')
@@ -687,7 +709,7 @@ def test_config_set_deletes_from_the_project_configuration(
 
     interpreter.do_config_set(make_args(project_dir=".", user=False,
                                         delete=True, key="syslog.level",
-                                        value=None))
+                                        values=None, type=None))
 
     assert json.loads(option_file.read_text()) == {
         "syslog": {"facility": "user"}}
@@ -704,7 +726,7 @@ def test_config_set_reports_errors(configuration, monkeypatch, tmp_path,
         interpreter.do_config_set(make_args(project_dir=".", user=False,
                                             delete=False,
                                             key="myscript.retries",
-                                            value="5"))
+                                            values=["5"], type=None))
 
     assert "custom options belong" in capsys.readouterr().err
 
@@ -960,3 +982,287 @@ def test_env_reports_a_runner_failure(monkeypatch, capsys, exception):
 
     assert caught.value.code == 1
     assert "Error: boom" in capsys.readouterr().err
+
+
+def test_config_get_names_the_undefined_option(monkeypatch, capsys):
+    """An undefined option exits non-zero and names the option: a
+    mistyped key -- or an option consumed as one -- must not fail
+    silently."""
+    from debops.core.exceptions import OptionNotFoundError
+    project = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    interpreter = make_interpreter()
+    interpreter.config.config_get.side_effect = OptionNotFoundError(
+        "not defined")
+
+    args = make_args(project_dir=".", key=["tofu.mistyped"],
+                     format=None, keys=False, root=False,
+                     show_origin=False, show_scope=False)
+    with pytest.raises(SystemExit):
+        interpreter.do_config_get(args)
+
+    err = capsys.readouterr().err
+    assert "The option 'tofu.mistyped' is not defined" in err
+
+
+def test_config_get_undefined_option_prints_empty_json(monkeypatch,
+                                                       capsys):
+    """The json consumers of the undefined-option path keep their
+    contract: the empty object on stdout, no error on stderr, the
+    non-zero exit."""
+    from debops.core.exceptions import OptionNotFoundError
+    project = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    interpreter = make_interpreter()
+    interpreter.config.config_get.side_effect = OptionNotFoundError(
+        "not defined")
+
+    args = make_args(project_dir=".", key=["tofu.mistyped"],
+                     format="json", keys=False, root=False,
+                     show_origin=False, show_scope=False)
+    with pytest.raises(SystemExit):
+        interpreter.do_config_get(args)
+
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "{}"
+    assert captured.err == ""
+
+
+def test_config_set_warns_when_the_value_is_shadowed(
+        configuration, tmp_path, caplog, monkeypatch):
+    """A file of the override directory which sorts after the managed
+    one shadows the value 'debops config set' just wrote: the command
+    names it, so the set does not fail silently."""
+    directory = tmp_path / ".debops" / "conf.d"
+    (directory / "override").mkdir(parents=True)
+    (directory / "override" / "z-late.toml").write_text(
+        "[syslog]\nport = 514\n")
+    project = mock.Mock(path=str(tmp_path))
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    configuration.merge({"config": {
+        "override_filename": "override/99_config_set.json"}})
+    interpreter = make_interpreter(config=configuration)
+
+    args = make_args(project_dir=str(tmp_path), key="syslog.port",
+                     values=["514"], delete=False, type=None,
+                     user=False)
+    with caplog.at_level(logging.WARNING):
+        interpreter.do_config_set(args)
+
+    assert "shadowed by" in caplog.text
+    assert "z-late.toml" in caplog.text
+
+
+def test_config_set_is_silent_without_a_shadow(
+        configuration, tmp_path, caplog, monkeypatch):
+    """The set without a shadowing file stays silent: the warning
+    fires only when another file actually wins."""
+    project = mock.Mock(path=str(tmp_path))
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    configuration.merge({"config": {
+        "override_filename": "override/99_config_set.json"}})
+    interpreter = make_interpreter(config=configuration)
+
+    args = make_args(project_dir=str(tmp_path), key="syslog.port",
+                     values=["514"], delete=False, type=None,
+                     user=False)
+    with caplog.at_level(logging.WARNING):
+        interpreter.do_config_set(args)
+
+    assert "shadowed by" not in caplog.text
+
+
+def test_project_init_creates_the_tofu_view(monkeypatch):
+    """The '--tofu' option creates the OpenTofu view of the default
+    view after the project is created: a fresh project open, the
+    seeded dependency sets and the plain store when no encryption
+    decision was made -- silently, the refusals belong to the
+    existing projects and 'debops tofu mkview'."""
+    project = mock.Mock()
+    fresh = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(side_effect=[project, fresh]))
+    create_view = mock.Mock()
+    monkeypatch.setattr(cli_module, "create_view", create_view)
+    monkeypatch.setattr(cli_module, "resolve_providers",
+                        mock.Mock(return_value=["lxc/incus"]))
+    monkeypatch.setattr(cli_module, "resolve_modules",
+                        mock.Mock(return_value={}))
+    interpreter = make_interpreter()
+    args = make_args(project_dir="/tmp/example", type="modern",
+                     default_view="system", venv=False, requirements=True,
+                     git=True, encrypt=None, keys=None, spec_sources=None,
+                     allow_io=False, dry_run=False, force=False,
+                     graph=False, list=False, host=None, ssh=False,
+                     tofu=True, pre_commit=False)
+
+    interpreter.do_project_init(args)
+
+    assert cli_module.ProjectDir.call_args_list[1] == mock.call(
+        path="/tmp/example", config=interpreter.config,
+        cwd="/shell/cwd", view="system")
+    create_view.assert_called_once_with(
+        fresh, "system", providers=["lxc/incus"], modules={},
+        encrypt="plain", keys=None)
+
+
+def test_project_init_carries_the_encryption_decision(monkeypatch):
+    """The '--encrypt' decision of the initialization carries over to
+    the view's store: 'git-crypt' joins the repository-wide store
+    with the '--keys' recipients, the '--tofu' option adds no
+    encryption decision of its own."""
+    project = mock.Mock()
+    fresh = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(side_effect=[project, fresh]))
+    create_view = mock.Mock()
+    monkeypatch.setattr(cli_module, "create_view", create_view)
+    monkeypatch.setattr(cli_module, "resolve_providers", mock.Mock())
+    monkeypatch.setattr(cli_module, "resolve_modules", mock.Mock())
+    interpreter = make_interpreter()
+    args = make_args(project_dir="/tmp/example", type="modern",
+                     default_view="system", venv=False, requirements=True,
+                     git=True, encrypt="git-crypt", keys="a@example.com",
+                     spec_sources=None, allow_io=False, dry_run=False,
+                     force=False, graph=False, list=False, host=None,
+                     ssh=False, tofu=True, pre_commit=False)
+
+    interpreter.do_project_init(args)
+
+    create_view.assert_called_once_with(
+        fresh, "system", providers=mock.ANY, modules=mock.ANY,
+        encrypt="git-crypt", keys="a@example.com")
+
+
+def test_project_init_refuses_the_failed_view_creation(
+        monkeypatch, capsys):
+    """A failed view creation fails the initialization: the operator
+    explicitly asked for the view."""
+    project = mock.Mock()
+    fresh = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(side_effect=[project, fresh]))
+    monkeypatch.setattr(cli_module, "create_view",
+                        mock.Mock(side_effect=ValueError(
+                            "the view 'system' already exists")))
+    monkeypatch.setattr(cli_module, "resolve_providers", mock.Mock())
+    monkeypatch.setattr(cli_module, "resolve_modules", mock.Mock())
+    interpreter = make_interpreter()
+    args = make_args(project_dir="/tmp/example", type="modern",
+                     default_view="system", venv=False, requirements=True,
+                     git=True, encrypt="git-crypt", keys=None,
+                     spec_sources=None, allow_io=False, dry_run=False,
+                     force=False, graph=False, list=False, host=None,
+                     ssh=False, tofu=True, pre_commit=False)
+
+    with pytest.raises(SystemExit) as exc:
+        interpreter.do_project_init(args)
+
+    assert exc.value.code == 1
+    assert 'already exists' in capsys.readouterr().err
+
+
+def test_project_init_installs_the_pre_commit_hook(monkeypatch, caplog,
+                                                   capsys):
+    """The '--pre-commit' option runs 'pre-commit install' in the
+    project directory; the tool's own output reports the hook path."""
+    project = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    result = mock.Mock(returncode=0,
+                       stdout="pre-commit installed at .git/hooks/pre-commit\n",
+                       stderr="")
+    run = mock.Mock(return_value=result)
+    monkeypatch.setattr(cli_module.subprocess, "run", run)
+    interpreter = make_interpreter()
+    args = make_args(project_dir="/tmp/example", type="modern",
+                     default_view="system", venv=False, requirements=True,
+                     git=True, encrypt=None, keys=None, spec_sources=None,
+                     allow_io=False, dry_run=False, force=False,
+                     graph=False, list=False, host=None, ssh=False,
+                     tofu=False, pre_commit=True)
+
+    with caplog.at_level(logging.INFO):
+        interpreter.do_project_init(args)
+
+    run.assert_called_once_with(["pre-commit", "install"],
+                                cwd="/tmp/example",
+                                capture_output=True, text=True)
+    assert '.git/hooks/pre-commit' in capsys.readouterr().out
+    assert 'installed' in caplog.text
+
+
+def test_project_init_skips_the_hook_without_the_tool(monkeypatch, caplog):
+    """A missing 'pre-commit' binary notices and skips: the hook
+    engages when the operator installs the tool and runs the install
+    by hand."""
+    project = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    run = mock.Mock(side_effect=FileNotFoundError("pre-commit"))
+    monkeypatch.setattr(cli_module.subprocess, "run", run)
+    interpreter = make_interpreter()
+    args = make_args(project_dir="/tmp/example", type="modern",
+                     default_view="system", venv=False, requirements=True,
+                     git=True, encrypt=None, keys=None, spec_sources=None,
+                     allow_io=False, dry_run=False, force=False,
+                     graph=False, list=False, host=None, ssh=False,
+                     tofu=False, pre_commit=True)
+
+    with caplog.at_level(logging.INFO):
+        interpreter.do_project_init(args)
+
+    run.assert_called_once()
+    assert 'not on the PATH' in caplog.text
+
+
+def test_project_init_skips_the_hook_without_the_git_repository(
+        monkeypatch, caplog):
+    """The '--no-git' option leaves no repository for the hook to
+    attach to: the install is skipped with the way out named."""
+    project = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    run = mock.Mock()
+    monkeypatch.setattr(cli_module.subprocess, "run", run)
+    interpreter = make_interpreter()
+    args = make_args(project_dir="/tmp/example", type="modern",
+                     default_view="system", venv=False, requirements=True,
+                     git=False, encrypt=None, keys=None, spec_sources=None,
+                     allow_io=False, dry_run=False, force=False,
+                     graph=False, list=False, host=None, ssh=False,
+                     tofu=False, pre_commit=True)
+
+    with caplog.at_level(logging.INFO):
+        interpreter.do_project_init(args)
+
+    run.assert_not_called()
+    assert 'without a git repository' in caplog.text
+
+
+def test_project_init_notices_the_failed_hook_install(monkeypatch, caplog):
+    """A failed 'pre-commit install' reports the tool's output and
+    skips: the initialization does not fail over the optional
+    development tool."""
+    project = mock.Mock()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project))
+    result = mock.Mock(returncode=1, stdout="", stderr="cyclic dependency\n")
+    monkeypatch.setattr(cli_module.subprocess, "run",
+                        mock.Mock(return_value=result))
+    interpreter = make_interpreter()
+    args = make_args(project_dir="/tmp/example", type="modern",
+                     default_view="system", venv=False, requirements=True,
+                     git=True, encrypt=None, keys=None, spec_sources=None,
+                     allow_io=False, dry_run=False, force=False,
+                     graph=False, list=False, host=None, ssh=False,
+                     tofu=False, pre_commit=True)
+
+    with caplog.at_level(logging.INFO):
+        interpreter.do_project_init(args)
+
+    assert 'cyclic dependency' in caplog.text

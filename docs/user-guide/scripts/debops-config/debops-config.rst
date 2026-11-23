@@ -6,7 +6,9 @@
 ----------------------------
 
 Output DebOps project configuration, optionally scoped to a specific context.
-Multiple output formats are available (plain text, JSON, TOML, YAML).
+Multiple output formats are available: the 'unix' format prints one option
+per line in the dotted ``path=value`` notation, the other formats render the
+values as YAML, JSON or TOML.
 
 Options
 ~~~~~~~
@@ -18,24 +20,31 @@ Options
   Path to the project directory to work on. If it's not specified, the script
   will use the current directory.
 
-``--format json|toml|unix|yaml``
-  Specify the format of the output. The default format is 'unix' which is
-  considered human-friendly. The JSON format can be used to enable easy parsing
-  by programs.
+``-f, --format json|toml|unix|yaml``
+  Specify the format of the output. Without the option, the format comes
+  from the ``config.default_output`` option; it is 'yaml'. The 'unix'
+  format prints one option per line in the dotted ``path=value``
+  notation. The JSON format can be used to enable easy parsing by
+  programs.
 
 ``-k, --keys``
   Instead of returning the entire configuration tree, return a list of
   configuration keys present at a given configuration level. Empty output or
-  list means that there are no more subkeys present at a given level.
+  list means that there are no more subkeys present at a given level. In the
+  'unix' format the keys print as dotted paths, one queryable option per
+  line.
 
 ``-r, --root``
   Print the option nested under its full path from the root of the
   configuration tree, which shows where in the tree the option is defined.
+  The dotted unix rendering carries the full path on every line, so the
+  option does not change it.
 
 ``--show-origin``
   Print the options as plain text, one line per option: the source
   which last set each option, then the option and its value joined by
-  ``=``. The source is the configuration file which set the option,
+  ``=``. The values render in the notation of the ``unix`` format.
+  The source is the configuration file which set the option,
   the environment variable for the options overridden from the
   environment, or ``debops`` for the options which the tool computes
   at runtime. Paths under the home directory are shown with ``~``.
@@ -135,6 +144,11 @@ project directory, the options are managed in the
 in the user's configuration directory. The values are converted to the type of
 the option as defined by DebOps.
 
+An option which holds a list gains the values given on the command line; the
+values which the option already holds are skipped. An option which holds a
+single value takes one value and replaces the old one; several values to such
+an option are refused.
+
 Options
 ~~~~~~~
 
@@ -150,8 +164,18 @@ Options
   (:file:`$XDG_CONFIG_HOME/debops/conf.d/`) instead of the project
   configuration.
 
+``-t, --type bool|list|str|int|dict``
+  State the type of the option. Without values, create the option with
+  the empty value of the type: an empty list, ``0``, an empty string or
+  an empty object. The ``bool`` type requires a value. The option must
+  not be set yet. For options which DebOps defines, the type of the
+  option wins and a mismatch is refused.
+
 ``-d, --delete``
   Remove the option from the configuration file instead of setting it.
+  With values, remove those values from a list option. When the list
+  becomes empty, the option is removed from the file. A value which
+  another configuration layer still carries is reported as a warning.
 
 ``-v, --verbose``
   Increase output verbosity. More letters means higher verbosity.
@@ -160,13 +184,15 @@ Options
   Path of the configuration option in the configuration tree, with subkeys
   specified using dot (``.``) as a separator.
 
-``value``
-  The value to set the option to. The value is converted to the type of the
-  option: integers, booleans and lists are recognized for the options which
-  DebOps defines, other options are parsed as JSON when they look like JSON
-  and stored as strings otherwise. Custom options can be defined under the
-  ``custom`` section of the configuration tree, which DebOps reserves for
-  options defined outside of DebOps.
+``values``
+  The values to set the option to. A list option gains the values, an
+  option which holds a single value takes one of them. The values are
+  converted to the type of the option: integers, booleans and lists are
+  recognized for the options which DebOps defines, other options are
+  parsed as JSON when they look like JSON and stored as strings
+  otherwise. Custom options can be defined under the ``custom`` section
+  of the configuration tree, which DebOps reserves for options defined
+  outside of DebOps.
 
 Examples
 ~~~~~~~~
@@ -182,6 +208,24 @@ Define a custom option used by an external script:
 .. code-block:: shell
 
    debops config set custom.myscript.retries 5
+
+Define a list option used by an external script:
+
+.. code-block:: shell
+
+   debops config set -t list custom.myscript.servers web1 web2
+
+Add a value to the list:
+
+.. code-block:: shell
+
+   debops config set custom.myscript.servers web3
+
+Remove a value from the list:
+
+.. code-block:: shell
+
+   debops config set -d custom.myscript.servers web1
 
 Remove an option from the configuration file:
 
