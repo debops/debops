@@ -446,6 +446,8 @@ man_pages.append(('user-guide/scripts/debops-scp/man_index', 'debops-scp',
                   'Copy files to and from hosts over SSH', [author], 1))
 man_pages.append(('user-guide/scripts/debops-sftp/man_index', 'debops-sftp',
                   'Run an interactive file transfer session over SSH', [author], 1))
+man_pages.append(('user-guide/scripts/debops-tofu/man_index', 'debops-tofu',
+                  'Manage OpenTofu views, state and inventory', [author], 1))
 
 # If true, show URL addresses after external links.
 man_show_urls = True
