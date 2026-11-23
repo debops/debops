@@ -197,23 +197,27 @@ def _is_scaffold(path):
 
 
 def _read_manifest(inventory_dir):
-    """Return the file paths the previous render recorded, relative
-    to the Ansible view's root directory. A missing or unreadable
-    manifest means nothing is owned yet."""
+    """Return the file paths and the sensitive paths the previous
+    render recorded, relative to the Ansible view's root directory.
+    A missing or unreadable manifest means nothing is owned yet."""
     try:
         with open(os.path.join(inventory_dir, MANIFEST_NAME)) as handle:
             manifest = yaml.safe_load(handle)
     except (OSError, yaml.YAMLError):
-        return []
-    files = _mapping(manifest).get('files', [])
-    return files if isinstance(files, list) else []
+        return [], []
+    manifest = _mapping(manifest)
+    files = manifest.get('files', [])
+    sensitive = manifest.get('sensitive', [])
+    return (files if isinstance(files, list) else [],
+            sensitive if isinstance(sensitive, list) else [])
 
 
-def _write_manifest(inventory_dir, files, project):
+def _write_manifest(inventory_dir, files, sensitive, project):
     content = ("# The files which 'debops tofu inventory' renders in "
                'the view. The next\n# render prunes the entries the '
                'seed dropped against this record.\n\n')
-    content += yaml.safe_dump({'files': sorted(files)},
+    content += yaml.safe_dump({'files': sorted(files),
+                               'sensitive': sorted(sensitive)},
                               default_flow_style=False, width=4096)
     write_file(os.path.join(inventory_dir, MANIFEST_NAME), content,
                overwrite=True, project=project)
@@ -235,7 +239,7 @@ def _prune_empty_dirs(directory, view_root):
 
 
 def _prune_stale(view_root, project_root, owned, desired, changes,
-                 dry_run):
+                 dry_run, manifest_sensitive):
     """Remove the recorded files which the render no longer
     produces, and the directories they leave empty.
 
@@ -260,23 +264,30 @@ def _prune_stale(view_root, project_root, owned, desired, changes,
         path = os.path.join(view_root, relative)
         removed = _reconcile_removal(
             path, changes, project_root, view_root, dry_run,
-            secret=relative.startswith('secret' + os.sep))
+            secret=relative in manifest_sensitive)
         if removed:
             _prune_empty_dirs(os.path.dirname(path), view_root)
 
 
-def _reconcile_sensitive(desired, changes, config, view_root,
-                         project_root, kind, name, sensitive_vars,
-                         dry_run):
+def _reconcile_sensitive(desired, sensitive, changes, config,
+                         view_root, project_root, kind, name,
+                         sensitive_vars, dry_run):
     """Record and apply the sensitive values of one host or group
-    into the store, recording the content files in the desired set."""
+    into the store, recording the content files in the desired set
+    and the sensitive flag in the sensitive set: the prune decides
+    the masking of a removal record from the writer's knowledge, not
+    from the path -- a custom store path template which does not
+    live under 'secret/' must not leak its removed values through
+    the '--diff' output."""
     for var in sorted(sensitive_vars):
         path, _, containment = _sensitive_location(
             config, view_root, kind, name, var)
         _reconcile_file(path, _sensitive_value(sensitive_vars[var]),
                         changes, project_root, containment, dry_run,
                         secret=True)
-        desired.add(_manifest_path(view_root, path))
+        manifest_path = _manifest_path(view_root, path)
+        desired.add(manifest_path)
+        sensitive.add(manifest_path)
 
 
 def _write_vars_file(desired, changes, inventory_dir, kind, name,
@@ -431,20 +442,22 @@ def render_inventory(project, view, output_json, dry_run=False,
             config['ansible_host_format'], config['vars_filename']))
 
     desired = set()
+    sensitive = set()
 
     # The sensitive values into the store, before the files which
     # reference them
     if all_record:
-        _reconcile_sensitive(desired, changes, config, view_root,
-                             project_root, 'group', 'all',
+        _reconcile_sensitive(desired, sensitive, changes, config,
+                             view_root, project_root, 'group', 'all',
                              all_record['sensitive_vars'], dry_run)
     for host in hosts:
-        _reconcile_sensitive(desired, changes, config, view_root,
-                             project_root, 'host', host['key'],
-                             host['sensitive_vars'], dry_run)
+        _reconcile_sensitive(desired, sensitive, changes, config,
+                             view_root, project_root, 'host',
+                             host['key'], host['sensitive_vars'],
+                             dry_run)
     for name in sorted(records):
-        _reconcile_sensitive(desired, changes, config, view_root,
-                             project_root, 'group', name,
+        _reconcile_sensitive(desired, sensitive, changes, config,
+                             view_root, project_root, 'group', name,
                              records[name]['sensitive_vars'], dry_run)
 
     # The hosts file in the configured format
@@ -498,9 +511,9 @@ def render_inventory(project, view, output_json, dry_run=False,
                            record['sensitive_vars'], name, view,
                            dry_run)
 
-    owned = _read_manifest(inventory_dir)
+    owned, manifest_sensitive = _read_manifest(inventory_dir)
     _prune_stale(view_root, project_root, owned, desired, changes,
-                 dry_run)
+                 dry_run, manifest_sensitive)
     if not dry_run:
-        _write_manifest(inventory_dir, desired, view_root)
+        _write_manifest(inventory_dir, desired, sensitive, view_root)
     return changes
