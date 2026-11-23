@@ -28,9 +28,10 @@ Pack the module and upload it to a project of the target group:
 
    alice@controller:~$ tar -C ~/src/modules/probe-module \
        -czf probe-module.tar.gz main.tf
+   alice@controller:~$ url=https://gitlab.example.com/api/v4/projects/42
    alice@controller:~$ curl -sS -H "PRIVATE-TOKEN: <token>" \
        --upload-file probe-module.tar.gz \
-       "https://gitlab.example.com/api/v4/projects/42/packages/terraform/modules/probe-module/system/1.0.0/file"
+       "$url/packages/terraform/modules/probe-module/system/1.0.0/file"
 
 Two details of the publish route:
 
@@ -64,12 +65,14 @@ controller, mode 0600, one credentials block per host:
 
 Record the module in the view's configuration drop-in. The source is
 the registry address in the OpenTofu notation. The local name derives
-from the third segment:
+from the third segment. The record composes into JSON with jo(1):
 
 .. code-block:: console
 
    alice@controller:~$ debops config set views.<view>.tofu.modules \
-       '{"probe-module": {"source": "gitlab.example.com/<group>/probe-module/system", "version": "1.0.0"}}'
+       "$(jo probe-module="$(jo \
+       source='gitlab.example.com/<group>/probe-module/system' \
+       version=1.0.0)")"
    alice@controller:~$ debops tofu -V <view> update
 
 The same record, written by hand in the view's configuration drop-in:
@@ -111,7 +114,13 @@ generated :file:`modules.tf` renders them as HCL:
 
 .. code-block:: console
 
-   alice@controller:~$ debops config set views.<view>.tofu.modules '{"probe-module": {"source": "gitlab.example.com/<group>/probe-module/system", "version": "1.0.0", "inputs": {"environment": "production", "gateway_address": "hcl:incus_instance.gateway.ipv4_address", "plain_note": "hcl:hcl:not an expression"}}}'
+   alice@controller:~$ debops config set views.<view>.tofu.modules \
+       "$(jo probe-module="$(jo \
+       source='gitlab.example.com/<group>/probe-module/system' \
+       version=1.0.0 \
+       inputs="$(jo environment=production \
+       gateway_address=hcl:incus_instance.gateway.ipv4_address \
+       plain_note='hcl:hcl:not an expression')")")"
 
 The same record, hand-written in the drop-in:
 
