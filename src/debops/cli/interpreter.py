@@ -158,6 +158,31 @@ class Interpreter(object):
             sys.exit(1)
         if output:
             print(output)
+        if args.tofu:
+            self._init_tofu_view(args)
+
+    def _init_tofu_view(self, args):
+        """Create the OpenTofu view of the default view after the
+        project initialization.
+
+        The '--encrypt' decision of the initialization carries over:
+        'git-crypt' joins the repository-wide store, 'encfs' mounts
+        the view's own volume keyed by the '--keys' recipients, and
+        without the option the view's store stays plain -- the choice
+        belongs to the operator at init; the refusals belong to the
+        existing projects and 'debops tofu mkview'."""
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd, view=args.default_view)
+            create_view(project, args.default_view,
+                        providers=resolve_providers(project),
+                        modules=resolve_modules(project),
+                        encrypt=args.encrypt or 'plain',
+                        keys=args.keys)
+        except (NoDefaultViewException, ValueError, ChildProcessError,
+                FileNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
 
     def do_project_refresh(self, args):
         try:
