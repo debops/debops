@@ -739,3 +739,24 @@ def test_check_takes_the_debug_option():
 
     assert args.debug is True
     assert args.ansible_args == ["site.yml", "--diff", "--check"]
+
+
+def test_config_get_options_parse_after_the_keys():
+    """The options of 'debops config get' parse wherever they stand:
+    after the keys too -- the natural argparse position, which the
+    remainder collection of the key argument used to swallow."""
+    parsed = parse_cli("config", "get", "tofu.plan_retention",
+                       "--show-origin", "--show-scope")
+
+    assert parsed.args.key == ["tofu.plan_retention"]
+    assert parsed.args.show_origin is True
+    assert parsed.args.show_scope is True
+
+
+def test_config_get_runs_without_keys():
+    """The bare 'debops config get' renders the whole configuration:
+    the key list stays empty, the options parse around it."""
+    parsed = parse_cli("config", "get", "--show-origin")
+
+    assert parsed.args.key == []
+    assert parsed.args.show_origin is True
