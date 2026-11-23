@@ -198,12 +198,12 @@ something like this:
    │           ├── main.tf
    │           ├── providers.tf
    │           ├── .terraform.lock.hcl
+   │           ├── .gitattributes
+   │           ├── .gitignore
    │           ├── state/
    │           ├── plans/
    │           └── secret/
-   │               ├── environment
-   │               ├── .gitattributes
-   │               └── .gitignore
+   │               └── environment
    ├── .debops/
    │   ├── conf.d/
    │   │   ├── project.yml
