@@ -96,8 +96,6 @@ infrastructure environments.
    user-guide/inventory-spec
    user-guide/dns-configuration
    user-guide/ssh-suite
-   user-guide/tofu
-   user-guide/tofu-inventory
    ansible/role-index
    ansible/roles/index
 
@@ -108,13 +106,21 @@ infrastructure environments.
 
    admin-guide/configuration-recipes
    admin-guide/linux-containers
-   admin-guide/tofu-remote-state
-   admin-guide/tofu-registry-modules
-   admin-guide/tofu-state-adoption
-   admin-guide/tofu-ci
-   admin-guide/tofu-incus
    admin-guide/service-ports
    admin-guide/local-apt-repository
+
+.. toctree::
+   :caption: OpenTofu Guide
+   :maxdepth: 2
+   :hidden:
+
+   opentofu-guide/index
+   opentofu-guide/inventory-bridge
+   opentofu-guide/remote-state
+   opentofu-guide/registry-modules
+   opentofu-guide/state-adoption
+   opentofu-guide/ci
+   opentofu-guide/incus
 
 .. toctree::
    :caption: Developer Guide

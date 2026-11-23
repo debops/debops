@@ -224,7 +224,7 @@ active.
 The OpenTofu side of a view lives in :file:`tofu/views/<view>/`,
 beside the Ansible view of the same name: the state, the plan files
 and the encrypted store of the infrastructure the view creates. See
-:ref:`the 'debops tofu' section <debops_tofu>` for the layout and
+:ref:`the OpenTofu integration <debops_tofu>` for the layout and
 the operations.
 
 You can compare this with the "legacy" directory structure above. The important
