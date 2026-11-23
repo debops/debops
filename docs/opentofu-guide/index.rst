@@ -232,9 +232,12 @@ The cache
 The wrapper relocates the OpenTofu data directory out of the view
 tree. The resolved providers and modules live under the XDG cache
 home, keyed by the project path and the view. One shared plugin cache
-serves all views and projects. Nothing in the view tree is
-re-derivable except the committed configuration and the provider
-lock file, which is why the relocation is safe.
+serves all views and projects. Everything in the relocated data
+directory is re-derivable from the project: the backend metadata from
+the view configuration, the provider binaries against the committed
+lock file, the modules from their recorded sources. The irreplaceable
+state lives in the view's secret store, not in the cache. That is why
+the relocation is safe.
 
 The :command:`debops tofu cache` operation lists the data directories
 of the project, the in-tree :file:`.terraform/` leftovers of older
@@ -291,7 +294,8 @@ The view creation records the per-view options in the configuration
 drop-in, a file like :file:`.debops/conf.d/view-system-tofu.toml`.
 :command:`debops config set` edits it later. The drop-in is the
 complete record of what DebOps manages in the view.
-:command:`debops config get views.<name>.tofu` shows both sets.
+:command:`debops config get views.<name>.tofu` prints the recorded
+provider and module sets of the view.
 
 Remote state backends are an explicit choice you make in the OpenTofu
 configuration, not a DebOps default. The
