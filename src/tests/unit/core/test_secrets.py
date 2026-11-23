@@ -678,3 +678,52 @@ def test_git_crypt_encrypted_changes_filters_by_the_filter_attribute(
     stdin = attrs.communicate.call_args.args[0].decode()
     assert "secret/new-file.txt" in stdin
     assert "README.md" in stdin
+
+
+def test_passphrase_length_refuses_a_value_below_the_floor(stub_project):
+    """A configured passphrase length below the 16-character floor
+    refuses the view creation: the passphrase is the only protection
+    of the tracked state ciphertext, and a short one is a legal
+    integer away."""
+    project = stub_project(project_type='modern', raw={
+        'tofu': {'mkview': {'secret': {'passphrase_length': 4}}}})
+
+    with pytest.raises(ValueError, match='passphrase_length'):
+        secrets_module.passphrase_length(project)
+
+
+def test_passphrase_length_bounds_and_defaults(stub_project):
+    """The floor, the packaged default and the missing option resolve
+    to legal lengths; the non-integer values refuse."""
+    project = stub_project(project_type='modern', raw={
+        'tofu': {'mkview': {'secret': {'passphrase_length': 16}}}})
+    assert secrets_module.passphrase_length(project) == 16
+
+    project = stub_project(project_type='modern', raw={})
+    assert secrets_module.passphrase_length(project) == 32
+
+    project = stub_project(project_type='modern', raw={
+        'tofu': {'mkview': {'secret': {'passphrase_length': None}}}})
+    assert secrets_module.passphrase_length(project) == 32
+
+    project = stub_project(project_type='modern', raw={
+        'tofu': {'mkview': {'secret': {'passphrase_length': True}}}})
+    with pytest.raises(ValueError, match='passphrase_length'):
+        secrets_module.passphrase_length(project)
+
+
+def test_random_passphrase_draws_from_the_secure_generator(monkeypatch):
+    """The passphrase draws from the 'secrets' module's generator, not
+    the Mersenne Twister of the 'random' module."""
+    draws = []
+
+    def fake_choice(alphabet):
+        draws.append(alphabet)
+        return 'A'
+
+    monkeypatch.setattr(secrets_module.secrets, 'choice', fake_choice)
+    passphrase = secrets_module.random_passphrase(32)
+
+    assert passphrase == 'A' * 32
+    assert len(draws) == 32
+    assert draws[0] == (string.ascii_letters + string.digits + '-_')
