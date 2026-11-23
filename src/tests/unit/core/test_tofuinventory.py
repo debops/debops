@@ -978,6 +978,7 @@ def inventory_operation(monkeypatch, rc=0, output='{}', changes=None,
         monkeypatch.setattr(inventory_module, "render_inventory",
                             mock.Mock(return_value=changes or []))
     args = SimpleNamespace(bell=False, workspace=None, dry_run=dry_run,
+                           to_view=None,
                            diff=diff, force=force, no_color=False,
                            allow_missing_state=False)
     raw = {'tofu': {'inventory': {'state_refresh': state_refresh}}}
@@ -1126,3 +1127,63 @@ def test_an_already_unlocked_store_is_not_locked(monkeypatch):
 
     store.unlock.assert_called_once()
     store.lock.assert_not_called()
+
+
+def test_the_render_targets_the_configured_view(inventory_project):
+    """The 'views.<view>.tofu.inventory.to_view' option redirects the
+    render: the hosts file, the variables files and the sensitive
+    values land in the named Ansible view's inventory and store,
+    instead of the mirror view of the same name."""
+    project = inventory_project()
+    project.config.merge({'views': {'system': {'tofu': {'inventory': {
+        'to_view': 'staging'}}}}})
+    target_inventory = os.path.join(project.path, 'ansible', 'views',
+                                    'staging', 'inventory')
+    os.makedirs(target_inventory)
+
+    render_inventory(project, 'system', outputs())
+
+    assert read_at(project, 'staging', 'inventory/hosts')
+    # The mirror view keeps its own files: the scaffold placeholder
+    # the project init wrote is not the render's to remove
+    assert read(project, 'inventory/hosts') == \
+        '# scaffold comment\n\n[debops_all_hosts]\n'
+    assert read_at(project, 'staging',
+                   'secret/tofu/host_vars/web-1/sensitive/'
+                   'host_token/content') == 's3cr3t'
+
+
+def test_the_to_view_option_overrides_the_configuration(
+        inventory_project):
+    """The '--to-view' option of the command line wins over the
+    configured target: the render lands in the option's view."""
+    project = inventory_project()
+    project.config.merge({'views': {'system': {'tofu': {'inventory': {
+        'to_view': 'staging'}}}}})
+    for name in ('staging', 'production'):
+        os.makedirs(os.path.join(project.path, 'ansible', 'views',
+                                 name, 'inventory'))
+
+    render_inventory(project, 'system', outputs(), target_view='production')
+
+    assert read_at(project, 'production', 'inventory/hosts')
+    assert not os.path.exists(os.path.join(
+        project.path, 'ansible', 'views', 'staging', 'inventory',
+        'hosts'))
+
+
+def test_the_missing_target_view_refuses_the_render(inventory_project):
+    """A target view without an inventory directory refuses the
+    render, with the target named: the operator creates the Ansible
+    view first."""
+    project = inventory_project()
+
+    with pytest.raises(FileNotFoundError, match="'missing'"):
+        render_inventory(project, 'system', outputs(),
+                         target_view='missing')
+
+
+def read_at(project, view, relative):
+    with open(os.path.join(project.path, 'ansible', 'views', view,
+                           relative)) as handle:
+        return handle.read()

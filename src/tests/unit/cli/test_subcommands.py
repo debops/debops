@@ -760,3 +760,11 @@ def test_config_get_runs_without_keys():
 
     assert parsed.args.key == []
     assert parsed.args.show_origin is True
+
+
+def test_tofu_inventory_to_view_option_parses():
+    """The '--to-view' option of 'debops tofu inventory' names the
+    Ansible view the render targets."""
+    parsed = parse_cli("tofu", "inventory", "-t", "staging")
+
+    assert parsed.args.to_view == "staging"

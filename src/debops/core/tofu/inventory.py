@@ -26,6 +26,7 @@ from ..ansible.inventory import AnsibleInventory
 from ..secrets import SecretManager, unlocked_store
 from ..utils import remove_dir, remove_file, write_file
 from .changes import change_label, file_change
+from .registry import view_tofu_options
 from .inventory_formats import (FORMATS, _header, _hosts_filename,
                                 _is_scalar, _render_hosts_ini,
                                 _render_hosts_json, _render_hosts_toml,
@@ -42,15 +43,25 @@ logger = logging.getLogger(__name__)
 MANIFEST_NAME = '.tofu-inventory-manifest.yml'
 
 
-def inventory_config(project):
+def inventory_config(project, view=None):
     """Return the bridge options of the project, with the defaults
-    for the options the configuration does not carry."""
+    for the options the configuration does not carry.
+
+    The 'to_view' option comes from the view's own option tree: it
+    names the Ansible view the render targets, instead of the mirror
+    view of the same name. The '--to-view' option of the command line
+    overrides it."""
     try:
         section = project.config.raw['tofu']['inventory']
     except (KeyError, TypeError):
         section = {}
     section = _mapping(section)
     secret = _mapping(section.get('secret'))
+    to_view = None
+    if view:
+        view_section = _mapping(
+            view_tofu_options(project, view).get('inventory'))
+        to_view = view_section.get('to_view') or None
     return {
         'hosts_format': section.get('hosts_format', 'ini'),
         'hosts_filename': section.get('hosts_filename', 'hosts'),
@@ -66,6 +77,7 @@ def inventory_config(project):
             'secret/tofu/group_vars/%s/sensitive/%s/content'),
         'host_status': dict(_mapping(section.get('host_status'))) or
         {'running': 'include'},
+        'to_view': to_view,
     }
 
 
@@ -314,22 +326,27 @@ def _render_vars_files(desired, changes, config, fmt, view_root,
 
 
 def render_view_inventory(project, view, force=False, dry_run=False,
-                          allow_missing_state=False, bell=False):
+                          allow_missing_state=False, bell=False,
+                          to_view=None):
     """Run the 'debops tofu inventory' operation: refresh the state
     when asked, collect the outputs through the runner machinery,
     cycle the Ansible secret store around the render and return the
     change records the render applies.
 
+    The render targets the Ansible view the '--to-view' option or
+    the 'views.<view>.tofu.inventory.to_view' option names, the
+    Ansible view of the same name as the source when neither does.
     The captured 'tofu output -json' carries the sensitive values of
     the seed in plaintext: the output is collected, never streamed
     to the terminal. The render writes into the Ansible secret store
-    of the view, which cycles around it -- the runner's own cycle
-    has already locked the tofu store back, this one is a fresh
-    unlock/lock pair. The failures raise: 'TofuOperationFailed'
+    of the target view, which cycles around it -- the runner's own
+    cycle has already locked the tofu store back, this one is a
+    fresh unlock/lock pair. The failures raise: 'TofuOperationFailed'
     carries the return code of the failed tofu operation, the
     renderer's 'ValueError' and 'FileNotFoundError' propagate.
     """
-    config = inventory_config(project)
+    config = inventory_config(project, view)
+    target_view = to_view or config['to_view'] or view
     if force or config['state_refresh']:
         runner = TofuRunner(project, ['refresh'], bell=bell,
                             allow_missing_state=allow_missing_state)
@@ -347,17 +364,25 @@ def render_view_inventory(project, view, force=False, dry_run=False,
             "The 'tofu output' operation of the view {!r} failed "
             'with exit code {}'.format(view, rc), rc)
 
-    store = SecretManager(project, view).store('ansible')
+    store = SecretManager(project, target_view).store('ansible')
     with unlocked_store(store,
                         label="The Ansible store of the view "
-                              "'{}'".format(view)):
+                              "'{}'".format(target_view)):
         return render_inventory(project, view, output,
-                                dry_run=dry_run)
+                                dry_run=dry_run,
+                                target_view=target_view)
 
 
-def render_inventory(project, view, output_json, dry_run=False):
+def render_inventory(project, view, output_json, dry_run=False,
+                     target_view=None):
     """Render the OpenTofu inventory outputs of a view into the
-    Ansible view's inventory directory.
+    inventory directory of a target Ansible view.
+
+    The target is the Ansible view the '--to-view' option or the
+    'views.<view>.tofu.inventory.to_view' option names, the Ansible
+    view of the same name as the source when neither does. The
+    source view names the outputs in the rendered header; the target
+    view receives the files and the sensitive values.
 
     Returns the list of the changes the render applies: the records
     the '--diff' option prints and the dry run reports. With
@@ -365,7 +390,8 @@ def render_inventory(project, view, output_json, dry_run=False):
     written -- the render reads the current files, which needs the
     Ansible store unlocked around it as a writing render does."""
     seed, groups = _collect_outputs(output_json)
-    config = inventory_config(project)
+    config = inventory_config(project, view)
+    target_view = target_view or config['to_view'] or view
     if config['ansible_host_format'] not in ('fqdn', 'ip'):
         raise ValueError(
             "The 'tofu.inventory.ansible_host_format' option is "
@@ -377,13 +403,14 @@ def render_inventory(project, view, output_json, dry_run=False):
     _check_hierarchy(records)
     all_record = records.pop('all', None)
 
-    inventory = AnsibleInventory(project, view)
+    inventory = AnsibleInventory(project, target_view)
     view_root = inventory.root_path
     inventory_dir = inventory.path
     if not os.path.isdir(inventory_dir):
         raise FileNotFoundError(
             "The inventory directory of the Ansible view '{}' does "
-            'not exist: {}'.format(view, inventory_dir))
+            'not exist: {}. Create the view first, then run the '
+            'render again.'.format(target_view, inventory_dir))
     project_root = project.path
     changes = []
 
