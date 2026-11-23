@@ -226,8 +226,10 @@ def test_existing_view_drops_the_file_with_an_empty_set(
     with open(drop_in, "w") as handle:
         handle.write('[views."{}"].tofu\nproviders = []\n'
                      .format(project.view))
-    project.config.merge({'views': {project.view: {'tofu': {
-        'providers': []}}}})
+    # A fresh process reads the edited drop-in as the whole recorded
+    # set: the live tree clears the old value the same way
+    project.config.raw['views'][project.view]['tofu']['providers'] \
+        = []
     changes = reconcile_view(project, project.view)
     assert [change['action'] for change in changes] == ['remove']
     assert not os.path.exists(os.path.join(view_dir, "providers.tf"))
