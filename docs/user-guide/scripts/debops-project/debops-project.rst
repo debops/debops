@@ -65,7 +65,7 @@ Options
   Don't enable a Python virtual environment in the new project directory
   (default).
 
-``--encrypt <encfs|git-crypt>``
+``--encrypt <encfs|git-crypt|plain>``
   Prepare the project directory to host encrypted :file:`ansible/secret/`
   subdirectory, used to store passwords, encryption keys and other confidential
   information. See the :ref:`debops.secret` Ansible role for more details.
@@ -73,7 +73,25 @@ Options
   You need to specify either ``encfs`` or ``git-crypt`` to select the encryption
   method (``git-crypt`` requires an initialized ``git`` repository). If
   encryption is enabled, you need to specify the list of GPG recipients as well,
-  using the ``--keys`` option.
+  using the ``--keys`` option. The ``plain`` choice leaves the secrets
+  unencrypted -- the OpenTofu view created by the ``--tofu`` option keys its
+  store the same way.
+
+``--tofu``
+  Create the OpenTofu view of the default view after the project directory is
+  initialized, with the dependency sets seeded from the
+  ``tofu.mkview.*`` options. The ``--encrypt`` decision of the initialization
+  carries over to the view's secret store: ``git-crypt`` joins the
+  repository-wide store, ``encfs`` mounts the view's own EncFS volume keyed by
+  the ``--keys`` recipients, and without the option — or with ``plain`` — the
+  store stays unencrypted. See :ref:`the OpenTofu integration <debops_tofu>`.
+
+``--pre-commit``
+  Run :command:`pre-commit install` in the new project directory after the
+  initialization, engaging the shipped :file:`.pre-commit-config.yaml` from the
+  first commit. The tool is optional: a missing :command:`pre-commit` binary,
+  a missing ``git`` repository (``--no-git``) or a failed install is reported
+  and skipped — run :command:`pre-commit install` in the project later.
 
 ``--keys <recipient>[,recipient]``
   A list of GPG recipients (e-mail addresses or key IDs) which will be allowed

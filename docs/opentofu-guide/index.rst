@@ -101,7 +101,12 @@ wrapper refuses other keys there and points you at the untracked
 Getting started
 ---------------
 
-Create a view, reconcile it, and run the first plan:
+The ``--tofu`` option of :command:`debops project init` creates the
+OpenTofu view of the default view right at the initialization, keyed by
+the ``--encrypt`` decision of the project: ``git-crypt`` joins the
+repository-wide store, ``encfs`` mounts the view's own volume, and
+without the option the store stays unencrypted. In an existing project
+the same view comes from :command:`debops tofu mkview`:
 
 .. code-block:: console
 
@@ -200,6 +205,30 @@ seeded from the ``tofu.upstream.known_version`` option.
 pinned versions into the DebOps data directory. A view whose pinned
 binary is missing falls back to the configured
 ``binaries.tofu`` binary.
+
+
+Formatting and the pre-commit hook
+----------------------------------
+
+The :command:`tofu fmt` operation passes through the wrapper and
+formats the view's tree. The project directory ships a
+:file:`.pre-commit-config.yaml` with a hook which checks the staged
+:file:`.tf` files at every commit, so a misformatted tree cannot land
+quietly. The hook engages after :command:`pre-commit install`, which
+the ``--pre-commit`` option of :command:`debops project init` runs;
+in an existing project run :command:`pre-commit install` by hand.
+
+The hook runs the :command:`tofu` binary from the ``PATH``, not the
+version-pinned managed binary the wrapper resolves: the check spans
+the whole :file:`tofu/` tree at once -- a scope the wrapper's
+per-view operations do not have -- and it must pass on a fresh clone
+before the managed binaries are installed. Keep the two binaries in
+sync; the formatting rules are stable across OpenTofu versions.
+
+The hook triggers only on staged :file:`.tf` changes, and it fails
+closed when the :command:`tofu` binary is missing: install OpenTofu
+instead of removing the hook. The ``--no-verify`` option of
+:command:`git commit` skips the check for a deliberate bypass.
 
 
 Plans and drift detection
