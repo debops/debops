@@ -1051,3 +1051,25 @@ def test_regular_operations_stream_without_the_rewrite(
 
     popen = stub_tofu_subprocess
     assert popen.call_args.kwargs["stdout"] is None
+
+
+def test_lost_state_refuses_even_after_the_cache_clean(tofu_project):
+    """The strongest loss signal -- the git history of the state
+    file -- is checked unconditionally: gating it on the backend
+    metadata of the data directory made a routine cache clean
+    silently disarm the refusal."""
+    project = tofu_project()
+    runner = TofuRunner(project, ["apply"])
+    lost_calls = []
+
+    def counting(self):
+        lost_calls.append(1)
+        return True
+
+    with mock.patch.object(runner_module.TofuRunner,
+                           "_state_was_lost", counting):
+        with pytest.raises(ChildProcessError,
+                           match="--allow-missing-state"):
+            runner._check_state_presence()
+
+    assert lost_calls
