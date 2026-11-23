@@ -6,7 +6,7 @@ from . import print_error
 from ..core.exceptions import (NoDefaultViewException, InventorySpecError,
                                OptionNotFoundError, OptionRefused,
                                ViewNotFoundError)
-from ..core.config import Configuration
+from ..core.config import Configuration, shadowing_file
 from .subcommands import Subcommands
 from ..core.projectdir import ProjectDir
 from ..core.projectvenv import ProjectVenv
@@ -1043,6 +1043,16 @@ class Interpreter(object):
             logger.info("Added the values to the '%s' list in %s",
                         args.key, option_file,
                         extra={'allow': ['stderr', 'syslog']})
+
+        shadow = shadowing_file(option_file, args.key)
+        if shadow:
+            shadow_path, shadow_value = shadow
+            logger.warning(
+                "The value of '%s' set in '%s' is shadowed by '%s', "
+                'which loads after it: its value %r wins', args.key,
+                unexpanduser(option_file), unexpanduser(shadow_path),
+                shadow_value,
+                extra={'allow': ['stderr', 'syslog']})
 
     def do_config_check(self, args):
         try:

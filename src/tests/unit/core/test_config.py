@@ -1141,18 +1141,53 @@ def test_config_list_lists_the_environment_overrides(configuration,
     assert "DEBOPS_CONFIG__SYSLOG__LEVEL" in lines
 
 
-def test_option_file_defaults_to_99(configuration, tmp_path):
+def test_option_file_defaults_to_the_override_location(configuration,
+                                                       tmp_path):
+    """The managed file lives in the 'override/' subdirectory of the
+    configuration directory: the subdirectory merge ranks it above
+    the hand-written files of the directory."""
     path = configuration.option_file(str(tmp_path))
 
-    assert path == str(tmp_path / "99_config_set.json")
+    assert path == str(tmp_path / "override" / "99_config_set.json")
 
 
-def test_option_file_uses_the_existing_file(configuration, tmp_path):
-    (tmp_path / "50_config_set.json").write_text("{}\n")
+def test_option_file_migrates_the_legacy_file(configuration, tmp_path):
+    """The file the command managed at the top level of the
+    directory -- the legacy location, which the letter-named files
+    of the directory outranked -- migrates into the override
+    location with its content when the command writes."""
+    (tmp_path / "50_config_set.json").write_text(
+        '{"custom": {"greeting": "hello"}}\n')
 
     path = configuration.option_file(str(tmp_path))
 
-    assert path == str(tmp_path / "50_config_set.json")
+    assert path == str(tmp_path / "override" / "99_config_set.json")
+    assert not (tmp_path / "50_config_set.json").exists()
+    migrated = json.loads(open(path).read())
+    assert migrated == {"custom": {"greeting": "hello"}}
+
+
+def test_option_file_follows_the_configured_name(configuration, tmp_path):
+    """The 'config.override_filename' option places the managed file:
+    the name is the operator's, relative to the directory."""
+    configuration.merge({"config": {"override_filename": "my.json"}})
+
+    path = configuration.option_file(str(tmp_path))
+
+    assert path == str(tmp_path / "my.json")
+
+
+def test_option_file_refuses_escaping_names(configuration, tmp_path):
+    """The managed file stays inside the configuration directory: an
+    absolute path, the parent segments and the empty segments are
+    refused with the option named."""
+    for filename in ("/etc/debops.json", "../debops.json",
+                     "override/../debops.json", "override//x.json",
+                     "  "):
+        configuration.merge({"config": {"override_filename":
+                                        filename}})
+        with pytest.raises(ValueError, match="override_filename"):
+            configuration.option_file(str(tmp_path))
 
 
 def test_option_file_skips_hidden_and_unrelated_files(configuration,
@@ -1163,7 +1198,7 @@ def test_option_file_skips_hidden_and_unrelated_files(configuration,
 
     path = configuration.option_file(str(tmp_path))
 
-    assert path == str(tmp_path / "99_config_set.json")
+    assert path == str(tmp_path / "override" / "99_config_set.json")
 
 
 def test_option_file_refuses_ambiguous_files(configuration, tmp_path):
@@ -1172,6 +1207,59 @@ def test_option_file_refuses_ambiguous_files(configuration, tmp_path):
 
     with pytest.raises(ValueError):
         configuration.option_file(str(tmp_path))
+
+
+def test_shadowing_file_finds_the_later_file(configuration, tmp_path):
+    """A file of the managed file's directory which sorts after it
+    and defines the option shadows the managed value: the helper
+    returns the file and the value which wins."""
+    managed = tmp_path / "override" / "99_config_set.json"
+    managed.parent.mkdir()
+    managed.write_text('{"tofu": {"inventory": {"hosts_format": '
+                       '"toml"}}}\n')
+    (tmp_path / "override" / "z-late.toml").write_text(
+        '[tofu.inventory]\nhosts_format = "ini"\n')
+
+    shadow = config_module.shadowing_file(str(managed), "tofu.inventory.hosts_format")
+
+    assert shadow[0] == str(tmp_path / "override" / "z-late.toml")
+    assert shadow[1] == "ini"
+
+
+def test_shadowing_file_ignores_the_files_which_load_before(
+        configuration, tmp_path):
+    """The files sorting before the managed file load before it too:
+    they do not shadow anything."""
+    managed = tmp_path / "override" / "99_config_set.json"
+    managed.parent.mkdir()
+    managed.write_text('{"tofu": {"inventory": {"hosts_format": '
+                       '"toml"}}}\n')
+    (tmp_path / "override" / "10-early.toml").write_text(
+        '[tofu.inventory]\nhosts_format = "ini"\n')
+
+    assert config_module.shadowing_file(
+        str(managed), "tofu.inventory.hosts_format") is None
+
+
+def test_shadowing_file_scans_the_subdirectories(configuration, tmp_path):
+    """The files of the subdirectories of the managed file's
+    directory rank above it: the helper scans them."""
+    managed = tmp_path / "override" / "99_config_set.json"
+    managed.parent.mkdir()
+    managed.write_text('{"custom": {"greeting": "set"}}\n')
+    (tmp_path / "override" / "deep").mkdir()
+    (tmp_path / "override" / "deep" / "later.yml").write_text(
+        'custom:\n  greeting: shadowed\n')
+
+    shadow = config_module.shadowing_file(str(managed), "custom.greeting")
+
+    assert shadow[1] == "shadowed"
+
+
+def test_shadowing_file_ignores_the_missing_directory(tmp_path):
+    assert config_module.shadowing_file(
+        str(tmp_path / "gone" / "options.json"),
+        "custom.greeting") is None
 
 
 def test_write_option_sets_a_typed_option(configuration, tmp_path):
