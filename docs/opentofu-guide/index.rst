@@ -32,8 +32,8 @@ How a view maps to OpenTofu
 The :ref:`infrastructure views <project_infrastructure_views>` are
 environments: the same view name points at the Ansible inventory
 root, the Ansible secrets, and the OpenTofu working directory. Each
-view with OpenTofu resources gets one OpenTofu workdir. The state of one view never
-mixes with the state of another.
+view with OpenTofu resources gets one OpenTofu workdir. The state of
+one view never mixes with the state of another.
 
 In a modern project the OpenTofu tree sits beside the Ansible tree:
 
@@ -54,7 +54,8 @@ In a modern project the OpenTofu tree sits beside the Ansible tree:
                ├── plans/                transient, retention-pruned
                └── secret/               the encrypted store
 
-A legacy project keeps its OpenTofu tree at :file:`tofu/` directly. Everything below works the same way. The commands resolve the view
+A legacy project keeps its OpenTofu tree at :file:`tofu/` directly.
+Everything below works the same way. The commands resolve the view
 from the working directory, so you can run :command:`debops tofu`
 from inside :file:`tofu/views/system/` as well as from the
 project root.
@@ -167,7 +168,8 @@ with the wrapper environment composed around them:
        the release checksums and their signature.
    * - :command:`inventory`
      - Render the inventory outputs of the view into the Ansible
-       inventory. See :ref:`the OpenTofu - Ansible inventory bridge <debops_tofu_inventory>`.
+       inventory. See :ref:`the OpenTofu - Ansible inventory bridge
+       <debops_tofu_inventory>`.
    * - :command:`plans`
      - List, show, apply or delete the saved plan files.
    * - :command:`rekey`
