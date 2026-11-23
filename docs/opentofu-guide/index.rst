@@ -178,7 +178,7 @@ with the wrapper environment composed around them:
 
 Everything else -- :command:`init`, :command:`plan`, :command:`apply`,
 :command:`destroy`, :command:`import`, :command:`state`, and the rest
-— passes through to OpenTofu. The wrapper options stand before the
+-- passes through to OpenTofu. The wrapper options stand before the
 operation, the options of the operation after it. On every
 passthrough run the wrapper composes the environment: the relocated
 data directory, the shared plugin cache, the workspace, the state
