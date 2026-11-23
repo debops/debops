@@ -6,8 +6,8 @@ import contextlib
 import dotenv
 import itertools
 import logging
+import secrets
 import os
-import random
 import stat
 import string
 import subprocess
@@ -136,7 +136,7 @@ class SecretStore:
 
     def _get_random_string(self):
         all_chars = string.digits + string.ascii_letters + string.punctuation
-        random_string = (''.join(random.choice(all_chars)
+        random_string = (''.join(secrets.choice(all_chars)
                          for i in range(64)))
         return random_string
 
@@ -417,23 +417,45 @@ def environment_values(view_root):
             if value is not None}
 
 
+PASSPHRASE_LENGTH_FLOOR = 16
+
+
 def passphrase_length(project):
     """The length of the generated state passphrases, from the
-    'tofu.mkview.secret.passphrase_length' option."""
+    'tofu.mkview.secret.passphrase_length' option, bounded by the
+    16-character floor.
+
+    The passphrase is the only barrier protecting the tracked state
+    ciphertext from anyone who obtains a copy of the repository, so a
+    configured length below the floor is refused instead of silently
+    generating a weak key."""
     try:
-        return project.config.raw['tofu']['mkview']['secret'][
+        length = project.config.raw['tofu']['mkview']['secret'][
             'passphrase_length']
     except (KeyError, TypeError):
-        return 32
+        length = 32
+    if length is None:
+        length = 32
+    if not isinstance(length, int) or isinstance(length, bool) \
+            or length < PASSPHRASE_LENGTH_FLOOR:
+        raise ValueError(
+            "The 'tofu.mkview.secret.passphrase_length' option is "
+            '{!r}: the generated passphrases are the only protection '
+            'of the tracked state ciphertext and are at least {} '
+            'characters long'.format(length, PASSPHRASE_LENGTH_FLOOR))
+    return length
 
 
 def random_passphrase(length):
     """A random state passphrase of the given length, drawn from the
-    URL-safe alphabet: the environment file carries the passphrase
-    without quoting, so the alphabet stays free of the characters
-    the file format would have to escape."""
+    URL-safe alphabet with the 'secrets' generator: the environment
+    file carries the passphrase without quoting, so the alphabet
+    stays free of the characters the file format would have to
+    escape. The passphrase encrypts the tracked state ciphertext and
+    is drawn from the cryptographically secure source, not the
+    Mersenne Twister."""
     alphabet = string.ascii_letters + string.digits + '-_'
-    return ''.join(random.choice(alphabet) for _ in range(length))
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
 
 
 class SecretManager:
