@@ -243,13 +243,16 @@ def _root_groups(records):
 
 
 def _validate_address(name, kind, address):
-    """The address rides the INI host line as a single token:
-    whitespace or '=' would inject further inline variables."""
-    if isinstance(address, str) and re.search(r'[\s=]', address):
+    """The address rides the INI host line as a single token: only
+    the characters of an address render there, anything else --
+    whitespace, '=' from the str() of a non-string value -- would
+    inject further inline variables."""
+    rendered = str(address)
+    if not re.fullmatch(r'[A-Za-z0-9.:\-_]+', rendered):
         raise ValueError(
-            "The address of the {} '{}' carries whitespace or '=': "
-            'the address rides the host line as a single '
-            'token.'.format(kind, name))
+            "The address of the {} '{}' carries characters outside "
+            'of [A-Za-z0-9.:-]: the address rides the host line as '
+            'a single token.'.format(kind, name))
 
 
 def _validate_entry(name, entry, attributes, kind):
@@ -285,6 +288,10 @@ def _validate_entry(name, entry, attributes, kind):
         _validate_name(
             entry['host'],
             "the 'host' attribute of the {} '{}'".format(kind, name))
+    if entry.get('label'):
+        _validate_name(
+            entry['label'],
+            "the 'label' attribute of the {} '{}'".format(kind, name))
     if 'address' in entry:
         _validate_address(name, kind, entry['address'])
     if 'jump' in entry:
@@ -309,8 +316,8 @@ def _validate_jump(name, kind, jump):
     jump: the host connects directly."""
     if not jump:
         return
-    if isinstance(jump, str) and \
-            not re.fullmatch(r'[A-Za-z0-9._@,:-]+', jump):
+    rendered = str(jump)
+    if not re.fullmatch(r'[A-Za-z0-9._@,:-]+', rendered):
         raise ValueError(
             "The jump of the {} '{}' carries characters outside of "
             '[A-Za-z0-9._@,:-]: it composes into '
@@ -322,8 +329,9 @@ def _validate_name(name, what):
     """Check one name which crosses into file paths, INI sections and
     lookup expressions: only a safe path component and INI token
     renders."""
-    if isinstance(name, str) and re.fullmatch(r'[A-Za-z0-9._-]+', name) \
-            and not name.startswith('.'):
+    rendered = str(name)
+    if re.fullmatch(r'[A-Za-z0-9._-]+', rendered) \
+            and not rendered.startswith('.'):
         return
     raise ValueError(
         "The name '{}' of {} is not renderable: the bridge needs "
