@@ -84,7 +84,7 @@ def _collect_outputs(output_json):
 
 def _filter_hosts(seed, host_status):
     """Return the seed entries the bridge renders, per the
-    'tofu.inventory.output.host_status' handling map.
+    'tofu.inventory.host_status' handling map.
 
     The status of an entry decides: a status which the map names is
     followed, a status it does not name is skipped with a notice, an
@@ -105,7 +105,7 @@ def _filter_hosts(seed, host_status):
                     "'include' or 'skip'.".format(handling, status))
             logger.notice(
                 "The status '{status}' of the host '{name}' is not "
-                "named in the 'tofu.inventory.output.host_status' "
+                "named in the 'tofu.inventory.host_status' "
                 'option: the host is not rendered'.format(
                     status=status, name=name),
                 extra={'allow': 'stderr'})
