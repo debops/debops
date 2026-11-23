@@ -192,10 +192,23 @@ something like this:
    │           ├── secret/
    │           ├── .gitattributes
    │           └── .gitignore
+   ├── tofu/
+   │   └── views/
+   │       └── system/
+   │           ├── main.tf
+   │           ├── providers.tf
+   │           ├── .terraform.lock.hcl
+   │           ├── state/
+   │           ├── plans/
+   │           └── secret/
+   │               ├── environment
+   │               ├── .gitattributes
+   │               └── .gitignore
    ├── .debops/
    │   ├── conf.d/
    │   │   ├── project.yml
-   │   │   └── view-system.yml
+   │   │   ├── view-system.yml
+   │   │   └── view-system-tofu.toml
    │   │── environment
    │   │── requirements.txt
    │   ├── ssh/
@@ -207,6 +220,12 @@ something like this:
 The :file:`.debops/ssh/` directory holds the known_hosts store of the
 project views when the project mode of the :ref:`SSH suite <ssh_suite>` is
 active.
+
+The OpenTofu side of a view lives in :file:`tofu/views/<view>/`,
+beside the Ansible view of the same name: the state, the plan files
+and the encrypted store of the infrastructure the view creates. See
+:ref:`the 'debops tofu' section <debops_tofu>` for the layout and
+the operations.
 
 You can compare this with the "legacy" directory structure above. The important
 changes with the previous layout are:

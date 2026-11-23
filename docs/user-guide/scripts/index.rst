@@ -26,6 +26,7 @@ playbooks using simple commands against the current environment.
    debops-ssh/index
    debops-scp/index
    debops-sftp/index
+   debops-tofu/index
 
 ..
  Local Variables:
