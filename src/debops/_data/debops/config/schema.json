@@ -430,6 +430,22 @@
               "binary_version": {
                 "type": "string",
                 "description": "The version of the OpenTofu binary which the view runs with, recorded in the view's configuration drop-in when the view is created: the 'tofu.upstream.known_version' option seeds it with the known-good version. The pinned binary is installed into the DebOps data directory, version-keyed, through the 'debops tofu install' command; the view runs it when it is present. A view without a recorded version -- a hand-made one -- runs the 'binaries.tofu' configured binary, unmanaged."
+              },
+              "plan_retention": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "How many plan files the DebOps flows keep in the plan directory of this view. The view option overrides the 'tofu.plan_retention' option of the root; the plans live in the view, the retention follows them."
+              },
+              "inventory": {
+                "type": "object",
+                "properties": {
+                  "to_view": {
+                    "type": "string",
+                    "description": "The Ansible view the inventory render targets, instead of the mirror view of the same name. The hosts file, the variables files and the sensitive values land in the named view."
+                  }
+                },
+                "additionalProperties": false,
+                "description": "The per-view options of the inventory bridge: the target of the render, when the pairing with the same-named Ansible view is not the shape the deployment needs."
               }
             }
           }
