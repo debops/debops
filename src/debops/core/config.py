@@ -1584,12 +1584,12 @@ def shadowing_file(managed_path, key):
     the option: (the path, the value), or None.
 
     The candidates are the files of the managed file's directory
-    which sort after its name, and the files of its subdirectories:
-    by the subdirectory merge rule, both rank above the managed
-    file. The files of the parent directory and of its other
-    subdirectories are not scanned -- the managed file lives in the
-    override sublayer, whose siblings the operator places
-    deliberately."""
+    which sort after its name, the files of its subdirectories, and
+    the files of the parent directory's subdirectories which sort
+    after the managed file's own subdirectory: by the subdirectory
+    merge rule, all of them rank above the managed file. The parent
+    directory's own files load before any subdirectory and are not
+    candidates."""
     managed_directory = os.path.dirname(managed_path)
     managed_name = os.path.basename(managed_path)
     if not os.path.isdir(managed_directory):
@@ -1603,6 +1603,15 @@ def shadowing_file(managed_path, key):
                     candidates.append(os.path.join(root, file_name))
         elif name > managed_name:
             candidates.append(path)
+    parent = os.path.dirname(managed_directory)
+    managed_subdir = os.path.basename(managed_directory)
+    if parent != managed_directory and os.path.isdir(parent):
+        for name in sorted(os.listdir(parent)):
+            path = os.path.join(parent, name)
+            if os.path.isdir(path) and name > managed_subdir:
+                for root, _, files in os.walk(path):
+                    for file_name in sorted(files):
+                        candidates.append(os.path.join(root, file_name))
     segments = [segment.lower() for segment in key.split('.') if segment]
     for path in candidates:
         if not path.endswith(('.toml', '.json', '.yaml', '.yml')):
@@ -1620,6 +1629,8 @@ def shadowing_file(managed_path, key):
                 yaml.YAMLError):
             continue
         node = data
+        if not isinstance(node, dict):
+            continue
         for segment in segments:
             if not isinstance(node, dict) or segment not in node:
                 node = None
