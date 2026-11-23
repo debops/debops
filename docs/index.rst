@@ -96,6 +96,8 @@ infrastructure environments.
    user-guide/inventory-spec
    user-guide/dns-configuration
    user-guide/ssh-suite
+   user-guide/tofu
+   user-guide/tofu-inventory
    ansible/role-index
    ansible/roles/index
 
@@ -106,6 +108,11 @@ infrastructure environments.
 
    admin-guide/configuration-recipes
    admin-guide/linux-containers
+   admin-guide/tofu-remote-state
+   admin-guide/tofu-registry-modules
+   admin-guide/tofu-state-adoption
+   admin-guide/tofu-ci
+   admin-guide/tofu-incus
    admin-guide/service-ports
    admin-guide/local-apt-repository
 
