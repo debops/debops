@@ -521,7 +521,7 @@ class Interpreter(object):
                 project, project.view, force=args.force,
                 dry_run=args.dry_run,
                 allow_missing_state=args.allow_missing_state,
-                bell=args.bell)
+                bell=args.bell, to_view=args.to_view)
         except TofuOperationFailed as errmsg:
             print_error(errmsg)
             sys.exit(errmsg.return_code)

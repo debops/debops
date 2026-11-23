@@ -34,6 +34,24 @@ directory of :file:`ansible/views/system/`.
 The Ansible view must exist. The project creation scaffolds the
 default one.
 
+The ``-t/--to-view`` option and the
+``views.<view>.tofu.inventory.to_view`` option redirect the
+render into a different Ansible view. The hosts file, the
+variables files and the sensitive values land in that view's
+inventory and store. The Ansible store of the target view
+cycles around the render. The option on the command line wins
+over the configured one:
+
+.. code-block:: toml
+
+   # .debops/conf.d/view-fleet-tofu.toml
+
+   [views.fleet.tofu.inventory]
+   to_view = "staging"
+
+The mirror view keeps its own files: the render removes only the
+files it owns in the target view.
+
 The operation renders three surfaces:
 
 1. The hosts file of the inventory directory, in the configured
@@ -269,6 +287,10 @@ Configuration options
        keyed by the group name.
    * - ``tofu.inventory.state_refresh``
      - Refresh the state before every render.
+   * - ``views.<view>.tofu.inventory.to_view``
+     - The Ansible view the render targets, instead of the mirror
+       view of the same name. The ``-t/--to-view`` option overrides
+       it for one render.
    * - ``tofu.inventory.host_status.<status>``
      - ``include`` or ``skip``, keyed by the lowercased status value.
 
