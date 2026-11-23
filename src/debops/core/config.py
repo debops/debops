@@ -499,18 +499,34 @@ class Configuration(object):
                 self._merge_env_file(path)
 
     def load(self, path, scope=None):
+        """Load a configuration file or directory.
+
+        A directory loads its files in the sorted order, and the
+        files of its subdirectories after them -- each subdirectory
+        in the sorted order, its own files before its own
+        subdirectories. A file of a subdirectory therefore ranks
+        above every file of the directory itself, which is how the
+        configuration override directories rank their options above
+        the hand-written ones."""
         if os.path.exists(path):
             if os.path.isfile(path):
                 return self._load_config_file(path, scope=scope)
             elif os.path.isdir(path):
                 data = {}
                 for config_file in sorted(os.listdir(path)):
-                    if os.path.isfile(os.path.join(path, config_file)):
+                    file_path = os.path.join(path, config_file)
+                    if os.path.isfile(file_path):
                         self._merge_dict(
                             data,
                             self._load_config_file(
-                                os.path.join(path, config_file),
+                                file_path,
                                 scope=scope))
+                for subdirectory in sorted(os.listdir(path)):
+                    directory_path = os.path.join(path, subdirectory)
+                    if os.path.isdir(directory_path):
+                        self._merge_dict(
+                            data,
+                            self.load(directory_path, scope=scope))
                 return data
 
         # Path doesn't exist, return empty dictionary for merging
