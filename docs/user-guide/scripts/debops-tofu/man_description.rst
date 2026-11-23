@@ -38,5 +38,5 @@ This command executes :ref:`hook scripts <debops_hooks>`
 after the OpenTofu operations.
 
 The full documentation of the section lives in the DebOps manual:
-the :ref:`'debops tofu' section <debops_tofu>` page and the
+the :ref:`OpenTofu integration <debops_tofu>` page and the
 :ref:`OpenTofu - Ansible inventory bridge <debops_tofu_inventory>` page.

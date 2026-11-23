@@ -4,8 +4,8 @@
 
 .. _debops_tofu:
 
-The 'debops tofu' section
-=========================
+OpenTofu integration
+====================
 
 .. contents::
    :local:
@@ -311,3 +311,13 @@ See also
 - :ref:`tofu_remote_state` for the remote state recipes
 - :ref:`tofu_state_adoption` for adopting existing infrastructure and
   rotating passphrases
+
+.. toctree::
+   :maxdepth: 1
+
+   inventory-bridge
+   remote-state
+   registry-modules
+   state-adoption
+   ci
+   incus

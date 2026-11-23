@@ -281,7 +281,8 @@ the old file.
 See also
 --------
 
-- :ref:`debops_tofu` for the wrapper section the bridge runs in
+- :ref:`debops_tofu` for the OpenTofu integration the bridge
+  runs in
 - :ref:`project_infrastructure_views` for the view pairing between
   Ansible and OpenTofu
 - :ref:`tofu_incus` for a worked example: a container fleet rendered

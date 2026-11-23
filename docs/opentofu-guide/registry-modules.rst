@@ -159,6 +159,7 @@ module on the next init. The view tree never holds a stale copy.
 See also
 --------
 
-- :ref:`debops_tofu` for the wrapper section and the module options
+- :ref:`debops_tofu` for the OpenTofu integration and the module
+  options
 - :ref:`tofu_remote_state` for the remote state on the same GitLab
   instance
