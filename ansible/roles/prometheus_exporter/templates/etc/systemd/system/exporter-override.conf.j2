@@ -1,0 +1,25 @@
+{# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+ # Copyright (C) 2026 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+{% set pe_args = [] %}
+{% set _ = pe_args.append((exporter.web_listen_flag | d('--web.listen-address')) ~ '=' ~ prometheus_exporter__fact_listen) %}
+{% if (prometheus_exporter__exporter_configuration | length > 0) or (exporter.config_path is defined) %}
+{%   set _ = pe_args.append((exporter.config_flag | d('--config.file')) ~ '=' ~ prometheus_exporter__fact_config_path) %}
+{% endif %}
+{% for a in exporter.args | d([]) %}
+{%   set _ = pe_args.append(a) %}
+{% endfor %}
+{# systemd expands '%' specifiers and '$' variables in ExecStart= #}
+{% set pe_exec = [] %}
+{% for a in [prometheus_exporter__fact_bin] + pe_args %}
+{%   set _ = pe_exec.append(a | string | replace('%', '%%') | replace('$', '$$')) %}
+{% endfor %}
+# {{ ansible_managed }}
+[Service]
+EnvironmentFile=
+{% if prometheus_exporter__fact_secret | bool %}
+EnvironmentFile={{ prometheus_exporter__fact_env_path }}
+{% endif %}
+ExecStart=
+ExecStart={{ pe_exec | map('to_json') | join(' ') }}

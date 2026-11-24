@@ -58,6 +58,20 @@
     systemctl is-active vmagent@default.service
     curl -fsS http://127.0.0.1:8429/metrics | grep -q '^vm_app_version'
 
+- name: 'prometheus_exporter'
+  playbook: 'service/prometheus_exporter'
+  groups: [ 'debops_service_prometheus_exporter' ]
+  idempotency: 'advisory'
+  inventoryspec:
+    files:
+      group_vars/debops_service_prometheus_exporter/prometheus_exporter.yml: |
+        ---
+        prometheus_exporter__group_exporters:
+          - name: 'node'
+  post_script: |
+    systemctl is-active prometheus-node-exporter.service
+    curl -fsS http://127.0.0.1:9100/metrics | grep -q '^node_exporter_build_info'
+
 - name: 'mariadb_server'
   playbook: 'service/mariadb_server'
   groups: [ 'debops_service_mariadb_server' ]
