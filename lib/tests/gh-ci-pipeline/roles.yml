@@ -102,3 +102,21 @@
   excluded: True
   reason: 'Ubuntu 24.04 used by the hosted runners does not provide Zabbix
     packages'
+
+# The test host has no PKI environment and the role accepts plain HTTP only on
+# localhost, so the frontend replaces the 'localhost' server of nginx.
+- name: 'zabbix_server'
+  playbook: [ 'service/postgresql_server', 'service/zabbix_server' ]
+  groups: [ 'debops_service_postgresql_server', 'debops_service_zabbix_server' ]
+  idempotency: 'advisory'
+  inventoryspec:
+    files:
+      group_vars/debops_service_zabbix_server/zabbix_server.yml: |
+        ---
+        nginx__internal_servers: []
+        zabbix_server__fqdn: 'localhost'
+        zabbix_server__api_url: 'http://localhost/api_jsonrpc.php'
+  post_script: |
+    sudo zabbix_server -T
+    systemctl is-active zabbix-server.service
+    curl -fsSL http://localhost/ | grep -qi zabbix
