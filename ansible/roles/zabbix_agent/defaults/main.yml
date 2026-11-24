@@ -630,6 +630,11 @@ zabbix_agent__original_configuration:
 # List of the default configuration options defined by the role.
 zabbix_agent__default_configuration:
 
+  # Active checks work only when the agent uses the name of its host object.
+  - name: 'Hostname'
+    value: '{{ zabbix_agent__api_host_name }}'
+    state: '{{ "present" if (zabbix_agent__api_register | bool) else "ignore" }}'
+
   - name: 'User'
     value: '{{ zabbix_agent__user }}'
     state: '{{ "present" if zabbix_agent__flavor == "C" else "ignore" }}'
@@ -728,7 +733,9 @@ zabbix_agent__api_register: False
 #
 # URL of the Zabbix Server API endpoint, for example
 # ``https://zabbix.example.org/api_jsonrpc.php``. Required when
-# :envvar:`zabbix_agent__api_register` is enabled.
+# :envvar:`zabbix_agent__api_register` is enabled. The API token is sent to this
+# URL, therefore it needs to use HTTPS; plain HTTP is accepted only for
+# ``localhost``, ``127.0.0.1`` and ``[::1]``.
 zabbix_agent__api_url: ''
 
                                                                    # ]]]
@@ -765,8 +772,13 @@ zabbix_agent__api_token: '{{ (lookup("file", secret + "/" + zabbix_agent__api_to
                                                                    # ]]]
 # .. envvar:: zabbix_agent__api_host_name [[[
 #
-# Technical name of the host object created in Zabbix. Should match the
-# ``Hostname`` configuration option, if it's defined.
+# Technical name of the host object created in Zabbix. When
+# :envvar:`zabbix_agent__api_register` is enabled, it's also the default value of
+# the ``Hostname`` configuration option, since active checks require both to be
+# the same. If that option is changed in the inventory, this variable should be
+# set to the same value. The agent ignores ``HostnameItem`` when ``Hostname`` is
+# defined; if you use a custom ``HostnameItem``, set both ``Hostname`` and this
+# variable to the resulting name.
 zabbix_agent__api_host_name: '{{ ansible_fqdn }}'
 
                                                                    # ]]]

@@ -21,6 +21,8 @@
         Content-Type: 'application/json-rpc'
       body_format: 'json'
       validate_certs: '{{ zabbix_agent__api_validate_certs }}'
+      # Plain HTTP is accepted only on loopback, don't send the token to a proxy
+      use_proxy: '{{ not (zabbix_agent__api_url is match("(?i)http://")) }}'
   vars:
 
     # Host groups and templates are merged by name, macros by the 'macro'
