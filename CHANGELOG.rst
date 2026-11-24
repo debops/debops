@@ -149,6 +149,22 @@ General
   ``--format`` option is not given; it accepts ``unix``, ``yaml``,
   ``json`` and ``toml``, and ``yaml`` is the default.
 
+:ref:`debops.zabbix_agent` role
+'''''''''''''''''''''''''''''''
+
+- The connection encryption mode can now be selected: a pre-shared key
+  (the previous behaviour), an X.509 certificate from a PKI realm managed
+  by the :ref:`debops.pki` role, or unencrypted connections. In the
+  certificate mode the role installs a PKI hook which restarts the agent
+  when its certificate is renewed.
+
+- The role can register the host in Zabbix through the JSON-RPC API, with
+  host groups, templates, macros, tags and encryption settings defined in
+  the Ansible inventory. Objects added to the host in Zabbix by other means
+  are preserved. List entries in the ``absent`` state remove the host from
+  a host group, unlink a template, or remove a macro or a tag. On hosts
+  without IPv4 the host interface uses the default IPv6 address.
+
 Changed
 ~~~~~~~
 
