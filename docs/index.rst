@@ -67,9 +67,7 @@ computer, using Docker or Vagrant. Alternatively, a set of scripts can be
 installed on your own computer, that will let you manage multiple, separate IT
 infrastructure environments.
 
-`*Documentation for older releases*`__
-
-.. __: https://debops.readthedocs.io/
+`Documentation for older releases <https://debops.readthedocs.io/>`__
 
 .. toctree::
    :caption: Introduction
