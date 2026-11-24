@@ -44,6 +44,14 @@ New DebOps roles
   by other roles, and the bearer tokens used for remote write are stored by
   the :ref:`debops.secret` role.
 
+- The :ref:`debops.prometheus_exporter` role installs Prometheus exporters
+  from the Debian packages (the ``prometheus-*-exporter`` family) and
+  configures each of them with a systemd drop-in which replaces the command
+  line, so that the role does not depend on the differences between the
+  packages and the Debian releases. The exporters listen on loopback, to be
+  scraped by :ref:`debops.vmagent`, and can be opened in the firewall for
+  a list of addresses.
+
 General
 '''''''
 

@@ -1,0 +1,111 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  ansible.builtin.import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps secret role
+  ansible.builtin.import_role:
+    name: 'secret'
+
+- name: Pre hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "prometheus_exporter/pre_main.yml") }}'
+
+# The exporter lists are merged by the parse_kv_items filter, which cannot
+# merge the 'environment' and 'configuration' parameters given in another
+# format than a list. The entries are checked before they are merged, so that
+# a wrong format, or a parameter from the previous format, is reported with
+# the exporter name and without the values, which can contain passwords.
+- name: Check the format of the exporter definitions
+  ansible.builtin.assert:
+    that:
+      - (prometheus_exporter__var_invalid | length) == 0
+    quiet: True
+    fail_msg: >-
+      Wrong definition of exporters: {{ prometheus_exporter__var_invalid | join(', ') }}.
+      Each exporter needs a non-empty 'name' and a 'state' supported by
+      Universal Configuration (present, absent, init, ignore, append). The 'environment' and
+      'configuration' parameters are lists of 'name'/'value' and
+      'name'/'config' entries; the 'config' parameter was replaced by
+      'configuration', and 'systemd_overrides' by drop-in files managed by
+      the debops.systemd role.
+  vars:
+    prometheus_exporter__var_invalid: |-
+      {% set invalid = [] %}
+      {% for element in prometheus_exporter__combined_exporters %}
+      {%   if element is mapping %}
+      {%     set name = element.name | d('') | string %}
+      {%     set environment = element.environment | d([]) %}
+      {%     set configuration = element.configuration | d([]) %}
+      {%     if (name | length == 0)
+                or ((element.state | d('present')) not in [ 'present', 'absent', 'init', 'ignore', 'append' ])
+                or (element.config is defined)
+                or (element.systemd_overrides is defined)
+                or (environment is mapping) or (environment is string)
+                or (configuration is mapping) or (configuration is string) %}
+      {%       set _ = invalid.append(name if (name | length > 0) else '<unnamed>') %}
+      {%     endif %}
+      {%   elif element is not string %}
+      {%     set _ = invalid.append('<not a dictionary>') %}
+      {%   endif %}
+      {% endfor %}
+      {{ invalid | unique | list }}
+
+- name: Make sure that Ansible local fact directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Ensure Prometheus configuration directory exists
+  ansible.builtin.file:
+    path: '{{ prometheus_exporter__config_dir }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+# Exporters in the 'init' state are only defined and those in the 'ignore'
+# state are skipped by the parse_kv_items filter, the role does not change
+# them. They are left out of the loop instead of being skipped with a 'when'
+# condition, because the result of a skipped item includes the whole entry,
+# with the values of its environment variables. The 'environment' and
+# 'configuration' lists of the merged entries are evaluated into the
+# variables used by the tasks and templates.
+- name: Manage Prometheus exporters
+  ansible.builtin.include_tasks: 'manage_exporter.yml'
+  loop: '{{ prometheus_exporter__combined_exporters
+            | debops.debops.parse_kv_items(merge_keys=["environment", "configuration"])
+            | selectattr("state", "in", ["present", "absent"]) | list }}'
+  loop_control:
+    loop_var: 'exporter'
+    label: '{{ exporter.name }}'
+  vars:
+    prometheus_exporter__exporter_environment: '{{ exporter.environment | d([])
+                                                   | rejectattr("state", "in", ["absent", "init", "ignore"])
+                                                   | selectattr("value", "defined")
+                                                   | items2dict(key_name="name", value_name="value") }}'
+    prometheus_exporter__exporter_configuration: '{{ {} | combine(exporter.configuration | d([])
+                                                                  | rejectattr("state", "in", ["absent", "init", "ignore"])
+                                                                  | selectattr("config", "defined")
+                                                                  | map(attribute="config") | list,
+                                                                  recursive=True) }}'
+    prometheus_exporter__exporter_config_no_log: '{{ (exporter.config_no_log | d(False) | bool)
+                                                     and (debops__no_log | d(True) | bool) }}'
+
+- name: Save prometheus_exporter local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/prometheus_exporter.fact.j2'
+    dest: '/etc/ansible/facts.d/prometheus_exporter.fact'
+    mode: '0644'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Reload Ansible local facts
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Post hooks
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "prometheus_exporter/post_main.yml") }}'

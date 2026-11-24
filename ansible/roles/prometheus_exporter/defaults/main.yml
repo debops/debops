@@ -1,0 +1,187 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# .. Copyright (C) 2026 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _prometheus_exporter__ref_defaults:
+
+# debops.prometheus_exporter default variables
+# ============================================
+
+# .. contents:: Sections
+#    :local:
+
+
+# General [[[
+# -----------
+
+# .. envvar:: prometheus_exporter__config_dir [[[
+#
+# Directory for exporter configuration files (e.g. blackbox.yml, sql.yml).
+prometheus_exporter__config_dir: '/etc/prometheus'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__dropin_dir [[[
+#
+# Base directory for systemd drop-in override files.
+prometheus_exporter__dropin_dir: '/etc/systemd/system'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__default_listen_host [[[
+#
+# Default host/IP exporters bind to. Loopback keeps exporters private; the
+# local vmagent scrapes them and forwards samples.
+prometheus_exporter__default_listen_host: '127.0.0.1'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__purge_on_absent [[[
+#
+# When True, exporters with ``state: absent`` also have their APT package
+# purged.
+prometheus_exporter__purge_on_absent: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Known default ports [[[
+# -----------------------
+
+# .. envvar:: prometheus_exporter__known_ports [[[
+#
+# Mapping of exporter ``name`` to its default listen port. Used to build
+# ``listen_address`` when an exporter does not set it explicitly.
+prometheus_exporter__known_ports:
+  node: 9100
+  blackbox: 9115
+  apache: 9117
+  postgres: 9187
+  sql: 9237
+  mysqld: 9104
+  redis: 9121
+  memcached: 9150
+  nginx: 9113
+  elasticsearch: 9114
+  ipmi: 9290
+                                                                   # ]]]
+                                                                   # ]]]
+# Firewall configuration [[[
+# --------------------------
+
+# Exporters which listen on an address other than loopback get a firewall
+# rule in :ref:`debops.ferm` which accepts connections to their port only
+# from the addresses in the lists below and in the ``allow`` parameter of the
+# exporter. Without any addresses the port stays closed.
+
+# .. envvar:: prometheus_exporter__allow [[[
+#
+# List of IP addresses or CIDR subnets allowed to connect to the exporters
+# which do not listen on loopback, on all hosts in the Ansible inventory.
+prometheus_exporter__allow: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__group_allow [[[
+#
+# List of IP addresses or CIDR subnets allowed to connect to the exporters
+# which do not listen on loopback, on hosts in a specific Ansible inventory
+# group.
+prometheus_exporter__group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__host_allow [[[
+#
+# List of IP addresses or CIDR subnets allowed to connect to the exporters
+# which do not listen on loopback, on specific hosts in the Ansible
+# inventory.
+prometheus_exporter__host_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Exporter definitions [[[
+# ------------------------
+
+# The lists below define managed exporters. Each element is a dictionary;
+# entries with the same ``name`` are merged together. See
+# :ref:`prometheus_exporter__ref_exporters` for all supported parameters.
+
+# .. envvar:: prometheus_exporter__default_exporters [[[
+#
+# Exporters defined by the role. The role does not install any exporter by
+# default.
+prometheus_exporter__default_exporters: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__exporters [[[
+#
+# Exporters defined on all hosts in the Ansible inventory.
+prometheus_exporter__exporters: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__group_exporters [[[
+#
+# Exporters defined on hosts in a specific Ansible inventory group.
+prometheus_exporter__group_exporters: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__host_exporters [[[
+#
+# Exporters defined on specific hosts in the Ansible inventory.
+prometheus_exporter__host_exporters: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__combined_exporters [[[
+#
+# Variable which combines all exporter lists and is used in role tasks and
+# templates. Entries with the same ``name`` are merged together by the
+# ``debops.debops.parse_kv_items`` filter in the role tasks, so a later list
+# can change or remove an exporter defined in an earlier one.
+prometheus_exporter__combined_exporters: '{{ prometheus_exporter__default_exporters
+                                             + prometheus_exporter__exporters
+                                             + prometheus_exporter__group_exporters
+                                             + prometheus_exporter__host_exporters }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: prometheus_exporter__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role. Each exporter which
+# listens on an address other than loopback gets a rule which accepts
+# connections to its port from the addresses in
+# :envvar:`prometheus_exporter__allow`, the group and host lists and the
+# ``allow`` parameter of the exporter. The rule is removed when the list is
+# empty, when the exporter moves to loopback and when it is set to
+# ``absent``.
+prometheus_exporter__ferm__dependent_rules: |-
+  {% set rules = [] %}
+  {% for exporter in (prometheus_exporter__combined_exporters
+                      | debops.debops.parse_kv_items) %}
+  {%   if exporter.state in [ 'present', 'absent' ] %}
+  {%     set listen = (exporter.listen_address
+                       | d(prometheus_exporter__default_listen_host ~ ':'
+                           ~ (prometheus_exporter__known_ports[exporter.name] | d(''))))
+                      | string %}
+  {%     set host = listen.rsplit(':', 1)[0].strip('[]') %}
+  {%     set allow = (prometheus_exporter__allow
+                      + prometheus_exporter__group_allow
+                      + prometheus_exporter__host_allow
+                      + (exporter.allow | d([]))) | unique | list %}
+  {%     set loopback = (host == 'localhost' or host == '::1'
+                         or host.startswith('127.')) %}
+  {%     set _ = rules.append({
+           'name': 'prometheus_exporter_' ~ exporter.name,
+           'type': 'accept',
+           'dport': [ listen.rsplit(':', 1)[-1] ],
+           'saddr': allow,
+           'accept_any': False,
+           'weight': '50',
+           'by_role': 'debops.prometheus_exporter',
+           'rule_state': ('present'
+                          if (exporter.state == 'present' and not loopback
+                              and allow | length > 0)
+                          else 'absent')}) %}
+  {%   endif %}
+  {% endfor %}
+  {{ rules }}
+
+# ]]]
+# ]]]
