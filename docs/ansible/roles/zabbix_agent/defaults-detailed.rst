@@ -118,7 +118,9 @@ Zabbix is configured from four groups of variables:
 The lists in each group are combined in the order shown above, so the
 entries from the inventory host override the entries from the inventory
 groups, which override the ones defined for all hosts and the defaults of the
-role.
+role. Tags are an exception: Zabbix allows several values of the same tag, so
+a tag with a different value is added next to the earlier one. To replace
+a value, add an entry with the old value in the ``absent`` state.
 
 Examples
 ~~~~~~~~
