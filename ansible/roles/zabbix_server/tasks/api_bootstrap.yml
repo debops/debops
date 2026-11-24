@@ -1,0 +1,416 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Creates an API token in the 'secret/' directory, used by this role and by
+# the 'debops.zabbix_agent' role. The Admin password is changed only when the
+# account still uses the default one. A stored token is replaced only when the
+# API rejects it, for example after the database was recreated.
+
+- name: Check for existing Zabbix API token
+  ansible.builtin.stat:
+    path: '{{ secret + "/" + zabbix_server__api_token_path }}'
+  register: zabbix_server__register_api_token_stat
+  delegate_to: 'localhost'
+  become: False
+
+- name: Read existing Zabbix API token
+  ansible.builtin.set_fact:
+    zabbix_server__register_api_token_content: "{{ lookup('file', secret + '/' + zabbix_server__api_token_path) | trim }}"
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__register_api_token_stat.stat.exists | bool
+
+- name: Check whether the stored Zabbix API token is accepted
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'user.get'
+      params:
+        output: [ 'userid' ]
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+    status_code: [ 200 ]
+  register: zabbix_server__register_api_token_probe
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  check_mode: False
+  ignore_errors: True
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__register_api_token_stat.stat.exists | bool
+
+- name: Fail when the stored Zabbix API token cannot be checked
+  ansible.builtin.fail:
+    msg: >-
+      The Zabbix API token in secret/{{ zabbix_server__api_token_path }}
+      could not be checked because the API request failed:
+      {{ zabbix_server__register_api_token_probe.msg | d('unknown error') }}
+  when: zabbix_server__register_api_token_stat.stat.exists | bool and
+        ((zabbix_server__register_api_token_probe.status | d(0)) != 200 or
+         (zabbix_server__register_api_token_probe.json.result is not defined and
+          zabbix_server__register_api_token_probe.json.error is not defined))
+
+- name: Mark a rejected Zabbix API token for replacement
+  ansible.builtin.set_fact:
+    zabbix_server__register_api_token_rejected: >-
+      {{ (zabbix_server__register_api_token_probe.json.error.data | d(''))
+         is search('Not authorized|Session terminated') }}
+  when: zabbix_server__register_api_token_stat.stat.exists | bool and
+        zabbix_server__register_api_token_probe.json is defined and
+        zabbix_server__register_api_token_probe.json.error is defined
+  changed_when: False
+
+# In check mode, where the token is not replaced, this skips the API objects.
+- name: Forget a rejected Zabbix API token
+  ansible.builtin.set_fact:
+    zabbix_server__register_api_token_content: ''
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__register_api_token_rejected | d(False) | bool
+
+- name: Fail when the stored Zabbix API token is rejected for another reason
+  ansible.builtin.fail:
+    msg: >-
+      Zabbix API rejected the stored token:
+      {{ zabbix_server__register_api_token_probe.json.error.message | d('error') }}:
+      {{ zabbix_server__register_api_token_probe.json.error.data | d('') }}
+  when: zabbix_server__register_api_token_stat.stat.exists | bool and
+        zabbix_server__register_api_token_probe.json is defined and
+        zabbix_server__register_api_token_probe.json.error is defined and
+        not (zabbix_server__register_api_token_rejected | d(False) | bool)
+
+# The bootstrap needs to change the state of the server, so it is skipped in
+# check mode.
+- name: Decide whether the Zabbix API token must be bootstrapped
+  ansible.builtin.set_fact:
+    zabbix_server__register_api_token_missing: >-
+      {{ ((not (zabbix_server__register_api_token_stat.stat.exists | bool))
+          or (zabbix_server__register_api_token_rejected | d(False) | bool))
+         and not (ansible_check_mode | bool) }}
+  changed_when: False
+
+- name: Attempt Zabbix API login with default Admin credentials
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'user.login'
+      params:
+        username: '{{ zabbix_server__api_admin_user }}'
+        password: '{{ zabbix_server__api_default_admin_password }}'
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+    status_code: [ 200 ]
+  register: zabbix_server__register_api_login_default
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  ignore_errors: True
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__register_api_token_missing | bool
+
+- name: Fail when the Zabbix API cannot be reached
+  ansible.builtin.fail:
+    msg: >-
+      The Zabbix API at {{ zabbix_server__api_url }} did not respond to the
+      login request: {{ zabbix_server__register_api_login_default.msg | d('unknown error') }}
+  when: zabbix_server__register_api_token_missing | bool and
+        zabbix_server__register_api_login_default.json.result is not defined and
+        zabbix_server__register_api_login_default.json.error is not defined
+
+- name: Attempt Zabbix API login with the secret-generated password
+  ansible.builtin.uri:
+    url: '{{ zabbix_server__api_url }}'
+    method: 'POST'
+    headers:
+      Content-Type: 'application/json-rpc'
+    body_format: 'json'
+    body:
+      jsonrpc: '2.0'
+      method: 'user.login'
+      params:
+        username: '{{ zabbix_server__api_admin_user }}'
+        password: '{{ zabbix_server__api_admin_password }}'
+      id: 1
+    validate_certs: '{{ zabbix_server__api_validate_certs }}'
+    return_content: True
+    status_code: [ 200 ]
+  register: zabbix_server__register_api_login_secret
+  delegate_to: '{{ zabbix_server__api_delegate_to }}'
+  become: False
+  ignore_errors: True
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__register_api_token_missing | bool and
+        (zabbix_server__register_api_login_default.json.result | d('')) == ''
+
+- name: Fail if neither the default nor the secret-generated Admin password work
+  ansible.builtin.fail:
+    msg: >-
+      Could not bootstrap a Zabbix API token. The token in
+      secret/{{ zabbix_server__api_token_path }} is missing or was rejected
+      by the API, and login as '{{ zabbix_server__api_admin_user }}' failed
+      with both the stock default password and the password from
+      secret/{{ zabbix_server__api_admin_password_path }}. A rebuilt
+      database still accepts the stock password and the token is replaced
+      automatically. Otherwise the account password was changed through
+      the Web UI and the secret file no longer matches it.
+  when: zabbix_server__register_api_token_missing | bool and
+        (zabbix_server__register_api_login_default.json.result | d('')) == '' and
+        (zabbix_server__register_api_login_secret.json.result | d('')) == ''
+
+- name: Determine working Zabbix API session token for bootstrap
+  ansible.builtin.set_fact:
+    zabbix_server__register_api_bootstrap_session: >-
+      {{ zabbix_server__register_api_login_default.json.result
+         | d(zabbix_server__register_api_login_secret.json.result | d('')) }}
+    zabbix_server__register_api_fresh_install: >-
+      {{ (zabbix_server__register_api_login_default.json.result | d('')) != '' }}
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: zabbix_server__register_api_token_missing | bool
+
+- name: Bootstrap the Zabbix API token
+  when: zabbix_server__register_api_token_missing | bool
+  block:
+
+    # Before the Admin password is changed, so that a failure is harmless.
+    - name: Make sure that the directory of the Zabbix API token exists
+      ansible.builtin.file:
+        path: '{{ (secret + "/" + zabbix_server__api_token_path) | dirname }}'
+        state: 'directory'
+        mode: 'u+rwx'
+      delegate_to: 'localhost'
+      become: False
+
+    - name: Look up the bootstrap Admin user ID
+      ansible.builtin.uri:
+        url: '{{ zabbix_server__api_url }}'
+        method: 'POST'
+        headers:
+          Authorization: 'Bearer {{ zabbix_server__register_api_bootstrap_session }}'
+          Content-Type: 'application/json-rpc'
+        body_format: 'json'
+        body:
+          jsonrpc: '2.0'
+          method: 'user.get'
+          params:
+            output: [ 'userid' ]
+            filter:
+              username: [ '{{ zabbix_server__api_admin_user }}' ]
+          id: 1
+        validate_certs: '{{ zabbix_server__api_validate_certs }}'
+        return_content: True
+      register: zabbix_server__register_api_admin_userid
+      delegate_to: '{{ zabbix_server__api_delegate_to }}'
+      become: False
+      failed_when: zabbix_server__register_api_admin_userid.json.error is defined or
+                   (zabbix_server__register_api_admin_userid.json.result | d([]) | length == 0)
+      no_log: '{{ debops__no_log | d(True) }}'
+
+    - name: Set the new Zabbix Admin password
+      ansible.builtin.uri:
+        url: '{{ zabbix_server__api_url }}'
+        method: 'POST'
+        headers:
+          Authorization: 'Bearer {{ zabbix_server__register_api_bootstrap_session }}'
+          Content-Type: 'application/json-rpc'
+        body_format: 'json'
+        body:
+          jsonrpc: '2.0'
+          method: 'user.update'
+          params:
+            userid: '{{ zabbix_server__register_api_admin_userid.json.result[0].userid }}'
+            current_passwd: '{{ zabbix_server__api_default_admin_password }}'
+            passwd: '{{ zabbix_server__api_admin_password }}'
+          id: 1
+        validate_certs: '{{ zabbix_server__api_validate_certs }}'
+        return_content: True
+      register: zabbix_server__register_api_password_change
+      delegate_to: '{{ zabbix_server__api_delegate_to }}'
+      become: False
+      failed_when: >-
+        (zabbix_server__register_api_password_change.status | d(0)) != 200
+        or zabbix_server__register_api_password_change.json.result is not defined
+      no_log: '{{ debops__no_log | d(True) }}'
+      when: zabbix_server__register_api_fresh_install | bool
+
+    # The password change ends all sessions of the user.
+    - name: Re-authenticate after changing the Admin password
+      ansible.builtin.uri:
+        url: '{{ zabbix_server__api_url }}'
+        method: 'POST'
+        headers:
+          Content-Type: 'application/json-rpc'
+        body_format: 'json'
+        body:
+          jsonrpc: '2.0'
+          method: 'user.login'
+          params:
+            username: '{{ zabbix_server__api_admin_user }}'
+            password: '{{ zabbix_server__api_admin_password }}'
+          id: 1
+        validate_certs: '{{ zabbix_server__api_validate_certs }}'
+        return_content: True
+        status_code: [ 200 ]
+      register: zabbix_server__register_api_login_after_password
+      delegate_to: '{{ zabbix_server__api_delegate_to }}'
+      become: False
+      failed_when: zabbix_server__register_api_login_after_password.json.error is defined or
+                   (zabbix_server__register_api_login_after_password.json.result | d('')) == ''
+      no_log: '{{ debops__no_log | d(True) }}'
+      when: zabbix_server__register_api_fresh_install | bool
+
+    - name: Replace the invalidated bootstrap session
+      ansible.builtin.set_fact:
+        zabbix_server__register_api_bootstrap_session: '{{ zabbix_server__register_api_login_after_password.json.result }}'
+      no_log: '{{ debops__no_log | d(True) }}'
+      when: zabbix_server__register_api_fresh_install | bool
+
+    # A token left by an interrupted run is reused. Token names are unique
+    # only within a user account.
+    - name: Look up an existing bootstrap API token by name
+      ansible.builtin.uri:
+        url: '{{ zabbix_server__api_url }}'
+        method: 'POST'
+        headers:
+          Authorization: 'Bearer {{ zabbix_server__register_api_bootstrap_session }}'
+          Content-Type: 'application/json-rpc'
+        body_format: 'json'
+        body:
+          jsonrpc: '2.0'
+          method: 'token.get'
+          params:
+            output: [ 'tokenid', 'name', 'status', 'expires_at' ]
+            userids:
+              - '{{ zabbix_server__register_api_admin_userid.json.result[0].userid }}'
+            filter:
+              name: [ '{{ zabbix_server__api_token_name }}' ]
+          id: 1
+        validate_certs: '{{ zabbix_server__api_validate_certs }}'
+        return_content: True
+      register: zabbix_server__register_api_token_lookup
+      delegate_to: '{{ zabbix_server__api_delegate_to }}'
+      become: False
+      failed_when: >-
+        (zabbix_server__register_api_token_lookup.status | d(0)) != 200
+        or zabbix_server__register_api_token_lookup.json.result is not defined
+      no_log: '{{ debops__no_log | d(True) }}'
+
+    # A new token string would not enable such token, and it could have been
+    # disabled on purpose.
+    - name: Fail when the existing bootstrap API token is disabled or expired
+      ansible.builtin.fail:
+        msg: >-
+          The Zabbix API token '{{ zabbix_server__api_token_name }}' of the
+          '{{ zabbix_server__api_admin_user }}' user is disabled or expired, and
+          secret/{{ zabbix_server__api_token_path }} does not contain a working
+          token. Enable it and clear its expiry date in the Zabbix frontend, or delete
+          it to let the role create a new one, then run the role again.
+      when:
+        - zabbix_server__register_api_token_lookup.json.result | d([]) | length > 0
+        - ((zabbix_server__register_api_token_lookup.json.result[0].status | string) != '0')
+          or ((zabbix_server__register_api_token_lookup.json.result[0].expires_at | int) != 0
+              and (zabbix_server__register_api_token_lookup.json.result[0].expires_at | int)
+                  <= (now().timestamp() | int))
+
+    - name: Create Zabbix API token for the Admin account
+      ansible.builtin.uri:
+        url: '{{ zabbix_server__api_url }}'
+        method: 'POST'
+        headers:
+          Authorization: 'Bearer {{ zabbix_server__register_api_bootstrap_session }}'
+          Content-Type: 'application/json-rpc'
+        body_format: 'json'
+        body:
+          jsonrpc: '2.0'
+          method: 'token.create'
+          params:
+            name: '{{ zabbix_server__api_token_name }}'
+          id: 1
+        validate_certs: '{{ zabbix_server__api_validate_certs }}'
+        return_content: True
+      register: zabbix_server__register_api_token_create
+      delegate_to: '{{ zabbix_server__api_delegate_to }}'
+      become: False
+      failed_when: >-
+        (zabbix_server__register_api_token_create.status | d(0)) != 200
+        or zabbix_server__register_api_token_create.json.result is not defined
+      no_log: '{{ debops__no_log | d(True) }}'
+      when: (zabbix_server__register_api_token_lookup.json.result | d([]) | length == 0)
+
+    - name: Determine the bootstrap API token identifier
+      ansible.builtin.set_fact:
+        zabbix_server__register_api_tokenid: '{{ zabbix_server__register_api_token_lookup.json.result[0].tokenid
+                                                  if (zabbix_server__register_api_token_lookup.json.result | d([]) | length > 0)
+                                                  else zabbix_server__register_api_token_create.json.result.tokenids[0] }}'
+      no_log: '{{ debops__no_log | d(True) }}'
+
+    - name: Generate Zabbix API token string
+      ansible.builtin.uri:
+        url: '{{ zabbix_server__api_url }}'
+        method: 'POST'
+        headers:
+          Authorization: 'Bearer {{ zabbix_server__register_api_bootstrap_session }}'
+          Content-Type: 'application/json-rpc'
+        body_format: 'json'
+        body:
+          jsonrpc: '2.0'
+          method: 'token.generate'
+          params:
+            - '{{ zabbix_server__register_api_tokenid }}'
+          id: 1
+        validate_certs: '{{ zabbix_server__api_validate_certs }}'
+        return_content: True
+      register: zabbix_server__register_api_token_generate
+      delegate_to: '{{ zabbix_server__api_delegate_to }}'
+      become: False
+      failed_when: >-
+        (zabbix_server__register_api_token_generate.status | d(0)) != 200
+        or zabbix_server__register_api_token_generate.json.result is not defined
+      no_log: '{{ debops__no_log | d(True) }}'
+
+    - name: Save Zabbix API token to the secret directory
+      ansible.builtin.copy:
+        content: '{{ zabbix_server__register_api_token_generate.json.result[0].token }}'
+        dest: '{{ secret + "/" + zabbix_server__api_token_path }}'
+        mode: '0600'
+      delegate_to: 'localhost'
+      become: False
+      no_log: '{{ debops__no_log | d(True) }}'
+
+    - name: Remember freshly generated Zabbix API token for this run
+      ansible.builtin.set_fact:
+        zabbix_server__register_api_token_content: '{{ zabbix_server__register_api_token_generate.json.result[0].token }}'
+      no_log: '{{ debops__no_log | d(True) }}'
+
+  always:
+
+    # Best effort: a failure here must not hide an earlier error, and the
+    # session is already invalid if the re-authentication has failed.
+    - name: Close the Zabbix API session used for bootstrap
+      ansible.builtin.uri:
+        url: '{{ zabbix_server__api_url }}'
+        method: 'POST'
+        headers:
+          Authorization: 'Bearer {{ zabbix_server__register_api_bootstrap_session }}'
+          Content-Type: 'application/json-rpc'
+        body_format: 'json'
+        body:
+          jsonrpc: '2.0'
+          method: 'user.logout'
+          params: []
+          id: 1
+        validate_certs: '{{ zabbix_server__api_validate_certs }}'
+      delegate_to: '{{ zabbix_server__api_delegate_to }}'
+      become: False
+      failed_when: False
+      no_log: '{{ debops__no_log | d(True) }}'

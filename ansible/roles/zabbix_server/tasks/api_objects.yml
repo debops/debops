@@ -1,0 +1,253 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Manages global Zabbix objects (settings, global macros, media types, actions,
+# user groups, users, custom templates, host item overrides) via the JSON-RPC
+# API, using the token bootstrapped in 'api_bootstrap.yml'. The combined lists
+# are merged by the 'parse_kv_items' filter, see 'api_object.yml' for details.
+
+# The filter silently skips entries without their key.
+- name: Check parameters of Zabbix API objects
+  ansible.builtin.assert:
+    that:
+      - zabbix_server__combined_global_macros | selectattr("macro", "undefined") | list | length == 0
+      - zabbix_server__combined_media_types | selectattr("name", "undefined") | list | length == 0
+      - zabbix_server__combined_actions | selectattr("name", "undefined") | list | length == 0
+      - zabbix_server__combined_user_groups | selectattr("name", "undefined") | list | length == 0
+      - zabbix_server__combined_users | selectattr("username", "undefined") | list | length == 0
+      - zabbix_server__combined_templates | selectattr("name", "undefined") | list | length == 0
+      - zabbix_server__combined_host_item_overrides | selectattr("name", "undefined") | list | length == 0
+    fail_msg: 'Each entry in the Zabbix API object lists needs a "name",
+               a "username" in the lists of users, or a "macro" in the lists
+               of global macros.'
+    quiet: True
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Check that no Zabbix template is marked for removal
+  ansible.builtin.assert:
+    that:
+      - zabbix_server__combined_templates
+        | debops.debops.parse_kv_items
+        | selectattr("state", "equalto", "absent") | list | length == 0
+    fail_msg: 'Removal of Zabbix templates is not supported, because it would
+               remove their items and collected data from all linked hosts.
+               Use the "init" state to not import a template and remove it in
+               the Zabbix frontend if needed.'
+    quiet: True
+
+# Settings [[[1
+# Only the parameters which differ from the current settings are sent, so that
+# a change is reported, also in the check mode. The API returns all values as
+# strings.
+- name: Manage Zabbix settings
+  when: zabbix_server__combined_settings | length > 0
+  vars:
+    zabbix_server__settings_wanted: '{{ dict(zabbix_server__combined_settings.keys()
+                                             | zip(zabbix_server__combined_settings.values() | map("string"))) }}'
+    zabbix_server__settings_changed: '{{ zabbix_server__settings_wanted | dict2items
+                                         | difference(zabbix_server__register_settings.json.result
+                                                      | d({}) | dict2items)
+                                         | map(attribute="key") | list }}'
+  block:
+
+    - name: Get Zabbix settings
+      ansible.builtin.uri:
+        url: '{{ zabbix_server__api_url }}'
+        method: 'POST'
+        headers:
+          Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+          Content-Type: 'application/json-rpc'
+        body_format: 'json'
+        body:
+          jsonrpc: '2.0'
+          method: 'settings.get'
+          params:
+            output: '{{ zabbix_server__combined_settings.keys() | list }}'
+          id: 1
+        validate_certs: '{{ zabbix_server__api_validate_certs }}'
+        return_content: True
+      delegate_to: '{{ zabbix_server__api_delegate_to }}'
+      become: False
+      check_mode: False
+      register: zabbix_server__register_settings
+      changed_when: ansible_check_mode | bool and zabbix_server__settings_changed | length > 0
+      failed_when: >-
+        (zabbix_server__register_settings.status | d(0)) != 200
+        or zabbix_server__register_settings.json.result is not defined
+      no_log: '{{ debops__no_log | d(True) }}'
+
+    - name: Update Zabbix settings
+      ansible.builtin.uri:
+        url: '{{ zabbix_server__api_url }}'
+        method: 'POST'
+        headers:
+          Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+          Content-Type: 'application/json-rpc'
+        body_format: 'json'
+        body:
+          jsonrpc: '2.0'
+          method: 'settings.update'
+          params: '{{ zabbix_server__combined_settings | dict2items
+                      | selectattr("key", "in", zabbix_server__settings_changed)
+                      | list | items2dict }}'
+          id: 1
+        validate_certs: '{{ zabbix_server__api_validate_certs }}'
+        return_content: True
+      delegate_to: '{{ zabbix_server__api_delegate_to }}'
+      become: False
+      register: zabbix_server__register_settings_update
+      changed_when: True
+      failed_when: >-
+        (zabbix_server__register_settings_update.status | d(0)) != 200
+        or zabbix_server__register_settings_update.json.result is not defined
+      no_log: '{{ debops__no_log | d(True) }}'
+      when: zabbix_server__settings_changed | length > 0
+
+# Global objects [[[1
+# Only names are used in the loops, so that their results do not contain
+# credentials.
+- name: Create or update Zabbix API objects
+  ansible.builtin.include_tasks: 'api_object.yml'
+  loop:
+    - { list: 'global_macros', api: 'usermacro', id: 'globalmacroid', key: 'macro',
+        method_suffix: 'global', get_params: { globalmacro: True } }
+    - { list: 'media_types', api: 'mediatype', id: 'mediatypeid', key: 'name' }
+    - { list: 'actions', api: 'action', id: 'actionid', key: 'name',
+        create_requires: 'eventsource' }
+    - { list: 'user_groups', api: 'usergroup', id: 'usrgrpid', key: 'name' }
+    - { list: 'users', api: 'user', id: 'userid', key: 'username',
+        create_only: [ 'passwd' ] }
+  loop_control:
+    loop_var: 'zabbix_server__object'
+    label: '{{ zabbix_server__object.list }}'
+
+# Objects which can refer to other objects are removed before them, after the
+# references in the remaining objects are updated above.
+- name: Remove Zabbix API objects
+  ansible.builtin.include_tasks: 'api_object_remove.yml'
+  loop:
+    - { list: 'actions', api: 'action', id: 'actionid', key: 'name' }
+    - { list: 'users', api: 'user', id: 'userid', key: 'username' }
+    - { list: 'user_groups', api: 'usergroup', id: 'usrgrpid', key: 'name' }
+    - { list: 'media_types', api: 'mediatype', id: 'mediatypeid', key: 'name' }
+    - { list: 'global_macros', api: 'usermacro', id: 'globalmacroid', key: 'macro',
+        method_suffix: 'global', get_params: { globalmacro: True } }
+  loop_control:
+    loop_var: 'zabbix_server__object'
+    label: '{{ zabbix_server__object.list }}'
+
+# Custom templates [[[1
+# Only templates which differ from the ones in Zabbix are imported. The API
+# errors are reported separately, because the requests contain credentials and
+# their output is hidden.
+- name: Import Zabbix templates
+  when: zabbix_server__present_templates | length > 0
+  vars:
+    zabbix_server__present_templates: '{{ zabbix_server__combined_templates
+                                          | debops.debops.parse_kv_items
+                                          | selectattr("state", "equalto", "present") | list }}'
+    zabbix_server__changed_templates: '{{ zabbix_server__register_template_compare.results
+                                          | selectattr("json.result", "defined")
+                                          | rejectattr("json.result", "equalto", [])
+                                          | map(attribute="item.name") | list }}'
+    zabbix_server__rejected_templates: '{{ (zabbix_server__register_template_compare.results
+                                            + zabbix_server__register_template_import.results | d([]))
+                                           | selectattr("json", "defined")
+                                           | selectattr("json.error", "defined") | list }}'
+    zabbix_server__template_rules:
+      template_groups: { createMissing: True }
+      templates: { createMissing: True, updateExisting: True }
+      items: { createMissing: True, updateExisting: True }
+      discoveryRules: { createMissing: True, updateExisting: True }
+      httptests: { createMissing: True, updateExisting: True }
+      triggers: { createMissing: True, updateExisting: True }
+      graphs: { createMissing: True, updateExisting: True }
+      templateDashboards: { createMissing: True, updateExisting: True }
+      templateLinkage: { createMissing: True }
+      valueMaps: { createMissing: True, updateExisting: True }
+  block:
+
+    # The API expects the source as a string, but Ansible parses the JSON
+    # document into a dictionary.
+    - name: Compare custom templates with Zabbix
+      ansible.builtin.uri:
+        url: '{{ zabbix_server__api_url }}'
+        method: 'POST'
+        headers:
+          Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+          Content-Type: 'application/json-rpc'
+        body_format: 'json'
+        body:
+          jsonrpc: '2.0'
+          method: 'configuration.importcompare'
+          params:
+            format: 'json'
+            source: '{{ (item.source if item.source is string else (item.source | to_json)) | string }}'
+            rules: '{{ zabbix_server__template_rules }}'
+          id: 1
+        validate_certs: '{{ zabbix_server__api_validate_certs }}'
+        return_content: True
+      loop: '{{ zabbix_server__present_templates }}'
+      loop_control:
+        label: '{{ item.name }}'
+      delegate_to: '{{ zabbix_server__api_delegate_to }}'
+      become: False
+      check_mode: False
+      register: zabbix_server__register_template_compare
+      changed_when: ansible_check_mode | bool and
+                    (zabbix_server__register_template_compare.json.result | d([])) | length > 0
+      failed_when: >-
+        (zabbix_server__register_template_compare.status | d(0)) != 200
+        or (zabbix_server__register_template_compare.json.result is not defined
+            and zabbix_server__register_template_compare.json.error is not defined)
+      no_log: '{{ debops__no_log | d(True) }}'
+
+    - name: Import custom Zabbix templates
+      ansible.builtin.uri:
+        url: '{{ zabbix_server__api_url }}'
+        method: 'POST'
+        headers:
+          Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+          Content-Type: 'application/json-rpc'
+        body_format: 'json'
+        body:
+          jsonrpc: '2.0'
+          method: 'configuration.import'
+          params:
+            format: 'json'
+            source: '{{ (item.source if item.source is string else (item.source | to_json)) | string }}'
+            rules: '{{ zabbix_server__template_rules }}'
+          id: 1
+        validate_certs: '{{ zabbix_server__api_validate_certs }}'
+        return_content: True
+      loop: '{{ zabbix_server__present_templates
+                | selectattr("name", "in", zabbix_server__changed_templates) | list }}'
+      loop_control:
+        label: '{{ item.name }}'
+      delegate_to: '{{ zabbix_server__api_delegate_to }}'
+      become: False
+      register: zabbix_server__register_template_import
+      changed_when: zabbix_server__register_template_import.json.result is defined
+      failed_when: >-
+        (zabbix_server__register_template_import.status | d(0)) != 200
+        or (zabbix_server__register_template_import.json.result is not defined
+            and zabbix_server__register_template_import.json.error is not defined)
+      no_log: '{{ debops__no_log | d(True) }}'
+
+    - name: Report Zabbix templates rejected by the API
+      ansible.builtin.fail:
+        msg: '{% for result in zabbix_server__rejected_templates %}{{ result.item.name }}:
+              {{ result.json.error.data | d(result.json.error.message) }} {% endfor %}'
+      when: zabbix_server__rejected_templates | length > 0
+
+# Host item overrides [[[1
+- name: Apply host item overrides
+  ansible.builtin.include_tasks: 'host_item_override.yml'
+  loop: '{{ zabbix_server__combined_host_item_overrides
+            | debops.debops.parse_kv_items
+            | selectattr("state", "equalto", "present") | list }}'
+  loop_control:
+    loop_var: 'zabbix_server__override'
+    label: '{{ zabbix_server__override.name }}'

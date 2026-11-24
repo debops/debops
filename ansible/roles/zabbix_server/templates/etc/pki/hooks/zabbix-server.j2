@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+# Restart Zabbix Server on a certificate state change. The server reads its
+# certificate and private key only at startup.
+
+set -o nounset -o pipefail -o errexit
+
+zabbix_server_config="{{ zabbix_server__conf_file_path }}"
+zabbix_server_service="zabbix-server"
+
+# Check if current PKI realm is used by Zabbix Server
+certificate=""
+if [ -n "${PKI_SCRIPT_DEFAULT_CRT:-}" ] && [ -r "${zabbix_server_config}" ] ; then
+    certificate=$(grep -Fx "TLSCertFile=${PKI_SCRIPT_DEFAULT_CRT}" "${zabbix_server_config}" || true)
+fi
+
+# Get list of current realm states
+read -r -a states <<< "$(echo "${PKI_SCRIPT_STATE:-}" | tr "," " ")"
+
+if [ -n "${certificate}" ] && [[ ${states[*]} ]] ; then
+
+    for state in "${states[@]}" ; do
+
+        if [ "${state}" = "changed-certificate" ] ; then
+
+            # Check if current init is systemd
+            if pidof systemd > /dev/null 2>&1 ; then
+
+                zabbix_server_state="$(systemctl is-active "${zabbix_server_service}.service" || true)"
+                if [ "${zabbix_server_state}" = "active" ] ; then
+                    systemctl restart "${zabbix_server_service}.service"
+                fi
+            fi
+
+            break
+        fi
+
+    done
+
+fi
