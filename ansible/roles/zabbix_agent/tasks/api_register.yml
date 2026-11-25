@@ -3,28 +3,43 @@
 # Copyright (C) 2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-# Register the current host as a Zabbix host object through the Zabbix
-# JSON-RPC API. Read-only API calls are also executed in check mode, so that
-# the host object parameters can be computed; API calls which modify Zabbix
-# are skipped in check mode.
+# Register the current host as a Zabbix host object using the modules from the
+# 'community.zabbix' collection. The modules use the 'httpapi' connection,
+# which sends the API requests from the Ansible Controller.
+#
+# The connection variables are visible in all templates evaluated by these
+# tasks, and the inventory variables can refer to them, for example to
+# 'ansible_host'. The parameters are therefore saved before the connection
+# variables are changed, and the tasks don't use the original variables.
 
-- name: Register the host in Zabbix through the API
-  delegate_to: '{{ zabbix_agent__api_delegate_to }}'
-  become: False
-  no_log: '{{ debops__no_log | d(True) }}'
-  module_defaults:
-    ansible.builtin.uri:
+- name: Save parameters of Zabbix host object
+  ansible.builtin.set_fact:
+    zabbix_agent__fact_api_params:
+      host_name: '{{ zabbix_agent__api_host_name }}'
+      visible_name: '{{ zabbix_agent__api_visible_name }}'
+      status: '{{ zabbix_agent__api_status }}'
+      interface_useip: '{{ zabbix_agent__api_interface_useip }}'
+      interface_ip: '{{ zabbix_agent__api_interface_ip }}'
+      interface_dns: '{{ zabbix_agent__api_interface_dns }}'
+      interface_port: '{{ zabbix_agent__api_interface_port }}'
+      tls_subject: '{{ zabbix_agent__api_tls_subject }}'
+      tls_issuer: '{{ zabbix_agent__api_tls_issuer }}'
       url: '{{ zabbix_agent__api_url }}'
-      method: 'POST'
-      headers:
-        Authorization: 'Bearer {{ zabbix_agent__api_token }}'
-        Content-Type: 'application/json-rpc'
-      body_format: 'json'
+      token: '{{ zabbix_agent__api_token }}'
       validate_certs: '{{ zabbix_agent__api_validate_certs }}'
-      # Plain HTTP is accepted only on loopback, don't send the token to a proxy
-      use_proxy: '{{ not (zabbix_agent__api_url is match("(?i)http://")) }}'
+      tls_mode: '{{ zabbix_agent__tls_mode }}'
+      tls_psk_identity: '{{ zabbix_agent__tls_psk_identity if (zabbix_agent__tls_mode == "psk") else "" }}'
+      tls_psk_secret: '{{ zabbix_agent__tls_psk_secret if (zabbix_agent__tls_mode == "psk") else "" }}'
+      present_host_groups: '{{ zabbix_agent__tpl_api_present_host_groups }}'
+      absent_host_groups: '{{ zabbix_agent__tpl_api_absent_host_groups }}'
+      present_templates: '{{ zabbix_agent__tpl_api_present_templates }}'
+      present_tags: '{{ zabbix_agent__tpl_api_present_tags }}'
+      absent_tags: '{{ zabbix_agent__tpl_api_absent_tags }}'
+      macros: '{{ zabbix_agent__api_combined_macros
+                  | debops.debops.parse_kv_items(name="macro")
+                  | selectattr("state", "in", ["present", "absent"]) | list }}'
+  no_log: '{{ debops__no_log | d(True) }}'
   vars:
-
     # Host groups and templates are merged by name, macros by the 'macro'
     # key. Entries in the 'init' and 'ignore' states are skipped.
     zabbix_agent__tpl_api_host_groups: '{{ zabbix_agent__api_combined_host_groups
@@ -35,266 +50,261 @@
     zabbix_agent__tpl_api_absent_host_groups: '{{ zabbix_agent__tpl_api_host_groups
                                                   | selectattr("state", "equalto", "absent")
                                                   | map(attribute="name") | list }}'
-    zabbix_agent__tpl_api_templates: '{{ zabbix_agent__api_combined_link_templates
-                                         | debops.debops.parse_kv_items }}'
-    zabbix_agent__tpl_api_present_templates: '{{ zabbix_agent__tpl_api_templates
+    zabbix_agent__tpl_api_present_templates: '{{ zabbix_agent__api_combined_link_templates
+                                                 | debops.debops.parse_kv_items
                                                  | selectattr("state", "equalto", "present")
                                                  | map(attribute="name") | list }}'
-    zabbix_agent__tpl_api_absent_templates: '{{ zabbix_agent__tpl_api_templates
-                                                | selectattr("state", "equalto", "absent")
-                                                | map(attribute="name") | list }}'
-    zabbix_agent__tpl_api_macros: '{{ zabbix_agent__api_combined_macros
-                                      | debops.debops.parse_kv_items(name="macro") }}'
-    zabbix_agent__tpl_api_managed_macro_names: '{{ zabbix_agent__tpl_api_macros
-                                                   | selectattr("state", "in", ["present", "absent"])
-                                                   | map(attribute="macro") | list }}'
-    zabbix_agent__tpl_api_present_macros: '{{ zabbix_agent__tpl_api_macros
-                                              | selectattr("state", "equalto", "present")
-                                              | map("dict2items")
-                                              | map("selectattr", "key", "in", ["macro", "value", "type", "description"])
-                                              | map("list") | map("items2dict") | list }}'
 
     # Tags are not merged, since Zabbix allows the same tag with different
     # values. An entry in the 'absent' state removes the matching tag and
     # value pair from the host object.
-    zabbix_agent__tpl_api_tags: '{{ zabbix_agent__api_combined_tags
-                                    | map("dict2items")
-                                    | map("selectattr", "key", "in", ["tag", "value", "state"])
-                                    | map("list") | map("items2dict") | list }}'
-    zabbix_agent__tpl_api_absent_tags: '{{ zabbix_agent__tpl_api_tags
+    zabbix_agent__tpl_api_absent_tags: '{{ zabbix_agent__api_combined_tags
                                            | selectattr("state", "defined")
                                            | selectattr("state", "equalto", "absent")
                                            | map("dict2items")
-                                           | map("rejectattr", "key", "equalto", "state")
+                                           | map("selectattr", "key", "in", ["tag", "value"])
                                            | map("list") | map("items2dict") | list }}'
-    zabbix_agent__tpl_api_present_tags: '{{ zabbix_agent__tpl_api_tags
-                                            | rejectattr("state", "defined")
-                                            | list
-                                            + (zabbix_agent__tpl_api_tags
-                                               | selectattr("state", "defined")
-                                               | selectattr("state", "equalto", "present")
-                                               | map("dict2items")
-                                               | map("rejectattr", "key", "equalto", "state")
-                                               | map("list") | map("items2dict") | list) }}'
+    zabbix_agent__tpl_api_present_tags: '{{ (zabbix_agent__api_combined_tags
+                                             | rejectattr("state", "defined") | list
+                                             + (zabbix_agent__api_combined_tags
+                                                | selectattr("state", "defined")
+                                                | selectattr("state", "equalto", "present") | list))
+                                            | map("dict2items")
+                                            | map("selectattr", "key", "in", ["tag", "value"])
+                                            | map("list") | map("items2dict") | list }}'
+
+- name: Register the host in Zabbix through the API
+  become: False
+  no_log: '{{ debops__no_log | d(True) }}'
+  vars:
+    # Connection to the Zabbix API
+    ansible_connection: 'ansible.netcommon.httpapi'
+    ansible_network_os: 'community.zabbix.zabbix'
+    ansible_host: '{{ ("[" + zabbix_agent__tpl_api_url.hostname + "]")
+                      if (":" in zabbix_agent__tpl_api_url.hostname)
+                      else zabbix_agent__tpl_api_url.hostname }}'
+    ansible_user: 'ansible'
+    ansible_become: False
+    ansible_python_interpreter: '{{ ansible_playbook_python }}'
+    ansible_httpapi_use_ssl: '{{ zabbix_agent__tpl_api_url.scheme | lower == "https" }}'
+    ansible_httpapi_port: '{{ zabbix_agent__tpl_api_url.port
+                              | d(443 if (zabbix_agent__tpl_api_url.scheme | lower == "https") else 80, true) }}'
+    ansible_httpapi_validate_certs: '{{ zabbix_agent__fact_api_params.validate_certs | bool }}'
+    # Plain HTTP is accepted only on loopback, don't send the token to a proxy
+    ansible_httpapi_use_proxy: '{{ zabbix_agent__tpl_api_url.scheme | lower == "https" }}'
+    ansible_zabbix_url_path: '{{ zabbix_agent__tpl_api_url.path
+                                 | regex_replace("/api_jsonrpc\.php$", "")
+                                 | regex_replace("^/", "") }}'
+    ansible_zabbix_auth_key: '{{ zabbix_agent__fact_api_params.token }}'
+    zabbix_agent__tpl_api_url: '{{ zabbix_agent__fact_api_params.url | urlsplit }}'
   block:
 
-    - name: Look up existing Zabbix host groups
-      ansible.builtin.uri:
-        body:
-          jsonrpc: '2.0'
-          method: 'hostgroup.get'
-          params:
-            output: [ 'groupid', 'name' ]
-            filter:
-              name: '{{ zabbix_agent__tpl_api_present_host_groups
-                        + zabbix_agent__tpl_api_absent_host_groups }}'
-          id: 1
-      register: zabbix_agent__register_api_host_groups
-      check_mode: False
-      failed_when: zabbix_agent__register_api_host_groups.status | d(0) != 200 or
-                   zabbix_agent__register_api_host_groups.json.result is not defined
+    # The search result has to be an exact match, the module uses a substring
+    # search by default.
+    - name: Look up existing Zabbix host object
+      community.zabbix.zabbix_host_info:
+        host_name: '{{ zabbix_agent__fact_api_params.host_name }}'
+        exact_match: True
+      register: zabbix_agent__register_api_host
+      failed_when: zabbix_agent__register_api_host is failed and
+                   not (zabbix_agent__register_api_host.msg | d('') is match('Host not found'))
 
-    # Multiple hosts in the same play can try to create the same host group
-    # at the same time; Zabbix rejects all but the first request with an
-    # "already exists" error, which is expected.
-    - name: Create missing Zabbix host groups
-      ansible.builtin.uri:
-        body:
-          jsonrpc: '2.0'
-          method: 'hostgroup.create'
-          params:
-            name: '{{ item }}'
-          id: 1
-      loop: '{{ zabbix_agent__tpl_api_present_host_groups
-                | difference(zabbix_agent__register_api_host_groups.json.result
-                             | map(attribute="name") | list) }}'
-      register: zabbix_agent__register_api_new_host_groups
-      changed_when: zabbix_agent__register_api_new_host_groups.json.result is defined
-      failed_when: (zabbix_agent__register_api_new_host_groups.status | d(0) != 200 or
-                    zabbix_agent__register_api_new_host_groups.json.result is not defined) and
-                   not (zabbix_agent__register_api_new_host_groups.json.error.data | d('')
-                        is search('already exists'))
-
-    - name: Refresh the list of Zabbix host groups
-      ansible.builtin.uri:
-        body:
-          jsonrpc: '2.0'
-          method: 'hostgroup.get'
-          params:
-            output: [ 'groupid', 'name' ]
-            filter:
-              name: '{{ zabbix_agent__tpl_api_present_host_groups
-                        + zabbix_agent__tpl_api_absent_host_groups }}'
-          id: 1
-      register: zabbix_agent__register_api_host_groups_refreshed
-      check_mode: False
-      failed_when: zabbix_agent__register_api_host_groups_refreshed.status | d(0) != 200 or
-                   zabbix_agent__register_api_host_groups_refreshed.json.result is not defined
-      when: zabbix_agent__register_api_new_host_groups.results | d([])
-            | selectattr('json', 'defined') | list | length > 0
-
+    # Check the templates before anything is changed in Zabbix. The names of
+    # missing templates are not secret and are shown to the user.
     - name: Look up Zabbix templates
-      ansible.builtin.uri:
-        body:
-          jsonrpc: '2.0'
-          method: 'template.get'
-          params:
-            output: [ 'templateid', 'host' ]
-            filter:
-              host: '{{ zabbix_agent__tpl_api_present_templates
-                        + zabbix_agent__tpl_api_absent_templates }}'
-          id: 1
+      community.zabbix.zabbix_template_info:
+        template_name: '{{ item }}'
+        format: 'none'
+      loop: '{{ zabbix_agent__fact_api_params.present_templates }}'
       register: zabbix_agent__register_api_templates
-      check_mode: False
-      failed_when: zabbix_agent__register_api_templates.status | d(0) != 200 or
-                   zabbix_agent__register_api_templates.json.result is not defined
+      failed_when: zabbix_agent__register_api_templates is failed and
+                   not (zabbix_agent__register_api_templates.msg | d('') is match('Template not found'))
 
-    - name: Warn about Zabbix templates which do not exist
-      ansible.builtin.debug:
-        msg: 'Templates not found in Zabbix, skipped: {{ zabbix_agent__tpl_api_missing_templates | join(", ") }}'
+    - name: Check that Zabbix templates exist
+      ansible.builtin.fail:
+        msg: 'Templates not found in Zabbix: {{ zabbix_agent__tpl_api_missing_templates | join(", ") }}'
       vars:
-        zabbix_agent__tpl_api_missing_templates: '{{ zabbix_agent__tpl_api_present_templates
-                                                     | difference(zabbix_agent__register_api_templates.json.result
-                                                                  | map(attribute="host") | list) }}'
+        zabbix_agent__tpl_api_missing_templates: '{{ zabbix_agent__register_api_templates.results
+                                                     | rejectattr("template_id", "defined")
+                                                     | map(attribute="item") | list }}'
       no_log: False
       when: zabbix_agent__tpl_api_missing_templates | length > 0
 
-    - name: Look up existing Zabbix host object
-      ansible.builtin.uri:
-        body:
-          jsonrpc: '2.0'
-          method: 'host.get'
-          params:
-            output: [ 'hostid' ]
-            filter:
-              host: [ '{{ zabbix_agent__api_host_name }}' ]
-            selectInterfaces: [ 'interfaceid', 'type', 'main', 'useip', 'ip', 'dns', 'port', 'details' ]
-            selectMacros: [ 'hostmacroid', 'macro', 'value', 'type', 'description', 'automatic' ]
-            selectTags: [ 'tag', 'value', 'automatic' ]
-            selectHostGroups: [ 'groupid' ]
-            selectParentTemplates: [ 'templateid' ]
-          id: 1
-      register: zabbix_agent__register_api_host
-      check_mode: False
-      failed_when: zabbix_agent__register_api_host.status | d(0) != 200 or
-                   zabbix_agent__register_api_host.json.result is not defined
-
+    # The 'zabbix_host' module replaces the host groups, interfaces and tags
+    # of the host object, therefore entries not managed by the role are passed
+    # to it as well. Tags created automatically by Zabbix are skipped. Other
+    # tags stay in the order used by Zabbix, because older versions of the
+    # module report a change when tags with the same name are reordered.
     - name: Save existing Zabbix host object
       ansible.builtin.set_fact:
-        zabbix_agent__fact_api_host: '{{ zabbix_agent__register_api_host.json.result | d([]) | first | d({}) }}'
+        zabbix_agent__fact_api_host: '{{ zabbix_agent__register_api_host.hosts | d([]) | first | d({}) }}'
 
-    - name: Save existing Zabbix Agent interface
-      ansible.builtin.set_fact:
-        zabbix_agent__fact_api_agent_interface: '{{ zabbix_agent__fact_api_host.interfaces | d([])
-                                                    | selectattr("type", "in", [1, "1"])
-                                                    | selectattr("main", "in", [1, "1"])
-                                                    | list | first | d({}) }}'
-
-    # The 'host.update' API call replaces interfaces, macros and tags of the
-    # host object, therefore entries not managed by the role are sent back,
-    # limited to writable fields. Macros and tags created automatically by
-    # Zabbix are skipped. Secret macros have no 'value', Zabbix keeps their
-    # value based on 'hostmacroid'.
-    - name: Save Zabbix host entries not managed by the role
+    - name: Save existing entries of Zabbix host object
       ansible.builtin.set_fact:
         zabbix_agent__fact_api_other_interfaces: '{{ (zabbix_agent__tpl_api_other_interfaces
                                                       | rejectattr("type", "in", [2, "2"])
                                                       | map("dict2items")
                                                       | map("selectattr", "key", "in", zabbix_agent__tpl_api_interface_fields)
                                                       | map("list") | map("items2dict") | list)
-                                                     + (zabbix_agent__tpl_api_other_interfaces
-                                                        | selectattr("type", "in", [2, "2"])
-                                                        | map("dict2items")
-                                                        | map("selectattr", "key", "in", zabbix_agent__tpl_api_interface_fields + ["details"])
-                                                        | map("list") | map("items2dict") | list) }}'
-        zabbix_agent__fact_api_other_macros: '{{ zabbix_agent__fact_api_host.macros | d([])
-                                                 | rejectattr("automatic", "in", [1, "1"])
-                                                 | rejectattr("macro", "in", zabbix_agent__tpl_api_managed_macro_names)
-                                                 | map("dict2items")
-                                                 | map("selectattr", "key", "in", ["hostmacroid", "macro", "value", "type", "description"])
-                                                 | map("list") | map("items2dict") | list }}'
-        zabbix_agent__fact_api_other_tags: '{{ zabbix_agent__fact_api_host.tags | d([])
-                                               | rejectattr("automatic", "in", [1, "1"])
-                                               | map("dict2items")
-                                               | map("selectattr", "key", "in", ["tag", "value"])
-                                               | map("list") | map("items2dict")
-                                               | reject("in", zabbix_agent__tpl_api_present_tags
-                                                              + zabbix_agent__tpl_api_absent_tags) | list }}'
+                                                     + (zabbix_agent__tpl_api_snmp_interfaces
+                                                        | zip(zabbix_agent__tpl_api_snmp_details
+                                                              | map("community.general.dict_kv", "details"))
+                                                        | map("combine") | list) }}'
+        zabbix_agent__fact_api_existing_tags: '{{ zabbix_agent__fact_api_host.tags | d([])
+                                                  | rejectattr("automatic", "in", [1, "1"])
+                                                  | map("dict2items")
+                                                  | map("selectattr", "key", "in", ["tag", "value"])
+                                                  | map("list") | map("items2dict") | list }}'
       vars:
-        zabbix_agent__tpl_api_interface_fields: [ 'interfaceid', 'type', 'main', 'useip', 'ip', 'dns', 'port' ]
-        zabbix_agent__tpl_api_other_interfaces: '{{ zabbix_agent__fact_api_host.interfaces | d([])
-                                                    | rejectattr("interfaceid", "equalto",
-                                                                 zabbix_agent__fact_api_agent_interface.interfaceid | d(""))
+        zabbix_agent__tpl_api_interface_fields: [ 'type', 'main', 'useip', 'ip', 'dns', 'port' ]
+        # Only the parameters known by the module, Zabbix keeps the other ones
+        zabbix_agent__tpl_api_detail_fields: [ 'version', 'bulk', 'community', 'securityname', 'contextname',
+                                               'securitylevel', 'authprotocol', 'authpassphrase',
+                                               'privprotocol', 'privpassphrase' ]
+        zabbix_agent__tpl_api_snmp_interfaces: '{{ zabbix_agent__tpl_api_other_interfaces
+                                                   | selectattr("type", "in", [2, "2"])
+                                                   | map("dict2items")
+                                                   | map("selectattr", "key", "in", zabbix_agent__tpl_api_interface_fields)
+                                                   | map("list") | map("items2dict") | list }}'
+        zabbix_agent__tpl_api_snmp_details: '{{ zabbix_agent__tpl_api_other_interfaces
+                                                | selectattr("type", "in", [2, "2"])
+                                                | map(attribute="details")
+                                                | map("dict2items")
+                                                | map("selectattr", "key", "in", zabbix_agent__tpl_api_detail_fields)
+                                                | map("list") | map("items2dict") | list }}'
+        zabbix_agent__tpl_api_interfaces: '{{ zabbix_agent__fact_api_host.hostinterfaces | d([]) }}'
+        zabbix_agent__tpl_api_other_interfaces: '{{ zabbix_agent__tpl_api_interfaces
+                                                    | reject("in", zabbix_agent__tpl_api_interfaces
+                                                                   | selectattr("type", "in", [1, "1"])
+                                                                   | selectattr("main", "in", [1, "1"]) | list)
                                                     | list }}'
 
-    # Host groups and templates are the ones managed by the role, followed by
-    # the ones already assigned to the host object, except those in the
-    # 'absent' state. Templates left out of the 'host.update' call are
-    # unlinked from the host without clearing their items.
+    # The module gives the first free interface of the same type to a changed
+    # one, therefore the managed interface is placed before other agent
+    # interfaces.
     - name: Build Zabbix host object parameters
       ansible.builtin.set_fact:
-        zabbix_agent__fact_api_host_params: '{{ {"host": zabbix_agent__api_host_name,
-          "name": zabbix_agent__api_visible_name,
-          "status": zabbix_agent__api_status | int,
-          "groups": (zabbix_agent__tpl_api_known_host_groups
-                     | selectattr("name", "in", zabbix_agent__tpl_api_present_host_groups)
-                     | map(attribute="groupid") | list
-                     + (zabbix_agent__fact_api_host.hostgroups | d([]) | map(attribute="groupid")
-                        | reject("in", zabbix_agent__tpl_api_known_host_groups
-                                       | selectattr("name", "in", zabbix_agent__tpl_api_absent_host_groups)
-                                       | map(attribute="groupid") | list) | list))
-                    | unique | map("community.general.dict_kv", "groupid") | list,
-          "templates": (zabbix_agent__register_api_templates.json.result
-                        | selectattr("host", "in", zabbix_agent__tpl_api_present_templates)
-                        | map(attribute="templateid") | list
-                        + (zabbix_agent__fact_api_host.parentTemplates | d([]) | map(attribute="templateid")
-                           | reject("in", zabbix_agent__register_api_templates.json.result
-                                          | selectattr("host", "in", zabbix_agent__tpl_api_absent_templates)
-                                          | map(attribute="templateid") | list) | list))
-                       | unique | map("community.general.dict_kv", "templateid") | list,
-          "macros": zabbix_agent__fact_api_other_macros + zabbix_agent__tpl_api_present_macros,
-          "tags": zabbix_agent__fact_api_other_tags
-                  + (zabbix_agent__tpl_api_present_tags | unique
-                     | reject("in", zabbix_agent__tpl_api_absent_tags) | list),
-          "interfaces": zabbix_agent__fact_api_other_interfaces + [zabbix_agent__tpl_api_agent_interface],
-          "tls_connect": zabbix_agent__tpl_api_tls_map[zabbix_agent__tls_mode],
-          "tls_accept": zabbix_agent__tpl_api_tls_map[zabbix_agent__tls_mode]}
-          | combine({"tls_psk_identity": zabbix_agent__tls_psk_identity,
-                     "tls_psk": zabbix_agent__tls_psk_secret}
-                    if (zabbix_agent__tls_mode == "psk")
-                    else ({"tls_psk_identity": "", "tls_psk": ""}
-                          if (zabbix_agent__fact_api_host.hostid | d()) else {}))
-          | combine({"tls_subject": zabbix_agent__api_tls_subject,
-                     "tls_issuer": zabbix_agent__api_tls_issuer}
-                    if (zabbix_agent__tls_mode == "cert") else {})
-          | combine({"hostid": zabbix_agent__fact_api_host.hostid}
-                    if (zabbix_agent__fact_api_host.hostid | d()) else {}) }}'
+        zabbix_agent__fact_api_host_groups: '{{ (zabbix_agent__fact_api_params.present_host_groups
+                                                 + (zabbix_agent__fact_api_host.hostgroups | d([])
+                                                    | map(attribute="name")
+                                                    | reject("in", zabbix_agent__fact_api_params.absent_host_groups)
+                                                    | list)) | unique }}'
+        zabbix_agent__fact_api_tags: '{{ (zabbix_agent__fact_api_existing_tags
+                                          + zabbix_agent__fact_api_params.present_tags) | unique
+                                         | reject("in", zabbix_agent__fact_api_params.absent_tags) | list }}'
+        zabbix_agent__fact_api_interfaces: '{{ (zabbix_agent__fact_api_other_interfaces
+                                                | rejectattr("type", "in", [1, "1"]) | list)
+                                               + [zabbix_agent__tpl_api_agent_interface]
+                                               + (zabbix_agent__fact_api_other_interfaces
+                                                  | selectattr("type", "in", [1, "1"]) | list) }}'
+        zabbix_agent__fact_api_tls_mode: '{{ {"unencrypted": 1, "psk": 2, "cert": 4}[zabbix_agent__fact_api_params.tls_mode] }}'
+        zabbix_agent__fact_api_interface_changed: '{{ zabbix_agent__fact_api_host.hostid is defined and
+                                                      zabbix_agent__fact_api_host.hostinterfaces | d([])
+                                                      | selectattr("type", "in", [1, "1"])
+                                                      | selectattr("main", "in", [1, "1"])
+                                                      | selectattr("useip", "in", [zabbix_agent__fact_api_params.interface_useip | int,
+                                                                                   zabbix_agent__fact_api_params.interface_useip | int | string])
+                                                      | selectattr("ip", "equalto", zabbix_agent__fact_api_params.interface_ip)
+                                                      | selectattr("dns", "equalto", zabbix_agent__fact_api_params.interface_dns)
+                                                      | selectattr("port", "equalto", zabbix_agent__fact_api_params.interface_port | string)
+                                                      | list | length == 0 }}'
       vars:
-        zabbix_agent__tpl_api_tls_map:
-          'unencrypted': 1
-          'psk': 2
-          'cert': 4
-        zabbix_agent__tpl_api_known_host_groups: '{{ zabbix_agent__register_api_host_groups_refreshed.json.result
-                                                     | d(zabbix_agent__register_api_host_groups.json.result) }}'
-        zabbix_agent__tpl_api_agent_interface: '{{ {"type": 1,
-          "main": 1,
-          "useip": zabbix_agent__api_interface_useip | int,
-          "ip": zabbix_agent__api_interface_ip,
-          "dns": zabbix_agent__api_interface_dns,
-          "port": zabbix_agent__api_interface_port | string}
-          | combine({"interfaceid": zabbix_agent__fact_api_agent_interface.interfaceid}
-                    if (zabbix_agent__fact_api_agent_interface.interfaceid | d()) else {}) }}'
+        zabbix_agent__tpl_api_agent_interface:
+          type: '1'
+          main: 1
+          useip: '{{ zabbix_agent__fact_api_params.interface_useip | int }}'
+          ip: '{{ zabbix_agent__fact_api_params.interface_ip }}'
+          dns: '{{ zabbix_agent__fact_api_params.interface_dns }}'
+          port: '{{ zabbix_agent__fact_api_params.interface_port | string }}'
 
+    # Run on one host at a time, otherwise multiple hosts in the same play can
+    # try to create the same host group.
+    - name: Create missing Zabbix host groups
+      community.zabbix.zabbix_group:
+        host_groups: '{{ zabbix_agent__fact_api_params.present_host_groups }}'
+        state: 'present'
+      register: zabbix_agent__register_api_host_groups
+      throttle: 1
+      when: zabbix_agent__fact_api_params.present_host_groups | length > 0
+
+    # With 'link_templates' not specified, the module keeps the linked
+    # templates. The API does not return the pre-shared key, and the module
+    # reports a change each time it gets one; on a host object which already
+    # uses a pre-shared key, it is updated by a separate task.
+    #
+    # The module decides if the interfaces have changed by looking only at the
+    # last one. An empty PSK identity makes it always update an existing host
+    # object, but is not sent to Zabbix, so it's used when the managed interface
+    # needs a change.
     - name: Create or update Zabbix host object
-      ansible.builtin.uri:
-        body:
-          jsonrpc: '2.0'
-          method: '{{ zabbix_agent__tpl_api_method }}'
-          params: '{{ zabbix_agent__fact_api_host_params }}'
-          id: 1
+      community.zabbix.zabbix_host:
+        host_name: '{{ zabbix_agent__fact_api_params.host_name }}'
+        visible_name: '{{ zabbix_agent__fact_api_params.visible_name }}'
+        status: '{{ "enabled" if (zabbix_agent__fact_api_params.status | int == 0) else "disabled" }}'
+        host_groups: '{{ zabbix_agent__fact_api_host_groups }}'
+        interfaces: '{{ zabbix_agent__fact_api_interfaces }}'
+        tags: '{{ zabbix_agent__fact_api_tags }}'
+        tls_connect: '{{ zabbix_agent__fact_api_tls_mode }}'
+        tls_accept: '{{ zabbix_agent__fact_api_tls_mode }}'
+        tls_psk_identity: '{{ zabbix_agent__fact_api_params.tls_psk_identity
+                               if zabbix_agent__tpl_api_set_psk | bool
+                               else ("" if zabbix_agent__fact_api_interface_changed | bool else omit) }}'
+        tls_psk: '{{ zabbix_agent__fact_api_params.tls_psk_secret if zabbix_agent__tpl_api_set_psk | bool else omit }}'
+        tls_subject: '{{ zabbix_agent__fact_api_params.tls_subject if (zabbix_agent__fact_api_params.tls_mode == "cert") else omit }}'
+        tls_issuer: '{{ zabbix_agent__fact_api_params.tls_issuer if (zabbix_agent__fact_api_params.tls_mode == "cert") else omit }}'
+        force: True
       vars:
-        zabbix_agent__tpl_api_method: '{{ "host.update" if (zabbix_agent__fact_api_host.hostid | d()) else "host.create" }}'
-      register: zabbix_agent__register_api_host_result
-      changed_when: zabbix_agent__tpl_api_method == 'host.create'
-      failed_when: zabbix_agent__register_api_host_result.status | d(0) != 200 or
-                   zabbix_agent__register_api_host_result.json.result is not defined
+        zabbix_agent__tpl_api_set_psk: '{{ zabbix_agent__fact_api_params.tls_mode == "psk" and
+                                           (zabbix_agent__fact_api_host.tls_connect | d("") | string != "2" or
+                                            zabbix_agent__fact_api_host.tls_accept | d("") | string != "2") }}'
+      # In check mode the missing host groups do not exist yet
+      when: not (ansible_check_mode and zabbix_agent__register_api_host_groups is changed)
+
+    - name: Update pre-shared key in Zabbix host object
+      community.zabbix.zabbix_host:
+        host_name: '{{ zabbix_agent__fact_api_params.host_name }}'
+        status: '{{ "enabled" if (zabbix_agent__fact_api_params.status | int == 0) else "disabled" }}'
+        interfaces: '{{ zabbix_agent__fact_api_interfaces }}'
+        tls_psk_identity: '{{ zabbix_agent__fact_api_params.tls_psk_identity }}'
+        tls_psk: '{{ zabbix_agent__fact_api_params.tls_psk_secret }}'
+        force: False
+      changed_when: False
+      when: zabbix_agent__fact_api_params.tls_mode == 'psk' and not ansible_check_mode and
+            zabbix_agent__fact_api_host.tls_connect | d('') | string == '2' and
+            zabbix_agent__fact_api_host.tls_accept | d('') | string == '2'
+
+    # With 'force' disabled, templates are only added. The module always
+    # clears the templates it unlinks, along with the collected data.
+    - name: Link Zabbix templates to the host object
+      community.zabbix.zabbix_host:
+        host_name: '{{ zabbix_agent__fact_api_params.host_name }}'
+        status: '{{ "enabled" if (zabbix_agent__fact_api_params.status | int == 0) else "disabled" }}'
+        host_groups: '{{ zabbix_agent__fact_api_host_groups }}'
+        interfaces: '{{ zabbix_agent__fact_api_interfaces }}'
+        link_templates: '{{ zabbix_agent__fact_api_params.present_templates }}'
+        force: False
+      when: zabbix_agent__fact_api_params.present_templates | length > 0 and
+            not (ansible_check_mode and zabbix_agent__register_api_host_groups is changed)
+
+    # The API does not return the values of secret macros, and the module
+    # reports a change each time; a change of an existing one is not reported.
+    - name: Manage Zabbix host macros
+      community.zabbix.zabbix_hostmacro:
+        host_name: '{{ zabbix_agent__fact_api_params.host_name }}'
+        macro_name: '{{ item.macro }}'
+        macro_value: '{{ item.value | d("") | string }}'
+        macro_type: '{{ ["text", "secret", "vault"][item.type | d(0) | int] }}'
+        macro_description: '{{ item.description | d("") }}'
+        state: '{{ item.state }}'
+        force: True
+      loop: '{{ zabbix_agent__fact_api_params.macros }}'
+      loop_control:
+        label: '{{ item.macro }}'
+      register: zabbix_agent__register_api_macros
+      changed_when: zabbix_agent__register_api_macros is changed and
+                    not (item.state == 'present' and item.type | d(0) | int != 0 and
+                         zabbix_agent__fact_api_host.macros | d([])
+                         | selectattr("macro", "equalto", item.macro)
+                         | selectattr("type", "equalto", item.type | string) | list | length > 0)
+      # In check mode a new host object does not exist yet
+      when: not ansible_check_mode or zabbix_agent__fact_api_host.hostid is defined
