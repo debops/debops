@@ -4,11 +4,16 @@
 
 """Tests for ``debops.core.checklists`` parsing and discovery."""
 
+import json
+import os
+import stat
+import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
 
-from debops.core import checklists
+from debops.core import checklists, utils
 
 
 @pytest.mark.parametrize("marker, state", [
@@ -251,3 +256,203 @@ def test_checklist_layers_order_and_roots(tmp_path, monkeypatch):
     without_project = checklists.checklist_layers()
     assert [origin for _, origin in without_project] == [
         "user", "packaged"]
+
+
+def test_state_home_uses_pyxdg_when_available():
+    from xdg.BaseDirectory import xdg_state_home
+    assert checklists._resolve_state_home() == xdg_state_home
+
+
+def test_state_home_honors_the_environment_without_pyxdg(monkeypatch):
+    monkeypatch.setenv("XDG_STATE_HOME", "/state")
+    monkeypatch.setitem(sys.modules, "xdg", None)
+    monkeypatch.setitem(sys.modules, "xdg.BaseDirectory", None)
+    assert checklists._resolve_state_home() == "/state"
+
+
+def test_state_home_falls_back_to_the_spec_default(monkeypatch):
+    monkeypatch.delenv("XDG_STATE_HOME", raising=False)
+    monkeypatch.setitem(sys.modules, "xdg", None)
+    monkeypatch.setitem(sys.modules, "xdg.BaseDirectory", None)
+    expected = os.path.join(os.path.expanduser("~"), ".local", "state")
+    assert checklists._resolve_state_home() == expected
+
+
+def test_checklist_state_dir_namespaces_by_project(tmp_path):
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    dir_first = checklists.checklist_state_dir(first, state_home="/state")
+    dir_second = checklists.checklist_state_dir(second, state_home="/state")
+    expected = Path("/state") / "debops" / (
+        "checklists-" + utils.path_key(first, first.name))
+    assert dir_first == expected
+    assert dir_first != dir_second
+    assert dir_first.name.startswith("checklists-")
+
+
+def _write_checklist(path, content="# Review\n- [ ] Check\n"):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content)
+    return path
+
+
+def test_open_copies_the_checklist_and_writes_the_sidecar(tmp_path):
+    state = tmp_path / "state"
+    source = _write_checklist(tmp_path / "packaged" / "audit" / "review.md")
+    opened = checklists.open_copy(
+        source, "audit/review", "packaged", "review", state)
+
+    assert opened == state / "review" / "audit" / "review.md"
+    assert opened.read_text() == source.read_text()
+
+    sidecar = json.loads((state / "review" / "copy.json").read_text())
+    assert sidecar["checklist"] == "audit/review"
+    assert sidecar["origin"] == "packaged"
+    parsed_opened = datetime.fromisoformat(sidecar["opened"])
+    assert parsed_opened.tzinfo is not None
+
+
+def test_open_creates_private_state_directories(tmp_path):
+    def mode(path):
+        return stat.S_IMODE(path.stat().st_mode)
+
+    state = tmp_path / "state"
+    source = _write_checklist(tmp_path / "packaged" / "audit" / "review.md")
+    checklists.open_copy(
+        source, "audit/review", "packaged", "review", state)
+    assert mode(state) == 0o700
+    assert mode(state / "review") == 0o700
+    assert mode(state / "review" / "audit") == 0o700
+
+
+def test_open_refuses_an_occupied_copy_id(tmp_path):
+    state = tmp_path / "state"
+    source = _write_checklist(tmp_path / "packaged" / "audit" / "review.md")
+    checklists.open_copy(source, "audit/review", "packaged", "review", state)
+    other = _write_checklist(tmp_path / "packaged" / "other" / "other.md")
+    with pytest.raises(checklists.ChecklistAlreadyOpenError):
+        checklists.open_copy(other, "other/other", "packaged", "review",
+                             state)
+
+
+def test_open_reset_replaces_the_copy_state(tmp_path):
+    state = tmp_path / "state"
+    first = _write_checklist(tmp_path / "packaged" / "audit" / "review.md",
+                             "# First\n")
+    checklists.open_copy(first, "audit/review", "packaged", "review", state)
+    second = _write_checklist(tmp_path / "user" / "audit" / "review.md",
+                              "# Second\n")
+    opened = checklists.open_copy(
+        second, "audit/review", "user", "review", state, reset=True)
+    assert opened.read_text() == "# Second\n"
+    sidecar = json.loads((state / "review" / "copy.json").read_text())
+    assert sidecar["origin"] == "user"
+
+
+def test_open_rejects_traversal_copy_ids(tmp_path):
+    source = _write_checklist(tmp_path / "packaged" / "audit" / "review.md")
+    with pytest.raises(checklists.ChecklistError):
+        checklists.open_copy(
+            source, "audit/review", "packaged", "../escape",
+            tmp_path / "state")
+
+
+def test_find_open_copies_reads_the_sidecars(tmp_path):
+    state = tmp_path / "state"
+    review = _write_checklist(tmp_path / "packaged" / "audit" / "review.md")
+    reboot = _write_checklist(tmp_path / "packaged" / "system" / "reboot.md")
+    checklists.open_copy(review, "audit/review", "packaged", "web", state)
+    checklists.open_copy(reboot, "system/reboot", "packaged", "db", state)
+
+    copies = {copy.copy_id: copy for copy in
+              checklists.find_open_copies(state)}
+    assert set(copies) == {"web", "db"}
+    assert copies["web"].checklist == "audit/review"
+    assert copies["web"].origin == "packaged"
+    assert copies["web"].opened.tzinfo is not None
+    assert copies["db"].path == state / "db" / "system" / "reboot.md"
+
+
+def test_find_open_copies_falls_back_to_mtime(tmp_path):
+    state = tmp_path / "state"
+    source = _write_checklist(tmp_path / "packaged" / "audit" / "review.md")
+    opened = checklists.open_copy(
+        source, "audit/review", "packaged", "web", state)
+    (state / "web" / "copy.json").unlink()
+
+    records = checklists.find_open_copies(state)
+    assert records[0].checklist == "audit/review"
+    expected = datetime.fromtimestamp(
+        opened.stat().st_mtime).astimezone()
+    assert records[0].opened == expected
+
+
+def test_resolve_prefers_the_exact_copy_id(tmp_path):
+    state = tmp_path / "state"
+    source = _write_checklist(tmp_path / "packaged" / "audit" / "review.md")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    copy_id, path = checklists.resolve_copy("web", state)
+    assert copy_id == "web"
+    assert path == state / "web" / "audit" / "review.md"
+
+
+def test_resolve_falls_back_to_the_checklist_path(tmp_path):
+    state = tmp_path / "state"
+    source = _write_checklist(tmp_path / "packaged" / "audit" / "review.md")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    for target in ("audit/review", "audit/review.md"):
+        copy_id, path = checklists.resolve_copy(target, state)
+        assert copy_id == "web"
+
+
+def test_resolve_lists_ids_when_ambiguous(tmp_path):
+    state = tmp_path / "state"
+    source = _write_checklist(tmp_path / "packaged" / "audit" / "review.md")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    checklists.open_copy(source, "audit/review", "packaged", "db", state)
+    with pytest.raises(checklists.ChecklistAmbiguousError) as raised:
+        checklists.resolve_copy("audit/review", state)
+    assert "db" in str(raised.value)
+    assert "web" in str(raised.value)
+
+
+def test_resolve_raises_when_the_target_is_not_open(tmp_path):
+    with pytest.raises(checklists.ChecklistNotOpenError):
+        checklists.resolve_copy("audit/review", tmp_path / "state")
+
+
+def test_close_removes_the_copy_and_prunes_the_state(tmp_path):
+    state = tmp_path / "state"
+    source = _write_checklist(tmp_path / "packaged" / "audit" / "review.md")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    checklists.close_copy(state, "web")
+    assert not (state / "web").exists()
+    assert not state.exists()
+
+
+def test_close_keeps_the_state_dir_for_remaining_copies(tmp_path):
+    state = tmp_path / "state"
+    review = _write_checklist(tmp_path / "packaged" / "audit" / "review.md")
+    reboot = _write_checklist(tmp_path / "packaged" / "system" / "reboot.md")
+    checklists.open_copy(review, "audit/review", "packaged", "web", state)
+    checklists.open_copy(reboot, "system/reboot", "packaged", "db", state)
+    checklists.close_copy(state, "web")
+    assert (state / "db").exists()
+    assert state.exists()
+
+
+def test_vault_record_path_groups_by_checklist(tmp_path):
+    opened = datetime(2026, 11, 10, 23, 50, tzinfo=timezone.utc)
+    implicit = checklists.vault_record_path(
+        tmp_path, "system/host-reboot", "system/host-reboot", opened)
+    assert implicit == (tmp_path / "checklists" / "system" /
+                        "host-reboot" / "2026-11-10.md")
+
+
+def test_vault_record_path_nests_named_copies(tmp_path):
+    opened = datetime(2026, 5, 11, 9, 0, tzinfo=timezone.utc)
+    named = checklists.vault_record_path(
+        tmp_path, "audit/periodic-security-review", "review", opened)
+    assert named == (tmp_path / "checklists" / "audit" /
+                     "periodic-security-review" / "review" /
+                     "2026-05-11.md")
