@@ -156,7 +156,7 @@ def path_inside_project(path, project):
     return target.startswith(root + os.sep)
 
 
-def write_file(path, content, overwrite=False, project=None):
+def write_file(path, content, overwrite=False, project=None, mode=None):
     """Write text to path, creating missing parent directories.
 
     An existing file is left alone unless overwrite is True, which keeps
@@ -165,6 +165,10 @@ def write_file(path, content, overwrite=False, project=None):
     When the project directory is given, the write is refused when the
     target path resolves outside of it, so that a mistyped path cannot
     scatter generated files across the file system.
+
+    The optional mode restricts the created file's permissions -- the
+    recorded operational notes are private by default. Directories
+    are created with the default mode and umask, as before.
 
     Returns True if the file was written, False if it already existed and
     overwriting was not requested.
@@ -180,7 +184,10 @@ def write_file(path, content, overwrite=False, project=None):
     if directory:
         os.makedirs(directory, exist_ok=True)
 
-    with open(path, 'w', encoding='utf-8') as fh:
+    file_descriptor = os.open(
+        path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
+        0o666 if mode is None else mode)
+    with os.fdopen(file_descriptor, 'w', encoding='utf-8') as fh:
         fh.write(content)
 
     return True

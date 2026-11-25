@@ -4,6 +4,7 @@
 
 """Tests for ``debops.core.checklists`` parsing and discovery."""
 
+import inspect
 import json
 import os
 import stat
@@ -41,6 +42,46 @@ def test_unknown_marker_parses_as_open(marker):
 def test_multichar_bracket_content_is_not_an_item():
     parsed = checklists.parse_checklist("- [TODO] Do a thing")
     assert parsed.items == []
+
+
+@pytest.mark.parametrize("line", [
+    "* [x] Asterisk bullet",
+    "+ [x] Plus bullet",
+    "1. [x] Ordered with a dot",
+    "2) [x] Ordered with a parenthesis",
+    "  * [x] Indented asterisk bullet",
+])
+def test_github_task_list_bullets_all_parse(line):
+    parsed = checklists.parse_checklist(line)
+    assert len(parsed.items) == 1
+    assert parsed.items[0].state == "done"
+
+
+def test_fenced_blocks_do_not_carry_items():
+    text = ("- [x] Before\n"
+            "```sh\n"
+            "- [ ] Inside a fence\n"
+            "echo example\n"
+            "```\n"
+            "- [ ] After the fence\n")
+    parsed = checklists.parse_checklist(text)
+    assert [item.text for item in parsed.items] == \
+        ['Before', 'After the fence']
+
+
+def test_tilde_fences_do_not_carry_items():
+    text = ("- [x] Before\n"
+            "~~~\n"
+            "- [ ] Inside a fence\n"
+            "~~~\n")
+    parsed = checklists.parse_checklist(text)
+    assert [item.text for item in parsed.items] == ['Before']
+
+
+def test_document_without_task_items_parses_to_none():
+    parsed = checklists.parse_checklist("# Notes\n\nJust prose.\n")
+    assert parsed.items == []
+    assert parsed.has_open_items is False
 
 
 def test_nested_items_get_depth():
@@ -123,6 +164,34 @@ def test_document_without_frontmatter_has_empty_frontmatter():
     assert parsed.frontmatter == {}
 
 
+def test_broken_frontmatter_degrades_to_no_frontmatter():
+    text = "---\ntitle: [unclosed\n---\n# Heading\n- [ ] Task\n"
+    parsed = checklists.parse_checklist(text)
+    assert parsed.frontmatter == {}
+    assert parsed.title == "Heading"
+    assert len(parsed.items) == 1
+
+
+def test_deeply_nested_frontmatter_does_not_crash():
+    text = "---\ntitle: " + "[" * 50000 + "\n---\n# Heading\n"
+    parsed = checklists.parse_checklist(text)
+    assert parsed.frontmatter == {}
+    assert parsed.title == "Heading"
+
+
+def test_oversized_frontmatter_is_treated_as_absent():
+    text = "---\ndescription: '" + "x" * 70000 + "'\n---\n# Heading\n"
+    parsed = checklists.parse_checklist(text)
+    assert parsed.frontmatter == {}
+    assert parsed.title == "Heading"
+
+
+def test_control_characters_are_stripped_from_titles():
+    text = "---\ntitle: \"Review \\x1b]0;pwned\\x07 done\"\n---\n"
+    parsed = checklists.parse_checklist(text)
+    assert parsed.title == "Review ]0;pwned done"
+
+
 def test_tally_counts_each_state():
     text = (
         "- [ ] Open task\n"
@@ -196,6 +265,42 @@ def test_find_checklist_falls_back_through_the_layers(layer_roots):
     assert origin == "user"
 
 
+def test_find_checklist_refuses_a_symlink_escaping_the_layer(layer_roots):
+    project, user, packaged = layer_roots
+    secret = project.parent.parent / "secret.txt"
+    secret.write_text("private key material\n")
+    (project / "notes.md").symlink_to(secret)
+    with pytest.raises(checklists.ChecklistError) as raised:
+        checklists.find_checklist("notes", _layers(*layer_roots))
+    assert "outside of its discovery layer" in str(raised.value)
+
+
+def test_list_omits_symlinks_escaping_the_layer(layer_roots):
+    project, user, packaged = layer_roots
+    secret = project.parent.parent / "secret.txt"
+    secret.write_text("private key material\n")
+    (project / "notes.md").symlink_to(secret)
+    (packaged / "audit").mkdir()
+    (packaged / "audit" / "review.md").write_text("# Review\n")
+    names = [name for name, path, origin in
+             checklists.list_checklists(_layers(*layer_roots))]
+    assert names == ["audit/review"]
+
+
+def test_user_layer_honors_symlinked_checklists(layer_roots):
+    project, user, packaged = layer_roots
+    outside = user.parent.parent / "personal-notes.md"
+    outside.write_text("# Personal\n- [x] Note\n")
+    (user / "notes.md").symlink_to(outside)
+    found, origin = checklists.find_checklist(
+        "notes", _layers(*layer_roots))
+    assert found == user / "notes.md"
+    assert origin == "user"
+    names = [name for name, path, entry_origin in
+             checklists.list_checklists(_layers(*layer_roots))]
+    assert names == ["notes"]
+
+
 def test_missing_layers_are_tolerated(layer_roots):
     project, user, packaged = layer_roots
     (packaged / "system").mkdir()
@@ -232,6 +337,9 @@ def test_md_less_and_md_suffixed_names_resolve_identically(layer_roots):
     "audit/../secret.md",
     "/etc/passwd",
     "",
+    "_copies",
+    "audit/_copies",
+    "with\x1bescape",
 ])
 def test_traversal_and_invalid_names_are_rejected(layer_roots, name):
     with pytest.raises(checklists.ChecklistError):
@@ -388,6 +496,24 @@ def test_find_open_copies_falls_back_to_mtime(tmp_path):
     assert records[0].opened == expected
 
 
+def test_hostile_sidecar_fields_fall_back_to_the_standards(tmp_path):
+    state = tmp_path / "state"
+    source = _write_checklist(tmp_path / "packaged" / "audit" / "review.md")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    (state / "web" / "copy.json").write_text(
+        '{"filename": "../../escape.md", "checklist": "../../x", '
+        '"origin": ["not", "a", "label"], '
+        '"opened": "2026-11-10T08:00:00+00:00"}')
+
+    records = checklists.find_open_copies(state)
+    assert records[0].copy_id == "web"
+    assert records[0].path == state / "web" / "checklist.md"
+    assert records[0].checklist == ""
+    assert records[0].origin == ""
+    assert records[0].opened == datetime(
+        2026, 11, 10, 8, 0, tzinfo=timezone.utc)
+
+
 def test_slash_copy_ids_round_trip(tmp_path):
     state = tmp_path / "state"
     source = _write_checklist(tmp_path / "packaged" / "debian" / "up.md")
@@ -503,8 +629,59 @@ def test_vault_record_path_nests_named_copies(tmp_path):
     named = checklists.vault_record_path(
         tmp_path, "audit/periodic-security-review", "review", opened)
     assert named == (tmp_path / "audit" /
-                     "periodic-security-review" / "review" /
+                     "periodic-security-review" / "_copies" / "review" /
                      "2026-05-11.md")
+
+
+def test_vault_record_paths_of_named_and_implicit_copies_differ(tmp_path):
+    opened = datetime(2026, 5, 11, 9, 0, tzinfo=timezone.utc)
+    named = checklists.vault_record_path(
+        tmp_path, "security", "web1", opened)
+    implicit = checklists.vault_record_path(
+        tmp_path, "security/web1", "security/web1", opened)
+    assert named != implicit
+    assert named == tmp_path / "security" / "_copies" / "web1" / \
+        "2026-05-11.md"
+    assert implicit == tmp_path / "security" / "web1" / "2026-05-11.md"
+
+
+def test_copies_segment_is_refused_in_names(layer_roots):
+    for name in ("_copies", "audit/_copies", "audit/_copies/review"):
+        with pytest.raises(checklists.ChecklistError):
+            checklists.find_checklist(name, _layers(*layer_roots))
+    with pytest.raises(checklists.ChecklistError):
+        checklists.open_copy(layer_roots[0] / "x.md", "audit/review",
+                             "project", "_copies",
+                             layer_roots[0].parent.parent / "state")
+
+
+def test_close_copy_refuses_an_invalid_id(tmp_path):
+    state = tmp_path / "state"
+    state.mkdir()
+    with pytest.raises(checklists.ChecklistError):
+        checklists.close_copy(state, "../escape")
+    with pytest.raises(checklists.ChecklistError):
+        checklists.close_copy(state, "with\x1bescape")
+
+
+def test_open_copy_reset_is_keyword_only():
+    signature = inspect.signature(checklists.open_copy)
+    assert signature.parameters["reset"].kind == \
+        inspect.Parameter.KEYWORD_ONLY
+
+
+def test_implicit_copies_recognize_themselves():
+    opened = datetime(2026, 11, 10, 8, 0, tzinfo=timezone.utc)
+    implicit = checklists.OpenCopy(
+        copy_id="audit/review", path=Path("/state/audit/review/checklist.md"),
+        state_dir=Path("/state"), checklist="audit/review",
+        origin="packaged", opened=opened)
+    named = checklists.OpenCopy(
+        copy_id="web", path=Path("/state/web/checklist.md"),
+        state_dir=Path("/state"), checklist="audit/review",
+        origin="packaged", opened=opened)
+    assert implicit.implicit is True
+    assert named.implicit is False
 
 
 def test_progress_summarizes_the_counts():
@@ -557,3 +734,14 @@ def test_editor_argv_uses_sensible_editor(monkeypatch):
 def test_editor_argv_falls_back_to_vi(monkeypatch):
     monkeypatch.setattr(checklists.shutil, "which", lambda name: None)
     assert checklists.editor_argv({}) == ["vi"]
+
+
+def test_editor_argv_refuses_an_unsplitable_value():
+    with pytest.raises(checklists.ChecklistError) as raised:
+        checklists.editor_argv({"EDITOR": "vi 'broken"})
+    assert "EDITOR" in str(raised.value)
+
+
+def test_editor_argv_treats_an_empty_split_as_unset():
+    environ = {"VISUAL": "   ", "EDITOR": "xterm -e"}
+    assert checklists.editor_argv(environ) == ["xterm", "-e"]

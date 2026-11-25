@@ -11,9 +11,19 @@ owns the translation into exit codes and terminal output.
 """
 
 import logging
+import re
 import sys
 
 from ..core.utils import wrap_message
+
+# Control characters printed to the terminal let a hostile file name
+# or frontmatter value steer the display; the reports strip them.
+_CONTROLS_RE = re.compile(r"[\x00-\x1f\x7f-\x9f]")
+
+
+def _without_controls(text):
+    """The text without control characters."""
+    return _CONTROLS_RE.sub("", str(text))
 
 
 def print_error(errmsg):
@@ -28,9 +38,10 @@ def print_error(errmsg):
     journal record keeps its single-line form.
     """
     debops_log = logging.getLogger('debops')
+    message = _without_controls(errmsg)
     if debops_log.handlers:
-        debops_log.error(str(errmsg), extra={'allow': 'syslog'})
-    print(wrap_message('Error: ' + str(errmsg)), file=sys.stderr)
+        debops_log.error(message, extra={'allow': 'syslog'})
+    print(wrap_message('Error: ' + message), file=sys.stderr)
 
 
 def print_notice(message):
@@ -44,6 +55,7 @@ def print_notice(message):
     not wired up.
     """
     debops_log = logging.getLogger('debops')
+    message = _without_controls(message)
     if debops_log.handlers:
-        debops_log.info(str(message), extra={'allow': 'syslog'})
-    print(wrap_message(str(message)), file=sys.stderr)
+        debops_log.info(message, extra={'allow': 'syslog'})
+    print(wrap_message(message), file=sys.stderr)

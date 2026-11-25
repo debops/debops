@@ -1081,6 +1081,9 @@ Commands:
         parser.add_argument('-a', '--active', action='store_true',
                             help='list the open copies instead of the '
                                  'discovered checklists')
+        parser.add_argument('-f', '--format', type=str,
+                            choices=['text', 'json'], default='text',
+                            help='output format (default: text)')
         parser.add_argument('-v', '--verbose', action='count', default=0,
                             help='increase output verbosity '
                                  '(e.g., -vv is more than -v)')

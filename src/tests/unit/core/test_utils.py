@@ -4,6 +4,7 @@
 
 """Tests for ``debops.core.utils``."""
 
+import os
 import re
 
 import pytest
@@ -88,6 +89,22 @@ def test_write_file_writes_empty_content(tmp_path):
 
     assert utils.write_file(str(target), "") is True
     assert target.read_text() == ""
+
+
+def test_write_file_respects_the_requested_mode(tmp_path):
+    target = tmp_path / "record.md"
+
+    utils.write_file(str(target), "notes\n", mode=0o600)
+    assert target.stat().st_mode & 0o777 == 0o600
+
+
+def test_write_file_default_mode_follows_the_umask(tmp_path):
+    target = tmp_path / "generated.txt"
+    mask = os.umask(0o022)
+    os.umask(mask)
+
+    utils.write_file(str(target), "hello\n")
+    assert target.stat().st_mode & 0o777 == 0o666 & ~mask
 
 
 def test_write_file_without_a_directory(tmp_path, monkeypatch):

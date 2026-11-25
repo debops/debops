@@ -27,7 +27,9 @@ from ..core.tofu.view import create_view, reconcile_view
 from ..core import checklists, ssh
 from ..core.utils import (path_inside_project, remove_file,
                           unexpanduser, write_file)
+from git import GitCommandError
 from xdg.BaseDirectory import xdg_config_home
+import json
 import logging
 import getpass
 import shlex
@@ -509,15 +511,30 @@ class Interpreter(object):
             print_error(errmsg)
             sys.exit(1)
 
-        state_dir = checklists.checklist_state_dir(args.project_dir)
+        # The copies live under the state key of the resolved project
+        # root: run from a subdirectory, the lifecycle commands resolve
+        # the project upward while a raw argument would key a wrong,
+        # empty namespace
+        state_dir = checklists.checklist_state_dir(
+            project.path if project is not None else args.project_dir)
         open_copies = checklists.find_open_copies(state_dir)
         glyphs = _tree_glyphs(sys.stdout.encoding or '')
 
         if args.active:
             rows = []
+            records = []
             for copy in open_copies:
-                parsed = checklists.parse_checklist(copy.path.read_text())
-                implicit = copy.copy_id == copy.checklist
+                parsed = checklists.parse_checklist(
+                    copy.path.read_text(encoding='utf-8'))
+                implicit = copy.implicit
+                if args.format == 'json':
+                    records.append({
+                        'copy_id': copy.copy_id, 'implicit': implicit,
+                        'checklist': copy.checklist,
+                        'path': str(copy.path), 'origin': copy.origin,
+                        'opened': copy.opened.astimezone().isoformat(),
+                        'counts': parsed.counts})
+                    continue
                 row = [copy.checklist if implicit else copy.copy_id,
                        '' if implicit else _shorten_path(copy.checklist),
                        '({})'.format(copy.opened.date().isoformat()),
@@ -525,6 +542,9 @@ class Interpreter(object):
                 if args.verbose >= 2:
                     row.append('[{}]'.format(copy.origin))
                 rows.append(row)
+            if args.format == 'json':
+                print(json.dumps(records, indent=2))
+                return
             if rows:
                 for row in _columns(rows):
                     print('    '.join(row).rstrip())
@@ -534,21 +554,52 @@ class Interpreter(object):
             project.path if project is not None else None)
         entries = checklists.list_checklists(layers)
 
+        if args.format == 'json':
+            records = []
+            for name, path, origin in entries:
+                try:
+                    parsed = checklists.parse_checklist(
+                        path.read_text(encoding='utf-8'))
+                except (OSError, UnicodeDecodeError):
+                    continue
+                copies_json = []
+                for copy in open_copies:
+                    if copy.checklist != name:
+                        continue
+                    copy_parsed = checklists.parse_checklist(
+                        copy.path.read_text(encoding='utf-8'))
+                    copies_json.append({
+                        'copy_id': copy.copy_id,
+                        'implicit': copy.implicit,
+                        'opened': copy.opened.astimezone().isoformat(),
+                        'counts': copy_parsed.counts})
+                records.append({
+                    'checklist': name, 'path': str(path),
+                    'origin': origin, 'title': parsed.title,
+                    'copies': copies_json})
+            print(json.dumps(records, indent=2))
+            return
+
         if args.verbose >= 1:
             rows = []
             blocks = []
             for name, path, origin in entries:
-                parsed = checklists.parse_checklist(path.read_text())
+                try:
+                    parsed = checklists.parse_checklist(
+                        path.read_text(encoding='utf-8'))
+                except (OSError, UnicodeDecodeError):
+                    # An unreadable or undecodable document is skipped;
+                    # a broken file must not take the listing down
+                    continue
                 copies = [copy for copy in open_copies
                           if copy.checklist == name]
                 progress = {}
                 for copy in copies:
                     copy_parsed = checklists.parse_checklist(
-                        copy.path.read_text())
+                        copy.path.read_text(encoding='utf-8'))
                     progress[copy.copy_id] = copy_parsed.progress
                 path_cell = name
-                implicit = [copy for copy in copies
-                            if copy.copy_id == name]
+                implicit = [copy for copy in copies if copy.implicit]
                 if implicit:
                     path_cell += ' ({})'.format(progress[name])
                 origin_cell = '[{}]'.format(origin) \
@@ -559,6 +610,8 @@ class Interpreter(object):
                          if copy.copy_id != name]
                 blocks.append(
                     _copy_tree_lines(named, progress, glyphs))
+            if not rows:
+                return
             for (path_cell, title, origin_cell), tree_lines in zip(
                     _columns(rows), blocks):
                 tail = '{} {}'.format(title, origin_cell).rstrip()
@@ -574,10 +627,10 @@ class Interpreter(object):
             progress = {}
             for copy in copies:
                 copy_parsed = checklists.parse_checklist(
-                    copy.path.read_text())
+                    copy.path.read_text(encoding='utf-8'))
                 progress[copy.copy_id] = copy_parsed.progress
             path_cell = name
-            implicit = [copy for copy in copies if copy.copy_id == name]
+            implicit = [copy for copy in copies if copy.implicit]
             if implicit:
                 path_cell += ' ({})'.format(progress[name])
             print(path_cell)
@@ -597,16 +650,23 @@ class Interpreter(object):
         state_dir = checklists.checklist_state_dir(project.path)
         try:
             path, origin = checklists.find_checklist(name, layers)
+            parsed = checklists.parse_checklist(
+                path.read_text(encoding='utf-8'))
+            if not parsed.items:
+                raise checklists.ChecklistError(
+                    'The checklist {} does not contain any task items; '
+                    'check the marker syntax'.format(name))
             checklists.open_copy(path, name, origin, copy_id, state_dir,
                                  reset=args.reset)
         except checklists.ChecklistError as errmsg:
             print_error(errmsg)
             sys.exit(1)
         if copy_id == checklists.strip_md(name):
-            print('Opened {}'.format(checklists.strip_md(name)))
+            print('Opened {} [{}]'.format(
+                checklists.strip_md(name), origin))
         else:
-            print('Opened {} as copy {}'.format(
-                checklists.strip_md(name), copy_id))
+            print('Opened {} as copy {} [{}]'.format(
+                checklists.strip_md(name), copy_id, origin))
 
     def do_checklist_edit(self, args):
         project = self._project(args)
@@ -616,10 +676,27 @@ class Interpreter(object):
         except checklists.ChecklistError as errmsg:
             print_error(errmsg)
             sys.exit(1)
-        subprocess.run(checklists.editor_argv() + [str(copy.path)],
-                       check=False)
-        parsed = checklists.parse_checklist(copy.path.read_text())
+        try:
+            subprocess.run(self._editor_argv() + [str(copy.path)],
+                           check=False)
+        except OSError as errmsg:
+            print_error('The editor could not be run: {}'.format(errmsg))
+            sys.exit(1)
+        parsed = checklists.parse_checklist(copy.path.read_text(encoding='utf-8'))
         print('{}: {}'.format(copy.copy_id, parsed.progress))
+
+    def _editor_argv(self):
+        """The editor argv, with a notice when the environment lies.
+
+        A ``$VISUAL``/``$EDITOR`` value that does not split into a
+        command falls back to the Debian ``sensible-editor``
+        indirection, announced on the notice channel.
+        """
+        try:
+            return checklists.editor_argv()
+        except checklists.ChecklistError as errmsg:
+            print_notice('{}, using sensible-editor'.format(errmsg))
+            return ['sensible-editor']
 
     def do_checklist_commit(self, args):
         project = self._project(args)
@@ -629,9 +706,22 @@ class Interpreter(object):
         except checklists.ChecklistError as errmsg:
             print_error(errmsg)
             sys.exit(1)
-        parsed = checklists.parse_checklist(copy.path.read_text())
+        parsed = checklists.parse_checklist(
+            copy.path.read_text(encoding='utf-8'))
+        if not parsed.items:
+            print_error('The checklist {} does not contain any task '
+                        'items; nothing to commit'.format(copy.checklist))
+            sys.exit(1)
+        if not copy.checklist:
+            print_error('The copy {} does not record its checklist; '
+                        're-open it with '
+                        '--reset'.format(copy.copy_id))
+            sys.exit(1)
 
-        vault_base = self.config.get('checklist.commit_path')
+        vault_base = self.config.get(['checklist', 'commit_path'])
+        if not isinstance(vault_base, str) or not vault_base:
+            print_error('The checklist vault directory is not configured')
+            sys.exit(1)
         vault_dir = Path(project.path) / vault_base
         if not path_inside_project(vault_dir, project.path):
             print_error('The vault directory resolves outside of the '
@@ -639,40 +729,54 @@ class Interpreter(object):
             sys.exit(1)
         vault_path = checklists.vault_record_path(
             vault_dir, copy.checklist, copy.copy_id, copy.opened)
-        if vault_path.exists() and \
-                vault_path.read_text() == copy.path.read_text():
+        unchanged = vault_path.exists() and \
+            vault_path.read_text(encoding='utf-8') == \
+            copy.path.read_text(encoding='utf-8')
+        if unchanged:
             print('No changes since the last commit')
-            if args.close:
-                checklists.close_copy(state_dir, copy.copy_id)
-            return
+        else:
+            try:
+                write_file(str(vault_path),
+                           copy.path.read_text(encoding='utf-8'),
+                           overwrite=True, project=str(project.path),
+                           mode=0o600)
+            except ValueError as errmsg:
+                # The vault confinement refused the write; the copy's
+                # record path never resolves outside of the project
+                print_error(errmsg)
+                sys.exit(1)
 
         message = 'checklist: {}{} ({})'.format(
             '{} '.format(copy.copy_id)
-            if copy.copy_id != copy.checklist else '',
+            if not copy.implicit else '',
             copy.checklist, parsed.progress)
         if args.edit:
             message = self._edit_text(message) or message
 
-        write_file(str(vault_path), copy.path.read_text(), overwrite=True,
-                   project=str(project.path))
         if not os.path.exists(os.path.join(project.path, '.git')):
             print_notice('The project directory is not a git repository, '
                          'the vault record is not committed')
-        project.commit(interactive=False, message=message,
-                       paths=[str(vault_path)])
+        try:
+            project.commit(interactive=False, message=message,
+                           paths=[str(vault_path)])
+        except GitCommandError as errmsg:
+            print_error('The git commit of the vault record failed: '
+                        '{}'.format(errmsg))
+            sys.exit(1)
         if args.close:
             checklists.close_copy(state_dir, copy.copy_id)
-        print('Committed {} to {}'.format(
-            copy.checklist, os.path.relpath(vault_path, project.path)))
+        if not unchanged:
+            print('Committed {} to {}'.format(
+                copy.checklist, os.path.relpath(vault_path, project.path)))
 
     def _edit_text(self, text):
         """Hand *text* to the editor and return the edited result."""
         descriptor, path = tempfile.mkstemp(suffix='.msg')
-        with os.fdopen(descriptor, 'w') as handle:
+        with os.fdopen(descriptor, 'w', encoding='utf-8') as handle:
             handle.write(text + '\n')
         try:
-            subprocess.run(checklists.editor_argv() + [path], check=False)
-            with open(path) as handle:
+            subprocess.run(self._editor_argv() + [path], check=False)
+            with open(path, encoding='utf-8') as handle:
                 return handle.read().strip()
         finally:
             os.unlink(path)
@@ -688,18 +792,40 @@ class Interpreter(object):
             except checklists.ChecklistError as errmsg:
                 print_error(errmsg)
                 sys.exit(1)
-        skipped = []
+        skipped_incomplete = []
+        skipped_empty = []
         for copy in copies:
-            parsed = checklists.parse_checklist(copy.path.read_text())
-            if parsed.has_open_items and not args.force:
-                skipped.append(copy)
+            parsed = checklists.parse_checklist(
+                copy.path.read_text(encoding='utf-8'))
+            if not parsed.items:
+                if not args.force:
+                    skipped_empty.append(copy)
+                    continue
+            elif parsed.has_open_items and not args.force:
+                skipped_incomplete.append(copy)
                 continue
             checklists.close_copy(state_dir, copy.copy_id)
             print('Closed {}'.format(copy.copy_id))
-        if skipped:
-            print_notice('Still open (incomplete): {}'.format(
-                ', '.join(copy.copy_id for copy in skipped)))
-            if not args.all:
+        if skipped_incomplete or skipped_empty:
+            if args.all:
+                if skipped_incomplete:
+                    print_notice('Still open (incomplete): {}'.format(
+                        ', '.join(copy.copy_id
+                                  for copy in skipped_incomplete)))
+                if skipped_empty:
+                    print_notice('Still open (no task items): {}'.format(
+                        ', '.join(copy.copy_id
+                                  for copy in skipped_empty)))
+            else:
+                if skipped_incomplete:
+                    print_error('The checklist {} is incomplete; use '
+                                '--force to close it anyway'.format(
+                                    skipped_incomplete[0].copy_id))
+                else:
+                    print_error('The checklist {} does not contain any '
+                                'task items; use --force to close it '
+                                'anyway'.format(
+                                    skipped_empty[0].copy_id))
                 sys.exit(1)
 
     def do_tofu(self, args):
