@@ -293,6 +293,9 @@ Fixed
 General
 '''''''
 
+- The ``file_src``, ``task_src`` and ``template_src`` lookup plugins no
+  longer import :py:mod:`distutils`, which was removed in Python 3.12.
+
 - The version update notice printed by the :command:`debops` command is now
   visible on the standard error stream when the check runs at the default
   log level.

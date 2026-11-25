@@ -72,11 +72,10 @@ try:
 except ImportError:
     LookupBase = object
 
-from distutils.version import LooseVersion
 from ansible import __version__ as __ansible_version__
 
 
-if LooseVersion(__ansible_version__) < LooseVersion("2.0"):
+if int(__ansible_version__.split(".")[0]) < 2:
     from ansible import utils, errors
 
     class LookupModule(object):
