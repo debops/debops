@@ -649,7 +649,16 @@ class Interpreter(object):
         layers = checklists.checklist_layers(project.path)
         state_dir = checklists.checklist_state_dir(project.path)
         try:
-            path, origin = checklists.find_checklist(name, layers)
+            try:
+                path, origin = checklists.find_checklist(name, layers)
+            except checklists.ChecklistNotFoundError:
+                if len(args.checklist) != 1:
+                    raise
+                # A lone argument that is not a checklist name can
+                # still be an open copy id; with --reset the copy
+                # re-opens from the checklist its sidecar records
+                copy_id, name, path, origin = self._heal_open_copy(
+                    name, state_dir, layers, reset=args.reset)
             parsed = checklists.parse_checklist(
                 path.read_text(encoding='utf-8'))
             if not parsed.items:
@@ -667,6 +676,45 @@ class Interpreter(object):
         else:
             print('Opened {} as copy {} [{}]'.format(
                 checklists.strip_md(name), copy_id, origin))
+
+    def _heal_open_copy(self, name, state_dir, layers, reset):
+        """Resolve a lone open copy id to its recorded checklist.
+
+        The copy records its checklist in the sidecar; the discovery
+        re-resolves it fresh, so the healed copy picks up the latest
+        source and its current origin. Without --reset the match is
+        an error spelling the reset command; a recorded checklist
+        that no longer resolves in any layer is never healable --
+        the copy is close and edit territory then.
+        """
+        copies = checklists.find_open_copies(state_dir)
+        match = next((item for item in copies
+                      if item.copy_id == name), None)
+        if match is None:
+            raise checklists.ChecklistNotFoundError(
+                'Checklist not found: {}'.format(name))
+        if not match.checklist:
+            raise checklists.ChecklistNotFoundError(
+                'Checklist not found: {}\n'
+                'An open copy {} does not record its checklist\n'
+                'Re-open it from the checklist name'.format(name, name))
+        try:
+            path, origin = checklists.find_checklist(
+                match.checklist, layers)
+        except checklists.ChecklistNotFoundError:
+            raise checklists.ChecklistNotFoundError(
+                'Checklist not found: {}\n'
+                'An open copy {} of {} exists\n'
+                'The recorded checklist no longer resolves in any '
+                'layer; close or edit the copy instead'.format(
+                    name, name, match.checklist))
+        if not reset:
+            raise checklists.ChecklistNotFoundError(
+                'Checklist not found: {}\n'
+                'An open copy {} of {} exists\n'
+                'To reset: debops checklist open {} --reset'.format(
+                    name, name, match.checklist, match.copy_id))
+        return match.copy_id, match.checklist, path, origin
 
     def do_checklist_edit(self, args):
         project = self._project(args)

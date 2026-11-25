@@ -18,7 +18,8 @@ from ..core.utils import wrap_message
 
 # Control characters printed to the terminal let a hostile file name
 # or frontmatter value steer the display; the reports strip them.
-_CONTROLS_RE = re.compile(r"[\x00-\x1f\x7f-\x9f]")
+# Newlines and tabs survive: multi-line reports keep their shape.
+_CONTROLS_RE = re.compile(r"[\x00-\x08\x0b-\x1f\x7f-\x9f]")
 
 
 def _without_controls(text):
@@ -40,7 +41,9 @@ def print_error(errmsg):
     debops_log = logging.getLogger('debops')
     message = _without_controls(errmsg)
     if debops_log.handlers:
-        debops_log.error(message, extra={'allow': 'syslog'})
+        # The journal record keeps its single-line form
+        debops_log.error(' '.join(message.splitlines()),
+                         extra={'allow': 'syslog'})
     print(wrap_message('Error: ' + message), file=sys.stderr)
 
 

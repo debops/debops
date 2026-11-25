@@ -242,6 +242,150 @@ def test_checklist_open_copies_into_the_state(tmp_path, state_home,
     assert "as copy" not in captured.out
 
 
+def test_checklist_open_reset_by_copy_id_heals(tmp_path, state_home,
+                                               monkeypatch, capsys):
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    # The copy drifts from the source; the heal re-copies it
+    (state / "web" / "checklist.md").write_text("# Drifted\n")
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), checklist=["web"],
+                     reset=True)
+    interpreter.do_checklist_open(args)
+
+    captured = capsys.readouterr()
+    assert "Opened audit/review as copy web [packaged]" in captured.out
+    assert (state / "web" / "checklist.md").read_text() == \
+        "# Review\n- [x] Check\n"
+
+
+def test_checklist_open_by_copy_id_without_reset_hints(tmp_path,
+                                                       state_home,
+                                                       monkeypatch,
+                                                       capsys):
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), checklist=["web"],
+                     reset=False)
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_open(args)
+
+    assert raised.value.code == 1
+    lines = capsys.readouterr().err.splitlines()
+    assert lines[0] == "Error: Checklist not found: web"
+    assert "An open copy web of audit/review exists" in lines[1]
+    assert lines[2] == "To reset: debops checklist open web --reset"
+
+
+def test_checklist_open_reset_with_deleted_source_refuses(
+        tmp_path, state_home, monkeypatch, capsys):
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    source.unlink()
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), checklist=["web"],
+                     reset=True)
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_open(args)
+
+    assert raised.value.code == 1
+    err = capsys.readouterr().err
+    assert "An open copy web of audit/review exists" in err
+    assert "no longer resolves in any layer" in err
+    assert "To reset" not in err
+    assert (state / "web").exists()
+
+
+def test_checklist_open_unknown_name_stays_plain(tmp_path, state_home,
+                                                 monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), checklist=["typo"],
+                     reset=True)
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_open(args)
+
+    assert raised.value.code == 1
+    assert capsys.readouterr().err == "Error: Checklist not found: typo\n"
+
+
+def test_checklist_open_checklist_name_wins_over_copy_id(
+        tmp_path, state_home, monkeypatch, capsys):
+    # 'web' is both a checklist name and an open copy id; discovery
+    # keeps precedence: the checklist opens fresh and --reset
+    # discards the copy id's previous state, as reset always does
+    packaged = tmp_path / "packaged" / "checklists"
+    (packaged / "web.md").parent.mkdir(parents=True)
+    (packaged / "web.md").write_text("# Web\n- [ ] Task\n")
+    other = packaged / "audit" / "review.md"
+    other.parent.mkdir(parents=True)
+    other.write_text("# Review\n- [x] Check\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    checklists.open_copy(other, "audit/review", "packaged", "web", state)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), checklist=["web"],
+                     reset=True)
+    interpreter.do_checklist_open(args)
+
+    captured = capsys.readouterr()
+    assert "Opened web [packaged]" in captured.out
+    sidecar = json.loads((state / "web" / "copy.json").read_text())
+    assert sidecar["checklist"] == "web"
+
+
+def test_print_error_renders_multiline_reports(capsys):
+    cli_module.print_error("first line\nsecond line")
+
+    err = capsys.readouterr().err
+    assert err.startswith("Error: first line\n")
+    assert "second line" in err
+
+
 def test_checklist_list_prints_condensed_entries(tmp_path, monkeypatch,
                                                  capsys):
     packaged = tmp_path / "packaged"

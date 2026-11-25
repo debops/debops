@@ -1098,7 +1098,9 @@ Commands:
                 usage='debops checklist open [<args>] [<id>] <checklist>')
         parser.add_argument('checklist', nargs='+',
                             help='checklist path, optionally preceded by '
-                                 'a copy id')
+                                 'a copy id; a lone open copy id with '
+                                 '--reset re-opens the copy from its '
+                                 'recorded checklist')
         group = parser.add_mutually_exclusive_group()
         group.add_argument('-r', '--reset', dest='reset', default=False,
                            help='discard the current state of the '
