@@ -2,7 +2,7 @@
 # Copyright (C) 2020-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from . import print_error
+from . import print_error, print_notice
 from ..core.exceptions import (NoDefaultViewException, InventorySpecError,
                                OptionNotFoundError, OptionRefused,
                                ViewNotFoundError)
@@ -30,6 +30,7 @@ from xdg.BaseDirectory import xdg_config_home
 import logging
 import getpass
 import shlex
+from pathlib import Path
 import subprocess
 import sys
 import tempfile
@@ -68,6 +69,77 @@ def _inspect_mode(args):
     if args.host:
         return 'host'
     return None
+
+
+def _tree_glyphs(encoding):
+    """The tree connectors for the terminal encoding.
+
+    Unicode box-drawing when the output is UTF-8; the ASCII fallback
+    keeps the tree readable over legacy ssh locales.
+    """
+    if 'utf' in encoding.lower():
+        return {'branch': '├── ', 'leaf': '└── ', 'column': '│',
+                'pass': '│   ', 'indent': '    '}
+    return {'branch': '|-- ', 'leaf': '`-- ', 'column': '|',
+            'pass': '|   ', 'indent': '    '}
+
+
+def _shorten_path(path, start=8, end=8):
+    """The head and tail of a long path with the middle elided.
+
+    Paths longer than the eight-character head, the ellipsis and the
+    eight-character tail collapse to exactly that form; shorter paths
+    pass through unchanged. For the compact roster, where the full
+    path remains discoverable through `list -v`.
+    """
+    if len(path) <= start + 3 + end:
+        return path
+    return path[:start] + '...' + path[-end:]
+
+
+def _columns(rows):
+    """Pad every cell of a table to its column's widest entry.
+
+    Returns the rows as lists of padded cells; the caller joins them
+    with the separator of its choosing and strips the trailing
+    padding from the last column.
+    """
+    widths = [max(len(row[column]) for row in rows)
+              for column in range(len(rows[0]))]
+    return [[cell.ljust(widths[column])
+             for column, cell in enumerate(row)] for row in rows]
+
+
+def _copy_tree_lines(copies, progress, glyphs):
+    """Render open copies as a component tree, one line per node.
+
+    Copy ids are paths: `web1/alpha` nests as `web1` over `alpha`, so
+    a fleet of copies groups by host. A node whose id is itself a
+    copy carries its progress above its children.
+    """
+    root = {}
+    for copy in copies:
+        node = root
+        for part in (part for part in copy.copy_id.split('/') if part):
+            node = node.setdefault(part, {})
+        node[''] = copy
+    lines = []
+
+    def walk(node, prefix):
+        keys = sorted(key for key in node if key != '')
+        for index, key in enumerate(keys):
+            last = index == len(keys) - 1
+            connector = glyphs['leaf'] if last else glyphs['branch']
+            line = prefix + connector + key
+            sub = node[key]
+            if '' in sub:
+                line += ' ({})'.format(progress[sub[''].copy_id])
+            lines.append(line)
+            walk(sub, prefix + (glyphs['indent'] if last
+                                else glyphs['pass']))
+
+    walk(root, '')
+    return lines
 
 
 class Interpreter(object):
@@ -438,32 +510,79 @@ class Interpreter(object):
 
         state_dir = checklists.checklist_state_dir(args.project_dir)
         open_copies = checklists.find_open_copies(state_dir)
+        glyphs = _tree_glyphs(sys.stdout.encoding or '')
 
         if args.active:
+            rows = []
             for copy in open_copies:
                 parsed = checklists.parse_checklist(copy.path.read_text())
-                print('{} {} [{}] {} (opened {})'.format(
-                    copy.copy_id, copy.checklist, copy.origin,
-                    parsed.progress, copy.opened.date().isoformat()))
+                implicit = copy.copy_id == copy.checklist
+                row = [copy.checklist if implicit else copy.copy_id,
+                       '' if implicit else _shorten_path(copy.checklist),
+                       '({})'.format(copy.opened.date().isoformat()),
+                       parsed.progress]
+                if args.verbose >= 2:
+                    row.append('[{}]'.format(copy.origin))
+                rows.append(row)
+            if rows:
+                for row in _columns(rows):
+                    print('    '.join(row).rstrip())
             return
 
         layers = checklists.checklist_layers(
             project.path if project is not None else None)
-        for name, path, origin in checklists.list_checklists(layers):
-            parsed = checklists.parse_checklist(path.read_text())
-            active = []
-            for copy in open_copies:
-                if copy.checklist != name:
-                    continue
+        entries = checklists.list_checklists(layers)
+
+        if args.verbose >= 1:
+            rows = []
+            blocks = []
+            for name, path, origin in entries:
+                parsed = checklists.parse_checklist(path.read_text())
+                copies = [copy for copy in open_copies
+                          if copy.checklist == name]
+                progress = {}
+                for copy in copies:
+                    copy_parsed = checklists.parse_checklist(
+                        copy.path.read_text())
+                    progress[copy.copy_id] = copy_parsed.progress
+                path_cell = name
+                implicit = [copy for copy in copies
+                            if copy.copy_id == name]
+                if implicit:
+                    path_cell += ' ({})'.format(progress[name])
+                origin_cell = '[{}]'.format(origin) \
+                    if args.verbose >= 2 else ''
+                rows.append([path_cell, parsed.title or name,
+                             origin_cell])
+                named = [copy for copy in copies
+                         if copy.copy_id != name]
+                blocks.append(
+                    _copy_tree_lines(named, progress, glyphs))
+            for (path_cell, title, origin_cell), tree_lines in zip(
+                    _columns(rows), blocks):
+                tail = '{} {}'.format(title, origin_cell).rstrip()
+                print('{} {} {}'.format(path_cell, glyphs['column'],
+                                        tail))
+                for tree_line in tree_lines:
+                    print(tree_line)
+            return
+
+        for name, path, origin in entries:
+            copies = [copy for copy in open_copies
+                      if copy.checklist == name]
+            progress = {}
+            for copy in copies:
                 copy_parsed = checklists.parse_checklist(
                     copy.path.read_text())
-                label = '{}: '.format(copy.copy_id) \
-                    if copy.copy_id != name else ''
-                active.append('{}{}'.format(label, copy_parsed.progress))
-            suffix = ' -- open ({})'.format(', '.join(active)) \
-                if active else ''
-            print('{} [{}] {}{}'.format(name, origin,
-                                        parsed.title or name, suffix))
+                progress[copy.copy_id] = copy_parsed.progress
+            path_cell = name
+            implicit = [copy for copy in copies if copy.copy_id == name]
+            if implicit:
+                path_cell += ' ({})'.format(progress[name])
+            print(path_cell)
+            named = [copy for copy in copies if copy.copy_id != name]
+            for tree_line in _copy_tree_lines(named, progress, glyphs):
+                print(tree_line)
 
     def do_checklist_open(self, args):
         project = self._project(args)
@@ -518,14 +637,11 @@ class Interpreter(object):
         if args.edit_message:
             message = self._edit_text(message) or message
 
-        vault_path = checklists.vault_record_path(
-            project.path / 'vault', copy.checklist, copy.copy_id,
-            copy.opened)
         write_file(str(vault_path), copy.path.read_text(), overwrite=True,
                    project=str(project.path))
         if not os.path.exists(os.path.join(project.path, '.git')):
-            print('Warning: the project directory is not a git '
-                  'repository, the vault record is not committed')
+            print_notice('The project directory is not a git repository, '
+                         'the vault record is not committed')
         project.commit(interactive=False, message=message,
                        paths=[str(vault_path)])
         if args.close:
@@ -548,18 +664,27 @@ class Interpreter(object):
     def do_checklist_close(self, args):
         project = self._project(args)
         state_dir = checklists.checklist_state_dir(project.path)
-        try:
-            copy = checklists.resolve_copy(args.copy, state_dir)
-        except checklists.ChecklistError as errmsg:
-            print_error(errmsg)
-            sys.exit(1)
-        parsed = checklists.parse_checklist(copy.path.read_text())
-        if parsed.has_open_items and not args.force:
-            print_error('The copy still has open items; use --force to '
-                        'discard it anyway')
-            sys.exit(1)
-        checklists.close_copy(state_dir, copy.copy_id)
-        print('Closed {}'.format(copy.copy_id))
+        if args.all:
+            copies = checklists.find_open_copies(state_dir)
+        else:
+            try:
+                copies = [checklists.resolve_copy(args.copy, state_dir)]
+            except checklists.ChecklistError as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
+        skipped = []
+        for copy in copies:
+            parsed = checklists.parse_checklist(copy.path.read_text())
+            if parsed.has_open_items and not args.force:
+                skipped.append(copy)
+                continue
+            checklists.close_copy(state_dir, copy.copy_id)
+            print('Closed {}'.format(copy.copy_id))
+        if skipped:
+            print_notice('Still open (incomplete): {}'.format(
+                ', '.join(copy.copy_id for copy in skipped)))
+            if not args.all:
+                sys.exit(1)
 
     def do_tofu(self, args):
         if not args.tofu_args and not args.help:

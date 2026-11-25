@@ -1081,7 +1081,7 @@ Commands:
         parser.add_argument('-a', '--active', action='store_true',
                             help='list the open copies instead of the '
                                  'discovered checklists')
-        parser.add_argument('-v', '--verbose', action="count",
+        parser.add_argument('-v', '--verbose', action='count', default=0,
                             help='increase output verbosity '
                                  '(e.g., -vv is more than -v)')
         parser.add_argument('project_dir', type=str, nargs='?',

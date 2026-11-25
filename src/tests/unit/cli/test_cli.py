@@ -166,6 +166,11 @@ def test_init_dispatches_the_checklist_commands(monkeypatch, command):
     command_method.assert_called_once_with(args)
 
 
+def test_checklist_list_defaults_the_verbose_to_zero():
+    parsed = cli_module.Subcommands(["debops", "checklist", "list"])
+    assert parsed.args.verbose == 0
+
+
 def test_checklist_open_takes_a_copy_id_and_a_checklist():
     parsed = cli_module.Subcommands(["debops", "checklist", "open",
                                      "web", "audit/review"])
@@ -210,7 +215,8 @@ def test_checklist_open_copies_into_the_state(tmp_path, state_home,
     assert "as copy" not in capsys.readouterr().out
 
 
-def test_checklist_list_prints_the_entries(tmp_path, monkeypatch, capsys):
+def test_checklist_list_prints_condensed_entries(tmp_path, monkeypatch,
+                                                 capsys):
     packaged = tmp_path / "packaged"
     source = packaged / "checklists" / "audit" / "review.md"
     source.parent.mkdir(parents=True)
@@ -218,11 +224,42 @@ def test_checklist_list_prints_the_entries(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
                         str(packaged))
     interpreter = make_interpreter()
-    args = make_args(project_dir=str(tmp_path), active=False)
+    args = make_args(project_dir=str(tmp_path), active=False, verbose=0)
     interpreter.do_checklist_list(args)
 
-    output = capsys.readouterr().out
-    assert "audit/review [packaged] Review" in output
+    assert capsys.readouterr().out == "audit/review\n"
+
+
+def test_checklist_list_verbose_adds_the_title_column(tmp_path,
+                                                      monkeypatch, capsys):
+    packaged = tmp_path / "packaged"
+    source = packaged / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text('---\ntitle: "Review"\n---\n# Review\n- [ ] Check\n')
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(packaged))
+    interpreter = make_interpreter()
+    args = make_args(project_dir=str(tmp_path), active=False, verbose=1)
+    interpreter.do_checklist_list(args)
+
+    assert capsys.readouterr().out == (
+        "audit/review \u2502 Review\n")
+
+
+def test_checklist_list_very_verbose_adds_the_origin(tmp_path,
+                                                     monkeypatch, capsys):
+    packaged = tmp_path / "packaged"
+    source = packaged / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text('---\ntitle: "Review"\n---\n# Review\n- [ ] Check\n')
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(packaged))
+    interpreter = make_interpreter()
+    args = make_args(project_dir=str(tmp_path), active=False, verbose=2)
+    interpreter.do_checklist_list(args)
+
+    assert capsys.readouterr().out == (
+        "audit/review \u2502 Review [packaged]\n")
 
 
 def test_checklist_list_marks_the_open_copies(tmp_path, state_home,
@@ -237,11 +274,96 @@ def test_checklist_list_marks_the_open_copies(tmp_path, state_home,
     monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
                         str(tmp_path / "packaged"))
     interpreter = make_interpreter()
-    args = make_args(project_dir=str(project), active=False)
+    args = make_args(project_dir=str(project), active=False, verbose=0)
+    interpreter.do_checklist_list(args)
+
+    assert capsys.readouterr().out == (
+        "audit/review\n"
+        "\u2514\u2500\u2500 web (1/2 done)\n")
+
+
+def test_checklist_list_nests_the_copy_ids(tmp_path, state_home,
+                                           monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n")
+    for copy_id in ("cluster3/host1", "web1/alpha", "web1/beta"):
+        checklists.open_copy(source, "audit/review", "packaged", copy_id,
+                             state)
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    interpreter = make_interpreter()
+    args = make_args(project_dir=str(project), active=False, verbose=0)
+    interpreter.do_checklist_list(args)
+
+    assert capsys.readouterr().out == (
+        "audit/review\n"
+        "\u251c\u2500\u2500 cluster3\n"
+        "\u2502   \u2514\u2500\u2500 host1 (1/1 done)\n"
+        "\u2514\u2500\u2500 web1\n"
+        "    \u251c\u2500\u2500 alpha (1/1 done)\n"
+        "    \u2514\u2500\u2500 beta (1/1 done)\n")
+
+
+def test_checklist_tree_falls_back_to_ascii():
+    glyphs = cli_module._tree_glyphs("ascii")
+    assert glyphs == {"branch": "|-- ", "column": "|", "leaf": "`-- ",
+                      "pass": "|   ", "indent": "    "}
+
+
+def test_checklist_list_active_shortens_long_paths(tmp_path, state_home,
+                                                   monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / ("debian/"
+                                                     "dist-upgrade/"
+                                                     "bookworm-to-trixie.md")
+    source.parent.mkdir(parents=True)
+    source.write_text("# Upgrade\n- [ ] Task\n")
+    checklists.open_copy(source, "debian/dist-upgrade/bookworm-to-trixie",
+                         "packaged", "web", state)
+    interpreter = make_interpreter()
+    args = make_args(project_dir=str(project), active=True, verbose=0)
     interpreter.do_checklist_list(args)
 
     output = capsys.readouterr().out
-    assert output.endswith(" -- open (web: 1/2 done)\n")
+    assert "debian/d...o-trixie" in output
+    assert "(2026-11-25)" in output
+    assert "0/1 done" in output
+    assert "bookworm-to-trixie" not in output.replace(
+        "debian/d...o-trixie", "")
+
+
+def test_checklist_list_active_shows_implicit_copies_in_full(
+        tmp_path, state_home, monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / ("debian/"
+                                                     "dist-upgrade/"
+                                                     "bookworm-to-trixie.md")
+    source.parent.mkdir(parents=True)
+    source.write_text("# Upgrade\n- [ ] Task\n")
+    implicit_id = "debian/dist-upgrade/bookworm-to-trixie"
+    checklists.open_copy(source, implicit_id, "packaged", implicit_id,
+                         state)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), copy=None, force=False,
+                     all=False)
+    args.active = True
+    args.verbose = 0
+    interpreter.do_checklist_list(args)
+
+    output = capsys.readouterr().out
+    assert "debian/dist-upgrade/bookworm-to-trixie" in output
+    assert "debian/d...o-trixie" not in output
 
 
 def test_checklist_list_active_shows_the_copies(tmp_path, state_home,
@@ -249,21 +371,39 @@ def test_checklist_list_active_shows_the_copies(tmp_path, state_home,
     project = tmp_path / "project"
     (project / ".debops").mkdir(parents=True)
     state = checklists.checklist_state_dir(project)
-    source = tmp_path / "packaged" / "audit" / "review.md"
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
     source.parent.mkdir(parents=True)
     source.write_text("# Review\n- [x] Check\n- [ ] Wait\n")
     checklists.open_copy(source, "audit/review", "packaged", "web", state)
     interpreter = make_interpreter()
-    args = make_args(project_dir=str(project), active=True)
+    args = make_args(project_dir=str(project), active=True, verbose=0)
     interpreter.do_checklist_list(args)
 
     output = capsys.readouterr().out
-    assert output.startswith("web audit/review [packaged] ")
-    assert "1/2 done" in output
+    assert output == (
+        "web    audit/review    (2026-11-25)    1/2 done\n")
+
+
+def test_checklist_list_active_very_verbose_adds_the_origin(
+        tmp_path, state_home, monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    interpreter = make_interpreter()
+    args = make_args(project_dir=str(project), active=True, verbose=2)
+    interpreter.do_checklist_list(args)
+
+    output = capsys.readouterr().out
+    assert output == (
+        "web    audit/review    (2026-11-25)    1/1 done    [packaged]\n")
 
 
 def test_checklist_commit_records_the_vault_copy(tmp_path, state_home,
-                                                 monkeypatch):
+                                                 monkeypatch, capsys):
     project = tmp_path / "project"
     (project / ".debops").mkdir(parents=True)
     state = checklists.checklist_state_dir(project)
@@ -273,20 +413,126 @@ def test_checklist_commit_records_the_vault_copy(tmp_path, state_home,
     checklists.open_copy(source, "audit/review", "packaged", "web", state)
 
     interpreter = make_interpreter()
-    project_stub = SimpleNamespace(path=project, commit=mock.Mock())
+    # The real ProjectDir stores the path as a string; the stub must
+    # match, or the executor's Path arithmetic is tested against a
+    # fiction
+    project_stub = SimpleNamespace(path=str(project), commit=mock.Mock())
     monkeypatch.setattr(cli_module, "ProjectDir",
                         mock.Mock(return_value=project_stub))
     args = make_args(project_dir=str(project), copy="web", close=False,
                      edit_message=False)
     interpreter.do_checklist_commit(args)
 
+    captured = capsys.readouterr()
     records = list((project / "vault" / "checklists" / "audit" / "review" /
                     "web").glob("*.md"))
     assert len(records) == 1
+    assert "not a git repository" in captured.err
     call = project_stub.commit.call_args
     assert call.kwargs["message"].startswith(
         "checklist: web audit/review (1/2 done")
     assert call.kwargs["paths"] == [str(records[0])]
+
+
+def test_checklist_list_active_without_copies(state_home, tmp_path,
+                                              capsys):
+    interpreter = make_interpreter()
+    args = make_args(project_dir=str(tmp_path), active=True, verbose=0)
+    interpreter.do_checklist_list(args)
+
+    assert capsys.readouterr().out == ""
+
+
+def test_checklist_list_active_very_verbose_adds_the_origin(
+        tmp_path, state_home, monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    interpreter = make_interpreter()
+    args = make_args(project_dir=str(project), active=True, verbose=2)
+    interpreter.do_checklist_list(args)
+
+    output = capsys.readouterr().out
+    assert output == (
+        "web    audit/review    (2026-11-25)    1/1 done    [packaged]\n")
+
+
+def test_checklist_commit_records_the_vault_copy(tmp_path, state_home,
+                                                 monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n- [ ] Wait\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+
+    interpreter = make_interpreter()
+    # The real ProjectDir stores the path as a string; the stub must
+    # match, or the executor's Path arithmetic is tested against a
+    # fiction
+    project_stub = SimpleNamespace(path=str(project), commit=mock.Mock())
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project_stub))
+    args = make_args(project_dir=str(project), copy="web", close=False,
+                     edit_message=False)
+    interpreter.do_checklist_commit(args)
+
+    captured = capsys.readouterr()
+    records = list((project / "vault" / "checklists" / "audit" / "review" /
+                    "web").glob("*.md"))
+    assert len(records) == 1
+    assert "not a git repository" in captured.err
+    call = project_stub.commit.call_args
+    assert call.kwargs["message"].startswith(
+        "checklist: web audit/review (1/2 done")
+    assert call.kwargs["paths"] == [str(records[0])]
+
+
+def test_checklist_list_active_without_copies(state_home, tmp_path,
+                                              capsys):
+    interpreter = make_interpreter()
+    args = make_args(project_dir=str(tmp_path), active=True, verbose=0)
+    interpreter.do_checklist_list(args)
+
+    assert capsys.readouterr().out == ""
+
+
+def test_checklist_commit_twice_reports_no_changes(tmp_path, state_home,
+                                                   monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n- [ ] Wait\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+
+    interpreter = make_interpreter()
+    project_stub = SimpleNamespace(path=str(project), commit=mock.Mock())
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project_stub))
+    args = make_args(project_dir=str(project), copy="web", close=False,
+                     edit_message=False)
+    interpreter.do_checklist_commit(args)
+    interpreter.do_checklist_commit(args)
+
+    captured = capsys.readouterr()
+    assert captured.out.count("Committed") == 1
+    assert "No changes since the last commit" in captured.out
+    assert project_stub.commit.call_count == 1
+
+    args_close = make_args(project_dir=str(project), copy="web",
+                           close=True, edit_message=False)
+    interpreter.do_checklist_commit(args_close)
+    captured = capsys.readouterr()
+    assert "No changes since the last commit" in captured.out
+    assert not (state / "web").exists()
+    assert project_stub.commit.call_count == 1
 
 
 def test_checklist_close_refuses_open_items(tmp_path, state_home,
@@ -330,6 +576,97 @@ def test_checklist_close_force_discards(tmp_path, state_home, monkeypatch,
 
     assert "Closed web" in capsys.readouterr().out
     assert not (state / "web").exists()
+
+
+def test_checklist_close_all_closes_completed_copies(tmp_path, state_home,
+                                                     monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    complete = tmp_path / "packaged" / "checklists" / "done.md"
+    complete.parent.mkdir(parents=True)
+    complete.write_text("# Done\n- [x] Check\n")
+    pending = tmp_path / "packaged" / "checklists" / "pending.md"
+    pending.write_text("# Pending\n- [ ] Check\n")
+    checklists.open_copy(complete, "done", "packaged", "web", state)
+    checklists.open_copy(pending, "pending", "packaged", "db", state)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), copy=None, force=False,
+                     all=True)
+    interpreter.do_checklist_close(args)
+
+    captured = capsys.readouterr()
+    assert "Closed web" in captured.out
+    assert "Closed db" not in captured.out
+    assert "Still open (incomplete): db" in captured.err
+    assert "Error:" not in captured.err
+    assert (state / "db").exists()
+
+
+def test_checklist_close_all_force_closes_everything(tmp_path, state_home,
+                                                     monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    complete = tmp_path / "packaged" / "checklists" / "done.md"
+    complete.parent.mkdir(parents=True)
+    complete.write_text("# Done\n- [x] Check\n")
+    pending = tmp_path / "packaged" / "checklists" / "pending.md"
+    pending.write_text("# Pending\n- [ ] Check\n")
+    checklists.open_copy(complete, "done", "packaged", "web", state)
+    checklists.open_copy(pending, "pending", "packaged", "db", state)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), copy=None, force=True,
+                     all=True)
+    interpreter.do_checklist_close(args)
+
+    output = capsys.readouterr().out
+    assert "Closed web" in output
+    assert "Closed db" in output
+    assert not state.exists()
+
+
+def test_checklist_close_all_without_open_copies_is_silent(
+        tmp_path, state_home, monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), copy=None, force=False,
+                     all=True)
+    interpreter.do_checklist_close(args)
+
+    assert capsys.readouterr().out == ""
+
+
+def test_checklist_close_rejects_copy_with_all(capsys):
+    with pytest.raises(SystemExit) as raised:
+        cli_module.Subcommands(["debops", "checklist", "close",
+                                "web", "--all"])
+    assert raised.value.code == 2
+    assert "not both" in capsys.readouterr().err
+
+
+def test_checklist_close_needs_a_copy_or_all(capsys):
+    with pytest.raises(SystemExit) as raised:
+        cli_module.Subcommands(["debops", "checklist", "close"])
+    assert raised.value.code == 2
+    assert "needs a copy id" in capsys.readouterr().err
+
+
+def test_checklist_close_force_shorthand_parses():
+    parsed = cli_module.Subcommands(["debops", "checklist", "close",
+                                     "-f", "web"])
+    assert parsed.args.force is True
+    assert parsed.args.all is False
 
 
 def test_init_ignores_unknown_project_commands(monkeypatch):
