@@ -395,13 +395,15 @@ def vault_record_path(
 ) -> Path:
     """The vault record path for one committed copy.
 
-    Records group by checklist; the copy id directory appears only
-    for named copies, where the id differs from the checklist path.
-    The filename is the open date -- the sidecar's ``opened``, stable
-    for the copy's whole life -- so same-day re-commits overwrite the
-    copy's own record and the history lives in git.
+    *vault_dir* is the checklist base directory -- the resolved
+    `checklist.commit_path`. Records group by checklist; the copy id
+    directory appears only for named copies, where the id differs
+    from the checklist path. The filename is the open date -- the
+    sidecar's ``opened``, stable for the copy's whole life -- so
+    same-day re-commits overwrite the copy's own record and the
+    history lives in git.
     """
-    record = Path(vault_dir) / 'checklists' / strip_md(checklist)
+    record = Path(vault_dir) / strip_md(checklist)
     if copy_id != strip_md(checklist):
         record /= copy_id
     return record / f"{opened.date().isoformat()}.md"

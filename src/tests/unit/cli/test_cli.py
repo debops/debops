@@ -32,6 +32,10 @@ def make_interpreter(config=None):
     interpreter.args = None
     interpreter.config = (config if config is not None
                           else mock.Mock())
+    if config is None:
+        # The default the shipped configuration carries; the commit
+        # executor resolves the vault directory through it
+        interpreter.config.get.return_value = 'vault/checklists'
     interpreter.parsed_args = None
     interpreter.cwd = "/shell/cwd"
     return interpreter

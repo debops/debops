@@ -630,8 +630,9 @@ class Interpreter(object):
             sys.exit(1)
         parsed = checklists.parse_checklist(copy.path.read_text())
 
+        vault_base = self.config.get('checklist.commit_path')
         vault_path = checklists.vault_record_path(
-            Path(project.path) / 'vault', copy.checklist, copy.copy_id,
+            Path(project.path) / vault_base, copy.checklist, copy.copy_id,
             copy.opened)
         if vault_path.exists() and \
                 vault_path.read_text() == copy.path.read_text():

@@ -494,7 +494,7 @@ def test_vault_record_path_groups_by_checklist(tmp_path):
     opened = datetime(2026, 11, 10, 23, 50, tzinfo=timezone.utc)
     implicit = checklists.vault_record_path(
         tmp_path, "system/host-reboot", "system/host-reboot", opened)
-    assert implicit == (tmp_path / "checklists" / "system" /
+    assert implicit == (tmp_path / "system" /
                         "host-reboot" / "2026-11-10.md")
 
 
@@ -502,7 +502,7 @@ def test_vault_record_path_nests_named_copies(tmp_path):
     opened = datetime(2026, 5, 11, 9, 0, tzinfo=timezone.utc)
     named = checklists.vault_record_path(
         tmp_path, "audit/periodic-security-review", "review", opened)
-    assert named == (tmp_path / "checklists" / "audit" /
+    assert named == (tmp_path / "audit" /
                      "periodic-security-review" / "review" /
                      "2026-05-11.md")
 
