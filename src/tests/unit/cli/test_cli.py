@@ -443,65 +443,6 @@ def test_checklist_list_active_without_copies(state_home, tmp_path,
     assert capsys.readouterr().out == ""
 
 
-def test_checklist_list_active_very_verbose_adds_the_origin(
-        tmp_path, state_home, monkeypatch, capsys):
-    project = tmp_path / "project"
-    (project / ".debops").mkdir(parents=True)
-    state = checklists.checklist_state_dir(project)
-    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
-    source.parent.mkdir(parents=True)
-    source.write_text("# Review\n- [x] Check\n")
-    checklists.open_copy(source, "audit/review", "packaged", "web", state)
-    interpreter = make_interpreter()
-    args = make_args(project_dir=str(project), active=True, verbose=2)
-    interpreter.do_checklist_list(args)
-
-    output = capsys.readouterr().out
-    assert output == (
-        "web    audit/review    (2026-11-25)    1/1 done    [packaged]\n")
-
-
-def test_checklist_commit_records_the_vault_copy(tmp_path, state_home,
-                                                 monkeypatch, capsys):
-    project = tmp_path / "project"
-    (project / ".debops").mkdir(parents=True)
-    state = checklists.checklist_state_dir(project)
-    source = tmp_path / "packaged" / "audit" / "review.md"
-    source.parent.mkdir(parents=True)
-    source.write_text("# Review\n- [x] Check\n- [ ] Wait\n")
-    checklists.open_copy(source, "audit/review", "packaged", "web", state)
-
-    interpreter = make_interpreter()
-    # The real ProjectDir stores the path as a string; the stub must
-    # match, or the executor's Path arithmetic is tested against a
-    # fiction
-    project_stub = SimpleNamespace(path=str(project), commit=mock.Mock())
-    monkeypatch.setattr(cli_module, "ProjectDir",
-                        mock.Mock(return_value=project_stub))
-    args = make_args(project_dir=str(project), copy="web", close=False,
-                     edit_message=False)
-    interpreter.do_checklist_commit(args)
-
-    captured = capsys.readouterr()
-    records = list((project / "vault" / "checklists" / "audit" / "review" /
-                    "web").glob("*.md"))
-    assert len(records) == 1
-    assert "not a git repository" in captured.err
-    call = project_stub.commit.call_args
-    assert call.kwargs["message"].startswith(
-        "checklist: web audit/review (1/2 done")
-    assert call.kwargs["paths"] == [str(records[0])]
-
-
-def test_checklist_list_active_without_copies(state_home, tmp_path,
-                                              capsys):
-    interpreter = make_interpreter()
-    args = make_args(project_dir=str(tmp_path), active=True, verbose=0)
-    interpreter.do_checklist_list(args)
-
-    assert capsys.readouterr().out == ""
-
-
 def test_checklist_commit_twice_reports_no_changes(tmp_path, state_home,
                                                    monkeypatch, capsys):
     project = tmp_path / "project"

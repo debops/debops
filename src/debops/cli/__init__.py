@@ -31,3 +31,19 @@ def print_error(errmsg):
     if debops_log.handlers:
         debops_log.error(str(errmsg), extra={'allow': 'syslog'})
     print(wrap_message('Error: ' + str(errmsg)), file=sys.stderr)
+
+
+def print_notice(message):
+    """Print a notice line to standard error.
+
+    The non-failure sibling of ``print_error``: reports that deserve
+    the attention channel without claiming error severity -- the
+    batch-close report of copies left open, for example. The terminal
+    output is wrapped to the terminal width; the journal record keeps
+    its single-line form and is skipped when the logging subsystem is
+    not wired up.
+    """
+    debops_log = logging.getLogger('debops')
+    if debops_log.handlers:
+        debops_log.info(str(message), extra={'allow': 'syslog'})
+    print(wrap_message(str(message)), file=sys.stderr)

@@ -630,6 +630,16 @@ class Interpreter(object):
             sys.exit(1)
         parsed = checklists.parse_checklist(copy.path.read_text())
 
+        vault_path = checklists.vault_record_path(
+            Path(project.path) / 'vault', copy.checklist, copy.copy_id,
+            copy.opened)
+        if vault_path.exists() and \
+                vault_path.read_text() == copy.path.read_text():
+            print('No changes since the last commit')
+            if args.close:
+                checklists.close_copy(state_dir, copy.copy_id)
+            return
+
         message = 'checklist: {}{} ({})'.format(
             '{} '.format(copy.copy_id)
             if copy.copy_id != copy.checklist else '',
