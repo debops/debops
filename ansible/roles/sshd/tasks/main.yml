@@ -178,7 +178,7 @@
   loop: '{{ q("flattened", sshd__known_hosts
                            + sshd__group_known_hosts
                            + sshd__host_known_hosts) }}'
-  when: item is defined and item
+  when: item is defined and item is truthy
   register: sshd__register_known_hosts
   changed_when: False
   failed_when: False
