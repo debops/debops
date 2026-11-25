@@ -1132,12 +1132,21 @@ Commands:
     def do_checklist_close(self):
         parser = _argument_parser(
                 parents=[self.global_parser],
-                usage='debops checklist close [<args>] <copy>')
-        parser.add_argument('copy', help='copy id or checklist path')
-        parser.add_argument('--force', action='store_true',
+                usage='debops checklist close [<args>] [<copy>]')
+        parser.add_argument('copy', nargs='?',
+                            help='copy id or checklist path')
+        parser.add_argument('-f', '--force', action='store_true',
                             help='discard the copy even when items are '
                                  'still open')
+        parser.add_argument('-A', '--all', action='store_true',
+                            help='close every open copy: the completed '
+                                 'ones normally, the incomplete ones '
+                                 'only together with --force')
         self.args = parser.parse_args(self.args[3:])
+        if self.args.all and self.args.copy:
+            parser.error('close takes a copy or --all, not both')
+        if not self.args.all and self.args.copy is None:
+            parser.error('close needs a copy id or --all')
 
     def do_ssh(self):
         # The first token selects the subcommand; anything else -- an

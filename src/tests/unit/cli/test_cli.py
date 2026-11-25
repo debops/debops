@@ -495,7 +495,7 @@ def test_checklist_close_refuses_open_items(tmp_path, state_home,
     project = tmp_path / "project"
     (project / ".debops").mkdir(parents=True)
     state = checklists.checklist_state_dir(project)
-    source = tmp_path / "packaged" / "audit" / "review.md"
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
     source.parent.mkdir(parents=True)
     source.write_text("# Review\n- [ ] Check\n")
     checklists.open_copy(source, "audit/review", "packaged", "web", state)
@@ -503,13 +503,14 @@ def test_checklist_close_refuses_open_items(tmp_path, state_home,
     monkeypatch.setattr(cli_module, "ProjectDir",
                         mock.Mock(return_value=SimpleNamespace(
                             path=project)))
-    args = make_args(project_dir=str(project), copy="web", force=False)
+    args = make_args(project_dir=str(project), copy="web", force=False,
+                     all=False)
 
     with pytest.raises(SystemExit) as raised:
         interpreter.do_checklist_close(args)
 
     assert raised.value.code == 1
-    assert "open items" in capsys.readouterr().err
+    assert "Still open" in capsys.readouterr().err
     assert (state / "web").exists()
 
 
@@ -518,7 +519,7 @@ def test_checklist_close_force_discards(tmp_path, state_home, monkeypatch,
     project = tmp_path / "project"
     (project / ".debops").mkdir(parents=True)
     state = checklists.checklist_state_dir(project)
-    source = tmp_path / "packaged" / "audit" / "review.md"
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
     source.parent.mkdir(parents=True)
     source.write_text("# Review\n- [ ] Check\n")
     checklists.open_copy(source, "audit/review", "packaged", "web", state)
@@ -526,7 +527,8 @@ def test_checklist_close_force_discards(tmp_path, state_home, monkeypatch,
     monkeypatch.setattr(cli_module, "ProjectDir",
                         mock.Mock(return_value=SimpleNamespace(
                             path=project)))
-    args = make_args(project_dir=str(project), copy="web", force=True)
+    args = make_args(project_dir=str(project), copy="web", force=True,
+                     all=False)
     interpreter.do_checklist_close(args)
 
     assert "Closed web" in capsys.readouterr().out
