@@ -386,6 +386,108 @@ def test_print_error_renders_multiline_reports(capsys):
     assert "second line" in err
 
 
+def _open_single_copy(tmp_path, state_home):
+    """One project with one open copy 'web' of audit/review."""
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    return project, state
+
+
+def test_checklist_commit_defaults_to_the_single_open_copy(
+        tmp_path, state_home, monkeypatch):
+    project, state = _open_single_copy(tmp_path, state_home)
+    interpreter = make_interpreter()
+    project_stub = SimpleNamespace(path=str(project), commit=mock.Mock())
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project_stub))
+    args = make_args(project_dir=str(project), copy=None, close=False,
+                     edit=False)
+    interpreter.do_checklist_commit(args)
+
+    records = list((project / "vault" / "checklists" / "audit" / "review" /
+                    "_copies" / "web").glob("*.md"))
+    assert len(records) == 1
+
+
+def test_checklist_edit_defaults_to_the_single_open_copy(
+        tmp_path, state_home, monkeypatch, capsys):
+    project, state = _open_single_copy(tmp_path, state_home)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    run = mock.Mock()
+    monkeypatch.setattr(cli_module.subprocess, "run", run)
+    args = make_args(project_dir=str(project), copy=None)
+    interpreter.do_checklist_edit(args)
+
+    assert run.call_args.args[0][-1] == \
+        str(state / "web" / "checklist.md")
+    assert "web: 1/1 done" in capsys.readouterr().out
+
+
+def test_checklist_close_defaults_to_the_single_open_copy(
+        tmp_path, state_home, monkeypatch, capsys):
+    project, state = _open_single_copy(tmp_path, state_home)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project), copy=None, force=False,
+                     all=False)
+    interpreter.do_checklist_close(args)
+
+    assert "Closed web" in capsys.readouterr().out
+    assert not (state / "web").exists()
+
+
+def test_checklist_commands_refuse_an_ambiguous_default(
+        tmp_path, state_home, monkeypatch, capsys):
+    project, state = _open_single_copy(tmp_path, state_home)
+    other = tmp_path / "packaged" / "checklists" / "audit" / "other.md"
+    other.write_text("# Other\n- [x] Check\n")
+    checklists.open_copy(other, "audit/other", "packaged", "db", state)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    for operation, kwargs in (("commit", dict(close=False, edit=False)),
+                              ("edit", dict()),
+                              ("close", dict(force=False, all=False))):
+        args = make_args(project_dir=str(project), copy=None, **kwargs)
+        method = getattr(interpreter,
+                         'do_checklist_{}'.format(operation))
+        with pytest.raises(SystemExit) as raised:
+            method(args)
+
+        assert raised.value.code == 1, operation
+        assert "Several open copies: db, web; name one" in \
+            capsys.readouterr().err, operation
+
+
+def test_checklist_commit_refuses_an_empty_default(tmp_path, state_home,
+                                                   monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project), copy=None, close=False,
+                     edit=False)
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_commit(args)
+
+    assert raised.value.code == 1
+    assert "No open copies" in capsys.readouterr().err
+
+
 def test_checklist_list_prints_condensed_entries(tmp_path, monkeypatch,
                                                  capsys):
     packaged = tmp_path / "packaged"
@@ -1278,11 +1380,22 @@ def test_checklist_close_rejects_copy_with_all(capsys):
     assert "not both" in capsys.readouterr().err
 
 
-def test_checklist_close_needs_a_copy_or_all(capsys):
+def test_checklist_close_needs_a_copy_or_all(tmp_path, state_home,
+                                             monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project), copy=None, force=False,
+                     all=False)
+
     with pytest.raises(SystemExit) as raised:
-        cli_module.Subcommands(["debops", "checklist", "close"])
-    assert raised.value.code == 2
-    assert "needs a copy id" in capsys.readouterr().err
+        interpreter.do_checklist_close(args)
+
+    assert raised.value.code == 1
+    assert "No open copies" in capsys.readouterr().err
 
 
 def test_checklist_close_force_shorthand_parses():

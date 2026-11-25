@@ -720,7 +720,7 @@ class Interpreter(object):
         project = self._project(args)
         state_dir = checklists.checklist_state_dir(project.path)
         try:
-            copy = checklists.resolve_copy(args.copy, state_dir)
+            copy = self._resolve_single_copy(args.copy, state_dir)
         except checklists.ChecklistError as errmsg:
             print_error(errmsg)
             sys.exit(1)
@@ -746,11 +746,29 @@ class Interpreter(object):
             print_notice('{}, using sensible-editor'.format(errmsg))
             return ['sensible-editor']
 
+    def _resolve_single_copy(self, copy, state_dir):
+        """The copy argument, defaulting to the only open copy.
+
+        An omitted operand resolves when exactly one copy is open;
+        none or several are an error -- with a fleet open, the
+        command needs to be told which copy it targets.
+        """
+        if copy is not None:
+            return checklists.resolve_copy(copy, state_dir)
+        copies = checklists.find_open_copies(state_dir)
+        if not copies:
+            raise checklists.ChecklistNotOpenError('No open copies')
+        if len(copies) > 1:
+            ids = ', '.join(sorted(item.copy_id for item in copies))
+            raise checklists.ChecklistAmbiguousError(
+                'Several open copies: {}; name one'.format(ids))
+        return copies[0]
+
     def do_checklist_commit(self, args):
         project = self._project(args)
         state_dir = checklists.checklist_state_dir(project.path)
         try:
-            copy = checklists.resolve_copy(args.copy, state_dir)
+            copy = self._resolve_single_copy(args.copy, state_dir)
         except checklists.ChecklistError as errmsg:
             print_error(errmsg)
             sys.exit(1)
@@ -836,7 +854,7 @@ class Interpreter(object):
             copies = checklists.find_open_copies(state_dir)
         else:
             try:
-                copies = [checklists.resolve_copy(args.copy, state_dir)]
+                copies = [self._resolve_single_copy(args.copy, state_dir)]
             except checklists.ChecklistError as errmsg:
                 print_error(errmsg)
                 sys.exit(1)

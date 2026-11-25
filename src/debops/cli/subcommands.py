@@ -1118,15 +1118,19 @@ Commands:
     def do_checklist_edit(self):
         parser = _argument_parser(
                 parents=[self.global_parser],
-                usage='debops checklist edit [<args>] <copy>')
-        parser.add_argument('copy', help='copy id or checklist path')
+                usage='debops checklist edit [<args>] [<copy>]')
+        parser.add_argument('copy', nargs='?', default=None,
+                            help='copy id or checklist path; defaults '
+                                 'to the only open copy')
         self.args = parser.parse_args(self.args[3:])
 
     def do_checklist_commit(self):
         parser = _argument_parser(
                 parents=[self.global_parser],
-                usage='debops checklist commit [<args>] <copy>')
-        parser.add_argument('copy', help='copy id or checklist path')
+                usage='debops checklist commit [<args>] [<copy>]')
+        parser.add_argument('copy', nargs='?', default=None,
+                            help='copy id or checklist path; defaults '
+                                 'to the only open copy')
         parser.add_argument('-c', '--close', action='store_true',
                             help='deactivate the copy after the commit')
         parser.add_argument('-e', '--edit', action='store_true',
@@ -1138,8 +1142,9 @@ Commands:
         parser = _argument_parser(
                 parents=[self.global_parser],
                 usage='debops checklist close [<args>] [<copy>]')
-        parser.add_argument('copy', nargs='?',
-                            help='copy id or checklist path')
+        parser.add_argument('copy', nargs='?', default=None,
+                            help='copy id or checklist path; defaults '
+                                 'to the only open copy')
         parser.add_argument('-f', '--force', action='store_true',
                             help='discard the copy even when items are '
                                  'still open')
@@ -1150,8 +1155,6 @@ Commands:
         self.args = parser.parse_args(self.args[3:])
         if self.args.all and self.args.copy:
             parser.error('close takes a copy or --all, not both')
-        if not self.args.all and self.args.copy is None:
-            parser.error('close needs a copy id or --all')
 
     def do_ssh(self):
         # The first token selects the subcommand; anything else -- an
