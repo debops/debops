@@ -1762,3 +1762,130 @@ def test_project_init_notices_the_failed_hook_install(monkeypatch, caplog):
         interpreter.do_project_init(args)
 
     assert 'cyclic dependency' in caplog.text
+
+
+def test_checklist_commit_honors_the_commit_path_knob(tmp_path, state_home,
+                                                      monkeypatch):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+
+    interpreter = make_interpreter()
+    interpreter.config.get.return_value = 'records/vault'
+    project_stub = SimpleNamespace(path=str(project), commit=mock.Mock())
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project_stub))
+    args = make_args(project_dir=str(project), copy="web", close=False,
+                     edit=False)
+    interpreter.do_checklist_commit(args)
+
+    records = list((project / "records" / "vault" / "audit" /
+                    "review" / "web").glob("*.md"))
+    assert len(records) == 1
+
+
+def test_checklist_commit_refuses_vault_outside_project(
+        tmp_path, state_home, monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+
+    interpreter = make_interpreter()
+    interpreter.config.get.return_value = str(tmp_path / "elsewhere")
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project), copy="web", close=False,
+                     edit=False)
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_commit(args)
+
+    assert raised.value.code == 1
+    assert "outside of the project" in capsys.readouterr().err
+    assert not (tmp_path / "elsewhere").exists()
+
+
+def test_checklist_commit_refuses_vault_escape(tmp_path, state_home,
+                                               monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+
+    interpreter = make_interpreter()
+    interpreter.config.get.return_value = '../shared'
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project), copy="web", close=False,
+                     edit=False)
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_commit(args)
+
+    assert raised.value.code == 1
+    assert "outside of the project" in capsys.readouterr().err
+
+
+def test_checklist_commit_refuses_symlink_vault(tmp_path, state_home,
+                                                monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (project / "vault").symlink_to(outside, target_is_directory=True)
+    interpreter = make_interpreter()
+    interpreter.config.get.return_value = 'vault'
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project), copy="web", close=False,
+                     edit=False)
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_commit(args)
+
+    assert raised.value.code == 1
+    assert "outside of the project" in capsys.readouterr().err
+
+
+def test_checklist_commit_allows_vault_resolving_inside(
+        tmp_path, state_home, monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+
+    interpreter = make_interpreter()
+    interpreter.config.get.return_value = 'vault/../records'
+    project_stub = SimpleNamespace(path=str(project), commit=mock.Mock())
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project_stub))
+    args = make_args(project_dir=str(project), copy="web", close=False,
+                     edit=False)
+    interpreter.do_checklist_commit(args)
+
+    records = list((project / "records" / "audit" /
+                    "review" / "web").glob("*.md"))
+    assert len(records) == 1

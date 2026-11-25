@@ -25,7 +25,8 @@ from ..core.tofu.binary import reconcile_binaries
 from ..core.tofu.registry import view_drop_in_path, view_tofu_root
 from ..core.tofu.view import create_view, reconcile_view
 from ..core import checklists, ssh
-from ..core.utils import remove_file, unexpanduser, write_file
+from ..core.utils import (path_inside_project, remove_file,
+                          unexpanduser, write_file)
 from xdg.BaseDirectory import xdg_config_home
 import logging
 import getpass
@@ -631,9 +632,13 @@ class Interpreter(object):
         parsed = checklists.parse_checklist(copy.path.read_text())
 
         vault_base = self.config.get('checklist.commit_path')
+        vault_dir = Path(project.path) / vault_base
+        if not path_inside_project(vault_dir, project.path):
+            print_error('The vault directory resolves outside of the '
+                        'project: ' + vault_base)
+            sys.exit(1)
         vault_path = checklists.vault_record_path(
-            Path(project.path) / vault_base, copy.checklist, copy.copy_id,
-            copy.opened)
+            vault_dir, copy.checklist, copy.copy_id, copy.opened)
         if vault_path.exists() and \
                 vault_path.read_text() == copy.path.read_text():
             print('No changes since the last commit')
