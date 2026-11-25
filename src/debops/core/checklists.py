@@ -59,6 +59,12 @@ _OPEN_STATES = ("open", "blocked")
 
 _STATES = ("open", "done", "blocked", "failed", "not_applicable")
 
+# The standardized names inside one copy directory. The sidecar
+# records the actual filename, so the convention can change without
+# stranding older copies.
+_COPY_FILENAME = 'checklist.md'
+_SIDECAR_FILENAME = 'copy.json'
+
 
 @dataclass(frozen=True)
 class ChecklistItem:
@@ -206,8 +212,8 @@ def _ensure_private_dir(path: Path) -> None:
 
 
 def _has_open_files(copy_dir: Path) -> bool:
-    """The active state of a copy id: any checklist file present."""
-    return copy_dir.is_dir() and any(copy_dir.rglob('*.md'))
+    """The active state of a copy id: the working copy present."""
+    return (copy_dir / _COPY_FILENAME).is_file()
 
 
 def open_copy(
@@ -222,7 +228,8 @@ def open_copy(
 
     Returns the path of the opened checklist file. A copy id holds
     exactly one checklist: opening an occupied id refuses unless
-    *reset* discards the current state first.
+    *reset* discards the current state first. The reset removes only
+    the files the copy owns -- nested copy ids survive.
     """
     _validate_name(copy_id)
     copy_dir = Path(state_dir) / copy_id
@@ -230,17 +237,16 @@ def open_copy(
         if not reset:
             raise ChecklistAlreadyOpenError(
                 f"Copy id already open: {copy_id}")
-        shutil.rmtree(copy_dir)
-    checklist = strip_md(checklist)
-    destination = copy_dir / f"{checklist}.md"
-    _ensure_private_dir(destination.parent)
+        _discard_copy(copy_dir, state_dir)
+    destination = copy_dir / _COPY_FILENAME
+    _ensure_private_dir(copy_dir)
     shutil.copyfile(checklist_path, destination)
-    sidecar = copy_dir / 'copy.json'
-    sidecar.write_text(json.dumps({
+    (copy_dir / _SIDECAR_FILENAME).write_text(json.dumps({
         'opened': datetime.now().astimezone().isoformat(
             timespec='seconds'),
-        'checklist': checklist,
+        'checklist': strip_md(checklist),
         'origin': origin,
+        'filename': _COPY_FILENAME,
     }, indent=2) + '\n')
     return destination
 
@@ -258,42 +264,80 @@ class OpenCopy:
 
 
 def find_open_copies(state_dir: Path) -> list[OpenCopy]:
-    """Scan the state directory for open copies, ordered by id."""
+    """Scan the state directory for open copies, ordered by id.
+
+    The scan looks for the two standardized files -- the working copy
+    and its sidecar -- and each match's parent directory is exactly
+    its copy directory: the copy id is that directory's path relative
+    to the state root, slashes intact, however deep the id nests.
+    """
     state_dir = Path(state_dir)
     if not state_dir.is_dir():
         return []
+    candidates: dict[Path, None] = {}
+    for pattern in (_COPY_FILENAME, _SIDECAR_FILENAME):
+        for path in sorted(state_dir.rglob(pattern)):
+            candidates[path.parent] = None
     copies = []
-    for copy_dir in sorted(state_dir.iterdir()):
-        if not copy_dir.is_dir():
+    for copy_dir in sorted(candidates):
+        copy_id = copy_dir.relative_to(state_dir).as_posix()
+        md, data = _copy_files(copy_dir)
+        if md is None:
+            # A directory without a working copy is not an open copy
             continue
-        for md in sorted(copy_dir.rglob('*.md')):
-            copies.append(_open_copy_record(state_dir, copy_dir, md))
+        copies.append(
+            _open_copy_record(state_dir, copy_id, copy_dir, md, data))
     return copies
 
 
-def _open_copy_record(state_dir: Path, copy_dir: Path, md: Path) -> OpenCopy:
+def _copy_files(copy_dir: Path) -> tuple[Path | None, dict | None]:
+    """The working copy file and sidecar data of one copy directory.
+
+    The filename comes from the sidecar when it can be read; the
+    standardized name is the fallback. A directory whose working
+    copy is missing has no active state.
+    """
+    try:
+        loaded = json.loads((copy_dir / _SIDECAR_FILENAME).read_text())
+    except (OSError, json.JSONDecodeError):
+        loaded = None
+    data = loaded if isinstance(loaded, dict) else None
+    filename = (data or {}).get('filename', _COPY_FILENAME)
+    md = copy_dir / filename
+    if not md.is_file():
+        return None, data
+    return md, data
+
+
+def _open_copy_record(
+    state_dir: Path,
+    copy_id: str,
+    copy_dir: Path,
+    md: Path,
+    data: dict | None,
+) -> OpenCopy:
     """Assemble an open-copy record, falling back to the mtime.
 
     A missing or corrupt sidecar costs the recorded metadata: the
-    checklist name is derived from the file layout and the open date
-    from the file's mtime.
+    checklist name is unknown and the open date comes from the
+    file's mtime. The copy id stays resolvable from the directory
+    path, and ``open <id> <checklist> --reset`` heals the copy.
     """
-    checklist = strip_md(md.relative_to(copy_dir).as_posix())
-    origin = ''
-    opened = None
-    try:
-        data = json.loads((copy_dir / 'copy.json').read_text())
-        checklist = data.get('checklist', checklist)
+    if data:
+        checklist = data.get('checklist', '')
         origin = data.get('origin', '')
         opened = data.get('opened')
-    except (OSError, json.JSONDecodeError, ValueError):
-        pass
+    else:
+        checklist, origin, opened = '', '', None
+    if opened is not None:
+        try:
+            opened = datetime.fromisoformat(opened)
+        except (TypeError, ValueError):
+            opened = None
     if opened is None:
         opened = datetime.fromtimestamp(md.stat().st_mtime).astimezone()
-    else:
-        opened = datetime.fromisoformat(opened)
     return OpenCopy(
-        copy_id=copy_dir.name, path=md, state_dir=state_dir,
+        copy_id=copy_id, path=md, state_dir=state_dir,
         checklist=checklist, origin=origin, opened=opened)
 
 
@@ -320,11 +364,27 @@ def resolve_copy(target: str, state_dir: Path) -> OpenCopy:
 
 def close_copy(state_dir: Path, copy_id: str) -> None:
     """Discard an open copy, pruning the state directory if empty."""
-    copy_dir = Path(state_dir) / copy_id
-    shutil.rmtree(copy_dir)
-    state_dir = Path(state_dir)
-    if state_dir.is_dir() and not any(state_dir.iterdir()):
-        state_dir.rmdir()
+    _discard_copy(Path(state_dir) / copy_id, Path(state_dir))
+
+
+def _discard_copy(copy_dir: Path, state_dir: Path) -> None:
+    """Remove the copy's files and prune empty directories.
+
+    Only the two files the copy owns are removed -- nested copy ids
+    live inside the same tree and must survive a close. Empty
+    directories are pruned upward, the state directory included.
+    """
+    for filename in (_COPY_FILENAME, _SIDECAR_FILENAME):
+        (copy_dir / filename).unlink(missing_ok=True)
+    current = copy_dir
+    while current != state_dir.parent:
+        try:
+            current.rmdir()
+        except OSError:
+            break
+        if current == state_dir:
+            break
+        current = current.parent
 
 
 def vault_record_path(

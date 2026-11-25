@@ -302,12 +302,13 @@ def test_open_copies_the_checklist_and_writes_the_sidecar(tmp_path):
     opened = checklists.open_copy(
         source, "audit/review", "packaged", "review", state)
 
-    assert opened == state / "review" / "audit" / "review.md"
+    assert opened == state / "review" / "checklist.md"
     assert opened.read_text() == source.read_text()
 
     sidecar = json.loads((state / "review" / "copy.json").read_text())
     assert sidecar["checklist"] == "audit/review"
     assert sidecar["origin"] == "packaged"
+    assert sidecar["filename"] == "checklist.md"
     parsed_opened = datetime.fromisoformat(sidecar["opened"])
     assert parsed_opened.tzinfo is not None
 
@@ -322,7 +323,6 @@ def test_open_creates_private_state_directories(tmp_path):
         source, "audit/review", "packaged", "review", state)
     assert mode(state) == 0o700
     assert mode(state / "review") == 0o700
-    assert mode(state / "review" / "audit") == 0o700
 
 
 def test_open_refuses_an_occupied_copy_id(tmp_path):
@@ -370,7 +370,7 @@ def test_find_open_copies_reads_the_sidecars(tmp_path):
     assert copies["web"].checklist == "audit/review"
     assert copies["web"].origin == "packaged"
     assert copies["web"].opened.tzinfo is not None
-    assert copies["db"].path == state / "db" / "system" / "reboot.md"
+    assert copies["db"].path == state / "db" / "checklist.md"
 
 
 def test_find_open_copies_falls_back_to_mtime(tmp_path):
@@ -381,10 +381,59 @@ def test_find_open_copies_falls_back_to_mtime(tmp_path):
     (state / "web" / "copy.json").unlink()
 
     records = checklists.find_open_copies(state)
-    assert records[0].checklist == "audit/review"
+    assert records[0].copy_id == "web"
+    assert records[0].checklist == ""
     expected = datetime.fromtimestamp(
         opened.stat().st_mtime).astimezone()
     assert records[0].opened == expected
+
+
+def test_slash_copy_ids_round_trip(tmp_path):
+    state = tmp_path / "state"
+    source = _write_checklist(tmp_path / "packaged" / "debian" / "up.md")
+    copy_id = "debian/dist-upgrade/bookworm-to-trixie"
+    checklists.open_copy(source, "debian/upgrade", "packaged", copy_id,
+                         state)
+
+    copies = checklists.find_open_copies(state)
+    assert [copy.copy_id for copy in copies] == [copy_id]
+    assert copies[0].checklist == "debian/upgrade"
+
+    resolved = checklists.resolve_copy(copy_id, state)
+    assert resolved.checklist == "debian/upgrade"
+    resolved = checklists.resolve_copy("debian/upgrade", state)
+    assert resolved.copy_id == copy_id
+
+    checklists.close_copy(state, copy_id)
+    assert not checklists.find_open_copies(state)
+    assert not state.exists()
+
+
+def test_close_keeps_nested_copies(tmp_path):
+    state = tmp_path / "state"
+    first = _write_checklist(tmp_path / "packaged" / "a.md")
+    second = _write_checklist(tmp_path / "packaged" / "b.md")
+    checklists.open_copy(first, "a", "packaged", "a", state)
+    checklists.open_copy(second, "b", "packaged", "a/b", state)
+
+    checklists.close_copy(state, "a")
+
+    assert (state / "a" / "b" / "checklist.md").is_file()
+    remaining = checklists.find_open_copies(state)
+    assert [copy.copy_id for copy in remaining] == ["a/b"]
+
+
+def test_corrupt_sidecar_leaves_the_id_resolvable(tmp_path):
+    state = tmp_path / "state"
+    source = _write_checklist(tmp_path / "packaged" / "a.md")
+    checklists.open_copy(source, "a", "packaged", "web", state)
+    (state / "web" / "copy.json").write_text("{not json")
+
+    records = checklists.find_open_copies(state)
+    assert records[0].copy_id == "web"
+    assert records[0].checklist == ""
+    copy = checklists.resolve_copy("web", state)
+    assert copy.copy_id == "web"
 
 
 def test_resolve_prefers_the_exact_copy_id(tmp_path):
@@ -393,7 +442,7 @@ def test_resolve_prefers_the_exact_copy_id(tmp_path):
     checklists.open_copy(source, "audit/review", "packaged", "web", state)
     copy = checklists.resolve_copy("web", state)
     assert copy.copy_id == "web"
-    assert copy.path == state / "web" / "audit" / "review.md"
+    assert copy.path == state / "web" / "checklist.md"
 
 
 def test_resolve_falls_back_to_the_checklist_path(tmp_path):
