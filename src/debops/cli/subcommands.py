@@ -101,7 +101,10 @@ Sections:
 SSH connections:
     ssh      connect to hosts over ssh and manage known_hosts
     scp      copy files to and from hosts over ssh
-    sftp     transfer files interactively over ssh''')
+    sftp     transfer files interactively over ssh
+
+Misc operations:
+    checklist  manage operational checklists''')
 
         parser.add_argument('section', help='Section to run')
         parser.add_argument('--version', action='version',
@@ -1050,6 +1053,85 @@ Commands:
                             help='report unknown configuration options '
                                  'as errors',
                             action='store_true')
+        self.args = parser.parse_args(self.args[3:])
+
+    def do_checklist(self):
+        parser = _argument_parser(
+                description='manage operational checklists',
+                usage='''debops checklist <command> [<args>]
+
+Commands:
+    list    list the discovered checklists and the open copies
+    open    open a checklist as a working copy
+    edit    edit an open checklist copy in an editor
+    commit  record a checkpoint of an open copy in the project vault
+    close   discard an open copy''')
+        parser.add_argument('command', help='checklist command to run')
+        self._command = parser.parse_args(self.args[2:3])
+        self.command = self._command.command
+        if not hasattr(self, 'do_checklist_' + self._command.command):
+            print_error('unrecognized command: ' + self._command.command)
+            parser.print_help()
+            sys.exit(1)
+        getattr(self, 'do_checklist_' + self._command.command)()
+
+    def do_checklist_list(self):
+        parser = _argument_parser(
+                usage='debops checklist list [<args>] [<project_dir>]')
+        parser.add_argument('-a', '--active', action='store_true',
+                            help='list the open copies instead of the '
+                                 'discovered checklists')
+        parser.add_argument('-v', '--verbose', action="count",
+                            help='increase output verbosity '
+                                 '(e.g., -vv is more than -v)')
+        parser.add_argument('project_dir', type=str, nargs='?',
+                            default=os.getcwd(),
+                            help='path to the project directory')
+        self.args = parser.parse_args(self.args[3:])
+
+    def do_checklist_open(self):
+        parser = _argument_parser(
+                parents=[self.global_parser],
+                usage='debops checklist open [<args>] [<id>] <checklist>')
+        parser.add_argument('checklist', nargs='+',
+                            help='checklist path, optionally preceded by '
+                                 'a copy id')
+        self.add_bool_argument(parser, 'reset', default=False,
+                               help='discard the current state of the '
+                                    'copy id and re-copy the checklist')
+        self.args = parser.parse_args(self.args[3:])
+        if not 1 <= len(self.args.checklist) <= 2:
+            parser.error('open takes a checklist path, optionally '
+                         'preceded by a copy id')
+
+    def do_checklist_edit(self):
+        parser = _argument_parser(
+                parents=[self.global_parser],
+                usage='debops checklist edit [<args>] <copy>')
+        parser.add_argument('copy', help='copy id or checklist path')
+        self.args = parser.parse_args(self.args[3:])
+
+    def do_checklist_commit(self):
+        parser = _argument_parser(
+                parents=[self.global_parser],
+                usage='debops checklist commit [<args>] <copy>')
+        parser.add_argument('copy', help='copy id or checklist path')
+        parser.add_argument('--close', action='store_true',
+                            help='deactivate the copy after the commit')
+        parser.add_argument('--edit-message', dest='edit_message',
+                            action='store_true',
+                            help='compose the commit message in an '
+                                 'editor')
+        self.args = parser.parse_args(self.args[3:])
+
+    def do_checklist_close(self):
+        parser = _argument_parser(
+                parents=[self.global_parser],
+                usage='debops checklist close [<args>] <copy>')
+        parser.add_argument('copy', help='copy id or checklist path')
+        parser.add_argument('--force', action='store_true',
+                            help='discard the copy even when items are '
+                                 'still open')
         self.args = parser.parse_args(self.args[3:])
 
     def do_ssh(self):

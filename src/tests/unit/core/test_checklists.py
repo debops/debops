@@ -391,9 +391,9 @@ def test_resolve_prefers_the_exact_copy_id(tmp_path):
     state = tmp_path / "state"
     source = _write_checklist(tmp_path / "packaged" / "audit" / "review.md")
     checklists.open_copy(source, "audit/review", "packaged", "web", state)
-    copy_id, path = checklists.resolve_copy("web", state)
-    assert copy_id == "web"
-    assert path == state / "web" / "audit" / "review.md"
+    copy = checklists.resolve_copy("web", state)
+    assert copy.copy_id == "web"
+    assert copy.path == state / "web" / "audit" / "review.md"
 
 
 def test_resolve_falls_back_to_the_checklist_path(tmp_path):
@@ -401,8 +401,8 @@ def test_resolve_falls_back_to_the_checklist_path(tmp_path):
     source = _write_checklist(tmp_path / "packaged" / "audit" / "review.md")
     checklists.open_copy(source, "audit/review", "packaged", "web", state)
     for target in ("audit/review", "audit/review.md"):
-        copy_id, path = checklists.resolve_copy(target, state)
-        assert copy_id == "web"
+        copy = checklists.resolve_copy(target, state)
+        assert copy.copy_id == "web"
 
 
 def test_resolve_lists_ids_when_ambiguous(tmp_path):
@@ -456,3 +456,55 @@ def test_vault_record_path_nests_named_copies(tmp_path):
     assert named == (tmp_path / "checklists" / "audit" /
                      "periodic-security-review" / "review" /
                      "2026-05-11.md")
+
+
+def test_progress_summarizes_the_counts():
+    text = (
+        "- [x] First\n"
+        "- [x] Second\n"
+        "- [B] Third\n"
+        "- [F] Fourth\n"
+        "- [ ] Fifth\n"
+    )
+    parsed = checklists.parse_checklist(text)
+    assert parsed.progress == "2/5 done, 1 blocked, 1 failed"
+
+
+def test_list_checklists_shadows_and_sorts(tmp_path):
+    project = tmp_path / "project"
+    user = tmp_path / "user"
+    packaged = tmp_path / "packaged"
+    for root in (project, user, packaged):
+        (root / "audit").mkdir(parents=True)
+    (project / "audit" / "review.md").write_text("# Review\n")
+    (packaged / "system").mkdir()
+    (packaged / "system" / "reboot.md").write_text("# Reboot\n")
+    (user / "zzz.md").write_text("# Zzz\n")
+
+    entries = checklists.list_checklists([
+        (project, "project"), (user, "user"), (packaged, "packaged")])
+    assert [name for name, _, _ in entries] == [
+        "audit/review", "system/reboot", "zzz"]
+    assert entries[0][2] == "project"
+    assert entries[1][2] == "packaged"
+    assert entries[2][2] == "user"
+
+
+def test_editor_argv_prefers_visual():
+    environ = {"VISUAL": "code -w", "EDITOR": "vim"}
+    assert checklists.editor_argv(environ) == ["code", "-w"]
+
+
+def test_editor_argv_uses_the_editor_variable():
+    assert checklists.editor_argv({"EDITOR": "nano"}) == ["nano"]
+
+
+def test_editor_argv_uses_sensible_editor(monkeypatch):
+    monkeypatch.setattr(checklists.shutil, "which",
+                        lambda name: "/usr/bin/" + name)
+    assert checklists.editor_argv({}) == ["sensible-editor"]
+
+
+def test_editor_argv_falls_back_to_vi(monkeypatch):
+    monkeypatch.setattr(checklists.shutil, "which", lambda name: None)
+    assert checklists.editor_argv({}) == ["vi"]

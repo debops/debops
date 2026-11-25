@@ -24,14 +24,15 @@ from ..core.tofu.modules import resolve_modules
 from ..core.tofu.binary import reconcile_binaries
 from ..core.tofu.registry import view_drop_in_path, view_tofu_root
 from ..core.tofu.view import create_view, reconcile_view
-from ..core import ssh
-from ..core.utils import remove_file, unexpanduser
+from ..core import checklists, ssh
+from ..core.utils import remove_file, unexpanduser, write_file
 from xdg.BaseDirectory import xdg_config_home
 import logging
 import getpass
 import shlex
 import subprocess
 import sys
+import tempfile
 import time
 import os
 
@@ -135,6 +136,18 @@ class Interpreter(object):
                 self.do_config_set(self.parsed_args.args)
             elif self.parsed_args.command == 'check':
                 self.do_config_check(self.parsed_args.args)
+
+        elif self.parsed_args.section == 'checklist':
+            if self.parsed_args.command == 'list':
+                self.do_checklist_list(self.parsed_args.args)
+            elif self.parsed_args.command == 'open':
+                self.do_checklist_open(self.parsed_args.args)
+            elif self.parsed_args.command == 'edit':
+                self.do_checklist_edit(self.parsed_args.args)
+            elif self.parsed_args.command == 'commit':
+                self.do_checklist_commit(self.parsed_args.args)
+            elif self.parsed_args.command == 'close':
+                self.do_checklist_close(self.parsed_args.args)
 
     def do_project_init(self, args):
         try:
@@ -394,6 +407,159 @@ class Interpreter(object):
             for line in runner.show_env(scope=args.scope):
                 print(line)
             sys.exit(0)
+
+    def _project(self, args):
+        """The project directory of a checklist command, or exit.
+
+        The checklist commands that work on copies require a DebOps
+        project directory: the vault records and the git commits land
+        in it, and the state directory is namespaced by its path.
+        """
+        try:
+            return ProjectDir(path=args.project_dir, config=self.config,
+                              cwd=self.cwd)
+        except (IsADirectoryError, NotADirectoryError,
+                ViewNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+    def do_checklist_list(self, args):
+        project = None
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd)
+        except (IsADirectoryError, NotADirectoryError):
+            # The list works outside a project directory; the project
+            # layer of the discovery is simply omitted then
+            pass
+        except ViewNotFoundError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        state_dir = checklists.checklist_state_dir(args.project_dir)
+        open_copies = checklists.find_open_copies(state_dir)
+
+        if args.active:
+            for copy in open_copies:
+                parsed = checklists.parse_checklist(copy.path.read_text())
+                print('{} {} [{}] {} (opened {})'.format(
+                    copy.copy_id, copy.checklist, copy.origin,
+                    parsed.progress, copy.opened.date().isoformat()))
+            return
+
+        layers = checklists.checklist_layers(
+            project.path if project is not None else None)
+        for name, path, origin in checklists.list_checklists(layers):
+            parsed = checklists.parse_checklist(path.read_text())
+            active = []
+            for copy in open_copies:
+                if copy.checklist != name:
+                    continue
+                copy_parsed = checklists.parse_checklist(
+                    copy.path.read_text())
+                label = '{}: '.format(copy.copy_id) \
+                    if copy.copy_id != name else ''
+                active.append('{}{}'.format(label, copy_parsed.progress))
+            suffix = ' -- open ({})'.format(', '.join(active)) \
+                if active else ''
+            print('{} [{}] {}{}'.format(name, origin,
+                                        parsed.title or name, suffix))
+
+    def do_checklist_open(self, args):
+        project = self._project(args)
+        if len(args.checklist) == 2:
+            copy_id, name = args.checklist
+        else:
+            name = args.checklist[0]
+            copy_id = checklists.strip_md(name)
+
+        layers = checklists.checklist_layers(project.path)
+        state_dir = checklists.checklist_state_dir(project.path)
+        try:
+            path, origin = checklists.find_checklist(name, layers)
+            checklists.open_copy(path, name, origin, copy_id, state_dir,
+                                 reset=args.reset)
+        except checklists.ChecklistError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        if copy_id == checklists.strip_md(name):
+            print('Opened {}'.format(checklists.strip_md(name)))
+        else:
+            print('Opened {} as copy {}'.format(
+                checklists.strip_md(name), copy_id))
+
+    def do_checklist_edit(self, args):
+        project = self._project(args)
+        state_dir = checklists.checklist_state_dir(project.path)
+        try:
+            copy = checklists.resolve_copy(args.copy, state_dir)
+        except checklists.ChecklistError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        subprocess.run(checklists.editor_argv() + [str(copy.path)],
+                       check=False)
+        parsed = checklists.parse_checklist(copy.path.read_text())
+        print('{}: {}'.format(copy.copy_id, parsed.progress))
+
+    def do_checklist_commit(self, args):
+        project = self._project(args)
+        state_dir = checklists.checklist_state_dir(project.path)
+        try:
+            copy = checklists.resolve_copy(args.copy, state_dir)
+        except checklists.ChecklistError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        parsed = checklists.parse_checklist(copy.path.read_text())
+
+        message = 'checklist: {}{} ({})'.format(
+            '{} '.format(copy.copy_id)
+            if copy.copy_id != copy.checklist else '',
+            copy.checklist, parsed.progress)
+        if args.edit_message:
+            message = self._edit_text(message) or message
+
+        vault_path = checklists.vault_record_path(
+            project.path / 'vault', copy.checklist, copy.copy_id,
+            copy.opened)
+        write_file(str(vault_path), copy.path.read_text(), overwrite=True,
+                   project=str(project.path))
+        if not os.path.exists(os.path.join(project.path, '.git')):
+            print('Warning: the project directory is not a git '
+                  'repository, the vault record is not committed')
+        project.commit(interactive=False, message=message,
+                       paths=[str(vault_path)])
+        if args.close:
+            checklists.close_copy(state_dir, copy.copy_id)
+        print('Committed {} to {}'.format(
+            copy.checklist, os.path.relpath(vault_path, project.path)))
+
+    def _edit_text(self, text):
+        """Hand *text* to the editor and return the edited result."""
+        descriptor, path = tempfile.mkstemp(suffix='.msg')
+        with os.fdopen(descriptor, 'w') as handle:
+            handle.write(text + '\n')
+        try:
+            subprocess.run(checklists.editor_argv() + [path], check=False)
+            with open(path) as handle:
+                return handle.read().strip()
+        finally:
+            os.unlink(path)
+
+    def do_checklist_close(self, args):
+        project = self._project(args)
+        state_dir = checklists.checklist_state_dir(project.path)
+        try:
+            copy = checklists.resolve_copy(args.copy, state_dir)
+        except checklists.ChecklistError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        parsed = checklists.parse_checklist(copy.path.read_text())
+        if parsed.has_open_items and not args.force:
+            print_error('The copy still has open items; use --force to '
+                        'discard it anyway')
+            sys.exit(1)
+        checklists.close_copy(state_dir, copy.copy_id)
+        print('Closed {}'.format(copy.copy_id))
 
     def do_tofu(self, args):
         if not args.tofu_args and not args.help:

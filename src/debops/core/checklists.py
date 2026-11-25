@@ -12,6 +12,7 @@ synonyms; unknown bracket content parses as an open item.
 import json
 import os
 import re
+import shlex
 import shutil
 from dataclasses import dataclass
 from datetime import datetime
@@ -88,6 +89,18 @@ class ParsedChecklist:
     def has_open_items(self) -> bool:
         """True when any item still counts as open (open or blocked)."""
         return any(item.state in _OPEN_STATES for item in self.items)
+
+    @property
+    def progress(self) -> str:
+        """The human progress summary, e.g. ``8/19 done, 1 blocked``."""
+        counts = self.counts
+        total = len(self.items)
+        fragments = ['{}/{} done'.format(counts['done'], total)]
+        if counts['blocked']:
+            fragments.append('{} blocked'.format(counts['blocked']))
+        if counts['failed']:
+            fragments.append('{} failed'.format(counts['failed']))
+        return ', '.join(fragments)
 
 
 def parse_checklist(text: str) -> ParsedChecklist:
@@ -218,7 +231,7 @@ def open_copy(
             raise ChecklistAlreadyOpenError(
                 f"Copy id already open: {copy_id}")
         shutil.rmtree(copy_dir)
-    checklist = _strip_md(checklist)
+    checklist = strip_md(checklist)
     destination = copy_dir / f"{checklist}.md"
     _ensure_private_dir(destination.parent)
     shutil.copyfile(checklist_path, destination)
@@ -265,7 +278,7 @@ def _open_copy_record(state_dir: Path, copy_dir: Path, md: Path) -> OpenCopy:
     checklist name is derived from the file layout and the open date
     from the file's mtime.
     """
-    checklist = _strip_md(md.relative_to(copy_dir).as_posix())
+    checklist = strip_md(md.relative_to(copy_dir).as_posix())
     origin = ''
     opened = None
     try:
@@ -284,8 +297,8 @@ def _open_copy_record(state_dir: Path, copy_dir: Path, md: Path) -> OpenCopy:
         checklist=checklist, origin=origin, opened=opened)
 
 
-def resolve_copy(target: str, state_dir: Path) -> tuple[str, Path]:
-    """Resolve an edit/commit/close target to its copy id and file.
+def resolve_copy(target: str, state_dir: Path) -> OpenCopy:
+    """Resolve an edit/commit/close target to its open-copy record.
 
     An exact copy id wins; otherwise the target is matched against
     the checklist path of the open copies. One match resolves,
@@ -294,15 +307,15 @@ def resolve_copy(target: str, state_dir: Path) -> tuple[str, Path]:
     copies = find_open_copies(state_dir)
     for copy in copies:
         if copy.copy_id == target:
-            return copy.copy_id, copy.path
-    name = _strip_md(target)
+            return copy
+    name = strip_md(target)
     matches = [copy for copy in copies if copy.checklist == name]
     if not matches:
         raise ChecklistNotOpenError(f"Checklist copy not open: {target}")
     if len(matches) > 1:
         ids = ', '.join(sorted(copy.copy_id for copy in matches))
         raise ChecklistAmbiguousError(f"Several open copies of {name}: {ids}")
-    return matches[0].copy_id, matches[0].path
+    return matches[0]
 
 
 def close_copy(state_dir: Path, copy_id: str) -> None:
@@ -328,10 +341,48 @@ def vault_record_path(
     for the copy's whole life -- so same-day re-commits overwrite the
     copy's own record and the history lives in git.
     """
-    record = Path(vault_dir) / 'checklists' / _strip_md(checklist)
-    if copy_id != _strip_md(checklist):
+    record = Path(vault_dir) / 'checklists' / strip_md(checklist)
+    if copy_id != strip_md(checklist):
         record /= copy_id
     return record / f"{opened.date().isoformat()}.md"
+
+
+def list_checklists(
+    layers: list[tuple[Path, str]],
+) -> list[tuple[str, Path, str]]:
+    """The effective checklist entries across the discovery layers.
+
+    One entry per checklist name: the first layer that provides it
+    wins, so a project checklist shadows its user and packaged
+    counterparts. The entries sort by name.
+    """
+    entries = {}
+    for root, origin in layers:
+        if not root.is_dir():
+            continue
+        for path in sorted(root.rglob('*.md')):
+            name = strip_md(path.relative_to(root).as_posix())
+            entries.setdefault(name, (name, path, origin))
+    return [entries[name] for name in sorted(entries)]
+
+
+def editor_argv(environ=None) -> list[str]:
+    """The editor command line for interactive editing.
+
+    ``$VISUAL`` wins over ``$EDITOR``; without either, the Debian
+    ``sensible-editor`` indirection runs, and ``vi`` is the last
+    resort. The values may carry arguments and are split the way a
+    shell would split them.
+    """
+    environ = os.environ if environ is None else environ
+    for variable in ('VISUAL', 'EDITOR'):
+        value = environ.get(variable)
+        if value:
+            return shlex.split(value)
+    for editor in ('sensible-editor', 'vi'):
+        if shutil.which(editor):
+            return [editor]
+    return ['vi']
 
 
 def checklist_layers(
@@ -365,7 +416,7 @@ def find_checklist(
     """
     _validate_name(name)
     candidates = [name]
-    stripped = _strip_md(name)
+    stripped = strip_md(name)
     if stripped != name:
         candidates.append(stripped)
     else:
@@ -378,7 +429,7 @@ def find_checklist(
     raise ChecklistNotFoundError(f"Checklist not found: {name}")
 
 
-def _strip_md(name: str) -> str:
+def strip_md(name: str) -> str:
     """The checklist name without its ``.md`` suffix, if present."""
     return name[:-3] if name.endswith('.md') else name
 

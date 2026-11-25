@@ -19,6 +19,7 @@ import pytest
 
 import debops.cli.interpreter as cli_module
 from debops.cli.interpreter import Interpreter
+from debops.core import checklists
 from debops.core.exceptions import InventorySpecError, NoDefaultViewException
 
 
@@ -38,6 +39,19 @@ def make_interpreter(config=None):
 
 def make_parsed(section, command, args):
     return SimpleNamespace(section=section, command=command, args=args)
+
+
+@pytest.fixture
+def state_home(tmp_path, monkeypatch):
+    """Pin the checklist state home to the test tree.
+
+    The executors resolve the state home from the environment; without
+    this pin they would write through to the real user state.
+    """
+    home = tmp_path / "state-home"
+    monkeypatch.setattr(checklists, "_resolve_state_home",
+                        lambda: str(home))
+    return home
 
 
 @pytest.mark.parametrize("command", ["init", "refresh", "lock", "unlock",
@@ -132,6 +146,190 @@ def test_init_dispatches_the_config_commands(monkeypatch, command):
     Interpreter(["debops"])
 
     command_method.assert_called_once_with(args)
+
+
+@pytest.mark.parametrize("command", ["list", "open", "edit", "commit",
+                                     "close"])
+def test_init_dispatches_the_checklist_commands(monkeypatch, command):
+    args = make_args(project_dir=".")
+    monkeypatch.setattr(cli_module, "Configuration",
+                        mock.Mock(return_value=SimpleNamespace()))
+    monkeypatch.setattr(cli_module, "Subcommands",
+                        mock.Mock(return_value=make_parsed("checklist",
+                                                           command, args)))
+    command_method = mock.Mock()
+    attribute = "do_checklist_" + command
+    monkeypatch.setattr(cli_module.Interpreter, attribute, command_method)
+
+    Interpreter(["debops"])
+
+    command_method.assert_called_once_with(args)
+
+
+def test_checklist_open_takes_a_copy_id_and_a_checklist():
+    parsed = cli_module.Subcommands(["debops", "checklist", "open",
+                                     "web", "audit/review"])
+    assert parsed.args.checklist == ["web", "audit/review"]
+
+
+def test_checklist_open_defaults_the_copy_id_to_the_checklist():
+    parsed = cli_module.Subcommands(["debops", "checklist", "open",
+                                     "audit/review"])
+    assert parsed.args.checklist == ["audit/review"]
+
+
+def test_checklist_open_rejects_extra_positionals(capsys):
+    with pytest.raises(SystemExit) as raised:
+        cli_module.Subcommands(["debops", "checklist", "open",
+                                "a", "b", "c"])
+    assert raised.value.code == 2
+    assert "copy id" in capsys.readouterr().err
+
+
+def test_checklist_open_copies_into_the_state(tmp_path, state_home,
+                                              monkeypatch, capsys):
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [ ] Check\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), checklist=["audit/review"],
+                     reset=False)
+    interpreter.do_checklist_open(args)
+
+    state = checklists.checklist_state_dir(project)
+    opened = state / "audit" / "review" / "checklist.md"
+    assert opened.exists()
+    assert "Opened audit/review" in capsys.readouterr().out
+    assert "as copy" not in capsys.readouterr().out
+
+
+def test_checklist_list_prints_the_entries(tmp_path, monkeypatch, capsys):
+    packaged = tmp_path / "packaged"
+    source = packaged / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text('---\ntitle: "Review"\n---\n# Review\n- [ ] Check\n')
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(packaged))
+    interpreter = make_interpreter()
+    args = make_args(project_dir=str(tmp_path), active=False)
+    interpreter.do_checklist_list(args)
+
+    output = capsys.readouterr().out
+    assert "audit/review [packaged] Review" in output
+
+
+def test_checklist_list_marks_the_open_copies(tmp_path, state_home,
+                                              monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n- [ ] Wait\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    interpreter = make_interpreter()
+    args = make_args(project_dir=str(project), active=False)
+    interpreter.do_checklist_list(args)
+
+    output = capsys.readouterr().out
+    assert output.endswith(" -- open (web: 1/2 done)\n")
+
+
+def test_checklist_list_active_shows_the_copies(tmp_path, state_home,
+                                                monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n- [ ] Wait\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    interpreter = make_interpreter()
+    args = make_args(project_dir=str(project), active=True)
+    interpreter.do_checklist_list(args)
+
+    output = capsys.readouterr().out
+    assert output.startswith("web audit/review [packaged] ")
+    assert "1/2 done" in output
+
+
+def test_checklist_commit_records_the_vault_copy(tmp_path, state_home,
+                                                 monkeypatch):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [x] Check\n- [ ] Wait\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+
+    interpreter = make_interpreter()
+    project_stub = SimpleNamespace(path=project, commit=mock.Mock())
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project_stub))
+    args = make_args(project_dir=str(project), copy="web", close=False,
+                     edit_message=False)
+    interpreter.do_checklist_commit(args)
+
+    records = list((project / "vault" / "checklists" / "audit" / "review" /
+                    "web").glob("*.md"))
+    assert len(records) == 1
+    call = project_stub.commit.call_args
+    assert call.kwargs["message"].startswith(
+        "checklist: web audit/review (1/2 done")
+    assert call.kwargs["paths"] == [str(records[0])]
+
+
+def test_checklist_close_refuses_open_items(tmp_path, state_home,
+                                            monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [ ] Check\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), copy="web", force=False)
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_close(args)
+
+    assert raised.value.code == 1
+    assert "open items" in capsys.readouterr().err
+    assert (state / "web").exists()
+
+
+def test_checklist_close_force_discards(tmp_path, state_home, monkeypatch,
+                                        capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [ ] Check\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), copy="web", force=True)
+    interpreter.do_checklist_close(args)
+
+    assert "Closed web" in capsys.readouterr().out
+    assert not (state / "web").exists()
 
 
 def test_init_ignores_unknown_project_commands(monkeypatch):
