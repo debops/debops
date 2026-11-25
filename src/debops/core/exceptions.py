@@ -69,3 +69,8 @@ class ChecklistNotOpenError(ChecklistError):
 class ChecklistAmbiguousError(ChecklistError):
     """Raised when a checklist path matches several open copies"""
     pass
+
+
+class ChecklistFilteredError(ChecklistError):
+    """Raised when a checklist name is hidden by checklist.filters"""
+    pass

@@ -301,6 +301,78 @@ def test_user_layer_honors_symlinked_checklists(layer_roots):
     assert names == ["notes"]
 
 
+@pytest.fixture
+def example_tree(layer_roots):
+    """A packaged tree with an example namespace and a system one."""
+    project, user, packaged = layer_roots
+    example = packaged / "example" / "audit"
+    example.mkdir(parents=True)
+    (example / "review.md").write_text("# Review\n")
+    (packaged / "system").mkdir()
+    (packaged / "system" / "reboot.md").write_text("# Reboot\n")
+    (packaged / "notes.md").write_text("# Notes\n")
+    return _layers(*layer_roots)
+
+
+def test_filters_hide_a_whole_namespace(example_tree):
+    names = [name for name, path, origin in checklists.list_checklists(
+        example_tree, filters=["!example/**"])]
+    assert names == ["notes", "system/reboot"]
+
+
+def test_filters_star_stops_at_the_slash(example_tree):
+    names = [name for name, path, origin in checklists.list_checklists(
+        example_tree, filters=["!example/*"])]
+    assert "example/audit/review" in names
+
+
+def test_filters_last_matching_rule_wins(example_tree):
+    names = [name for name, path, origin in checklists.list_checklists(
+        example_tree, filters=["!example/**", "example/audit/**"])]
+    assert names == ["example/audit/review", "notes", "system/reboot"]
+
+
+def test_filters_without_a_match_stay_visible(example_tree):
+    # A bare pattern keeps its matches visible; everything else is
+    # visible by default, so a lone bare rule restricts nothing
+    names = [name for name, path, origin in checklists.list_checklists(
+        example_tree, filters=["system/**"])]
+    assert names == ["example/audit/review", "notes", "system/reboot"]
+
+
+def test_filters_allowlist_through_the_hide_all_anchor(example_tree):
+    names = [name for name, path, origin in checklists.list_checklists(
+        example_tree, filters=["!**", "system/**"])]
+    assert names == ["system/reboot"]
+
+
+def test_filters_empty_rules_hide_nothing(example_tree):
+    names = [name for name, path, origin in checklists.list_checklists(
+        example_tree, filters=[])]
+    assert len(names) == 3
+
+
+def test_find_checklist_refuses_a_hidden_name(example_tree):
+    with pytest.raises(checklists.ChecklistFilteredError) as raised:
+        checklists.find_checklist(
+            "example/audit/review", example_tree,
+            filters=["!example/**"])
+    assert "hidden by checklist.filters" in str(raised.value)
+
+
+def test_find_checklist_resolves_a_visible_name(example_tree):
+    found, origin = checklists.find_checklist(
+        "system/reboot", example_tree, filters=["!example/**"])
+    assert found == example_tree[2][0] / "system" / "reboot.md"
+
+
+def test_filters_refuse_a_malformed_pattern(example_tree):
+    with pytest.raises(checklists.ChecklistError) as raised:
+        checklists.list_checklists(
+            example_tree, filters=["system/[z-a]"])
+    assert "Invalid checklist.filters pattern" in str(raised.value)
+
+
 def test_missing_layers_are_tolerated(layer_roots):
     project, user, packaged = layer_roots
     (packaged / "system").mkdir()

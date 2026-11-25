@@ -26,6 +26,7 @@ from .exceptions import (
     ChecklistAlreadyOpenError,
     ChecklistAmbiguousError,
     ChecklistError,
+    ChecklistFilteredError,
     ChecklistNotFoundError,
     ChecklistNotOpenError,
 )
@@ -526,6 +527,7 @@ def vault_record_path(
 
 def list_checklists(
     layers: list[tuple[Path, str]],
+    filters=(),
 ) -> list[tuple[str, Path, str]]:
     """The effective checklist entries across the discovery layers.
 
@@ -535,7 +537,13 @@ def list_checklists(
     shared layers that resolve outside of their root through a
     symbolic link are omitted -- they are refused on resolution, so
     listing them would promise what ``open`` cannot deliver.
+
+    The *filters* are the ordered ``checklist.filters`` rules: a
+    bare pattern keeps matching names visible, a ``!``-prefixed
+    pattern hides them, the last matching rule wins and a name no
+    rule matches stays visible.
     """
+    rules = _filter_rules(list(filters))
     entries = {}
     for root, origin in layers:
         if not root.is_dir():
@@ -545,7 +553,79 @@ def list_checklists(
                 continue
             name = strip_md(path.relative_to(root).as_posix())
             entries.setdefault(name, (name, path, origin))
-    return [entries[name] for name in sorted(entries)]
+    return [entries[name] for name in sorted(entries)
+            if _visible(name, rules)]
+
+
+def _filter_rules(filters: list) -> list[tuple[re.Pattern, bool]]:
+    """The compiled show/hide rules of the ordered filter list.
+
+    A bare pattern keeps matching names visible, a ``!``-prefixed
+    pattern hides them. The patterns are path globs over the
+    checklist name -- relative to the layer root, ``.md`` stripped.
+    """
+    rules = []
+    for pattern in filters:
+        hide = pattern.startswith('!')
+        body = pattern[1:] if hide else pattern
+        try:
+            compiled = _compile_glob(body)
+        except re.error:
+            raise ChecklistError(
+                f"Invalid checklist.filters pattern: {pattern!r}") from None
+        rules.append((compiled, not hide))
+    return rules
+
+
+def _compile_glob(pattern: str) -> re.Pattern:
+    """Compile one path glob to a regular expression.
+
+    The match target is a relative checklist name, so ``*`` and
+    ``?`` stop at the slash while ``**`` crosses it -- the visual
+    language of path globs stays intact and ``example/*`` differs
+    from ``example/**``.
+    """
+    parts = []
+    index = 0
+    while index < len(pattern):
+        char = pattern[index]
+        if char == '*':
+            if pattern[index:index + 2] == '**':
+                parts.append('.*')
+                index += 2
+            else:
+                parts.append('[^/]*')
+                index += 1
+        elif char == '?':
+            parts.append('[^/]')
+            index += 1
+        elif char == '[':
+            end = pattern.find(']', index + 1)
+            if end == -1:
+                parts.append(re.escape(char))
+                index += 1
+            else:
+                body = pattern[index + 1:end]
+                if not body:
+                    parts.append(re.escape('[]'))
+                elif body.startswith('!'):
+                    parts.append('[^' + body[1:] + ']')
+                else:
+                    parts.append('[' + body + ']')
+                index = end + 1
+        else:
+            parts.append(re.escape(char))
+            index += 1
+    return re.compile(''.join(parts) + r'\Z')
+
+
+def _visible(name: str, rules: list[tuple[re.Pattern, bool]]) -> bool:
+    """Whether the name passes the ordered rules; the last match wins."""
+    visible = True
+    for regex, show in rules:
+        if regex.match(name):
+            visible = show
+    return visible
 
 
 def editor_argv(environ=None) -> list[str]:
@@ -598,6 +678,7 @@ def checklist_layers(
 def find_checklist(
     name: str,
     layers: list[tuple[Path, str]],
+    filters=(),
 ) -> tuple[Path, str]:
     """Resolve a checklist name against the discovery layers.
 
@@ -605,6 +686,11 @@ def find_checklist(
     and its origin is returned alongside the path. A name may be given
     with or without the ``.md`` suffix -- both spellings resolve
     identically regardless of how the file is stored.
+
+    The *filters* are the ordered ``checklist.filters`` rules shared
+    with ``list_checklists``; a hidden name is refused before the
+    layer walk, so a filtered checklist is invisible to the whole
+    discovery surface, listing and resolution alike.
 
     In the shared layers -- the project tree and the packaged
     baseline -- a checklist file that resolves outside of its layer
@@ -614,6 +700,9 @@ def find_checklist(
     to keep personal checklists elsewhere.
     """
     _validate_name(name)
+    if not _visible(name, _filter_rules(list(filters))):
+        raise ChecklistFilteredError(
+            f"The checklist {name} is hidden by checklist.filters")
     candidates = [name]
     stripped = strip_md(name)
     if stripped != name:

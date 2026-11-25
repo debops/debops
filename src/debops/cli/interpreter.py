@@ -552,7 +552,8 @@ class Interpreter(object):
 
         layers = checklists.checklist_layers(
             project.path if project is not None else None)
-        entries = checklists.list_checklists(layers)
+        entries = checklists.list_checklists(
+            layers, filters=self._checklist_filters())
 
         if args.format == 'json':
             records = []
@@ -648,9 +649,11 @@ class Interpreter(object):
 
         layers = checklists.checklist_layers(project.path)
         state_dir = checklists.checklist_state_dir(project.path)
+        filters = self._checklist_filters()
         try:
             try:
-                path, origin = checklists.find_checklist(name, layers)
+                path, origin = checklists.find_checklist(
+                    name, layers, filters=filters)
             except checklists.ChecklistNotFoundError:
                 if len(args.checklist) != 1:
                     raise
@@ -658,7 +661,7 @@ class Interpreter(object):
                 # still be an open copy id; with --reset the copy
                 # re-opens from the checklist its sidecar records
                 copy_id, name, path, origin = self._heal_open_copy(
-                    name, state_dir, layers, reset=args.reset)
+                    name, state_dir, layers, filters, reset=args.reset)
             parsed = checklists.parse_checklist(
                 path.read_text(encoding='utf-8'))
             if not parsed.items:
@@ -677,7 +680,7 @@ class Interpreter(object):
             print('Opened {} as copy {} [{}]'.format(
                 checklists.strip_md(name), copy_id, origin))
 
-    def _heal_open_copy(self, name, state_dir, layers, reset):
+    def _heal_open_copy(self, name, state_dir, layers, filters, reset):
         """Resolve a lone open copy id to its recorded checklist.
 
         The copy records its checklist in the sidecar; the discovery
@@ -700,7 +703,7 @@ class Interpreter(object):
                 'Re-open it from the checklist name'.format(name, name))
         try:
             path, origin = checklists.find_checklist(
-                match.checklist, layers)
+                match.checklist, layers, filters=filters)
         except checklists.ChecklistNotFoundError:
             raise checklists.ChecklistNotFoundError(
                 'Checklist not found: {}\n'
@@ -763,6 +766,24 @@ class Interpreter(object):
             raise checklists.ChecklistAmbiguousError(
                 'Several open copies: {}; name one'.format(ids))
         return copies[0]
+
+    def _checklist_filters(self):
+        """The ``checklist.filters`` rule list, validated.
+
+        The rules govern the discovery -- the listing, the open
+        resolution and the heal. The state commands are untouched:
+        the filter is a discovery policy, not a state destructor.
+        """
+        filters = self.config.get(['checklist', 'filters'])
+        if filters == {}:
+            return []
+        if not isinstance(filters, list) or not all(
+                isinstance(pattern, str) and pattern
+                for pattern in filters):
+            print_error('The checklist.filters value must be a list '
+                        'of glob patterns')
+            sys.exit(1)
+        return filters
 
     def do_checklist_commit(self, args):
         project = self._project(args)

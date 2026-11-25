@@ -488,6 +488,106 @@ def test_checklist_commit_refuses_an_empty_default(tmp_path, state_home,
     assert "No open copies" in capsys.readouterr().err
 
 
+def _config_with_filters(filters):
+    """The config stub contract for both checklist knobs."""
+    return lambda items: {
+        ('checklist', 'filters'): filters,
+        ('checklist', 'commit_path'): 'vault/checklists',
+    }.get(tuple(items), {})
+
+
+def test_checklist_list_filters_the_discovery(tmp_path, monkeypatch,
+                                              capsys):
+    packaged = tmp_path / "packaged"
+    example = packaged / "checklists" / "example" / "audit"
+    example.mkdir(parents=True)
+    (example / "review.md").write_text("# Review\n- [ ] Task\n")
+    system = packaged / "checklists" / "system"
+    system.mkdir(parents=True)
+    (system / "reboot.md").write_text("# Reboot\n- [ ] Task\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(packaged))
+    interpreter = make_interpreter()
+    interpreter.config.get.side_effect = _config_with_filters(
+        ["!example/**"])
+    args = make_args(project_dir=str(tmp_path), active=False, verbose=0,
+                     format='text')
+    interpreter.do_checklist_list(args)
+
+    out = capsys.readouterr().out
+    assert "system/reboot" in out
+    assert "example" not in out
+
+
+def test_checklist_open_refuses_a_filtered_checklist(tmp_path, state_home,
+                                                     monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    interpreter = make_interpreter()
+    interpreter.config.get.side_effect = _config_with_filters(
+        ["!example/**"])
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project),
+                     checklist=["example/audit/review"], reset=False)
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_open(args)
+
+    assert raised.value.code == 1
+    assert "hidden by checklist.filters" in capsys.readouterr().err
+    state = checklists.checklist_state_dir(project)
+    assert not state.exists()
+
+
+def test_checklist_state_survives_new_filters(tmp_path, state_home,
+                                              monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "example" / "note.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Note\n- [x] Done\n")
+    checklists.open_copy(source, "example/note", "packaged", "web", state)
+
+    # The copy was opened before the filter existed; the state
+    # commands do not consult the discovery policy
+    interpreter = make_interpreter()
+    interpreter.config.get.side_effect = _config_with_filters(
+        ["!example/**"])
+    project_stub = SimpleNamespace(path=str(project), commit=mock.Mock())
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project_stub))
+    args = make_args(project_dir=str(project), copy="web", close=False,
+                     edit=False)
+    interpreter.do_checklist_commit(args)
+
+    records = list((project / "vault" / "checklists" / "example" /
+                    "note" / "_copies" / "web").glob("*.md"))
+    assert len(records) == 1
+
+    args = make_args(project_dir=str(project), active=True, verbose=0,
+                     format='text')
+    interpreter.do_checklist_list(args)
+    assert "web" in capsys.readouterr().out
+
+
+def test_checklist_list_refuses_a_malformed_filter(tmp_path, monkeypatch,
+                                                   capsys):
+    interpreter = make_interpreter()
+    interpreter.config.get.side_effect = _config_with_filters(
+        "example/**")
+    args = make_args(project_dir=str(tmp_path), active=False, verbose=0,
+                     format='text')
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_list(args)
+
+    assert raised.value.code == 1
+    assert "must be a list of glob patterns" in capsys.readouterr().err
+
+
 def test_checklist_list_prints_condensed_entries(tmp_path, monkeypatch,
                                                  capsys):
     packaged = tmp_path / "packaged"
