@@ -164,6 +164,13 @@ General
   ``--format`` option is not given; it accepts ``unix``, ``yaml``,
   ``json`` and ``toml``, and ``yaml`` is the default.
 
+:ref:`debops.unattended_upgrades` role
+''''''''''''''''''''''''''''''''''''''
+
+- The new :file:`scope/unattended_upgrades/run` scoped playbook can be used to
+  perform unattended upgrades on hosts in the Ansible inventory, using the
+  ``unattended-upgrades`` APT configuration.
+
 :ref:`debops.zabbix_agent` role
 '''''''''''''''''''''''''''''''
 
