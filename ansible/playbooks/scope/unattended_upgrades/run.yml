@@ -1,0 +1,38 @@
+---
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Entry point playbook: scope/unattended_upgrades/run.yml
+#
+# Run an unattended upgrade cycle on demand, the way the
+# 'apt-daily-upgrade.timer' systemd timer runs it on a regular basis.
+# Hosts where an unattended upgrade is already in progress, where
+# unattended upgrades are disabled or where the 'unattended-upgrades'
+# package is not installed are skipped gracefully.
+#
+# Usage:
+#
+#   debops run scope/unattended_upgrades/run -l <host>
+#
+# You can chain the 'reboot.yml' playbook to tell the host to reboot after
+# the upgrade:
+#
+#   debops run scope/unattended_upgrades/run reboot -l <host>
+
+- name: Run unattended APT upgrades on demand
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_all_hosts', 'debops_all_services', 'debops_service_unattended_upgrades' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Import unattended_upgrades run entry point
+      ansible.builtin.import_role:
+        name: 'debops.debops.unattended_upgrades'
+        tasks_from: 'main_run.yml'
+      tags: [ 'role::unattended_upgrades', 'skip::unattended_upgrades' ]
