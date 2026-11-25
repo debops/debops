@@ -644,7 +644,7 @@ class Interpreter(object):
             '{} '.format(copy.copy_id)
             if copy.copy_id != copy.checklist else '',
             copy.checklist, parsed.progress)
-        if args.edit_message:
+        if args.edit:
             message = self._edit_text(message) or message
 
         write_file(str(vault_path), copy.path.read_text(), overwrite=True,

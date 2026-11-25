@@ -183,6 +183,20 @@ def test_checklist_open_defaults_the_copy_id_to_the_checklist():
     assert parsed.args.checklist == ["audit/review"]
 
 
+def test_checklist_open_reset_shorthand_parses():
+    parsed = cli_module.Subcommands(["debops", "checklist", "open",
+                                     "-r", "web", "audit/review"])
+    assert parsed.args.reset is True
+    assert parsed.args.checklist == ["web", "audit/review"]
+
+
+def test_checklist_commit_short_flags_parse():
+    parsed = cli_module.Subcommands(["debops", "checklist", "commit",
+                                     "-c", "-e", "web"])
+    assert parsed.args.close is True
+    assert parsed.args.edit is True
+
+
 def test_checklist_open_rejects_extra_positionals(capsys):
     with pytest.raises(SystemExit) as raised:
         cli_module.Subcommands(["debops", "checklist", "open",
@@ -420,7 +434,7 @@ def test_checklist_commit_records_the_vault_copy(tmp_path, state_home,
     monkeypatch.setattr(cli_module, "ProjectDir",
                         mock.Mock(return_value=project_stub))
     args = make_args(project_dir=str(project), copy="web", close=False,
-                     edit_message=False)
+                     edit=False)
     interpreter.do_checklist_commit(args)
 
     captured = capsys.readouterr()
@@ -458,7 +472,7 @@ def test_checklist_commit_twice_reports_no_changes(tmp_path, state_home,
     monkeypatch.setattr(cli_module, "ProjectDir",
                         mock.Mock(return_value=project_stub))
     args = make_args(project_dir=str(project), copy="web", close=False,
-                     edit_message=False)
+                     edit=False)
     interpreter.do_checklist_commit(args)
     interpreter.do_checklist_commit(args)
 
@@ -468,7 +482,7 @@ def test_checklist_commit_twice_reports_no_changes(tmp_path, state_home,
     assert project_stub.commit.call_count == 1
 
     args_close = make_args(project_dir=str(project), copy="web",
-                           close=True, edit_message=False)
+                           close=True, edit=False)
     interpreter.do_checklist_commit(args_close)
     captured = capsys.readouterr()
     assert "No changes since the last commit" in captured.out

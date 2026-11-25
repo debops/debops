@@ -1096,9 +1096,15 @@ Commands:
         parser.add_argument('checklist', nargs='+',
                             help='checklist path, optionally preceded by '
                                  'a copy id')
-        self.add_bool_argument(parser, 'reset', default=False,
-                               help='discard the current state of the '
-                                    'copy id and re-copy the checklist')
+        group = parser.add_mutually_exclusive_group()
+        group.add_argument('-r', '--reset', dest='reset', default=False,
+                           help='discard the current state of the '
+                                'copy id and re-copy the checklist',
+                           action='store_true')
+        group.add_argument('--no-reset', dest='reset',
+                           help='keep the current state of the '
+                                'copy id',
+                           action='store_false')
         self.args = parser.parse_args(self.args[3:])
         if not 1 <= len(self.args.checklist) <= 2:
             parser.error('open takes a checklist path, optionally '
@@ -1116,10 +1122,9 @@ Commands:
                 parents=[self.global_parser],
                 usage='debops checklist commit [<args>] <copy>')
         parser.add_argument('copy', help='copy id or checklist path')
-        parser.add_argument('--close', action='store_true',
+        parser.add_argument('-c', '--close', action='store_true',
                             help='deactivate the copy after the commit')
-        parser.add_argument('--edit-message', dest='edit_message',
-                            action='store_true',
+        parser.add_argument('-e', '--edit', action='store_true',
                             help='compose the commit message in an '
                                  'editor')
         self.args = parser.parse_args(self.args[3:])
