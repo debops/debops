@@ -2,7 +2,9 @@
 # Copyright (C) 2026 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Tests for ``debops.core.checklists`` parsing."""
+"""Tests for ``debops.core.checklists`` parsing and discovery."""
+
+from pathlib import Path
 
 import pytest
 
@@ -143,3 +145,109 @@ def test_fully_resolved_checklist_has_no_open_items():
     text = "- [x] Done\n- [F] Failed\n- [N] Skipped\n"
     parsed = checklists.parse_checklist(text)
     assert not parsed.has_open_items
+
+
+@pytest.fixture
+def layer_roots(tmp_path):
+    """Three discovery roots: project, user and packaged."""
+    project = tmp_path / "project" / ".debops" / "checklists"
+    user = tmp_path / "user" / "checklists"
+    packaged = tmp_path / "packaged" / "checklists"
+    for root in (project, user, packaged):
+        root.mkdir(parents=True)
+    return project, user, packaged
+
+
+def _layers(project, user, packaged):
+    return [(project, "project"), (user, "user"), (packaged, "packaged")]
+
+
+def test_find_checklist_prefers_the_project_layer(layer_roots):
+    project, user, packaged = layer_roots
+    for root in (project, user, packaged):
+        path = root / "audit" / "review.md"
+        path.parent.mkdir(parents=True)
+        path.write_text("# Review\n")
+    found, origin = checklists.find_checklist(
+        "audit/review", _layers(*layer_roots))
+    assert found == project / "audit" / "review.md"
+    assert origin == "project"
+
+
+def test_find_checklist_falls_back_through_the_layers(layer_roots):
+    project, user, packaged = layer_roots
+    (packaged / "system").mkdir()
+    (packaged / "system" / "host-reboot.md").write_text("# Reboot\n")
+    found, origin = checklists.find_checklist(
+        "system/host-reboot", _layers(*layer_roots))
+    assert found == packaged / "system" / "host-reboot.md"
+    assert origin == "packaged"
+
+    (user / "system").mkdir()
+    (user / "system" / "host-reboot.md").write_text("# Reboot\n")
+    found, origin = checklists.find_checklist(
+        "system/host-reboot", _layers(*layer_roots))
+    assert found == user / "system" / "host-reboot.md"
+    assert origin == "user"
+
+
+def test_missing_layers_are_tolerated(layer_roots):
+    project, user, packaged = layer_roots
+    (packaged / "system").mkdir()
+    (packaged / "system" / "host-reboot.md").write_text("# Reboot\n")
+    found, origin = checklists.find_checklist(
+        "system/host-reboot", _layers(*layer_roots))
+    assert origin == "packaged"
+
+    missing = [(Path("/nonexistent") / "project", "project"),
+               (Path("/nonexistent") / "user", "user"),
+               (packaged, "packaged")]
+    found, origin = checklists.find_checklist(
+        "system/host-reboot", missing)
+    assert origin == "packaged"
+
+
+def test_md_less_and_md_suffixed_names_resolve_identically(layer_roots):
+    project, user, packaged = layer_roots
+    (project / "system").mkdir()
+    (project / "system" / "host-reboot.md").write_text("# Reboot\n")
+    with_suffix, _ = checklists.find_checklist(
+        "system/host-reboot.md", _layers(*layer_roots))
+    without_suffix, _ = checklists.find_checklist(
+        "system/host-reboot", _layers(*layer_roots))
+    assert with_suffix == without_suffix
+
+    (project / "plain").write_text("# Plain\n")
+    found, _ = checklists.find_checklist("plain.md", _layers(*layer_roots))
+    assert found == project / "plain"
+
+
+@pytest.mark.parametrize("name", [
+    "../secret",
+    "audit/../secret.md",
+    "/etc/passwd",
+    "",
+])
+def test_traversal_and_invalid_names_are_rejected(layer_roots, name):
+    with pytest.raises(checklists.ChecklistError):
+        checklists.find_checklist(name, _layers(*layer_roots))
+
+
+def test_unknown_checklist_raises_not_found(layer_roots):
+    with pytest.raises(checklists.ChecklistNotFoundError):
+        checklists.find_checklist("no/such/checklist", _layers(*layer_roots))
+
+
+def test_checklist_layers_order_and_roots(tmp_path, monkeypatch):
+    monkeypatch.setattr(checklists, "xdg_data_home", str(tmp_path / "data"))
+    project = tmp_path / "project"
+    layers = checklists.checklist_layers(project_dir=project)
+    assert layers == [
+        (project / ".debops" / "checklists", "project"),
+        (tmp_path / "data" / "debops" / "checklists", "user"),
+        (Path(checklists.DEBOPS_PACKAGE_DATA) / "checklists", "packaged"),
+    ]
+
+    without_project = checklists.checklist_layers()
+    assert [origin for _, origin in without_project] == [
+        "user", "packaged"]

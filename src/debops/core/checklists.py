@@ -11,8 +11,13 @@ synonyms; unknown bracket content parses as an open item.
 
 import re
 from dataclasses import dataclass
+from pathlib import Path, PurePosixPath
 
 import yaml
+from xdg.BaseDirectory import xdg_data_home
+
+from .constants import DEBOPS_PACKAGE_DATA
+from .exceptions import ChecklistError, ChecklistNotFoundError
 
 # Task items are list lines whose brackets carry a one-character state
 # marker. Longer bracket content is commentary, not a state.
@@ -123,3 +128,60 @@ def _parse_items(body: str) -> list[ChecklistItem]:
         ))
         parents.append(indent)
     return items
+
+
+def checklist_layers(
+    project_dir: str | Path | None = None,
+) -> list[tuple[Path, str]]:
+    """The checklist discovery layers, most specific first.
+
+    The project layer wins over the user layer, which wins over the
+    packaged layer. Contexts without a project -- ``checklist list``
+    outside a project directory -- simply omit the first layer.
+    """
+    layers = []
+    if project_dir is not None:
+        layers.append(
+            (Path(project_dir) / '.debops' / 'checklists', 'project'))
+    layers.append((Path(xdg_data_home) / 'debops' / 'checklists', 'user'))
+    layers.append((Path(DEBOPS_PACKAGE_DATA) / 'checklists', 'packaged'))
+    return layers
+
+
+def find_checklist(
+    name: str,
+    layers: list[tuple[Path, str]],
+) -> tuple[Path, str]:
+    """Resolve a checklist name against the discovery layers.
+
+    Layers are ``(root, origin)`` pairs; the first existing file wins
+    and its origin is returned alongside the path. A name may be given
+    with or without the ``.md`` suffix -- both spellings resolve
+    identically regardless of how the file is stored.
+    """
+    _validate_checklist_name(name)
+    candidates = [name]
+    if name.endswith('.md'):
+        stripped = name[:-len('.md')]
+        if stripped:
+            candidates.append(stripped)
+    else:
+        candidates.append(name + '.md')
+    for root, origin in layers:
+        for candidate in candidates:
+            path = root / candidate
+            if path.is_file():
+                return path, origin
+    raise ChecklistNotFoundError(f"Checklist not found: {name}")
+
+
+def _validate_checklist_name(name: str) -> None:
+    """Reject absolute names and names escaping the layer roots.
+
+    The check runs on the name itself, before any join: an absolute
+    name would otherwise replace the layer root, and ``..`` parts
+    would escape it.
+    """
+    parts = PurePosixPath(name).parts
+    if not name or PurePosixPath(name).is_absolute() or '..' in parts:
+        raise ChecklistError(f"Invalid checklist name: {name!r}")
