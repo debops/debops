@@ -161,7 +161,7 @@
     job: '/usr/local/lib/smstools/test-sms-on-reboot'
     special_time: 'reboot'
     state: 'present'
-  when: (smstools_test_recipients is defined and smstools_test_recipients)
+  when: (smstools_test_recipients is defined and smstools_test_recipients is truthy)
 
 - name: Check if rsyslog is installed
   ansible.builtin.stat:
@@ -176,7 +176,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Restart rsyslogd' ]
-  when: (smstools_register_rsyslog is defined and smstools_register_rsyslog) and
+  when: (smstools_register_rsyslog is defined and smstools_register_rsyslog is truthy) and
         smstools_register_rsyslog.stat.exists
 
 - name: Configure logrotate
@@ -186,5 +186,5 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: (smstools_register_rsyslog is defined and smstools_register_rsyslog) and
+  when: (smstools_register_rsyslog is defined and smstools_register_rsyslog is truthy) and
         smstools_register_rsyslog.stat.exists
