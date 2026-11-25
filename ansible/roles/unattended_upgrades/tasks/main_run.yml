@@ -1,0 +1,104 @@
+---
+# Copyright (C) 2026 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Entry point playbook: scope/unattended_upgrades/run.yml
+
+# Run an unattended upgrade cycle on demand, the way the
+# 'apt-daily-upgrade.timer' systemd timer runs it on a regular basis.
+# Hosts where an unattended upgrade is already in progress, where
+# unattended upgrades are disabled or where the 'unattended-upgrades'
+# package is not installed are skipped gracefully.
+
+- name: Check if the unattended-upgrade binary is available
+  ansible.builtin.stat:
+    path: '/usr/bin/unattended-upgrade'
+  register: unattended_upgrades__register_run_binary
+
+- name: Check if an unattended upgrade is currently running
+  ansible.builtin.command:
+    cmd: 'flock -n /run/unattended-upgrades.lock true'
+  register: unattended_upgrades__register_run_lock
+  changed_when: False
+  failed_when: unattended_upgrades__register_run_lock.rc not in [ 0, 1 ]
+  check_mode: False
+  when: ((unattended_upgrades__register_run_binary.stat.exists | bool)
+         and (unattended_upgrades__enabled | bool))
+
+- name: Gather the state of the services on the host
+  ansible.builtin.service_facts:
+  register: unattended_upgrades__register_run_services
+  when: ((unattended_upgrades__register_run_binary.stat.exists | bool)
+         and (unattended_upgrades__enabled | bool))
+
+- name: Determine the state of the apt-daily-upgrade unit
+  ansible.builtin.set_fact:
+    unattended_upgrades__run_unit_state: '{{
+        "active"
+        if (unattended_upgrades__register_run_services.ansible_facts.services
+            | d({})).get("apt-daily-upgrade.service", {}).get("state")
+           in ["active", "activating", "reloading"]
+        else ("present"
+              if ("apt-daily-upgrade.service"
+                  in (unattended_upgrades__register_run_services.ansible_facts.services
+                      | d({})))
+              else "absent") }}'
+  when: ((unattended_upgrades__register_run_binary.stat.exists | bool)
+         and (unattended_upgrades__enabled | bool))
+
+- name: Determine the unattended upgrade run state
+  ansible.builtin.set_fact:
+    unattended_upgrades__run_state: '{{
+        "missing"
+        if not (unattended_upgrades__register_run_binary.stat.exists | bool)
+        else ("disabled"
+              if not (unattended_upgrades__enabled | bool)
+              else ("busy"
+                    if (((unattended_upgrades__register_run_lock.rc | d(0)) == 1)
+                        or ((unattended_upgrades__run_unit_state | d("absent")) == "active"))
+                    else "idle")) }}'
+
+- name: Check what an unattended upgrade would change on the host
+  ansible.builtin.command:
+    argv:
+      - 'flock'
+      - '-n'
+      - '/run/unattended-upgrades.lock'
+      - '/usr/bin/unattended-upgrade'
+      - '--dry-run'
+      - '-v'
+  environment:
+    LC_ALL: 'C'
+  register: unattended_upgrades__register_run_dry
+  changed_when: False
+  failed_when: unattended_upgrades__register_run_dry.rc not in [ 0, 1 ]
+  check_mode: False
+  when: unattended_upgrades__run_state == 'idle'
+
+- name: Determine if an unattended upgrade would change the host
+  ansible.builtin.set_fact:
+    unattended_upgrades__run_pending: '{{
+        ((unattended_upgrades__register_run_dry.rc | d(1)) == 0)
+        and ("No packages found that can be upgraded unattended"
+             not in (unattended_upgrades__register_run_dry.stdout | d(""))) }}'
+
+- name: Run unattended upgrades through the systemd unit
+  ansible.builtin.systemd:
+    name: 'apt-daily-upgrade.service'
+    state: 'started'
+  register: unattended_upgrades__register_run_systemd
+  when: ((unattended_upgrades__run_state == 'idle')
+         and (unattended_upgrades__run_pending | bool)
+         and ((unattended_upgrades__run_unit_state | d("absent")) == "present"))
+
+- name: Run unattended upgrades through the unattended-upgrade binary
+  ansible.builtin.shell:
+    cmd: 'flock -n /run/unattended-upgrades.lock
+          /usr/bin/unattended-upgrade >/dev/null'
+  register: unattended_upgrades__register_run_direct
+  changed_when: unattended_upgrades__register_run_direct.rc == 0
+  failed_when: unattended_upgrades__register_run_direct.rc not in [ 0, 1 ]
+  when: ((unattended_upgrades__run_state == 'idle')
+         and (unattended_upgrades__run_pending | bool)
+         and ((unattended_upgrades__run_unit_state | d("absent")) == "absent"))
