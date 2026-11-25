@@ -59,6 +59,41 @@ Here's an example playbook that can be used to enable and manage the
    :language: yaml
    :lines: 1,6-
 
+
+Role entry points
+-----------------
+
+The ``debops.unattended_upgrades`` role supports multiple entry points,
+utilized by the playbooks provided with the role:
+
+``service/unattended_upgrades`` | ``scope/unattended_upgrades``
+  The main playbook which manages the ``unattended-upgrades`` package and
+  its configuration. Tags can be used to apply specific roles or exclude
+  roles that are not needed in a given Ansible playbook run.
+
+  The :file:`service/unattended_upgrades` playbook is included in the
+  DebOps :file:`common.yml` playbook.
+
+``scope/unattended_upgrades/run``
+  This playbook can be used to perform an unattended upgrade cycle on all
+  or specific hosts in the Ansible inventory on demand, the way the
+  :command:`apt-daily-upgrade.timer` systemd timer runs it on a regular
+  basis. The actual run is triggered only when an
+  :command:`unattended-upgrade --dry-run` probe shows that the upgrade
+  would change something on the host with its current configuration, which
+  makes the playbook idempotent. Hosts where an unattended upgrade is
+  already in progress, where unattended upgrades are disabled via the
+  :envvar:`unattended_upgrades__enabled` variable, or where the
+  :program:`unattended-upgrade` command is not installed are skipped.
+
+  The playbook can be chained with the ``reboot`` playbook to reboot the
+  hosts after the upgrade:
+
+  .. code-block:: console
+
+     debops run scope/unattended_upgrades/run reboot -l <host>
+
+
 Use as a role dependency
 ------------------------
 
