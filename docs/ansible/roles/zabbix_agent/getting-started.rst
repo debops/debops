@@ -112,38 +112,40 @@ together with :envvar:`zabbix_agent__tls_mode` set to ``cert`` - a host
 created this way would end up requiring ``psk``/``unencrypted``, while the
 agent is actually configured for ``cert``, and connections would fail.
 
-Self-registration requires Zabbix Server 6.4 or newer (the role uses Bearer
-token authentication and the ``selectHostGroups`` API parameter) and network
-access from :envvar:`zabbix_agent__api_delegate_to` (``localhost``, the
-Ansible Controller, by default) to the URL set in
-:envvar:`zabbix_agent__api_url`. The role does not create the API token;
-create it in the Zabbix web interface (:menuselection:`Users --> API tokens`)
-for a user allowed to manage hosts, host groups and templates, and save it
-on the Ansible Controller in the DebOps ``secret/`` directory, by default in
-the ``secret/zabbix/api_token`` file (see
+Self-registration requires Zabbix Server 7.0 or newer, the
+``community.zabbix`` Ansible collection, version 3.3.0 or newer (included in
+the ``ansible`` package in Debian 13) and network access from the Ansible
+Controller to the URL set in :envvar:`zabbix_agent__api_url`. The modules from
+the collection always connect to the API from the Ansible Controller. The role
+does not create the API token; create it in the Zabbix web interface
+(:menuselection:`Users --> API tokens`) for a user allowed to manage hosts,
+host groups and templates, and save it on the Ansible Controller in the DebOps
+``secret/`` directory, by default in the ``secret/zabbix/api_token`` file (see
 :envvar:`zabbix_agent__api_token_path`).
 
-The host groups, linked templates, macros and tags applied to the
-registered host are controlled by
-:envvar:`zabbix_agent__api_host_groups`, :envvar:`zabbix_agent__api_link_templates`,
-:envvar:`zabbix_agent__api_macros`, :envvar:`zabbix_agent__api_tags` and
-their ``group``/``host`` counterparts. The role adds the host to the ``Linux
+The host groups, linked templates, macros and tags applied to the registered
+host are controlled by :envvar:`zabbix_agent__api_host_groups`,
+:envvar:`zabbix_agent__api_link_templates`,
+:envvar:`zabbix_agent__api_macros`, :envvar:`zabbix_agent__api_tags` and their
+``group``/``host`` counterparts. The role adds the host to the ``Linux
 servers`` host group and links the ``Linux by Zabbix agent`` template by
 default, using the :envvar:`zabbix_agent__api_default_host_groups` and
 :envvar:`zabbix_agent__api_default_link_templates` variables, so the inventory
 variables only need to list the additional entries. Missing host groups are
-created automatically; templates that do not exist in Zabbix are skipped with
-a warning. Host groups, templates, interfaces, macros and tags added to the
-host object outside of the role are preserved.
+created automatically; templates that do not exist in Zabbix stop the role
+before anything is changed in Zabbix. Host groups, templates, interfaces,
+macros and tags added to the host object outside of the role are preserved.
 
 The list entries can use the ``state`` parameter to remove the host from
-a host group, unlink a template, or remove a macro or a tag, also when they
-were defined on a different inventory level or added outside of the role.
-Unlinked templates are not cleared, their items stay on the host. See
+a host group, or remove a macro or a tag, also when they were defined on
+a different inventory level or added outside of the role. Templates are only
+linked by the role, never unlinked. See
 :ref:`zabbix_agent__ref_api_lists` for details.
 
 In Ansible check mode the role only queries the Zabbix API; host groups and
-the host object are not created or modified.
+the host object are not created or modified. Zabbix does not return pre-shared
+keys and values of secret macros, so the role sets them on every run without
+reporting a change.
 
 
 Known limitations
@@ -161,12 +163,13 @@ account from it manually after changing the TLS mode away from ``cert``.
 
 Self-registration through the API is additive: removing a template, host
 group, macro or tag from the Ansible inventory does not unlink or remove it
-from the host object in Zabbix; use the ``absent`` state for that, as
-described in :ref:`zabbix_agent__ref_api_lists`. Setting
+from the host object in Zabbix. Use the ``absent`` state for that, except for
+templates, which need to be unlinked in the Zabbix web interface, as described
+in :ref:`zabbix_agent__ref_api_lists`. Setting
 :envvar:`zabbix_agent__deploy_state` to ``absent`` does not remove the host
-object. Tags are compared by both name and value, therefore changing the
-value of a tag in the inventory adds a new tag and keeps the old one, unless
-the old pair is set to ``absent``. The
-host status (:envvar:`zabbix_agent__api_status`) and the visible
-name (:envvar:`zabbix_agent__api_visible_name`) are set on every run,
-overriding changes made in the Zabbix web interface.
+object. Tags are compared by both name and value, therefore changing the value
+of a tag in the inventory adds a new tag and keeps the old one, unless the old
+pair is set to ``absent``. The host status
+(:envvar:`zabbix_agent__api_status`) and the visible name
+(:envvar:`zabbix_agent__api_visible_name`) are set on every run, overriding
+changes made in the Zabbix web interface.

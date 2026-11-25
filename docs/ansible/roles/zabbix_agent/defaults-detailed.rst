@@ -118,7 +118,9 @@ Zabbix is configured from four groups of variables:
 The lists in each group are combined in the order shown above, so the
 entries from the inventory host override the entries from the inventory
 groups, which override the ones defined for all hosts and the defaults of the
-role.
+role. Tags are an exception: Zabbix allows several values of the same tag, so
+a tag with a different value is added next to the earlier one. To replace
+a value, add an entry with the old value in the ``absent`` state.
 
 Examples
 ~~~~~~~~
@@ -136,14 +138,14 @@ a macro used by that template:
        value: '10m'
        description: 'Wait 10 minutes before reporting that the agent is down'
 
-Unlink the template on one of the hosts and change the value of the macro;
+Don't link the template on one of the hosts and change the value of the macro;
 the description of the macro is kept from the group entry:
 
 .. code-block:: yaml
 
    zabbix_agent__api_host_link_templates:
      - name: 'Systemd by Zabbix agent 2'
-       state: 'absent'
+       state: 'init'
 
    zabbix_agent__api_host_macros:
      - macro: '{$AGENT.TIMEOUT}'
@@ -177,13 +179,13 @@ merged together in order of appearance:
 ``state``
   Optional. If not specified or ``present``, the host is added to the host
   group, or the template is linked to the host. Missing host groups are
-  created automatically, missing templates are skipped with a warning.
+  created automatically, templates need to exist in Zabbix.
 
-  If ``absent``, the host is removed from the host group, or the template is
-  unlinked from the host. Unlinked templates are not cleared, the items and
-  other entities created from them are kept on the host and need to be removed
-  in the Zabbix web interface if needed. Host groups in the ``absent`` state
-  are not created.
+  If ``absent``, the host is removed from the host group; the host group
+  itself is not created or removed. This state is not supported for templates
+  and stops the role, because unlinking a template would remove its items and
+  the data collected by them. Unlink the template in the Zabbix web interface
+  instead.
 
   If ``init`` or ``ignore``, the entry is skipped; the host group or template
   is not added and not removed by the role.
@@ -230,7 +232,7 @@ a separate pair of a tag and its value:
   Entries in other states are skipped.
 
 An entry without the ``state`` parameter keeps the state of an earlier entry
-with the same ``name`` or ``macro``. For example, a template set to
+with the same ``name`` or ``macro``. For example, a host group set to
 ``absent`` on the inventory group level stays absent when a host lists the
-template again by its name; the host needs to set ``state: 'present'`` to link
-it back.
+host group again by its name; the host needs to set ``state: 'present'`` to be
+added back.

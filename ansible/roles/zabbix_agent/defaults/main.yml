@@ -630,6 +630,11 @@ zabbix_agent__original_configuration:
 # List of the default configuration options defined by the role.
 zabbix_agent__default_configuration:
 
+  # Active checks work only when the agent uses the name of its host object.
+  - name: 'Hostname'
+    value: '{{ zabbix_agent__api_host_name }}'
+    state: '{{ "present" if (zabbix_agent__api_register | bool) else "ignore" }}'
+
   - name: 'User'
     value: '{{ zabbix_agent__user }}'
     state: '{{ "present" if zabbix_agent__flavor == "C" else "ignore" }}'
@@ -711,9 +716,9 @@ zabbix_agent__combined_configuration: '{{ zabbix_agent__original_configuration
 # Zabbix "active agent auto-registration" mechanism (which cannot assign
 # a TLS certificate to a newly created host, and therefore does not work
 # well together with :envvar:`zabbix_agent__tls_mode` set to ``cert``). This
-# requires Zabbix Server 6.4 or newer, network access from
-# :envvar:`zabbix_agent__api_delegate_to` to the Zabbix API, and an API
-# token created in Zabbix beforehand and stored in the DebOps ``secret/``
+# requires Zabbix Server 7.0 or newer, the ``community.zabbix`` Ansible
+# collection, network access from the Ansible Controller to the Zabbix API, and
+# an API token created in Zabbix beforehand and stored in the DebOps ``secret/``
 # directory on the Ansible Controller (see
 # :envvar:`zabbix_agent__api_token_path`).
 
@@ -727,19 +732,12 @@ zabbix_agent__api_register: False
 # .. envvar:: zabbix_agent__api_url [[[
 #
 # URL of the Zabbix Server API endpoint, for example
-# ``https://zabbix.example.org/api_jsonrpc.php``. Required when
-# :envvar:`zabbix_agent__api_register` is enabled.
+# ``https://zabbix.example.org/api_jsonrpc.php``. It needs to end with
+# :file:`api_jsonrpc.php`. Required when
+# :envvar:`zabbix_agent__api_register` is enabled. The API token is sent to this
+# URL, therefore it needs to use HTTPS; plain HTTP is accepted only for
+# ``localhost``, ``127.0.0.1`` and ``[::1]``.
 zabbix_agent__api_url: ''
-
-                                                                   # ]]]
-# .. envvar:: zabbix_agent__api_delegate_to [[[
-#
-# Host on which the Ansible tasks that communicate with the Zabbix API will
-# be executed. By default this is the Ansible Controller (``localhost``),
-# since the API is reachable over the network and the managed host itself
-# might not have (or need) outgoing access to it. Change this if the API
-# should be reached through a specific jump host instead.
-zabbix_agent__api_delegate_to: 'localhost'
 
                                                                    # ]]]
 # .. envvar:: zabbix_agent__api_validate_certs [[[
@@ -765,8 +763,13 @@ zabbix_agent__api_token: '{{ (lookup("file", secret + "/" + zabbix_agent__api_to
                                                                    # ]]]
 # .. envvar:: zabbix_agent__api_host_name [[[
 #
-# Technical name of the host object created in Zabbix. Should match the
-# ``Hostname`` configuration option, if it's defined.
+# Technical name of the host object created in Zabbix. When
+# :envvar:`zabbix_agent__api_register` is enabled, it's also the default value of
+# the ``Hostname`` configuration option, since active checks require both to be
+# the same. If that option is changed in the inventory, this variable should be
+# set to the same value. The agent ignores ``HostnameItem`` when ``Hostname`` is
+# defined; if you use a custom ``HostnameItem``, set both ``Hostname`` and this
+# variable to the resulting name.
 zabbix_agent__api_host_name: '{{ ansible_fqdn }}'
 
                                                                    # ]]]
@@ -795,9 +798,8 @@ zabbix_agent__api_interface_useip: 0
 # IP address used in the host interface definition: the default IPv4 address
 # of the host, or the default IPv6 address on a host without IPv4. If neither
 # is known, the ``ansible_host`` variable from the inventory is used when it
-# contains an IP address (it is read through ``hostvars``, because the API
-# tasks are delegated to another host); otherwise the address is left empty,
-# which Zabbix accepts for interfaces that use the DNS name. With
+# contains an IP address; otherwise the address is left empty, which Zabbix
+# accepts for interfaces that use the DNS name. With
 # :envvar:`zabbix_agent__api_interface_useip` enabled the address cannot be
 # empty, and on a host with only IPv6 the Zabbix Server connects to the agent
 # over IPv6.
@@ -805,8 +807,8 @@ zabbix_agent__api_interface_ip: '{{ ansible_default_ipv4.address
                                      if (ansible_default_ipv4.address | d())
                                      else (ansible_default_ipv6.address
                                            if (ansible_default_ipv6.address | d())
-                                           else (hostvars[inventory_hostname].ansible_host
-                                                 if (hostvars[inventory_hostname].ansible_host | d()
+                                           else (ansible_host
+                                                 if (ansible_host | d()
                                                      | ansible.utils.ipaddr)
                                                  else "")) }}'
 
@@ -863,8 +865,8 @@ zabbix_agent__api_combined_host_groups: '{{ zabbix_agent__api_default_host_group
                                                                    # ]]]
 # .. envvar:: zabbix_agent__api_default_link_templates [[[
 #
-# List of Zabbix templates linked to the host, defined by the role. Templates
-# which do not exist in Zabbix are skipped with a warning. See
+# List of Zabbix templates linked to the host, defined by the role. The
+# templates need to exist in Zabbix. See
 # :ref:`zabbix_agent__ref_api_lists` for more details.
 zabbix_agent__api_default_link_templates: [ 'Linux by Zabbix agent' ]
 

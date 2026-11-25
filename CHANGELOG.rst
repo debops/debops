@@ -184,8 +184,9 @@ General
   host groups, templates, macros, tags and encryption settings defined in
   the Ansible inventory. Objects added to the host in Zabbix by other means
   are preserved. List entries in the ``absent`` state remove the host from
-  a host group, unlink a template, or remove a macro or a tag. On hosts
-  without IPv4 the host interface uses the default IPv6 address.
+  a host group, or remove a macro or a tag. The role uses modules from the
+  ``community.zabbix`` Ansible collection. On hosts without IPv4 the host
+  interface uses the default IPv6 address.
 
 Changed
 ~~~~~~~

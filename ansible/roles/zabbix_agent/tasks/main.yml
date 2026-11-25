@@ -18,11 +18,36 @@
   ansible.builtin.assert:
     that:
       - zabbix_agent__tls_mode in [ 'psk', 'cert', 'unencrypted' ]
+    quiet: True
+  when: zabbix_agent__deploy_state != 'absent'
+
+- name: Validate Zabbix API registration settings
+  ansible.builtin.assert:
+    that:
       - not (zabbix_agent__api_register | bool) or (zabbix_agent__api_url | length > 0)
+      - not (zabbix_agent__api_register | bool) or
+        (zabbix_agent__api_url is match("(?i)https://|http://(localhost|127\.0\.0\.1|\[::1\])(:[0-9]+)?(/|$)"))
+      - not (zabbix_agent__api_register | bool) or (zabbix_agent__api_url is search("/api_jsonrpc\.php$"))
       - not (zabbix_agent__api_register | bool) or (zabbix_agent__api_interface_useip | int == 0) or
         (zabbix_agent__api_interface_ip | length > 0)
     quiet: True
   when: zabbix_agent__deploy_state != 'absent'
+  tags: [ 'role::zabbix_agent:api_register' ]
+
+- name: Check that no Zabbix template is marked for removal
+  ansible.builtin.assert:
+    that:
+      - zabbix_agent__api_combined_link_templates
+        | debops.debops.parse_kv_items
+        | selectattr("state", "equalto", "absent") | list | length == 0
+    fail_msg: 'Unlinking of Zabbix templates is not supported, because it would
+               remove their items and collected data from the host. Use the
+               "init" state to not link a template, and unlink it in the Zabbix
+               frontend if needed.'
+    quiet: True
+  when: zabbix_agent__deploy_state != 'absent' and
+        zabbix_agent__api_register | bool
+  tags: [ 'role::zabbix_agent:api_register' ]
 
 # Package installation [[[1
 - name: Install Zabbix agent packages
