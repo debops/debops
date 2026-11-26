@@ -10,7 +10,7 @@ from ..core.config import Configuration, shadowing_file
 from .subcommands import Subcommands
 from ..core.projectdir import ProjectDir
 from ..core.projectvenv import ProjectVenv
-from ..core.ansible.ansiblerunner import AnsibleRunner
+from ..core.ansible.ansiblerunner import AnsibleRunner, parse_list_hosts
 from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
 from ..core.tofu.inventory import render_view_inventory
@@ -685,22 +685,19 @@ class Interpreter(object):
                 # A lone argument that is not a checklist name can
                 # still be an open copy id; with --reset the copy
                 # re-opens from the checklist its sidecar records
-                copy_id, name, path, origin = self._heal_open_copy(
+                copy_id, name, path, origin = checklists.resolve_heal(
                     name, state_dir, layers, filters, reset=args.reset,
                     dry_run=args.dry_run)
             parsed = checklists.parse_checklist(
                 path.read_text(encoding='utf-8'))
-            if not parsed.items:
-                raise checklists.ChecklistError(
-                    'The checklist {} does not contain any task items; '
-                    'check the marker syntax'.format(name))
+            checklists.require_task_items(parsed, name)
             # An inventory pattern in the copy id expands to one copy
             # per matching host; the whole batch validates before the
             # first copy opens
             expanded = '[' in copy_id and ']' in copy_id
             copy_ids = self._expand_copy_id(project, copy_id)
-            self._check_bulk_open(state_dir, copy_ids, name,
-                                  reset=args.reset, expanded=expanded)
+            checklists.check_occupancy(state_dir, copy_ids, name,
+                                       reset=args.reset, expanded=expanded)
             if args.dry_run:
                 self._print_dry_run(copy_ids, name, origin, state_dir)
                 return
@@ -731,29 +728,17 @@ class Interpreter(object):
             sys.exit(1)
 
     def _expand_copy_id(self, project, copy_id):
-        """Expand an inventory pattern in the copy id to host copies.
+        """The copy ids of one operand.
 
-        A ``[pattern]`` segment in the copy id runs
-        :command:`ansible <pattern> --list-hosts` in the project
-        environment; each matching host replaces the segment, so
-        ``subdir/[webservers]/check`` opens ``subdir/web1/check`` and
-        its peers. Copy ids without a pattern come back unchanged.
+        The grammar lives in the library; this wrapper runs the
+        ansible query the expansion needs -- the pattern through the
+        project environment, the output parsed against its declared
+        host count.
         """
-        if '[' not in copy_id and ']' not in copy_id:
+        parsed_pattern = checklists.parse_copy_pattern(copy_id)
+        if parsed_pattern is None:
             return [copy_id]
-        if copy_id.count('[') != 1 or copy_id.count(']') != 1:
-            raise checklists.ChecklistError(
-                'The copy id supports only one inventory pattern: '
-                '{}'.format(copy_id))
-        match = re.match(r'^(?P<prefix>[^\[\]]*)\[(?P<pattern>[^\[\]]+)\]'
-                         r'(?P<suffix>[^\[\]]*)$', copy_id)
-        if match is None:
-            return [copy_id]
-        pattern = match.group('pattern')
-        if re.search(r'[;&|`\n\r]', pattern):
-            raise checklists.ChecklistError(
-                'The inventory pattern [{}] contains characters that '
-                'are not valid in an ansible pattern'.format(pattern))
+        pattern = parsed_pattern[1]
         runner = AnsibleRunner(project, ansible_args=[
             shlex.quote(pattern), '--list-hosts'])
         returncode, output = runner.capture()
@@ -761,54 +746,15 @@ class Interpreter(object):
             raise checklists.ChecklistError(
                 'The inventory pattern [{}] could not be '
                 'expanded'.format(pattern))
-        hosts = [line.strip() for line in output.splitlines()
-                 if line.strip() and not line.strip().endswith(':')]
+        try:
+            hosts = parse_list_hosts(output)
+        except ValueError as errmsg:
+            raise checklists.ChecklistError(str(errmsg)) from None
         if not hosts:
             raise checklists.ChecklistError(
                 'The inventory pattern [{}] matches no '
                 'hosts'.format(pattern))
-        expanded = ['{}{}{}'.format(match.group('prefix'), host,
-                                    match.group('suffix'))
-                    for host in hosts]
-        for expanded_id in expanded:
-            # Validate before the first copy opens: a malformed host
-            # name must not leave the batch half-open
-            checklists.validate_name(expanded_id)
-        return expanded
-
-    def _check_bulk_open(self, state_dir, copy_ids, checklist, reset,
-                         expanded=False):
-        """Refuse a multi-copy batch when one of its ids is occupied.
-
-        All-or-nothing: the batch either opens completely or not at
-        all. A single occupied copy keeps the single-copy refusal of
-        :command:`open_copy`; with ``--reset`` the occupied copies are
-        discarded and re-opened as requested. Expanded ids are
-        manufactured from the inventory rather than typed: when one of
-        them holds a different checklist, the collision is refused
-        instead of discarding another checklist's copy.
-        """
-        open_copies = {copy.copy_id: copy for copy in
-                       checklists.find_open_copies(state_dir)}
-        occupied = [copy_id for copy_id in copy_ids
-                    if copy_id in open_copies]
-        if not occupied:
-            return
-        if not reset:
-            if len(copy_ids) >= 2:
-                raise checklists.ChecklistAlreadyOpenError(
-                    'Already open: {}'.format(
-                        ', '.join(occupied)))
-            return
-        if expanded:
-            foreign = [copy_id for copy_id in occupied
-                       if open_copies[copy_id].checklist !=
-                       checklists.strip_md(checklist)]
-            if foreign:
-                raise checklists.ChecklistError(
-                    'The copies {} already hold other checklists; '
-                    'close them before opening {}'.format(
-                        ', '.join(foreign), checklist))
+        return checklists.expand_copy_ids(copy_id, hosts)
 
     def _print_dry_run(self, copy_ids, name, origin, state_dir):
         """Print what ``open`` would do, without opening anything."""
@@ -846,52 +792,11 @@ class Interpreter(object):
                 'The working copy {} cannot be read: {}; re-open it '
                 'with --reset'.format(copy.copy_id, errmsg)) from None
 
-    def _heal_open_copy(self, name, state_dir, layers, filters, reset,
-                        dry_run=False):
-        """Resolve a lone open copy id to its recorded checklist.
-
-        The copy records its checklist in the sidecar; the discovery
-        re-resolves it fresh, so the healed copy picks up the latest
-        source and its current origin. Without --reset the match is
-        an error spelling the reset command; a recorded checklist
-        that no longer resolves in any layer is never healable --
-        the copy is close and edit territory then. A dry run skips
-        the reset refusal: the preview shows what the heal would do.
-        """
-        copies = checklists.find_open_copies(state_dir)
-        match = next((item for item in copies
-                      if item.copy_id == name), None)
-        if match is None:
-            raise checklists.ChecklistNotFoundError(
-                'Checklist not found: {}'.format(name))
-        if not match.checklist:
-            raise checklists.ChecklistNotFoundError(
-                'Checklist not found: {}\n'
-                'An open copy {} does not record its checklist\n'
-                'Re-open it from the checklist name'.format(name, name))
-        try:
-            path, origin = checklists.find_checklist(
-                match.checklist, layers, filters=filters)
-        except checklists.ChecklistNotFoundError:
-            raise checklists.ChecklistNotFoundError(
-                'Checklist not found: {}\n'
-                'An open copy {} of {} exists\n'
-                'The recorded checklist no longer resolves in any '
-                'layer; close or edit the copy instead'.format(
-                    name, name, match.checklist))
-        if not reset and not dry_run:
-            raise checklists.ChecklistNotFoundError(
-                'Checklist not found: {}\n'
-                'An open copy {} of {} exists\n'
-                'To reset: debops checklist open {} --reset'.format(
-                    name, name, match.checklist, match.copy_id))
-        return match.copy_id, match.checklist, path, origin
-
     def do_checklist_edit(self, args):
         project = self._project(args)
         state_dir = checklists.checklist_state_dir(project.path)
         try:
-            copy = self._resolve_single_copy(args.copy, state_dir)
+            copy = checklists.resolve_single(args.copy, state_dir)
         except checklists.ChecklistError as errmsg:
             print_error(errmsg)
             sys.exit(1)
@@ -916,24 +821,6 @@ class Interpreter(object):
         except checklists.ChecklistError as errmsg:
             print_notice('{}, using sensible-editor'.format(errmsg))
             return ['sensible-editor']
-
-    def _resolve_single_copy(self, copy, state_dir):
-        """The copy argument, defaulting to the only open copy.
-
-        An omitted operand resolves when exactly one copy is open;
-        none or several are an error -- with a fleet open, the
-        command needs to be told which copy it targets.
-        """
-        if copy is not None:
-            return checklists.resolve_copy(copy, state_dir)
-        copies = checklists.find_open_copies(state_dir)
-        if not copies:
-            raise checklists.ChecklistNotOpenError('No open copies')
-        if len(copies) > 1:
-            ids = ', '.join(sorted(item.copy_id for item in copies))
-            raise checklists.ChecklistAmbiguousError(
-                'Several open copies: {}; name one'.format(ids))
-        return copies[0]
 
     def _checklist_filters(self):
         """The ``checklist.filters`` rule list, validated.
@@ -964,7 +851,7 @@ class Interpreter(object):
             self._commit_all_copies(project, state_dir, vault_dir, args)
             return
         try:
-            copy = self._resolve_single_copy(args.copy, state_dir)
+            copy = checklists.resolve_single(args.copy, state_dir)
             self._commit_copy(project, state_dir, vault_dir, copy, args)
         except checklists.ChecklistError as errmsg:
             print_error(errmsg)
@@ -1032,10 +919,7 @@ class Interpreter(object):
         """One copy's commit flow; raises the typed errors."""
         parsed = checklists.parse_checklist(
             self._read_copy_text(copy))
-        if not parsed.items:
-            raise checklists.ChecklistError(
-                'The checklist {} does not contain any task items; '
-                'nothing to commit'.format(copy.checklist))
+        checklists.require_task_items(parsed, copy.checklist)
         if not copy.checklist:
             raise checklists.ChecklistError(
                 'The copy {} does not record its checklist; '
@@ -1101,7 +985,7 @@ class Interpreter(object):
             copies = checklists.find_open_copies(state_dir)
         else:
             try:
-                copies = [self._resolve_single_copy(args.copy, state_dir)]
+                copies = [checklists.resolve_single(args.copy, state_dir)]
             except checklists.ChecklistError as errmsg:
                 print_error(errmsg)
                 sys.exit(1)

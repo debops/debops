@@ -5,9 +5,36 @@
 from .projectrunner import AnsibleProjectRunner
 from ..hooks import run_hooks
 import logging
+import re
 import subprocess
 
 logger = logging.getLogger(__name__)
+
+
+def parse_list_hosts(output: str) -> list[str]:
+    """The host names of 'ansible <pattern> --list-hosts' output.
+
+    The output declares the matched count in a ``hosts (N):``
+    header; a count that disagrees with the parsed names is an
+    error, so a silently shrunken match cannot open a partial
+    batch.
+    """
+    declared = None
+    hosts = []
+    for line in output.splitlines():
+        stripped = line.strip()
+        if stripped.endswith(':'):
+            declared_match = re.match(r'hosts \((\d+)\):$', stripped)
+            if declared_match:
+                declared = int(declared_match.group(1))
+            continue
+        if stripped:
+            hosts.append(stripped)
+    if declared is not None and declared != len(hosts):
+        raise ValueError(
+            'The pattern declared {} hosts, parsed {}'.format(
+                declared, len(hosts)))
+    return hosts
 
 
 class AnsibleRunner(AnsibleProjectRunner):
