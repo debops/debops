@@ -753,3 +753,13 @@ def _validate_name(name: str) -> None:
     if (not name or PurePosixPath(name).is_absolute() or '..' in parts
             or _COPIES_SEGMENT in parts or _CONTROLS_RE.search(name)):
         raise ChecklistError(f"Invalid checklist name: {name!r}")
+
+
+def validate_name(name: str) -> None:
+    """The public face of the checklist name and copy id rule.
+
+    The copy id expansion validates every generated id before the
+    first copy opens, so a hostile or malformed inventory host name
+    cannot leave the batch half-open.
+    """
+    _validate_name(name)

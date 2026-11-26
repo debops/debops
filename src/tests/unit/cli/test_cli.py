@@ -27,7 +27,11 @@ from git import GitCommandError
 
 
 def make_args(**kwargs):
-    return SimpleNamespace(**kwargs)
+    # The 'open' parser always provides --dry-run; the default rides
+    # along for every simulated argument namespace
+    arguments = {'dry_run': False}
+    arguments.update(kwargs)
+    return SimpleNamespace(**arguments)
 
 
 def make_interpreter(config=None):
@@ -386,6 +390,226 @@ def test_print_error_renders_multiline_reports(capsys):
     err = capsys.readouterr().err
     assert err.startswith("Error: first line\n")
     assert "second line" in err
+
+
+class _FakeInventoryRunner(object):
+    """The ansible runner stub: a fixed --list-hosts output."""
+
+    output = ""
+    returncode = 0
+
+    def __init__(self, project, ansible_args, **kwargs):
+        self.ansible_args = ansible_args
+
+    def capture(self):
+        return self.returncode, self.output
+
+
+def test_checklist_open_expands_an_inventory_pattern(
+        tmp_path, state_home, monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "host-verify.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Verify\n- [ ] Task\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    monkeypatch.setattr(cli_module, "AnsibleRunner", _FakeInventoryRunner)
+    _FakeInventoryRunner.output = "  hosts (2):\n    web1\n    web2\n"
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project),
+                     checklist=["subdir/[webservers]/check",
+                                "host-verify"],
+                     reset=False)
+    interpreter.do_checklist_open(args)
+
+    captured = capsys.readouterr()
+    assert "Opened host-verify as copy subdir/web1/check [packaged]" \
+        in captured.out
+    assert "Opened host-verify as copy subdir/web2/check [packaged]" \
+        in captured.out
+    for copy_id in ("subdir/web1/check", "subdir/web2/check"):
+        assert (state / copy_id / "checklist.md").exists()
+
+
+def test_checklist_open_refuses_a_pattern_matching_no_hosts(
+        tmp_path, state_home, monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "host-verify.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Verify\n- [ ] Task\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    monkeypatch.setattr(cli_module, "AnsibleRunner", _FakeInventoryRunner)
+    _FakeInventoryRunner.output = "  hosts (0):\n"
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project),
+                     checklist=["subdir/[webservers]/check",
+                                "host-verify"],
+                     reset=False)
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_open(args)
+
+    assert raised.value.code == 1
+    assert "matches no hosts" in capsys.readouterr().err
+    assert not state.exists()
+
+
+def test_checklist_open_refuses_two_inventory_patterns(
+        tmp_path, state_home, monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "host-verify.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Verify\n- [ ] Task\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project),
+                     checklist=["a/[x]/b/[y]", "host-verify"],
+                     reset=False)
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_open(args)
+
+    assert raised.value.code == 1
+    assert "only one inventory pattern" in capsys.readouterr().err
+    assert not state.exists()
+
+
+def test_checklist_open_dry_run_prints_the_expansion(
+        tmp_path, state_home, monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "host-verify.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Verify\n- [ ] Task\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    monkeypatch.setattr(cli_module, "AnsibleRunner", _FakeInventoryRunner)
+    _FakeInventoryRunner.output = "  hosts (2):\n    web1\n    web2\n"
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project),
+                     checklist=["subdir/[webservers]/check",
+                                "host-verify"],
+                     reset=False, dry_run=True)
+    interpreter.do_checklist_open(args)
+
+    captured = capsys.readouterr()
+    assert "Would open 2 of host-verify [packaged]:" in captured.out
+    assert "  subdir/web1/check" in captured.out
+    assert "  subdir/web2/check" in captured.out
+    assert not (state / "subdir").exists()
+
+
+def test_checklist_open_dry_run_marks_open_copies(
+        tmp_path, state_home, monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "host-verify.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Verify\n- [ ] Task\n")
+    checklists.open_copy(source, "host-verify", "packaged", "web", state)
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project), checklist=["web"],
+                     reset=False, dry_run=True)
+    interpreter.do_checklist_open(args)
+
+    out = capsys.readouterr().out
+    assert "Would open 1 of host-verify [packaged]:" in out
+    assert "  web (already open)" in out
+
+
+def test_checklist_open_bulk_refuses_when_a_copy_is_open(
+        tmp_path, state_home, monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "host-verify.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Verify\n- [ ] Task\n")
+    checklists.open_copy(source, "host-verify", "packaged",
+                         "subdir/web1/check", state)
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    monkeypatch.setattr(cli_module, "AnsibleRunner", _FakeInventoryRunner)
+    _FakeInventoryRunner.output = "  hosts (2):\n    web1\n    web2\n"
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project),
+                     checklist=["subdir/[webservers]/check",
+                                "host-verify"],
+                     reset=False)
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_open(args)
+
+    assert raised.value.code == 1
+    assert "Already open: subdir/web1/check" in capsys.readouterr().err
+    # All-or-nothing: the unoccupied id of the batch did not open
+    assert not (state / "subdir" / "web2" / "check").exists()
+
+
+def test_checklist_open_bulk_reset_reopens_the_copies(
+        tmp_path, state_home, monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "host-verify.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Verify\n- [ ] Task\n")
+    checklists.open_copy(source, "host-verify", "packaged",
+                         "subdir/web1/check", state)
+    (state / "subdir" / "web1" / "check" / "checklist.md").write_text(
+        "# Drifted\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    monkeypatch.setattr(cli_module, "AnsibleRunner", _FakeInventoryRunner)
+    _FakeInventoryRunner.output = "  hosts (2):\n    web1\n    web2\n"
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project),
+                     checklist=["subdir/[webservers]/check",
+                                "host-verify"],
+                     reset=True)
+    interpreter.do_checklist_open(args)
+
+    captured = capsys.readouterr()
+    assert "Opened host-verify as copy subdir/web1/check [packaged]" \
+        in captured.out
+    assert "Opened host-verify as copy subdir/web2/check [packaged]" \
+        in captured.out
+    assert (state / "subdir" / "web1" / "check" /
+            "checklist.md").read_text() == "# Verify\n- [ ] Task\n"
+    assert (state / "subdir" / "web2" / "check" / "checklist.md").exists()
 
 
 def _open_single_copy(tmp_path, state_home):

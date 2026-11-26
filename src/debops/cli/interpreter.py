@@ -32,6 +32,7 @@ from xdg.BaseDirectory import xdg_config_home
 import json
 import logging
 import getpass
+import re
 import shlex
 from pathlib import Path
 import subprocess
@@ -678,26 +679,107 @@ class Interpreter(object):
                 # still be an open copy id; with --reset the copy
                 # re-opens from the checklist its sidecar records
                 copy_id, name, path, origin = self._heal_open_copy(
-                    name, state_dir, layers, filters, reset=args.reset)
+                    name, state_dir, layers, filters, reset=args.reset,
+                    dry_run=args.dry_run)
             parsed = checklists.parse_checklist(
                 path.read_text(encoding='utf-8'))
             if not parsed.items:
                 raise checklists.ChecklistError(
                     'The checklist {} does not contain any task items; '
                     'check the marker syntax'.format(name))
-            checklists.open_copy(path, name, origin, copy_id, state_dir,
-                                 reset=args.reset)
+            # An inventory pattern in the copy id expands to one copy
+            # per matching host; the whole batch validates before the
+            # first copy opens
+            copy_ids = self._expand_copy_id(project, copy_id)
+            self._check_bulk_open(state_dir, copy_ids,
+                                  reset=args.reset)
+            if args.dry_run:
+                self._print_dry_run(copy_ids, name, origin, state_dir)
+                return
+            for expanded_id in copy_ids:
+                checklists.open_copy(path, name, origin, expanded_id,
+                                     state_dir, reset=args.reset)
+                if expanded_id == checklists.strip_md(name):
+                    print('Opened {} [{}]'.format(
+                        checklists.strip_md(name), origin))
+                else:
+                    print('Opened {} as copy {} [{}]'.format(
+                        checklists.strip_md(name), expanded_id, origin))
         except checklists.ChecklistError as errmsg:
             print_error(errmsg)
             sys.exit(1)
-        if copy_id == checklists.strip_md(name):
-            print('Opened {} [{}]'.format(
-                checklists.strip_md(name), origin))
-        else:
-            print('Opened {} as copy {} [{}]'.format(
-                checklists.strip_md(name), copy_id, origin))
 
-    def _heal_open_copy(self, name, state_dir, layers, filters, reset):
+    def _expand_copy_id(self, project, copy_id):
+        """Expand an inventory pattern in the copy id to host copies.
+
+        A ``[pattern]`` segment in the copy id runs
+        :command:`ansible <pattern> --list-hosts` in the project
+        environment; each matching host replaces the segment, so
+        ``subdir/[webservers]/check`` opens ``subdir/web1/check`` and
+        its peers. Copy ids without a pattern come back unchanged.
+        """
+        if '[' not in copy_id and ']' not in copy_id:
+            return [copy_id]
+        if copy_id.count('[') != 1 or copy_id.count(']') != 1:
+            raise checklists.ChecklistError(
+                'The copy id supports only one inventory pattern: '
+                '{}'.format(copy_id))
+        match = re.match(r'^(?P<prefix>[^\[\]]*)\[(?P<pattern>[^\[\]]+)\]'
+                         r'(?P<suffix>[^\[\]]*)$', copy_id)
+        if match is None:
+            return [copy_id]
+        runner = AnsibleRunner(project, ansible_args=[
+            match.group('pattern'), '--list-hosts'])
+        returncode, output = runner.capture()
+        if returncode != 0:
+            raise checklists.ChecklistError(
+                'The inventory pattern [{}] could not be '
+                'expanded'.format(match.group('pattern')))
+        hosts = [line.strip() for line in output.splitlines()
+                 if line.strip() and not line.strip().endswith(':')]
+        if not hosts:
+            raise checklists.ChecklistError(
+                'The inventory pattern [{}] matches no '
+                'hosts'.format(match.group('pattern')))
+        expanded = ['{}{}{}'.format(match.group('prefix'), host,
+                                    match.group('suffix'))
+                    for host in hosts]
+        for expanded_id in expanded:
+            # Validate before the first copy opens: a malformed host
+            # name must not leave the batch half-open
+            checklists.validate_name(expanded_id)
+        return expanded
+
+    def _check_bulk_open(self, state_dir, copy_ids, reset):
+        """Refuse a multi-copy batch when one of its ids is occupied.
+
+        All-or-nothing: the batch either opens completely or not at
+        all. A single occupied copy keeps the single-copy refusal of
+        :command:`open_copy`; with ``--reset`` the occupied copies are
+        discarded and re-opened as requested.
+        """
+        if len(copy_ids) < 2 or reset:
+            return
+        open_ids = {copy.copy_id for copy in
+                    checklists.find_open_copies(state_dir)}
+        occupied = [copy_id for copy_id in copy_ids
+                    if copy_id in open_ids]
+        if occupied:
+            raise checklists.ChecklistAlreadyOpenError(
+                'Already open: {}'.format(', '.join(occupied)))
+
+    def _print_dry_run(self, copy_ids, name, origin, state_dir):
+        """Print what ``open`` would do, without opening anything."""
+        open_ids = {copy.copy_id for copy in
+                    checklists.find_open_copies(state_dir)}
+        print('Would open {} of {} [{}]:'.format(
+            len(copy_ids), name, origin))
+        for copy_id in copy_ids:
+            marker = ' (already open)' if copy_id in open_ids else ''
+            print('  {}{}'.format(copy_id, marker))
+
+    def _heal_open_copy(self, name, state_dir, layers, filters, reset,
+                        dry_run=False):
         """Resolve a lone open copy id to its recorded checklist.
 
         The copy records its checklist in the sidecar; the discovery
@@ -705,7 +787,8 @@ class Interpreter(object):
         source and its current origin. Without --reset the match is
         an error spelling the reset command; a recorded checklist
         that no longer resolves in any layer is never healable --
-        the copy is close and edit territory then.
+        the copy is close and edit territory then. A dry run skips
+        the reset refusal: the preview shows what the heal would do.
         """
         copies = checklists.find_open_copies(state_dir)
         match = next((item for item in copies
@@ -728,7 +811,7 @@ class Interpreter(object):
                 'The recorded checklist no longer resolves in any '
                 'layer; close or edit the copy instead'.format(
                     name, name, match.checklist))
-        if not reset:
+        if not reset and not dry_run:
             raise checklists.ChecklistNotFoundError(
                 'Checklist not found: {}\n'
                 'An open copy {} of {} exists\n'

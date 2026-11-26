@@ -1110,6 +1110,11 @@ Commands:
                            help='keep the current state of the '
                                 'copy id',
                            action='store_false')
+        parser.add_argument('-d', '--dry-run', dest='dry_run',
+                            default=False,
+                            help='show what would be opened without '
+                                 'opening anything',
+                            action='store_true')
         self.args = parser.parse_args(self.args[3:])
         if not 1 <= len(self.args.checklist) <= 2:
             parser.error('open takes a checklist path, optionally '

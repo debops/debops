@@ -75,3 +75,19 @@ class AnsibleRunner(AnsibleProjectRunner):
                   env=self._subprocess_env())
 
         return rc
+
+    def capture(self):
+        """Run the composed command and capture its standard output.
+
+        A query execution: no hooks run and the secrets stay locked.
+        The command runs in the project environment and the captured
+        output returns to the caller together with the exit code.
+        """
+        executor = subprocess.Popen(' '.join(self._ansible_command),
+                                    shell=True, cwd=self.project.path,
+                                    env=self._subprocess_env(
+                                        self._ansible_env),
+                                    stdout=subprocess.PIPE)
+        out, _ = executor.communicate()
+        return (executor.returncode,
+                out.decode('utf-8') if out is not None else '')
