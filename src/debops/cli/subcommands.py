@@ -1135,7 +1135,12 @@ Commands:
                 usage='debops checklist commit [<args>] [<copy>]')
         parser.add_argument('copy', nargs='?', default=None,
                             help='copy id or checklist path; defaults '
-                                 'to the only open copy')
+                                 'to the only open copy; with --all, '
+                                 'the checklist whose copies all commit')
+        parser.add_argument('-A', '--all', action='store_true',
+                            help='commit every open copy, or every '
+                                 'copy of the checklist named as the '
+                                 'operand')
         parser.add_argument('-c', '--close', action='store_true',
                             help='deactivate the copy after the commit')
         parser.add_argument('-e', '--edit', action='store_true',

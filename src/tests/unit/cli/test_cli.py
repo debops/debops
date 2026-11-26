@@ -28,9 +28,10 @@ from git import GitCommandError
 
 
 def make_args(**kwargs):
-    # The 'open' parser always provides --dry-run; the default rides
-    # along for every simulated argument namespace
-    arguments = {'dry_run': False}
+    # The 'open' parser always provides --dry-run and the 'commit'
+    # parser always provides --all; the defaults ride along for every
+    # simulated argument namespace
+    arguments = {'dry_run': False, 'all': False}
     arguments.update(kwargs)
     return SimpleNamespace(**arguments)
 
@@ -1621,6 +1622,138 @@ def test_checklist_commit_roundtrips_utf8_content(tmp_path, state_home,
                     "_copies" / "web").glob("*.md"))
     assert records[0].read_text(encoding='utf-8') == \
         "# Review\n- [x] Café check\n"
+
+
+def _open_commit_fleet(tmp_path, state_home):
+    """A project with three open copies across two checklists."""
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    packaged = tmp_path / "packaged" / "checklists"
+    packaged.mkdir(parents=True)
+    (packaged / "flow.md").write_text("# Flow\n- [x] Task\n")
+    review = packaged / "audit" / "review.md"
+    review.parent.mkdir(parents=True)
+    review.write_text("# Review\n- [x] Task\n")
+    checklists.open_copy(packaged / "flow.md", "flow", "packaged",
+                         "flow", state)
+    checklists.open_copy(packaged / "flow.md", "flow", "packaged",
+                         "flow/alpha", state)
+    checklists.open_copy(review, "audit/review", "packaged", "web",
+                         state)
+    return project, state
+
+
+def test_checklist_commit_all_commits_every_copy(
+        tmp_path, state_home, monkeypatch, capsys):
+    project, state = _open_commit_fleet(tmp_path, state_home)
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    interpreter = make_interpreter()
+    project_stub = SimpleNamespace(path=str(project), commit=mock.Mock())
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project_stub))
+    args = make_args(project_dir=str(project), copy=None, all=True,
+                     close=False, edit=False)
+    interpreter.do_checklist_commit(args)
+
+    captured = capsys.readouterr()
+    assert captured.out.count("Committed") == 3
+    records = list((project / "vault" / "checklists").rglob("*.md"))
+    assert len(records) == 3
+    assert project_stub.commit.call_count == 3
+
+
+def test_checklist_commit_all_scopes_to_the_checklist(
+        tmp_path, state_home, monkeypatch, capsys):
+    project, state = _open_commit_fleet(tmp_path, state_home)
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    interpreter = make_interpreter()
+    project_stub = SimpleNamespace(path=str(project), commit=mock.Mock())
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project_stub))
+    args = make_args(project_dir=str(project), copy="flow", all=True,
+                     close=False, edit=False)
+    interpreter.do_checklist_commit(args)
+
+    records = list((project / "vault" / "checklists").rglob("*.md"))
+    assert len(records) == 2
+    # The audit copy is out of the scope and stays open
+    assert (state / "web").exists()
+
+
+def test_checklist_commit_all_closes_the_copies(
+        tmp_path, state_home, monkeypatch, capsys):
+    project, state = _open_commit_fleet(tmp_path, state_home)
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    interpreter = make_interpreter()
+    project_stub = SimpleNamespace(path=str(project), commit=mock.Mock())
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project_stub))
+    args = make_args(project_dir=str(project), copy=None, all=True,
+                     close=True, edit=False)
+    interpreter.do_checklist_commit(args)
+
+    records = list((project / "vault" / "checklists").rglob("*.md"))
+    assert len(records) == 3
+    assert not checklists.find_open_copies(state)
+
+
+def test_checklist_commit_all_skips_invalid_copies(
+        tmp_path, state_home, monkeypatch, capsys):
+    project, state = _open_commit_fleet(tmp_path, state_home)
+    # One copy drifted into a zero-item state
+    (state / "flow" / "checklist.md").write_text("# Flow\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    interpreter = make_interpreter()
+    project_stub = SimpleNamespace(path=str(project), commit=mock.Mock())
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project_stub))
+    args = make_args(project_dir=str(project), copy=None, all=True,
+                     close=False, edit=False)
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_commit(args)
+
+    assert raised.value.code == 1
+    captured = capsys.readouterr()
+    assert "nothing to commit" in captured.err
+    # The valid copies of the batch still committed
+    assert captured.out.count("Committed") == 2
+
+
+def test_checklist_commit_all_without_open_copies(
+        tmp_path, state_home, monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project), copy=None, all=True,
+                     close=False, edit=False)
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_commit(args)
+
+    assert raised.value.code == 1
+    assert "No open copies" in capsys.readouterr().err
+
+
+def test_checklist_commit_all_refuses_edit(
+        tmp_path, state_home, monkeypatch, capsys):
+    interpreter = make_interpreter()
+    args = make_args(project_dir=str(tmp_path), copy=None, all=True,
+                     close=False, edit=True)
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_commit(args)
+
+    assert raised.value.code == 1
+    assert "one copy at a time" in capsys.readouterr().err
 
 
 def test_checklist_close_refuses_open_items(tmp_path, state_home,

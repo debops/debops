@@ -954,25 +954,28 @@ class Interpreter(object):
         return filters
 
     def do_checklist_commit(self, args):
+        if args.all and args.edit:
+            print_error('The --edit option commits one copy at a time')
+            sys.exit(1)
         project = self._project(args)
         state_dir = checklists.checklist_state_dir(project.path)
+        vault_dir = self._checklist_vault_dir(project)
+        if args.all:
+            self._commit_all_copies(project, state_dir, vault_dir, args)
+            return
         try:
             copy = self._resolve_single_copy(args.copy, state_dir)
+            self._commit_copy(project, state_dir, vault_dir, copy, args)
         except checklists.ChecklistError as errmsg:
             print_error(errmsg)
             sys.exit(1)
-        parsed = checklists.parse_checklist(
-            self._read_copy_text(copy))
-        if not parsed.items:
-            print_error('The checklist {} does not contain any task '
-                        'items; nothing to commit'.format(copy.checklist))
-            sys.exit(1)
-        if not copy.checklist:
-            print_error('The copy {} does not record its checklist; '
-                        're-open it with '
-                        '--reset'.format(copy.copy_id))
+        except GitCommandError as errmsg:
+            print_error('The git commit of the vault record failed: '
+                        '{}'.format(errmsg))
             sys.exit(1)
 
+    def _checklist_vault_dir(self, project):
+        """The resolved vault directory, refused when unconfigured."""
         vault_base = self.config.get(['checklist', 'commit_path'])
         if not isinstance(vault_base, str) or not vault_base:
             print_error('The checklist vault directory is not configured')
@@ -982,6 +985,62 @@ class Interpreter(object):
             print_error('The vault directory resolves outside of the '
                         'project: ' + vault_base)
             sys.exit(1)
+        return vault_dir
+
+    def _commit_all_copies(self, project, state_dir, vault_dir, args):
+        """Commit every open copy, optionally one checklist's copies.
+
+        Per-copy independence: an invalid copy is skipped with its
+        reason, a failed git commit is reported, the rest of the
+        batch proceeds, and the exit code reports the partial
+        failure. With ``--close``, each copy deactivates after its
+        commit; the vault record exists, so the working copy's loss
+        is recoverable and no --force is demanded.
+        """
+        copies = checklists.find_open_copies(state_dir)
+        if args.copy:
+            scope = checklists.strip_md(args.copy)
+            copies = [copy for copy in copies
+                      if copy.checklist == scope]
+            if not copies:
+                print_error('The checklist {} has no open '
+                            'copies'.format(scope))
+                sys.exit(1)
+        elif not copies:
+            print_error('No open copies')
+            sys.exit(1)
+        if not os.path.exists(os.path.join(project.path, '.git')):
+            print_notice('The project directory is not a git repository, '
+                         'the vault records are not committed')
+        failed = []
+        for copy in copies:
+            try:
+                self._commit_copy(project, state_dir, vault_dir, copy,
+                                  args)
+            except checklists.ChecklistError as errmsg:
+                print_error(errmsg)
+                failed.append(copy.copy_id)
+            except GitCommandError as errmsg:
+                print_error('The git commit of the vault record failed: '
+                            '{}'.format(errmsg))
+                failed.append(copy.copy_id)
+        if failed:
+            sys.exit(1)
+
+    def _commit_copy(self, project, state_dir, vault_dir, copy, args,
+                     git_notice=True):
+        """One copy's commit flow; raises the typed errors."""
+        parsed = checklists.parse_checklist(
+            self._read_copy_text(copy))
+        if not parsed.items:
+            raise checklists.ChecklistError(
+                'The checklist {} does not contain any task items; '
+                'nothing to commit'.format(copy.checklist))
+        if not copy.checklist:
+            raise checklists.ChecklistError(
+                'The copy {} does not record its checklist; '
+                're-open it with --reset'.format(copy.copy_id))
+
         vault_path = checklists.vault_record_path(
             vault_dir, copy.checklist, copy.copy_id, copy.opened)
         copy_text = self._read_copy_text(copy)
@@ -1002,8 +1061,7 @@ class Interpreter(object):
             except ValueError as errmsg:
                 # The vault confinement refused the write; the copy's
                 # record path never resolves outside of the project
-                print_error(errmsg)
-                sys.exit(1)
+                raise checklists.ChecklistError(str(errmsg)) from None
 
         message = 'checklist: {}{} ({})'.format(
             '{} '.format(copy.copy_id)
@@ -1012,18 +1070,14 @@ class Interpreter(object):
         if args.edit:
             message = self._edit_text(message) or message
 
-        if not os.path.exists(os.path.join(project.path, '.git')):
+        if git_notice and not os.path.exists(
+                os.path.join(project.path, '.git')):
             print_notice('The project directory is not a git repository, '
                          'the vault record is not committed')
-        try:
-            project.commit(interactive=False, message=message,
-                           paths=[str(vault_path)])
-        except GitCommandError as errmsg:
-            print_error('The git commit of the vault record failed: '
-                        '{}'.format(errmsg))
-            sys.exit(1)
+        project.commit(interactive=False, message=message,
+                       paths=[str(vault_path)])
         if args.close:
-            checklists.close_copy(state_dir, copy.copy_id)
+            checklists.close_copy(copy.state_dir, copy.copy_id)
         if not unchanged:
             print('Committed {} to {}'.format(
                 copy.checklist, os.path.relpath(vault_path, project.path)))
