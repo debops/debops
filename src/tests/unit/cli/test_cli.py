@@ -688,6 +688,97 @@ def test_checklist_list_nests_the_copy_ids(tmp_path, state_home,
         "    \u2514\u2500\u2500 beta (1/1 done)\n")
 
 
+def test_checklist_list_tree_strips_the_checklist_prefix(
+        tmp_path, state_home, monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "flow.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Flow\n- [ ] One\n- [ ] Two\n- [ ] Three\n")
+    for copy_id in ("flow", "flow/alpha", "alpha/gamma", "alpha/omega",
+                    "alpha/one/beta", "alpha/one/zeta"):
+        checklists.open_copy(source, "flow", "packaged", copy_id, state)
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    interpreter = make_interpreter()
+    args = make_args(project_dir=str(project), active=False, verbose=0,
+                     format='text')
+    interpreter.do_checklist_list(args)
+
+    # The copy flow/alpha nests directly under the checklist root and
+    # carries its own status; the unrelated alpha/ ids group under the
+    # same node because their paths share the prefix
+    assert capsys.readouterr().out == (
+        "flow (0/3 done)\n"
+        "\u2514\u2500\u2500 alpha (0/3 done)\n"
+        "    \u251c\u2500\u2500 gamma (0/3 done)\n"
+        "    \u251c\u2500\u2500 omega (0/3 done)\n"
+        "    \u2514\u2500\u2500 one\n"
+        "        \u251c\u2500\u2500 beta (0/3 done)\n"
+        "        \u2514\u2500\u2500 zeta (0/3 done)\n")
+
+
+def test_checklist_list_tree_keeps_a_colliding_copy_verbatim(
+        tmp_path, state_home, monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "flow.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Flow\n- [ ] One\n- [ ] Two\n- [ ] Three\n")
+    for copy_id in ("flow", "flow/alpha", "alpha"):
+        checklists.open_copy(source, "flow", "packaged", copy_id, state)
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    interpreter = make_interpreter()
+    args = make_args(project_dir=str(project), active=False, verbose=0,
+                     format='text')
+    interpreter.do_checklist_list(args)
+
+    # Stripping flow/alpha to alpha would merge two copies into one
+    # display node and lose a progress value; the copy keeps its
+    # verbatim id instead
+    assert capsys.readouterr().out == (
+        "flow (0/3 done)\n"
+        "\u251c\u2500\u2500 alpha (0/3 done)\n"
+        "\u2514\u2500\u2500 flow\n"
+        "    \u2514\u2500\u2500 alpha (0/3 done)\n")
+
+
+def test_checklist_list_tree_from_a_subdirectory(tmp_path, state_home,
+                                                 monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "flow.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Flow\n- [ ] One\n- [ ] Two\n- [ ] Three\n")
+    for copy_id in ("flow", "flow/alpha", "alpha/gamma", "alpha/omega",
+                    "alpha/one/beta", "alpha/one/zeta"):
+        checklists.open_copy(source, "flow", "packaged", copy_id, state)
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    interpreter = make_interpreter()
+    # ProjectDir resolves the project root upward; the stub simulates
+    # the invocation from a subdirectory
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project / "ansible"), active=False,
+                     verbose=0, format='text')
+    interpreter.do_checklist_list(args)
+
+    assert capsys.readouterr().out == (
+        "flow (0/3 done)\n"
+        "\u2514\u2500\u2500 alpha (0/3 done)\n"
+        "    \u251c\u2500\u2500 gamma (0/3 done)\n"
+        "    \u251c\u2500\u2500 omega (0/3 done)\n"
+        "    \u2514\u2500\u2500 one\n"
+        "        \u251c\u2500\u2500 beta (0/3 done)\n"
+        "        \u2514\u2500\u2500 zeta (0/3 done)\n")
+
+
 def test_checklist_tree_falls_back_to_ascii():
     glyphs = cli_module._tree_glyphs("ascii")
     assert glyphs == {"branch": "|-- ", "column": "|", "leaf": "`-- ",

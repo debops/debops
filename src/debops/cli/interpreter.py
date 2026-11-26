@@ -113,17 +113,33 @@ def _columns(rows):
              for column, cell in enumerate(row)] for row in rows]
 
 
-def _copy_tree_lines(copies, progress, glyphs):
+def _copy_tree_lines(copies, progress, glyphs, checklist=None):
     """Render open copies as a component tree, one line per node.
 
     Copy ids are paths: `web1/alpha` nests as `web1` over `alpha`, so
     a fleet of copies groups by host. A node whose id is itself a
     copy carries its progress above its children.
+
+    Copy ids that nest under the checklist name display relative to
+    it: for the checklist `flow`, the copy `flow/alpha` shows as
+    `alpha` directly under the root. The strip is skipped when
+    another copy already occupies the stripped id -- two copies on
+    one display node would silently lose a progress value.
     """
-    root = {}
+    ids = {copy.copy_id for copy in copies}
+    prefix = checklist + '/' if checklist else ''
+    display = []
     for copy in copies:
+        copy_id = copy.copy_id
+        if prefix and copy_id.startswith(prefix):
+            stripped = copy_id[len(prefix):]
+            if stripped and stripped not in ids:
+                copy_id = stripped
+        display.append((copy_id, copy))
+    root = {}
+    for copy_id, copy in display:
         node = root
-        for part in (part for part in copy.copy_id.split('/') if part):
+        for part in (part for part in copy_id.split('/') if part):
             node = node.setdefault(part, {})
         node[''] = copy
     lines = []
@@ -610,7 +626,7 @@ class Interpreter(object):
                 named = [copy for copy in copies
                          if copy.copy_id != name]
                 blocks.append(
-                    _copy_tree_lines(named, progress, glyphs))
+                    _copy_tree_lines(named, progress, glyphs, name))
             if not rows:
                 return
             for (path_cell, title, origin_cell), tree_lines in zip(
@@ -636,7 +652,8 @@ class Interpreter(object):
                 path_cell += ' ({})'.format(progress[name])
             print(path_cell)
             named = [copy for copy in copies if copy.copy_id != name]
-            for tree_line in _copy_tree_lines(named, progress, glyphs):
+            for tree_line in _copy_tree_lines(named, progress, glyphs,
+                                              name):
                 print(tree_line)
 
     def do_checklist_open(self, args):
