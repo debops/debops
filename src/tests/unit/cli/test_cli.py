@@ -50,12 +50,14 @@ def make_parsed(section, command, args):
     return SimpleNamespace(section=section, command=command, args=args)
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def state_home(tmp_path, monkeypatch):
     """Pin the checklist state home to the test tree.
 
     The executors resolve the state home from the environment; without
-    this pin they would write through to the real user state.
+    this pin they would write through to the real user state. The pin
+    is autouse: an unpinned checklist test leaked a copy into the real
+    state home on every suite run before the pin became unconditional.
     """
     home = tmp_path / "state-home"
     monkeypatch.setattr(checklists, "_resolve_state_home",
