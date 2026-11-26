@@ -143,7 +143,10 @@ brackets, so you can see which layer provided each checklist:
    example/audit/periodic-security-review │ Periodic security review [packaged]
 
 The progress in parentheses, ``14/30 done``, appears when an implicit
-copy of the checklist is open.
+copy of the checklist is open. A copy whose source changed after the
+copy was opened is marked ``[stale]``: the listing compares the
+source's content with the hash recorded at open time.
+``--reset`` re-copies the latest source and clears the marker.
 
 Personal checklists do not need to live in the user directory. Make
 a file symbolic link into the user layer and keep the target
@@ -190,11 +193,11 @@ unless ``--reset`` discards the current state and re-copies the
 checklist, possibly a different one, and refreshes the open
 timestamp. Copy ids may carry slashes. Nested ids such as
 ``web1/alpha`` show as a tree and record under nested vault paths.
-In the tree, a copy id that starts with the checklist name displays
-relative to it: for the checklist ``flow``, the copy ``flow/alpha``
-shows as ``alpha`` directly under the root. The strip is skipped
+In the tree, a copy id that starts with the checklist name renders
+relative to it. For the checklist ``flow``, the copy ``flow/alpha``
+appears as ``alpha`` directly under the root. The strip is skipped
 when another copy already occupies the stripped id, so two copies
-never share one display node.
+never merge into one node.
 
 A recurring review runs one cycle at a time. Open the copy once.
 Commit it at the end of each cycle with ``--close``, and re-open it
@@ -260,11 +263,16 @@ The remaining commands take a copy id or a checklist path:
   the editor. An unchanged re-commit reports "No changes since the
   last commit". The command still attempts the git commit, so a
   record that a rejecting pre-commit hook left out of history heals
-  on the next run. A failed git commit is an error. The record
-  stays on disk. ``--all`` commits every open copy, or every copy
-  of the checklist named as the operand: an invalid copy is skipped
-  with its reason, a failed git commit is reported, the rest of the
-  batch proceeds, and the exit code reports the partial failure.
+  on the next run. The commit runs the project's pre- and
+  post-commit hooks, also on an unchanged re-commit: the record may
+  not have changed, but the hooks run every time -- an operator
+  with a slow or side-effectful pre-commit hook (a secrets rekey, a
+  lint) meets that on the first no-change re-commit. A failed git
+  commit is an error. The record stays on disk. ``--all`` commits
+  every open copy, or every copy of the checklist named as the
+  operand. An invalid copy is skipped with its reason, a failed git
+  commit is reported, and the rest of the batch proceeds. The exit
+  code reports the partial failure.
 
 :command:`debops checklist close`
   discards the copy with no vault write. It refuses when open items
@@ -314,7 +322,7 @@ the git commit itself, with a generated message:
 
 Every re-commit of an open copy overwrites its own record. The next
 dated record starts when the copy is closed and re-opened. The
-history lives in git. Find a past review there; the commit messages
+history lives in git. Find a past review there. The commit messages
 carry the checklist name and the progress, so a search finds the
 cycle you need:
 

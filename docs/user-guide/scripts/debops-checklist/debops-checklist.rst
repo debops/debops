@@ -98,33 +98,35 @@ id works too: ``debops checklist open review --reset`` resolves
 through the sidecar of the open copy.
 
 A copy id can carry an Ansible inventory pattern in square brackets:
-'subdir/[webservers]/check' opens one copy per matching host,
-all-or-nothing -- an occupied id refuses the whole batch unless
-``--reset`` re-opens the occupied copies. The id supports one
-pattern; a pattern that matches no hosts refuses the batch.
+'subdir/[webservers]/check' opens one copy per matching host. The
+batch is all-or-nothing: an occupied id refuses the whole batch
+unless ``--reset`` re-opens the occupied copies. The id supports
+one pattern. A pattern that matches no hosts refuses the batch.
 ``--dry-run`` prints the expansion without opening anything. The id
 needs quoting in the shell.
 
 The copy id can carry slashes. Nested ids form a tree and record
 under nested vault paths. A copy id that starts with the checklist
-name displays relative to it: the copy ``flow/alpha`` of the
-checklist ``flow`` shows as ``alpha`` under the root, unless
-another copy already occupies the stripped id.
+name renders relative to it. The copy ``flow/alpha`` of the
+checklist ``flow`` appears as ``alpha`` under the root, unless
+another copy already occupies the stripped id. A copy whose source
+changed after it was opened is marked ``[stale]`` in the listing;
+``--reset`` re-copies the latest source.
 
 Commit and close
 ----------------
 
 :command:`debops checklist commit` writes the copy into the project
 vault and the checklist stays active. With ``--close``, the command
-deactivates the copy after the commit; unlike the close command, no
-``--force`` is demanded for an incomplete copy, because the record
-exists and the working copy's loss is recoverable. An unchanged
-re-commit reports "No changes since the last commit". The command
-still attempts the git commit, so a record that a failed hook left
-out of history heals on the next run. With ``--edit``, you compose
-the commit message in the editor. With ``--all``, every open copy
-commits -- or every copy of the checklist named as the operand; an
-invalid copy is skipped with its reason, the rest of the batch
+deactivates the copy after the commit. Unlike the close command, no
+``--force`` is demanded for an incomplete copy. The record exists,
+so the working copy's loss is recoverable. An unchanged re-commit
+reports "No changes since the last commit". The command still
+attempts the git commit, so a record that a failed hook left out of
+history heals on the next run. With ``--edit``, you compose the
+commit message in the editor. With ``--all``, every open copy
+commits, or every copy of the checklist named as the operand. An
+invalid copy is skipped with its reason, and the rest of the batch
 proceeds.
 
 :command:`debops checklist close` discards a copy. It refuses when
@@ -228,8 +230,8 @@ the checklist active.
 
 ``-A, --all``
   Commit every open copy, or every copy of the checklist named as
-  the operand; an invalid copy is skipped with its reason, the rest
-  of the batch proceeds.
+  the operand. An invalid copy is skipped with its reason, and the
+  rest of the batch proceeds.
 
 ``-h, --help``
   Display the help and usage information.
