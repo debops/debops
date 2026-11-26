@@ -62,6 +62,15 @@ New DebOps roles
 General
 '''''''
 
+- The new :command:`debops checklist` section manages operational
+  checklists: Markdown files with a five-state marker syntax, opened
+  as working copies and committed as dated records into the project
+  vault. Copy ids accept an Ansible inventory pattern in square
+  brackets, opening one copy per matching host, and ``commit --all``
+  commits every open copy in one run. The list marks copies whose
+  source changed since they were opened. See :ref:`checklists` for
+  the details.
+
 - Journal records emitted by the :command:`debops` command now carry
   a ``[project:view]`` prefix which names the project directory and
   the infrastructure view of the operation, so entries from
