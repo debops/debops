@@ -143,8 +143,7 @@ def _split_frontmatter(text: str) -> tuple[dict, str]:
     A broken frontmatter block -- malformed YAML, nesting too deep to
     compose, an implausibly large block -- degrades to no front
     matter: the title falls back to the first heading and the body
-    parses as usual. One hostile or corrupted document must not take
-    down the commands that list or open it.
+    parses as usual.
     """
     match = _FRONTMATTER_RE.match(text)
     if match is None:
@@ -303,11 +302,9 @@ def parse_copy_pattern(copy_id: str) -> tuple[str, str, str] | None:
     matching host: for the id ``subdir/[webservers]/check``, the
     pattern is ``webservers`` and every matching host replaces the
     segment. The id supports one pattern segment, and the pattern
-    must be a plausible ansible pattern -- shell metacharacters are
-    refused, because the expansion composes an :command:`ansible`
-    command line. An id without brackets comes back as no pattern;
-    a bracket id that does not parse is an error, so a literal
-    bracket copy id cannot silently change meaning.
+    must be a plausible ansible pattern. An id without brackets
+    comes back as no pattern; a bracket id that does not parse is
+    an error.
     """
     if '[' not in copy_id and ']' not in copy_id:
         return None
@@ -503,12 +500,7 @@ class OpenCopy:
 
     @property
     def implicit(self) -> bool:
-        """True when the copy id is the checklist's implicit copy.
-
-        The invariant is shared by the display, the vault record
-        paths and the open output; spelling it once keeps the
-        clients from drifting apart.
-        """
+        """True when the copy id is the checklist's implicit copy."""
         return self.copy_id == strip_md(self.checklist)
 
 
@@ -706,13 +698,9 @@ def vault_record_path(
     """The vault record path for one committed copy.
 
     *vault_dir* is the checklist base directory -- the resolved
-    `checklist.commit_path`. Records group by checklist; named copies
-    nest under the reserved ``_copies`` segment so that their record
-    paths cannot collide with the implicit copies of a checklist
-    named like the copy id. The filename is the open date -- the
-    sidecar's ``opened``, stable for the copy's whole life -- so
-    same-day re-commits overwrite the copy's own record and the
-    history lives in git.
+    `checklist.commit_path`. Records group by checklist; named
+    copies nest under the reserved ``_copies`` segment. The
+    filename is the open date, stable for the copy's whole life.
     """
     record = Path(vault_dir) / strip_md(checklist)
     if copy_id != strip_md(checklist):
@@ -730,13 +718,10 @@ def list_checklists(
     wins, so a project checklist shadows its user and packaged
     counterparts. The entries sort by name. Checklist files in the
     shared layers that resolve outside of their root through a
-    symbolic link are omitted -- they are refused on resolution, so
-    listing them would promise what ``open`` cannot deliver.
+    symbolic link are omitted.
 
-    The *filters* are the ordered ``checklist.filters`` rules: a
-    bare pattern keeps matching names visible, a ``!``-prefixed
-    pattern hides them, the last matching rule wins and a name no
-    rule matches stays visible.
+    The *filters* are the ordered ``checklist.filters`` rules
+    shared with ``find_checklist``.
     """
     rules = _filter_rules(list(filters))
     entries = {}
@@ -892,15 +877,8 @@ def find_checklist(
 
     The *filters* are the ordered ``checklist.filters`` rules shared
     with ``list_checklists``; a hidden name is refused before the
-    layer walk, so a filtered checklist is invisible to the whole
-    discovery surface, listing and resolution alike.
-
-    In the shared layers -- the project tree and the packaged
-    baseline -- a checklist file that resolves outside of its layer
-    root through a symbolic link is refused: the link could publish
-    an arbitrary readable file into the vault. The user layer honors
-    symbolic links: a symlinked checklist there is the sanctioned way
-    to keep personal checklists elsewhere.
+    layer walk. In the shared layers, a checklist file that resolves
+    outside of its layer root through a symbolic link is refused.
     """
     _validate_name(name)
     if not _visible(name, _filter_rules(list(filters))):
@@ -943,14 +921,10 @@ def strip_md(name: str) -> str:
 def _validate_name(name: str) -> None:
     """Reject absolute names and names escaping their root.
 
-    The check runs on the name itself, before any join: an absolute
-    name would replace the root outright, and ``..`` parts would
-    escape it. Control characters are refused -- they have no place
-    in a name and would corrupt the reports and commit messages the
-    name flows into. The reserved ``_copies`` vault segment is
-    refused for the same reason: checklist names and copy ids must
-    not be able to occupy each other's record paths. Checklist names
-    and copy ids share the rule.
+    The check runs on the name itself, before any join. Absolute
+    names, ``..`` parts, control characters and the reserved
+    ``_copies`` vault segment are refused; checklist names and copy
+    ids share the rule.
     """
     parts = PurePosixPath(name).parts
     if (not name or not parts or PurePosixPath(name).is_absolute()

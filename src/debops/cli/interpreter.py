@@ -528,10 +528,8 @@ class Interpreter(object):
             print_error(errmsg)
             sys.exit(1)
 
-        # The copies live under the state key of the resolved project
-        # root: run from a subdirectory, the lifecycle commands resolve
-        # the project upward while a raw argument would key a wrong,
-        # empty namespace
+        # The state key follows the resolved project root, so a
+        # subdirectory invocation sees the same copies.
         state_dir = checklists.checklist_state_dir(
             project.path if project is not None else args.project_dir)
         open_copies = checklists.find_open_copies(state_dir)

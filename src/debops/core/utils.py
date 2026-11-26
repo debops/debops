@@ -166,9 +166,9 @@ def write_file(path, content, overwrite=False, project=None, mode=None):
     target path resolves outside of it, so that a mistyped path cannot
     scatter generated files across the file system.
 
-    The optional mode restricts the created file's permissions -- the
-    recorded operational notes are private by default. Directories
-    are created with the default mode and umask, as before.
+    The optional mode restricts the file's permissions; without it
+    the umask decides. Directories are created with the default mode
+    and umask, as before.
 
     Returns True if the file was written, False if it already existed and
     overwriting was not requested.

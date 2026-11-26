@@ -60,10 +60,8 @@ def make_parsed(section, command, args):
 def state_home(tmp_path, monkeypatch):
     """Pin the checklist state home to the test tree.
 
-    The executors resolve the state home from the environment; without
-    this pin they would write through to the real user state. The pin
-    is autouse: an unpinned checklist test leaked a copy into the real
-    state home on every suite run before the pin became unconditional.
+    The executors resolve the state home from the environment; an
+    unpinned test writes through to the real user state.
     """
     home = tmp_path / "state-home"
     monkeypatch.setattr(checklists, "_resolve_state_home",
