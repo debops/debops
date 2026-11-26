@@ -541,8 +541,11 @@ class Interpreter(object):
             rows = []
             records = []
             for copy in open_copies:
-                parsed = checklists.parse_checklist(
-                    copy.path.read_text(encoding='utf-8'))
+                try:
+                    parsed = checklists.parse_checklist(
+                        self._read_copy_text(copy))
+                except checklists.ChecklistError:
+                    parsed = None
                 implicit = copy.implicit
                 if args.format == 'json':
                     records.append({
@@ -550,12 +553,12 @@ class Interpreter(object):
                         'checklist': copy.checklist,
                         'path': str(copy.path), 'origin': copy.origin,
                         'opened': copy.opened.astimezone().isoformat(),
-                        'counts': parsed.counts})
+                        'counts': parsed.counts if parsed else None})
                     continue
                 row = [copy.checklist if implicit else copy.copy_id,
                        '' if implicit else _shorten_path(copy.checklist),
                        '({})'.format(copy.opened.date().isoformat()),
-                       parsed.progress]
+                       parsed.progress if parsed else 'unreadable']
                 if args.verbose >= 2:
                     row.append('[{}]'.format(copy.origin))
                 rows.append(row)
@@ -588,13 +591,17 @@ class Interpreter(object):
                 for copy in open_copies:
                     if copy.checklist != name:
                         continue
-                    copy_parsed = checklists.parse_checklist(
-                        copy.path.read_text(encoding='utf-8'))
+                    try:
+                        copy_parsed = checklists.parse_checklist(
+                            self._read_copy_text(copy))
+                        counts = copy_parsed.counts
+                    except checklists.ChecklistError:
+                        counts = None
                     copies_json.append({
                         'copy_id': copy.copy_id,
                         'implicit': copy.implicit,
                         'opened': copy.opened.astimezone().isoformat(),
-                        'counts': copy_parsed.counts})
+                        'counts': counts})
                 records.append({
                     'checklist': name, 'path': str(path),
                     'origin': origin, 'title': parsed.title,
@@ -617,9 +624,7 @@ class Interpreter(object):
                           if copy.checklist == name]
                 progress = {}
                 for copy in copies:
-                    copy_parsed = checklists.parse_checklist(
-                        copy.path.read_text(encoding='utf-8'))
-                    progress[copy.copy_id] = copy_parsed.progress
+                    progress[copy.copy_id] = self._copy_progress(copy)
                 path_cell = name
                 implicit = [copy for copy in copies if copy.implicit]
                 if implicit:
@@ -648,9 +653,7 @@ class Interpreter(object):
                       if copy.checklist == name]
             progress = {}
             for copy in copies:
-                copy_parsed = checklists.parse_checklist(
-                    copy.path.read_text(encoding='utf-8'))
-                progress[copy.copy_id] = copy_parsed.progress
+                progress[copy.copy_id] = self._copy_progress(copy)
             path_cell = name
             implicit = [copy for copy in copies if copy.implicit]
             if implicit:
@@ -701,15 +704,28 @@ class Interpreter(object):
             if args.dry_run:
                 self._print_dry_run(copy_ids, name, origin, state_dir)
                 return
+            failures = []
             for expanded_id in copy_ids:
-                checklists.open_copy(path, name, origin, expanded_id,
-                                     state_dir, reset=args.reset)
+                try:
+                    checklists.open_copy(path, name, origin, expanded_id,
+                                         state_dir, reset=args.reset)
+                except OSError as errmsg:
+                    # The batch promise covers occupancy; an I/O
+                    # failure mid-batch is reported with the ids that
+                    # landed
+                    failures.append((expanded_id, errmsg))
+                    continue
                 if expanded_id == checklists.strip_md(name):
                     print('Opened {} [{}]'.format(
                         checklists.strip_md(name), origin))
                 else:
                     print('Opened {} as copy {} [{}]'.format(
                         checklists.strip_md(name), expanded_id, origin))
+            for failed_id, errmsg in failures:
+                print_error('The copy {} could not be opened: '
+                            '{}'.format(failed_id, errmsg))
+            if failures:
+                sys.exit(1)
         except checklists.ChecklistError as errmsg:
             print_error(errmsg)
             sys.exit(1)
@@ -804,6 +820,32 @@ class Interpreter(object):
             marker = ' (already open)' if copy_id in open_ids else ''
             print('  {}{}'.format(copy_id, marker))
 
+    def _copy_progress(self, copy):
+        """The progress line of one working copy.
+
+        An unreadable copy lists as unreadable: the copy stays
+        visible, because the listing is how the user finds the copy
+        that needs recovery.
+        """
+        try:
+            return checklists.parse_checklist(
+                self._read_copy_text(copy)).progress
+        except checklists.ChecklistError:
+            return 'unreadable'
+
+    def _read_copy_text(self, copy):
+        """The working copy text, with the unreadable case explained.
+
+        A copy corrupted by a locale mismatch or a broken editor save
+        must not crash the commands that are supposed to recover it.
+        """
+        try:
+            return copy.path.read_text(encoding='utf-8')
+        except (OSError, UnicodeDecodeError) as errmsg:
+            raise checklists.ChecklistError(
+                'The working copy {} cannot be read: {}; re-open it '
+                'with --reset'.format(copy.copy_id, errmsg)) from None
+
     def _heal_open_copy(self, name, state_dir, layers, filters, reset,
                         dry_run=False):
         """Resolve a lone open copy id to its recorded checklist.
@@ -859,7 +901,7 @@ class Interpreter(object):
         except OSError as errmsg:
             print_error('The editor could not be run: {}'.format(errmsg))
             sys.exit(1)
-        parsed = checklists.parse_checklist(copy.path.read_text(encoding='utf-8'))
+        parsed = checklists.parse_checklist(self._read_copy_text(copy))
         print('{}: {}'.format(copy.copy_id, parsed.progress))
 
     def _editor_argv(self):
@@ -920,7 +962,7 @@ class Interpreter(object):
             print_error(errmsg)
             sys.exit(1)
         parsed = checklists.parse_checklist(
-            copy.path.read_text(encoding='utf-8'))
+            self._read_copy_text(copy))
         if not parsed.items:
             print_error('The checklist {} does not contain any task '
                         'items; nothing to commit'.format(copy.checklist))
@@ -942,15 +984,19 @@ class Interpreter(object):
             sys.exit(1)
         vault_path = checklists.vault_record_path(
             vault_dir, copy.checklist, copy.copy_id, copy.opened)
-        unchanged = vault_path.exists() and \
-            vault_path.read_text(encoding='utf-8') == \
-            copy.path.read_text(encoding='utf-8')
+        copy_text = self._read_copy_text(copy)
+        try:
+            unchanged = vault_path.exists() and \
+                vault_path.read_text(encoding='utf-8') == copy_text
+        except (OSError, UnicodeDecodeError):
+            # A hand-tampered record reads as changed; the re-commit
+            # restores the copy's content
+            unchanged = False
         if unchanged:
             print('No changes since the last commit')
         else:
             try:
-                write_file(str(vault_path),
-                           copy.path.read_text(encoding='utf-8'),
+                write_file(str(vault_path), copy_text,
                            overwrite=True, project=str(project.path),
                            mode=0o600)
             except ValueError as errmsg:
@@ -1007,10 +1053,18 @@ class Interpreter(object):
                 sys.exit(1)
         skipped_incomplete = []
         skipped_empty = []
+        skipped_unreadable = []
         for copy in copies:
-            parsed = checklists.parse_checklist(
-                copy.path.read_text(encoding='utf-8'))
-            if not parsed.items:
+            try:
+                parsed = checklists.parse_checklist(
+                    self._read_copy_text(copy))
+            except checklists.ChecklistError:
+                parsed = None
+            if parsed is None:
+                if not args.force:
+                    skipped_unreadable.append(copy)
+                    continue
+            elif not parsed.items:
                 if not args.force:
                     skipped_empty.append(copy)
                     continue
@@ -1019,6 +1073,9 @@ class Interpreter(object):
                 continue
             checklists.close_copy(state_dir, copy.copy_id)
             print('Closed {}'.format(copy.copy_id))
+        if skipped_unreadable:
+            print_notice('Still open (unreadable): {}'.format(
+                ', '.join(copy.copy_id for copy in skipped_unreadable)))
         if skipped_incomplete or skipped_empty:
             if args.all:
                 if skipped_incomplete:
@@ -1030,7 +1087,11 @@ class Interpreter(object):
                         ', '.join(copy.copy_id
                                   for copy in skipped_empty)))
             else:
-                if skipped_incomplete:
+                if skipped_unreadable:
+                    print_error('The working copy {} cannot be read; '
+                                'use --force to close it anyway'.format(
+                                    skipped_unreadable[0].copy_id))
+                elif skipped_incomplete:
                     print_error('The checklist {} is incomplete; use '
                                 '--force to close it anyway'.format(
                                     skipped_incomplete[0].copy_id))

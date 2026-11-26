@@ -189,6 +189,10 @@ def write_file(path, content, overwrite=False, project=None, mode=None):
         0o666 if mode is None else mode)
     with os.fdopen(file_descriptor, 'w', encoding='utf-8') as fh:
         fh.write(content)
+    if mode is not None:
+        # The creation mode applies only to new files; an existing
+        # record keeps the promise on every re-write
+        os.chmod(path, mode)
 
     return True
 

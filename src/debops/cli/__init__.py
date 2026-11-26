@@ -60,5 +60,7 @@ def print_notice(message):
     debops_log = logging.getLogger('debops')
     message = _without_controls(message)
     if debops_log.handlers:
-        debops_log.info(message, extra={'allow': 'syslog'})
+        # The journal record keeps its single-line form
+        debops_log.info(' '.join(message.splitlines()),
+                        extra={'allow': 'syslog'})
     print(wrap_message(message), file=sys.stderr)
