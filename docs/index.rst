@@ -90,6 +90,7 @@ infrastructure environments.
    user-guide/project-directories
    user-guide/configuration
    user-guide/scripts/index
+   user-guide/checklists
    user-guide/hooks
    user-guide/global-variables
    user-guide/custom-environment
