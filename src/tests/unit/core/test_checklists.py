@@ -373,6 +373,21 @@ def test_filters_refuse_a_malformed_pattern(example_tree):
     assert "Invalid checklist.filters pattern" in str(raised.value)
 
 
+def test_filters_refuse_an_over_complex_pattern(example_tree):
+    with pytest.raises(checklists.ChecklistError) as raised:
+        checklists.list_checklists(
+            example_tree, filters=["a*b*c*d*e*f*g*"])
+    assert "too complex" in str(raised.value)
+    with pytest.raises(checklists.ChecklistError):
+        checklists.list_checklists(
+            example_tree, filters=["a" * 129])
+
+
+def test_validate_name_refuses_a_bare_dot():
+    with pytest.raises(checklists.ChecklistError):
+        checklists.validate_name(".")
+
+
 def test_missing_layers_are_tolerated(layer_roots):
     project, user, packaged = layer_roots
     (packaged / "system").mkdir()

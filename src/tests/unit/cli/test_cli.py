@@ -16,6 +16,7 @@ from unittest import mock
 import json
 import locale
 import logging
+import shlex
 from datetime import datetime
 import pytest
 
@@ -397,9 +398,11 @@ class _FakeInventoryRunner(object):
 
     output = ""
     returncode = 0
+    last_args = None
 
     def __init__(self, project, ansible_args, **kwargs):
         self.ansible_args = ansible_args
+        _FakeInventoryRunner.last_args = ansible_args
 
     def capture(self):
         return self.returncode, self.output
@@ -434,6 +437,45 @@ def test_checklist_open_expands_an_inventory_pattern(
         in captured.out
     for copy_id in ("subdir/web1/check", "subdir/web2/check"):
         assert (state / copy_id / "checklist.md").exists()
+
+
+def test_checklist_open_quotes_and_screens_the_pattern(
+        tmp_path, state_home, monkeypatch, capsys):
+    # The pattern reaches the runner shell-quoted, so it cannot carry
+    # shell semantics into capture()'s composition; characters that
+    # are not valid in an ansible pattern are refused outright
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    source = tmp_path / "packaged" / "checklists" / "host-verify.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Verify\n- [ ] Task\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    monkeypatch.setattr(cli_module, "AnsibleRunner", _FakeInventoryRunner)
+    _FakeInventoryRunner.output = "  hosts (1):\n    web servers\n"
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+
+    args = make_args(project_dir=str(project),
+                     checklist=["subdir/[web servers]/check",
+                                "host-verify"],
+                     reset=False)
+    interpreter.do_checklist_open(args)
+    runner_args = _FakeInventoryRunner.last_args
+    assert runner_args[0] == shlex.quote("web servers")
+    assert runner_args[1] == "--list-hosts"
+
+    _FakeInventoryRunner.last_args = None
+    args = make_args(project_dir=str(project),
+                     checklist=["subdir/[a;b]/check", "host-verify"],
+                     reset=False)
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_open(args)
+
+    assert raised.value.code == 1
+    assert "not valid in an" in capsys.readouterr().err
 
 
 def test_checklist_open_refuses_a_pattern_matching_no_hosts(
@@ -610,6 +652,45 @@ def test_checklist_open_bulk_reset_reopens_the_copies(
     assert (state / "subdir" / "web1" / "check" /
             "checklist.md").read_text() == "# Verify\n- [ ] Task\n"
     assert (state / "subdir" / "web2" / "check" / "checklist.md").exists()
+
+
+def test_checklist_open_bulk_reset_refuses_a_cross_checklist_batch(
+        tmp_path, state_home, monkeypatch, capsys):
+    # The expanded ids are manufactured from the inventory: when one
+    # of them holds a different checklist, --reset refuses instead of
+    # discarding another checklist's copy
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    verify = tmp_path / "packaged" / "checklists" / "host-verify.md"
+    verify.parent.mkdir(parents=True)
+    verify.write_text("# Verify\n- [ ] Task\n")
+    flow = tmp_path / "packaged" / "checklists" / "flow.md"
+    flow.write_text("# Flow\n- [ ] Task\n")
+    checklists.open_copy(flow, "flow", "packaged",
+                         "subdir/web1/check", state)
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    monkeypatch.setattr(cli_module, "AnsibleRunner", _FakeInventoryRunner)
+    _FakeInventoryRunner.output = "  hosts (2):\n    web1\n    web2\n"
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project),
+                     checklist=["subdir/[webservers]/check",
+                                "host-verify"],
+                     reset=True)
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_open(args)
+
+    assert raised.value.code == 1
+    assert "already hold other checklists" in capsys.readouterr().err
+    # Neither the foreign copy nor the unoccupied id opened
+    assert (state / "subdir" / "web1" / "check" /
+            "checklist.md").read_text() == "# Flow\n- [ ] Task\n"
+    assert not (state / "subdir" / "web2" / "check").exists()
 
 
 def _open_single_copy(tmp_path, state_home):
@@ -812,6 +893,23 @@ def test_checklist_list_refuses_a_malformed_filter(tmp_path, monkeypatch,
 
     assert raised.value.code == 1
     assert "must be a list of glob patterns" in capsys.readouterr().err
+
+
+def test_checklist_list_refuses_a_malformed_glob(tmp_path, monkeypatch,
+                                                 capsys):
+    # A list-shaped value passes the type guard and fails at compile
+    # time; the list command reports it instead of a traceback
+    interpreter = make_interpreter()
+    interpreter.config.get.side_effect = _config_with_filters(
+        ["system/[z-a]"])
+    args = make_args(project_dir=str(tmp_path), active=False, verbose=0,
+                     format='text')
+
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_list(args)
+
+    assert raised.value.code == 1
+    assert "Invalid checklist.filters pattern" in capsys.readouterr().err
 
 
 def test_checklist_list_prints_condensed_entries(tmp_path, monkeypatch,

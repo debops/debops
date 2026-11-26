@@ -563,11 +563,19 @@ def _filter_rules(filters: list) -> list[tuple[re.Pattern, bool]]:
     A bare pattern keeps matching names visible, a ``!``-prefixed
     pattern hides them. The patterns are path globs over the
     checklist name -- relative to the layer root, ``.md`` stripped.
+    Patterns with many ambiguous wildcard runs backtrack
+    catastrophically, so an over-complex pattern is refused instead
+    of compiling into a hang.
     """
     rules = []
     for pattern in filters:
         hide = pattern.startswith('!')
         body = pattern[1:] if hide else pattern
+        if len(body) > 128 or len(re.findall(r'\*+', body)) > 6:
+            raise ChecklistError(
+                f"The checklist.filters pattern {pattern!r} is too "
+                "complex; at most 128 characters and 6 wildcard runs "
+                "are supported")
         try:
             compiled = _compile_glob(body)
         except re.error:
@@ -750,7 +758,8 @@ def _validate_name(name: str) -> None:
     and copy ids share the rule.
     """
     parts = PurePosixPath(name).parts
-    if (not name or PurePosixPath(name).is_absolute() or '..' in parts
+    if (not name or not parts or PurePosixPath(name).is_absolute()
+            or '..' in parts
             or _COPIES_SEGMENT in parts or _CONTROLS_RE.search(name)):
         raise ChecklistError(f"Invalid checklist name: {name!r}")
 

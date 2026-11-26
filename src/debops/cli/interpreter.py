@@ -569,8 +569,12 @@ class Interpreter(object):
 
         layers = checklists.checklist_layers(
             project.path if project is not None else None)
-        entries = checklists.list_checklists(
-            layers, filters=self._checklist_filters())
+        try:
+            entries = checklists.list_checklists(
+                layers, filters=self._checklist_filters())
+        except checklists.ChecklistError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
 
         if args.format == 'json':
             records = []
@@ -690,9 +694,10 @@ class Interpreter(object):
             # An inventory pattern in the copy id expands to one copy
             # per matching host; the whole batch validates before the
             # first copy opens
+            expanded = '[' in copy_id and ']' in copy_id
             copy_ids = self._expand_copy_id(project, copy_id)
-            self._check_bulk_open(state_dir, copy_ids,
-                                  reset=args.reset)
+            self._check_bulk_open(state_dir, copy_ids, name,
+                                  reset=args.reset, expanded=expanded)
             if args.dry_run:
                 self._print_dry_run(copy_ids, name, origin, state_dir)
                 return
@@ -728,19 +733,24 @@ class Interpreter(object):
                          r'(?P<suffix>[^\[\]]*)$', copy_id)
         if match is None:
             return [copy_id]
+        pattern = match.group('pattern')
+        if re.search(r'[;&|`\n\r]', pattern):
+            raise checklists.ChecklistError(
+                'The inventory pattern [{}] contains characters that '
+                'are not valid in an ansible pattern'.format(pattern))
         runner = AnsibleRunner(project, ansible_args=[
-            match.group('pattern'), '--list-hosts'])
+            shlex.quote(pattern), '--list-hosts'])
         returncode, output = runner.capture()
         if returncode != 0:
             raise checklists.ChecklistError(
                 'The inventory pattern [{}] could not be '
-                'expanded'.format(match.group('pattern')))
+                'expanded'.format(pattern))
         hosts = [line.strip() for line in output.splitlines()
                  if line.strip() and not line.strip().endswith(':')]
         if not hosts:
             raise checklists.ChecklistError(
                 'The inventory pattern [{}] matches no '
-                'hosts'.format(match.group('pattern')))
+                'hosts'.format(pattern))
         expanded = ['{}{}{}'.format(match.group('prefix'), host,
                                     match.group('suffix'))
                     for host in hosts]
@@ -750,23 +760,39 @@ class Interpreter(object):
             checklists.validate_name(expanded_id)
         return expanded
 
-    def _check_bulk_open(self, state_dir, copy_ids, reset):
+    def _check_bulk_open(self, state_dir, copy_ids, checklist, reset,
+                         expanded=False):
         """Refuse a multi-copy batch when one of its ids is occupied.
 
         All-or-nothing: the batch either opens completely or not at
         all. A single occupied copy keeps the single-copy refusal of
         :command:`open_copy`; with ``--reset`` the occupied copies are
-        discarded and re-opened as requested.
+        discarded and re-opened as requested. Expanded ids are
+        manufactured from the inventory rather than typed: when one of
+        them holds a different checklist, the collision is refused
+        instead of discarding another checklist's copy.
         """
-        if len(copy_ids) < 2 or reset:
-            return
-        open_ids = {copy.copy_id for copy in
-                    checklists.find_open_copies(state_dir)}
+        open_copies = {copy.copy_id: copy for copy in
+                       checklists.find_open_copies(state_dir)}
         occupied = [copy_id for copy_id in copy_ids
-                    if copy_id in open_ids]
-        if occupied:
-            raise checklists.ChecklistAlreadyOpenError(
-                'Already open: {}'.format(', '.join(occupied)))
+                    if copy_id in open_copies]
+        if not occupied:
+            return
+        if not reset:
+            if len(copy_ids) >= 2:
+                raise checklists.ChecklistAlreadyOpenError(
+                    'Already open: {}'.format(
+                        ', '.join(occupied)))
+            return
+        if expanded:
+            foreign = [copy_id for copy_id in occupied
+                       if open_copies[copy_id].checklist !=
+                       checklists.strip_md(checklist)]
+            if foreign:
+                raise checklists.ChecklistError(
+                    'The copies {} already hold other checklists; '
+                    'close them before opening {}'.format(
+                        ', '.join(foreign), checklist))
 
     def _print_dry_run(self, copy_ids, name, origin, state_dir):
         """Print what ``open`` would do, without opening anything."""
