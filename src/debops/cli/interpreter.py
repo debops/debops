@@ -536,6 +536,11 @@ class Interpreter(object):
             project.path if project is not None else args.project_dir)
         open_copies = checklists.find_open_copies(state_dir)
         glyphs = _tree_glyphs(sys.stdout.encoding or '')
+        layers = checklists.checklist_layers(
+            project.path if project is not None else None)
+        filters = self._checklist_filters()
+        stale_ids = {copy.copy_id for copy in checklists.find_stale_copies(
+            open_copies, layers, filters=filters)}
 
         if args.active:
             rows = []
@@ -573,8 +578,7 @@ class Interpreter(object):
         layers = checklists.checklist_layers(
             project.path if project is not None else None)
         try:
-            entries = checklists.list_checklists(
-                layers, filters=self._checklist_filters())
+            entries = checklists.list_checklists(layers, filters=filters)
         except checklists.ChecklistError as errmsg:
             print_error(errmsg)
             sys.exit(1)
@@ -601,7 +605,8 @@ class Interpreter(object):
                         'copy_id': copy.copy_id,
                         'implicit': copy.implicit,
                         'opened': copy.opened.astimezone().isoformat(),
-                        'counts': counts})
+                        'counts': counts,
+                        'stale': copy.copy_id in stale_ids})
                 records.append({
                     'checklist': name, 'path': str(path),
                     'origin': origin, 'title': parsed.title,
@@ -624,7 +629,9 @@ class Interpreter(object):
                           if copy.checklist == name]
                 progress = {}
                 for copy in copies:
-                    progress[copy.copy_id] = self._copy_progress(copy)
+                    progress[copy.copy_id] = '{}{}'.format(
+                        self._copy_progress(copy),
+                        ' [stale]' if copy.copy_id in stale_ids else '')
                 path_cell = name
                 implicit = [copy for copy in copies if copy.implicit]
                 if implicit:
@@ -653,7 +660,9 @@ class Interpreter(object):
                       if copy.checklist == name]
             progress = {}
             for copy in copies:
-                progress[copy.copy_id] = self._copy_progress(copy)
+                progress[copy.copy_id] = '{}{}'.format(
+                    self._copy_progress(copy),
+                    ' [stale]' if copy.copy_id in stale_ids else '')
             path_cell = name
             implicit = [copy for copy in copies if copy.implicit]
             if implicit:

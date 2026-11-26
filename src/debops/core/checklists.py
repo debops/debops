@@ -31,6 +31,7 @@ from .exceptions import (
     ChecklistNotOpenError,
 )
 from .utils import path_key
+import hashlib
 
 # Task items are list lines whose brackets carry a one-character state
 # marker. The list marker follows the GitHub task-list syntax: dash,
@@ -269,6 +270,32 @@ _INVENTORY_PATTERN_RE = re.compile(
 _PATTERN_INVALID_RE = re.compile(r'[;&|`\n\r]')
 
 
+def find_stale_copies(copies: list['OpenCopy'], layers, filters=()):
+    """The open copies whose source changed since they were opened.
+
+    The stale check compares the source's current content hash with
+    the hash recorded at open time: a mismatch means the checklist
+    was updated after this copy started, and the copy is showing
+    yesterday's procedure. Copies without a recorded hash -- opened
+    before the field existed -- and copies whose checklist no
+    longer resolves are never stale: there is nothing to compare
+    against.
+    """
+    stale = []
+    for copy in copies:
+        if not copy.source_sha256:
+            continue
+        try:
+            path, _origin = find_checklist(
+                copy.checklist, layers, filters=filters)
+        except ChecklistError:
+            continue
+        current = hashlib.sha256(path.read_bytes()).hexdigest()
+        if current != copy.source_sha256:
+            stale.append(copy)
+    return stale
+
+
 def parse_copy_pattern(copy_id: str) -> tuple[str, str, str] | None:
     """The inventory pattern of a copy id, when it carries one.
 
@@ -456,6 +483,8 @@ def open_copy(
         'checklist': strip_md(checklist),
         'origin': origin,
         'filename': _COPY_FILENAME,
+        'source_sha256': hashlib.sha256(
+            checklist_path.read_bytes()).hexdigest(),
     }, indent=2) + '\n')
     return destination
 
@@ -470,6 +499,7 @@ class OpenCopy:
     checklist: str
     origin: str
     opened: datetime
+    source_sha256: str | None
 
     @property
     def implicit(self) -> bool:
@@ -565,6 +595,10 @@ def _open_copy_record(
         opened = data.get('opened')
     else:
         checklist, origin, opened = '', '', None
+    source_sha256 = data.get('source_sha256') if data else None
+    if not isinstance(source_sha256, str) or not re.fullmatch(
+            r'[0-9a-f]{64}', source_sha256):
+        source_sha256 = None
     if opened is not None:
         try:
             opened = datetime.fromisoformat(opened)
@@ -574,7 +608,8 @@ def _open_copy_record(
         opened = datetime.fromtimestamp(md.stat().st_mtime).astimezone()
     return OpenCopy(
         copy_id=copy_id, path=md, state_dir=state_dir,
-        checklist=checklist, origin=origin, opened=opened)
+        checklist=checklist, origin=origin, opened=opened,
+        source_sha256=source_sha256)
 
 
 def _sidecar_checklist(data: dict) -> str:

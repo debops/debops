@@ -7,6 +7,7 @@
 import inspect
 import json
 import os
+import re
 import stat
 import sys
 from datetime import datetime, timezone
@@ -762,11 +763,11 @@ def test_implicit_copies_recognize_themselves():
     implicit = checklists.OpenCopy(
         copy_id="audit/review", path=Path("/state/audit/review/checklist.md"),
         state_dir=Path("/state"), checklist="audit/review",
-        origin="packaged", opened=opened)
+        origin="packaged", opened=opened, source_sha256=None)
     named = checklists.OpenCopy(
         copy_id="web", path=Path("/state/web/checklist.md"),
         state_dir=Path("/state"), checklist="audit/review",
-        origin="packaged", opened=opened)
+        origin="packaged", opened=opened, source_sha256=None)
     assert implicit.implicit is True
     assert named.implicit is False
 
@@ -832,3 +833,59 @@ def test_editor_argv_refuses_an_unsplitable_value():
 def test_editor_argv_treats_an_empty_split_as_unset():
     environ = {"VISUAL": "   ", "EDITOR": "xterm -e"}
     assert checklists.editor_argv(environ) == ["xterm", "-e"]
+
+
+def test_open_records_the_source_hash(tmp_path):
+    state = tmp_path / "state"
+    source = tmp_path / "packaged" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [ ] Task\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    sidecar = json.loads((state / "web" / "copy.json").read_text())
+    assert re.fullmatch(r"[0-9a-f]{64}", sidecar["source_sha256"])
+
+
+def test_find_stale_copies_flags_a_changed_source(tmp_path):
+    state = tmp_path / "state"
+    source = tmp_path / "packaged" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [ ] Task\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    layers = [(tmp_path / "packaged", "packaged")]
+
+    copies = checklists.find_open_copies(state)
+    assert checklists.find_stale_copies(copies, layers) == []
+
+    source.write_text("# Review v2\n- [ ] Task\n- [ ] New\n")
+    stale = checklists.find_stale_copies(copies, layers)
+    assert [copy.copy_id for copy in stale] == ["web"]
+
+
+def test_stale_check_skips_copies_without_a_hash(tmp_path):
+    state = tmp_path / "state"
+    source = tmp_path / "packaged" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [ ] Task\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    sidecar = json.loads((state / "web" / "copy.json").read_text())
+    del sidecar["source_sha256"]
+    (state / "web" / "copy.json").write_text(json.dumps(sidecar))
+    layers = [(tmp_path / "packaged", "packaged")]
+
+    copies = checklists.find_open_copies(state)
+    # A copy opened before the field existed has nothing to compare
+    assert checklists.find_stale_copies(copies, layers) == []
+
+
+def test_stale_check_skips_an_unresolvable_checklist(tmp_path):
+    state = tmp_path / "state"
+    source = tmp_path / "packaged" / "audit" / "review.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Review\n- [ ] Task\n")
+    checklists.open_copy(source, "audit/review", "packaged", "web", state)
+    source.unlink()
+    layers = [(tmp_path / "packaged", "packaged")]
+
+    copies = checklists.find_open_copies(state)
+    # No source to compare against: the copy is close/edit territory
+    assert checklists.find_stale_copies(copies, layers) == []

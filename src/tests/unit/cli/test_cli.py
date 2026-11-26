@@ -1069,6 +1069,27 @@ def test_checklist_list_tree_keeps_a_colliding_copy_verbatim(
         "    \u2514\u2500\u2500 alpha (0/3 done)\n")
 
 
+def test_checklist_list_marks_a_stale_copy(tmp_path, state_home,
+                                           monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    source = tmp_path / "packaged" / "checklists" / "flow.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Flow\n- [ ] Task\n")
+    checklists.open_copy(source, "flow", "packaged", "web", state)
+    # The source changed after the copy was opened
+    source.write_text("# Flow v2\n- [ ] Task\n- [ ] New\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    interpreter = make_interpreter()
+    args = make_args(project_dir=str(project), active=False, verbose=0,
+                     format='text')
+    interpreter.do_checklist_list(args)
+
+    assert "[stale]" in capsys.readouterr().out
+
+
 def test_checklist_list_tree_from_a_subdirectory(tmp_path, state_home,
                                                  monkeypatch, capsys):
     project = tmp_path / "project"
@@ -1368,6 +1389,7 @@ def test_checklist_list_json_format(tmp_path, monkeypatch, capsys):
     assert entry["copies"] == [{
         "copy_id": "web", "implicit": False,
         "opened": sidecar["opened"],
+        "stale": False,
         "counts": {"open": 1, "done": 1, "blocked": 0, "failed": 0,
                    "not_applicable": 0}}]
 
@@ -1720,7 +1742,7 @@ def test_checklist_commit_all_skips_invalid_copies(
 
     assert raised.value.code == 1
     captured = capsys.readouterr()
-    assert "nothing to commit" in captured.err
+    assert "does not contain any task items" in captured.err
     # The valid copies of the batch still committed
     assert captured.out.count("Committed") == 2
 
