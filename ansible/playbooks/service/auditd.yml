@@ -1,0 +1,16 @@
+---
+# .. Copyright (C) 2026-2027 seven-beep <github@soulintheshell.com>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+- name: Configure systemctl call logging                   # noqa: fqcn[keyword]
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_service_auditd' ]
+  become: true
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: auditd
+      tags: [ 'role::auditd', 'skip::auditd' ]
