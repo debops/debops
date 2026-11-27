@@ -1,0 +1,26 @@
+---
+# Copyright (C) 2026 seven-beep <github@soulintheshell.com>
+# SPDX-License-Identifier: GPL-3.0-only
+auditd__rules:
+  - name: '50-permissions'
+    # This will templated to:
+    # -a always,exit -F arch=b64 -F auid>=1000 -F auid!=unset -S chmod,chown,fchmod,fchmodat,fchmodat2,fchown,fchownat,fremovexattr,fsetxattr,lchown,lremovexattr,lsetxattr,removexattr,setxattr -k permissions
+    rules:
+      - name: 'Ensure discretionary access control permission modification events are collected'
+        fields: ['arch=b64', 'auid>=*uid_min*', 'auid!=unset']
+        syscalls:
+          - 'chmod'
+          - 'chown'
+          - 'fchmod'
+          - 'fchmodat'
+          - 'fchmodat2'
+          - 'fchown'
+          - 'fchownat'
+          - 'fremovexattr'
+          - 'fsetxattr'
+          - 'lchown'
+          - 'lremovexattr'
+          - 'lsetxattr'
+          - 'removexattr'
+          - 'setxattr'
+        keys: 'permissions'

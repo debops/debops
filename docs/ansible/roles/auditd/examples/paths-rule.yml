@@ -1,0 +1,15 @@
+---
+# Copyright (C) 2026 seven-beep <github@soulintheshell.com>
+# SPDX-License-Identifier: GPL-3.0-only
+auditd__rules:
+  - name: '50-identity'
+    rules:
+      # This will be templated to:
+      # -a always,exit -F arch=b64 -F perm=wa -F path=/etc/group -k identity
+      # -a always,exit -F arch=b64 -F perm=wa -F path=/etc/passwd -k identity
+      # -a always,exit -F arch=b64 -F perm=wa -F path=/etc/shadow -k identity
+      # -a always,exit -F arch=b64 -F perm=wa -F path=/etc/gshadow -k identity
+      - name: 'Ensure events that modify /etc/group, /etc/passwd, /etc/shadow, /etc/gshadow information are collected'
+        fields: ['arch=b64', 'perm=wa']
+        paths: ['/etc/group', '/etc/passwd', '/etc/shadow', '/etc/gshadow']
+        keys: 'identity'
