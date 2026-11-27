@@ -1,0 +1,185 @@
+---
+# .. Copyright (C) 2026-2027 seven-beep <github@soulintheshell.com>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: 'Import custom Ansible plugins'
+  ansible.builtin.import_role:
+    name: 'ansible_plugins'
+
+- name: 'Ensure Auditd support is installed'
+  ansible.builtin.apt:
+    name: '{{ q("flattened", (auditd__base_packages + auditd__packages)) }}'
+    state: 'present'
+  register: auditd__register_packages
+  until: auditd__register_packages is succeeded
+  when: auditd__enabled is truthy
+  notify: [ 'Update GRUB' ]
+
+- name: 'Make sure that the Ansible local facts directory exists'
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: 'Save Auditd local facts'
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/auditd.fact.j2'
+    dest: '/etc/ansible/facts.d/auditd.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: 'Update Ansible facts if they were modified'
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: 'Make sure that the grub default directory exists'
+  ansible.builtin.file:
+    path: '/etc/default/grub.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: 'Ensure auditing process start prior to auditd'
+  ansible.builtin.template:
+    src: '{{ lookup("debops.debops.template_src", "etc/default/grub.d/50-auditd.cfg.j2") }}'
+    dest: "/etc/default/grub.d/50-auditd.cfg"
+    owner: 'root'
+    group: 'root'
+    mode: '0640'
+  when: auditd__enabled is truthy
+  notify: [ 'Update GRUB' ]
+
+- name: 'Remove auditd grub configuration'
+  ansible.builtin.file:
+    path: '/etc/default/grub.d/50-auditd.cfg'
+    state: 'absent'
+  when: auditd__enabled is falsy
+
+- name: 'Add/remove diversion of Auditd files'
+  debops.debops.dpkg_divert:
+    path: '{{ item }}'
+    state: '{{ "present" if auditd__enabled | bool else "absent" }}'
+    delete: true
+  loop: ['/etc/audit/auditd.conf', '/etc/audit/rules.d/audit.rules']
+
+- name: 'Setup /etc/audit/auditd.conf'
+  ansible.builtin.template:
+    src: '{{ lookup("debops.debops.template_src", "etc/audit/auditd.conf.j2") }}'
+    dest: '/etc/audit/auditd.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0640'
+  when: auditd__enabled is truthy
+  notify: [ 'Auditd daemon restart', 'Auditd require reboot' ]
+
+- name: 'Make sure that the Journald configuration directory exists'
+  ansible.builtin.file:
+    path: '/etc/systemd/journald.conf.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: auditd__enabled is truthy
+
+- name: 'Setup /etc/systemd/journald.conf.d/auditd.conf'
+  ansible.builtin.template:
+    src: 'etc/systemd/journald.conf.d/auditd.conf.j2'
+    dest: '/etc/systemd/journald.conf.d/auditd.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0640'
+  when:
+    - auditd__enabled is truthy
+    - ansible_service_mgr == 'systemd'
+  notify: [ 'Journald daemon restart' ]
+
+- name: 'Remove /etc/systemd/journald.conf.d/auditd.conf'
+  ansible.builtin.file:
+    path: '/etc/systemd/journald.conf.d/auditd.conf'
+    state: 'absent'
+  when:
+    - auditd__enabled is falsy
+
+- name: 'Scan the filesystem for privileged files'
+  auditd_privileged_rules:
+    uid_min: '{{ ansible_local["auditd"]["uid_min"] | d(1000) | string }}'
+    max_scan_size: '{{ auditd__privileged_discovery_max_size | int }}'
+  register: auditd__discovered_privileged_rules
+  changed_when: false
+  when:
+    - auditd__enabled is truthy
+    - auditd__privileged_discovery_policy == "scan"
+
+- name: 'Register the parsed rules'
+  ansible.builtin.set_fact:
+    auditd__parsed_rules: >-
+      {{ (auditd__combined_rules + auditd__discovered_privileged_rules.data | d([]))
+      | debops.debops.parse_kv_items(merge_keys=["rules"], defaults={'check_dir': True}) }}
+
+- name: 'Register the directories to check for existence'
+  ansible.builtin.set_fact:
+    auditd__check_dirs: >-
+      {{ ( auditd__parsed_rules
+                | selectattr('check_dir', 'equalto', True)
+                | map(attribute='rules', default=[])
+                | flatten
+                | selectattr('state', 'equalto', 'present')
+                | map(attribute='fields', default=[])
+                | flatten
+                | select('match', '^dir=')
+                | map('regex_replace', '^dir=', '')
+                | list
+                + auditd__parsed_rules
+                | selectattr('check_dir', 'equalto', True)
+                | map(attribute='rules', default=[])
+                | flatten
+                | selectattr('state', 'equalto', 'present')
+                | map(attribute='dirs', default=[])
+                | flatten
+                )
+                | map('quote')
+                | join(' ') }}
+
+# Only scan dirs as only missing dirs will put auditd in failure.
+- name: 'Register the dirs fields that did not exists'
+  ansible.builtin.shell: |
+    for p in {{ auditd__check_dirs }}; do
+       if ! [ -d "$p" ]; then
+          echo "$p"
+       fi
+    done
+  register: auditd__missing_dirs
+  changed_when: false
+  when: auditd__enabled is truthy
+
+- name: 'Remove auditd rules files'
+  ansible.builtin.file:
+    path: '/etc/audit/rules.d/{{ item.filename | d(item.name + ".rules") }}'
+    state: 'absent'
+  loop: '{{ auditd__parsed_rules }}'
+  loop_control:
+    label: '{{ item.name }}'
+  when: auditd__enabled is falsy or item.state == 'absent' | d('present')
+  notify: [ 'Auditd reload rules', 'Auditd require reboot' ]
+
+- name: 'Generate auditd rules files'
+  ansible.builtin.template:
+    src: '{{ lookup("debops.debops.template_src", "etc/audit/rules.d/audit.rules.j2") }}'
+    dest: '/etc/audit/rules.d/{{ item.filename | d(item.name + ".rules") }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  loop: '{{ auditd__parsed_rules }}'
+  loop_control:
+    label: '{{ item.name }}'
+  when: >-
+    auditd__enabled is truthy
+    and ( item.filename | d(item.name) ) is truthy
+    and ( item.rules | d() ) is truthy
+    and item.state | d('present') not in ['absent', 'ignore', 'init']
+  notify: [ 'Auditd reload rules', 'Auditd require reboot' ]

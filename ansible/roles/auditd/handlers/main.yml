@@ -1,0 +1,36 @@
+---
+# .. Copyright (C) 2026-2027 seven-beep <github@soulintheshell.com>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# Reload is not applicable.
+- name: 'Journald daemon restart'
+  ansible.builtin.service:
+    name: 'systemd-journald'
+    state: 'restarted'
+
+# Reload is not applicable
+- name: 'Auditd daemon restart'
+  ansible.builtin.service:
+    name: 'auditd'
+    state: 'restarted'
+  when: ansible_local['auditd']['immutable'] | d(true) is falsy
+
+- name: 'Auditd reload rules'
+  ansible.builtin.command: 'augenrules --load'
+  changed_when: true
+  when: ansible_local['auditd']['immutable'] | d(true) is falsy
+
+- name: 'Auditd require reboot'
+  ansible.builtin.file:
+    path: '/var/run/reboot-required'
+    state: 'touch'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: ansible_local['auditd']['immutable'] | d(true) is truthy
+
+- name: Update GRUB
+  ansible.builtin.command: update-grub
+  register: grub__register_update
+  changed_when: grub__register_update.changed | bool
+  failed_when: ('error' in grub__register_update.stderr)
