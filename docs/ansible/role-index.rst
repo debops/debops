@@ -50,6 +50,7 @@ etc.
 - :ref:`debops.prosody`
 - :ref:`debops.roundcube`
 - :ref:`debops.rstudio_server`
+- :ref:`debops.zabbix_server`
 - ``debops.phpmyadmin``
 - ``debops-contrib.foodsoft``
 - ``debops-contrib.homeassistant``
@@ -267,6 +268,7 @@ Monitoring
 - :ref:`debops.telegraf`
 - :ref:`debops.vmagent`
 - :ref:`debops.zabbix_agent`
+- :ref:`debops.zabbix_server`
 
 
 Networking

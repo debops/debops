@@ -1,0 +1,38 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Check if Zabbix database schema is already present
+  community.postgresql.postgresql_query:
+    login_host: '{{ zabbix_server__database_host }}'
+    login_port: '{{ zabbix_server__database_port }}'
+    login_user: '{{ zabbix_server__database_user }}'
+    login_password: '{{ zabbix_server__database_password }}'
+    login_db: '{{ zabbix_server__database_name }}'
+    query: "SELECT to_regclass('public.dbversion') IS NOT NULL AS schema_present"
+  register: zabbix_server__register_schema_check
+  changed_when: False
+  no_log: '{{ debops__no_log | d(True) }}'
+
+# The service restarted by systemd could use the database during the import.
+- name: Stop Zabbix Server before initial schema import
+  ansible.builtin.systemd:
+    name: 'zabbix-server'
+    state: 'stopped'
+  when: not (zabbix_server__register_schema_check.query_result[0].schema_present | d(False))
+
+# The module passes the password in the environment of the process, so it is
+# not visible in the list of processes.
+- name: Import Zabbix PostgreSQL database schema
+  community.postgresql.postgresql_db:
+    login_host: '{{ zabbix_server__database_host }}'
+    login_port: '{{ zabbix_server__database_port }}'
+    login_user: '{{ zabbix_server__database_user }}'
+    login_password: '{{ zabbix_server__database_password }}'
+    name: '{{ zabbix_server__database_name }}'
+    state: 'restore'
+    target: '{{ zabbix_server__schema_file }}'
+    target_opts: '-X -q -v ON_ERROR_STOP=1 --single-transaction'
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: not (zabbix_server__register_schema_check.query_result[0].schema_present | d(False))

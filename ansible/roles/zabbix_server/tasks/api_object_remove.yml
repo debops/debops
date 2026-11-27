@@ -1,0 +1,69 @@
+---
+# Copyright (C) 2026 Patryk Ściborek <patryk@sciborek.com>
+# Copyright (C) 2026 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Removes the objects in the 'absent' state from a single list of Zabbix API
+# objects, described by the 'zabbix_server__object' variable.
+
+- name: Remove Zabbix objects from the list of {{ zabbix_server__object.list }}
+  when: zabbix_server__object_names | length > 0
+  vars:
+    zabbix_server__object_names: '{{ lookup("vars", "zabbix_server__combined_" + zabbix_server__object.list)
+                                     | debops.debops.parse_kv_items(name=zabbix_server__object.key)
+                                     | selectattr("state", "equalto", "absent")
+                                     | map(attribute=zabbix_server__object.key) | list }}'
+    zabbix_server__object_ids: '{{ zabbix_server__register_objects.json.result | d([])
+                                   | map(attribute=zabbix_server__object.id) | list }}'
+  block:
+
+    - name: Look up Zabbix objects to remove from the list of {{ zabbix_server__object.list }}
+      ansible.builtin.uri:
+        url: '{{ zabbix_server__api_url }}'
+        method: 'POST'
+        headers:
+          Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+          Content-Type: 'application/json-rpc'
+        body_format: 'json'
+        body:
+          jsonrpc: '2.0'
+          method: '{{ zabbix_server__object.api }}.get'
+          params: '{{ {"output": [zabbix_server__object.id, zabbix_server__object.key],
+                       "filter": {zabbix_server__object.key: zabbix_server__object_names}}
+                      | combine(zabbix_server__object.get_params | d({})) }}'
+          id: 1
+        validate_certs: '{{ zabbix_server__api_validate_certs }}'
+        return_content: True
+      delegate_to: '{{ zabbix_server__api_delegate_to }}'
+      become: False
+      check_mode: False
+      register: zabbix_server__register_objects
+      failed_when: >-
+        (zabbix_server__register_objects.status | d(0)) != 200
+        or zabbix_server__register_objects.json.result is not defined
+      no_log: '{{ debops__no_log | d(True) }}'
+
+    - name: Remove Zabbix objects from the list of {{ zabbix_server__object.list }}
+      ansible.builtin.uri:
+        url: '{{ zabbix_server__api_url }}'
+        method: 'POST'
+        headers:
+          Authorization: 'Bearer {{ zabbix_server__register_api_token_content }}'
+          Content-Type: 'application/json-rpc'
+        body_format: 'json'
+        body:
+          jsonrpc: '2.0'
+          method: '{{ zabbix_server__object.api }}.delete{{ zabbix_server__object.method_suffix | d("") }}'
+          params: '{{ zabbix_server__object_ids }}'
+          id: 1
+        validate_certs: '{{ zabbix_server__api_validate_certs }}'
+        return_content: True
+      delegate_to: '{{ zabbix_server__api_delegate_to }}'
+      become: False
+      register: zabbix_server__register_object_remove
+      changed_when: True
+      failed_when: >-
+        (zabbix_server__register_object_remove.status | d(0)) != 200
+        or zabbix_server__register_object_remove.json.result is not defined
+      no_log: '{{ debops__no_log | d(True) }}'
+      when: zabbix_server__object_ids | length > 0
