@@ -1,0 +1,12 @@
+---
+# Copyright (C) 2026 seven-beep <github@soulintheshell.com>
+# SPDX-License-Identifier: GPL-3.0-only
+auditd__rules:
+  - name: '50-sessions'
+    rules:
+      - name: 'Ensure session initiation information is collected -- /var/run/*'
+        raw: |
+          # As these files may not exists, they are audited with -w rather that
+          # with -F dir=
+          -w /var/run/faillock -p wa -k session
+          -w /var/run/utmp -p wa -k session

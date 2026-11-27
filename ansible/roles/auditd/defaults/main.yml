@@ -1,0 +1,599 @@
+---
+# .. Copyright (C) 2026-2027 seven-beep <github@soulintheshell.com>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _auditd__ref_defaults:
+
+# auditd default variables
+# ========================
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: auditd__enabled [[[
+#
+# Enable or disable support for managing :program:`auditd` configuration and
+# rules.
+auditd__enabled: true
+
+                                                                   # ]]]
+# .. envvar:: auditd__base_packages [[[
+#
+# List of APT packages installed for Auditd support.
+auditd__base_packages: ['auditd']
+
+                                                                   # ]]]
+# .. envvar:: auditd__packages [[[
+#
+# List of additional APT packages to install with Auditd.
+auditd__packages: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Daemon configuration [[[
+# ------------------------
+
+# .. envvar:: auditd__default_configuration [[[
+#
+# List of Auditd daemon configuration options defined by default by this role.
+auditd__default_configuration:
+
+  - name: 'local_events'
+    value: true
+
+  - name: 'log_file'
+    value: '/var/log/audit/audit.log'
+
+  - name: 'write_logs'
+    value: true
+
+  - name: 'log_format'
+    value: 'ENRICHED'
+
+  - name: 'log_group'
+    value: 'adm'
+    comment: 'Standard Debian group for log access.'
+
+  - name: 'priority_boost'
+    value: 4
+
+  - name: 'flush'
+    value: 'incremental_async'
+
+  - name: 'freq'
+    value: 50
+
+  - name: 'num_logs'
+    value: 5
+
+  - name: 'name_format'
+    value: 'NONE'
+
+  - name: 'name'
+    value: 'mydomain'
+    state: 'comment'
+
+  # Increase the default retention to 320Mb.
+  - name: 'max_log_file'
+    value: 64
+    comment: 'Maximum size in megabytes of each log file'
+
+  - name: 'max_log_file_action'
+    value: 'ROTATE'
+    comment: |
+      This should be set to 'keep_logs' to comply with CIS and STIG
+      benchmarks, but kept unchecked would grow indefinitely the disk usage.
+
+  - name: 'verify_email'
+    value: true
+
+  - name: 'action_mail_acct'
+    value: 'root'
+
+  # Increase accordingly to max_log_size.
+  - name: 'space_left'
+    value: 256
+
+  - name: 'space_left_action'
+    value: 'SYSLOG'
+
+  # Increase accordingly to max_log_size.
+  - name: 'admin_space_left'
+    value: 64
+
+  - name: 'admin_space_left_action'
+    value: 'single'
+
+  - name: 'disk_full_action'
+    value: 'halt'
+
+  - name: 'disk_error_action'
+    value: 'halt'
+
+  - name: 'tcp_listen_port'
+    value: 60
+    state: 'comment'
+
+  - name: 'tcp_listen_queue'
+    value: 5
+
+  - name: 'tcp_max_per_addr'
+    value: 1
+
+  - name: 'use_libwrap'
+    value: true
+
+  - name: 'tcp_client_ports'
+    value: '1024-65535'
+    state: 'comment'
+
+  - name: 'tcp_client_max_idle'
+    value: 0
+
+  - name: 'transport'
+    value: 'tcp'
+    state: 'comment'
+
+  - name: 'krb5_principal'
+    value: 'auditd'
+
+  - name: 'krb5_key_file'
+    value: '/etc/audit/audit.key'
+    state: 'comment'
+
+  - name: 'distribute_network'
+    value: false
+
+  - name: 'q_depth'
+    value: 2000
+
+  - name: 'overflow_action'
+    value: 'SYSLOG'
+
+  - name: 'max_restarts'
+    value: 10
+
+  - name: 'plugin_dir'
+    value: '/etc/audit/plugins.d'
+
+                                                                   # ]]]
+# .. envvar:: auditd__configuration [[[
+#
+# List of Auditd daemon configuration options which should be defined in
+# Ansible’s global inventory.
+auditd__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: auditd__group_configuration [[[
+#
+# List of Auditd daemon configuration options which should be defined on hosts in
+# a specific Ansible inventory group.
+auditd__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: auditd__host_configuration [[[
+#
+# List of Auditd daemon configuration options which should be defined on specific
+# hosts in the Ansible inventory.
+auditd__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: auditd__combined_configuration [[[
+#
+# Variable which combines all of the Auditd daemon configuration lists and is
+# used in role tasks and templates.
+auditd__combined_configuration: >-
+  {{ auditd__default_configuration
+   + auditd__configuration
+   + auditd__group_configuration
+   + auditd__host_configuration }}
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Rules [[[
+# ---------
+
+# .. envvar:: auditd__backlog_size [[[
+#
+# Max number of outstanding audit buffer allowed.
+auditd__backlog_size: 8192
+
+                                                                   # ]]]
+# .. envvar:: auditd__backlog_wait_time [[[
+#
+# Time to wait in milliseconds when backlog_limit is reached before queuing more
+# audit events to be transferred to Auditd.
+auditd__backlog_wait_time: 60000
+
+                                                                   # ]]]
+# .. envvar:: auditd__kernel_failure_mode [[[
+#
+# How the kernel handle critical errors. Possible choices are 0=silent,
+# 1=printk, 2=panic.
+auditd__kernel_failure_mode: 1
+
+                                                                   # ]]]
+# .. envvar:: auditd__error_mode [[[
+#
+# How :program:`auditctl` handle errors in rules (eg: missing files/directories
+# to watch or syntax errors). Possibles values are :
+#
+# * error: Any error will prevent the daemon to start. This is the default
+#   behavior.
+#
+# * continue: Continue loading rules and report errors. Exit code will not be
+#   success if any rule fails to load and the systemd ``auditd.service`` will
+#   refuse to (re)start.
+#
+# * ignore: Continue loading rules, report errors and always return a success
+#   code.
+auditd__error_mode: "continue"
+
+                                                                   # ]]]
+# .. envvar:: auditd__privileged_discovery_policy [[[
+#
+# Enable or disable the discovery of SUID/GUID files to be audited. As this may
+# be an intensive operation on large filesystems without the ``nosuid`` or
+# ``noexec`` mount options. Any other value than ``scan`` will ignore the scan
+# tasks.
+auditd__privileged_discovery_policy: "ignore"
+
+                                                                   # ]]]
+# .. envvar:: auditd__privileged_discovery_max_size [[[
+#
+# If :envvar:`auditd__privileged_discovery_policy` is set to ``scan`` and any disk
+# to scan for SUID/GUID files exceed this bits size, the scan will be aborted
+# and reported as such rather that putting the role in error.
+auditd__privileged_discovery_max_size: '{{ 1024**4 }}' # 1TiB
+
+                                                                   # ]]]
+# .. envvar:: auditd__default_rules [[[
+#
+# See :ref:`auditd__ref_rules` for more details.
+#
+# List of Auditd logging rules defined by default by this role.
+auditd__default_rules:
+
+  - name: '00-init'
+    rules:
+      - name: 'initialization'
+        raw: |
+          ## First rule - delete all
+          -D
+
+          ## Increase the buffer to survive stress events.
+          ## Make this bigger for busy systems.
+          -b {{ auditd__backlog_size }}
+
+          ## This determine how long to wait in burst of events.
+          --backlog_wait_time {{ auditd__backlog_wait_time }}
+
+          ## Set the failure mode.
+          -f {{ auditd__kernel_failure_mode }}
+          {% if auditd__error_mode == "continue" %}
+
+          ## Continue loading rules in spite of an error. This summarizes the
+          ## results of loading the rules. The exit code will not be success if
+          ## any rule fails to load.
+          -c
+          {% elif auditd__error_mode == "ignore" %}
+
+          ## This rule will cause auditctl to continue loading rules when it runs
+          ## across an unsupported field or a rule with a syntax error but exit with
+          ## success reason code. The normal action is to report the line and issue with
+          ## the rule and exit immediately with an error to get the admin's attention to
+          ## fix the rules.
+          -i
+          {% endif %}
+
+  - name: '21-no32bit'
+    comment: |
+      If you are on a 64 bit platform, everything _should_ be running
+      in 64 bit mode. This rule will detect any use of the 32 bit syscalls
+      because this might be a sign of someone exploiting a hole in the 32
+      bit ABI.
+    rules:
+      - name: '32bit_syscalls'
+        fields: 'arch=b32'
+        syscalls: 'all'
+        keys: '32bit-abi'
+    state: '{{ "present" if ansible_architecture == "x86_64" else "ignore" }}'
+
+  - name: '50-sudo'
+    comment: |
+      Recommendations from the CIS benchmarks.
+      https://www.cisecurity.org/cis-benchmarks
+    rules:
+      - name: 'Ensure modification of the /etc/sudoers files are collected'
+        fields: ['arch=b64', 'perm=wa']
+        paths: '/etc/sudoers'
+        dirs: '/etc/sudoers.d'
+        keys: 'scope'
+
+      - name: 'Ensure events that modify the sudo log file are collected'
+        fields: ['arch=b64', 'perm=wa']
+        paths: '/var/log/sudo.log'
+        keys: 'sudo_log_file'
+
+  - name: '50-user-emulation'
+    comment: |
+      Recommendations from the CIS benchmarks.
+      https://www.cisecurity.org/cis-benchmarks
+    rules:
+      - name: 'Ensure actions as another user are always logged'
+        fields: ['arch=b64', 'auid!=unset']
+        comparison: ['euid!=uid']
+        syscalls: 'execve'
+        keys: 'user_emulation'
+
+  - name: '50-time-change'
+    comment: |
+      Recommendations from the CIS benchmarks.
+      https://www.cisecurity.org/cis-benchmarks
+    rules:
+      - name: 'Ensure events that modify date and time information are collected -- 1'
+        fields: ['arch=b64']
+        syscalls: ['adjtimex', 'settimeofday']
+        keys: 'time-change'
+
+      - name: 'Ensure events that modify date and time information are collected -- 2'
+        fields: ['arch=b64', 'a0=0x0']
+        syscalls: ['clock_settime']
+        keys: 'time-change'
+
+      - name: 'Ensure events that modify date and time information are collected -- 3'
+        fields: ['arch=b64', 'perm=wa']
+        paths: '/etc/localtime'
+        syscalls: 'all'
+        keys: 'localtime-change'
+
+  - name: '50-system-locale'
+    comment: |
+      Recommendations from the CIS benchmarks.
+      https://www.cisecurity.org/cis-benchmarks
+    rules:
+      - name: 'Ensure events that modify sethostname and setdomainname are collected'
+        fields: ['arch=b64']
+        syscalls: ['sethostname', 'setdomainname']
+        keys: 'system-locale'
+
+      - name: 'Ensure events that modify /etc/issue are collected'
+        fields: ['arch=b64', 'path=/etc/issue', 'perm=wa']
+        keys: 'system-locale'
+
+      - name: 'Ensure events that modify /etc/issue.net are collected'
+        fields: ['arch=b64', 'path=/etc/issue.net', 'perm=wa']
+        keys: 'system-locale'
+
+      - name: 'Ensure events that modify /etc/hosts are collected'
+        fields: ['arch=b64', 'path=/etc/hosts', 'perm=wa']
+        keys: 'system-locale'
+
+      - name: 'Ensure events that modify /etc/hostname are collected'
+        fields: ['arch=b64', 'path=/etc/hostname', 'perm=wa']
+        keys: 'system-locale'
+
+      # /etc/interfaces are used mostly on Debian.
+      - name: "Ensure events that modify the system's network environment are collected"
+        fields: ['arch=b64', 'perm=wa']
+        paths: '/etc/network/interfaces'
+        dirs: '/etc/network/interfaces.d'
+        keys: 'system-locale'
+        state: '{{ "present" if ansible_distribution == "Debian" else "ignore" }}'
+
+      # /etc/interfaces are used mostly on Ubuntu
+      - name: "Ensure events that modify the system's network environment are collected -- /etc/netplan"
+        fields: ['arch=b64', 'dir=/etc/netplan', 'perm=wa']
+        keys: 'system-locale'
+        state: '{{ "present" if ansible_distribution == "Ubuntu" else "ignore" }}'
+
+      # /etc/NetworkManager is mostly used on desktops.
+      - name: "Ensure events that modify the system's network environment are collected -- /etc/NetworkManager"
+        fields: ['arch=b64', 'dir=/etc/NetworkManager', 'perm=wa']
+        keys: 'system-locale'
+        state: 'init'
+
+  - name: '50-access'
+    comment: |
+      Recommendations from the CIS benchmarks.
+      https://www.cisecurity.org/cis-benchmarks
+    rules:
+      - name: 'Ensure unsuccessful file access attempts are collected -- -EACCES'
+        fields: ['arch=b64', 'exit=-EACCES', 'auid>=*uid_min*', 'auid!=unset']
+        syscalls: ['creat', 'open', 'openat', 'truncate', 'ftruncate']
+        keys: 'access'
+
+      - name: 'Ensure unsuccessful file access attempts are collected -- -EPERM'
+        fields: ['arch=b64', 'exit=-EPERM', 'auid>=*uid_min*', 'auid!=unset']
+        syscalls: ['creat', 'open', 'openat', 'truncate', 'ftruncate']
+        keys: 'access'
+
+  - name: '50-identity'
+    comment: |
+      Recommendations from the CIS benchmarks.
+      https://www.cisecurity.org/cis-benchmarks
+    rules:
+      - name: 'Ensure events that modify /etc/group, /etc/passwd, /etc/shadow, /etc/gshadow information are collected'
+        fields: ['arch=b64', 'perm=wa']
+        paths: ['/etc/group', '/etc/passwd', '/etc/shadow', '/etc/gshadow']
+        keys: 'identity'
+
+      - name: 'Ensure events that modify /etc/opasswd information are collected'
+        fields: ['arch=b64', 'path=/etc/opasswd', 'perm=wa']
+        keys: 'identity'
+
+      - name: 'Ensure events that modify /etc/nsswitch.conf information are collected'
+        fields: ['arch=b64', 'path=/etc/nsswitch.conf', 'perm=wa']
+        keys: 'identity'
+
+      - name: 'Ensure events that modify /etc/pam.* information are collected'
+        fields: ['arch=b64', 'perm=wa']
+        paths: '/etc/pam.conf'
+        dirs: '/etc/pam.d'
+        keys: 'identity'
+
+  - name: '50-mount'
+    comment: |
+      Recommendations from the CIS benchmarks.
+      https://www.cisecurity.org/cis-benchmarks
+    rules:
+      - name: 'Ensure successful file system mounts are collected'
+        fields: ['arch=b64', 'auid>=*uid_min*', 'auid!=unset']
+        syscalls: 'mount'
+        keys: 'mount'
+
+  - name: '50-sessions'
+    comment: |
+      Recommendations from the CIS benchmarks.
+      https://www.cisecurity.org/cis-benchmarks
+    rules:
+      - name: 'Ensure session initiation information is collected'
+        fields: ['arch=b64', 'perm=wa']
+        paths: ['/var/log/wtmp', '/var/log/btmp', '/var/log/lastlog']
+        keys: 'session'
+
+      - name: 'Ensure session initiation information is collected -- /var/run/*'
+        raw: |
+          # As these files may not exists, they are audited with -w rather that
+          # with -F dir=
+          -w /var/run/faillock -p wa -k session
+          -w /var/run/utmp -p wa -k session
+
+  - name: '50-delete'
+    comment: |
+      Recommendations from the CIS benchmarks.
+      https://www.cisecurity.org/cis-benchmarks
+    rules:
+      - name: 'Ensure unlink file deletion events by users are collected'
+        fields: ['arch=b64', 'auid>=*uid_min*', 'auid!=unset']
+        syscalls: ['unlink', 'unlinkat', 'rename', 'renameat', 'renameat2']
+        keys: 'delete'
+
+  - name: '50-MAC-policy'
+    comment: |
+      Recommendations from the CIS benchmarks.
+      https://www.cisecurity.org/cis-benchmarks
+    rules:
+      - name: "Ensure events that modify the system's Mandatory Access Controls are collected"
+        fields: ['arch=b64', 'perm=wa']
+        paths: '/etc/apparmor'
+        dirs: '/etc/apparmor.d'
+        keys: 'MAC-policy'
+
+  - name: '50-permissions'
+    comment: |
+      Recommendations from the CIS benchmarks.
+      https://www.cisecurity.org/cis-benchmarks
+    rules:
+      - name: 'Ensure discretionary access control permission modification events are collected'
+        fields: ['arch=b64', 'auid>=*uid_min*', 'auid!=unset']
+        syscalls:
+          - 'chmod'
+          - 'chown'
+          - 'fchmod'
+          - 'fchmodat'
+          - 'fchmodat2'
+          - 'fchown'
+          - 'fchownat'
+          - 'fremovexattr'
+          - 'fsetxattr'
+          - 'lchown'
+          - 'lremovexattr'
+          - 'lsetxattr'
+          - 'removexattr'
+          - 'setxattr'
+        keys: 'permissions'
+
+      - name: 'Ensure successful and unsuccessful attempts to use the chcon command are collected '
+        fields: ['arch=b64', 'perm=x', 'auid>=*uid_min*', 'auid!=unset']
+        paths: '/usr/bin/chcon'
+        keys: 'permissions'
+
+      - name: 'Ensure successful and unsuccessful attempts to use the setfacl command are collected'
+        fields: ['arch=b64', 'perm=x', 'auid>=*uid_min*', 'auid!=unset']
+        paths: '/usr/bin/setfacl'
+        keys: 'permissions'
+
+      - name: 'Ensure successful and unsuccessful attempts to use the chacl command are collected'
+        fields: ['arch=b64', 'perm=x', 'auid>=*uid_min*', 'auid!=unset']
+        paths: '/usr/bin/chacl'
+        keys: 'permissions'
+
+      - name: 'Ensure successful and unsuccessful attempts to use the usermod command are collected '
+        fields: ['arch=b64', 'perm=x', 'auid>=*uid_min*', 'auid!=unset']
+        paths: '/usr/sbin/usermod'
+        keys: 'permissions'
+
+  - name: '50-kernel-modules'
+    comment: |
+      Recommendations from the CIS benchmarks.
+      https://www.cisecurity.org/cis-benchmarks
+    rules:
+      - name: 'Ensure kernel module loading unloading and modification is collected'
+        fields: ['arch=b64', 'path=/usr/bin/kmod', 'perm=x', 'auid>=*uid_min*', 'auid!=unset']
+        keys: 'kernel-modules'
+
+      - name: 'Ensure kernel loading, unloading and modification is collected'
+        fields: ['arch=b64', 'auid>=*uid_min*', 'auid!=unset']
+        syscalls:
+          - 'init_module'
+          - 'finit_module'
+          - 'delete_module'
+          - 'create_module'
+          - 'query_module'
+        keys: 'kernel-modules'
+
+  - name: '99-finalize'
+    comment: |
+      Recommendations from the CIS benchmarks.
+      https://www.cisecurity.org/cis-benchmarks
+    rules:
+      - name: 'Ensure the audit configuration is immutable'
+        raw: |
+          ## Any attempt to change the configuration in this mode  will  be
+          ## audited and denied. The configuration can only be changed by rebooting
+          ## the machine.
+          -e 2
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: auditd__rules [[[
+#
+# List of Auditd logging rules which should be defined in Ansible’s global
+# inventory.
+auditd__rules: []
+
+                                                                   # ]]]
+# .. envvar:: auditd__group_rules [[[
+#
+# List of Auditd logging rules which should be defined on hosts in
+# a specific Ansible inventory group.
+auditd__group_rules: []
+
+                                                                   # ]]]
+# .. envvar:: auditd__host_rules [[[
+#
+# List of Auditd logging rules which should be defined on specific
+# hosts in the Ansible inventory.
+auditd__host_rules: []
+
+                                                                   # ]]]
+# .. envvar:: auditd__dependent_rules [[[
+#
+# List of Auditd logging rules defined by other Ansible roles via role default
+# variables.
+auditd__dependent_rules: []
+
+                                                                   # ]]]
+# .. envvar:: auditd__combined_rules [[[
+#
+# Variable which combines all of the Auditd logging rules lists and is used in
+# role tasks and templates.
+auditd__combined_rules: {{ auditd__default_rules
+                           + auditd__rules
+                           + auditd__group_rules
+                           + auditd__host_rules
+                           + auditd__dependent_rules }}
+
+                                                                   # ]]]
+                                                                   # ]]]

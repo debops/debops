@@ -1,0 +1,169 @@
+{# Copyright (C) 2026-2027 seven-beep <github@soulintheshell.com>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# {{ ansible_managed }}
+
+{% macro commented(s) -%}
+{{ s | regex_replace('\n$', '') | comment(decorator="# ", prefix='', postfix='') }}
+{%- endmacro -%}
+
+{% macro to_flag(flag, args, split=True) -%}
+{#
+   args: list of string.
+
+   flag: audit flag to apply to the args.
+
+   split: if true, repeat the flag as many times as needed, otherwise emit
+   only one flag and join the args with a comma.
+#}
+{%   if args is sequence and args | length > 0 %}
+{%-    if split | bool -%}
+{{       args | map('regex_replace', '^(.*)$', flag + '\\1') | join('') }}
+{%-    else -%}
+{{       flag + ",".join(args) }}
+{%-    endif -%}
+{%-  else -%}
+{{     "" }}
+{%-  endif -%}
+{%- endmacro -%}
+
+{% macro rule(comment, append, fields, syscalls, comparison, permissions, keys) -%}
+{{        '{}{}{}{}{}{}{}'.format(
+            comment,
+            append,
+            fields,
+            syscalls,
+            comparison,
+            permissions,
+            keys
+) }}
+{%- endmacro -%}
+
+{% if item.comment | d() %}
+{{ commented(item.comment) }}
+{% endif %}
+{% for element in item.rules %}
+{%   if element.state | d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%     if element.comment | d() %}
+{%       if not loop.first %}
+{{         '' }}
+{%       endif %}
+{{       commented(element.comment) -}}
+{%     endif %}
+{%     if element.raw | d() %}
+{%       if element.state == 'comment' %}
+{{         commented(element.raw) }}
+{%       else %}
+{{         element.raw | regex_replace('\n$', '') }}
+{%       endif %}
+{%     else %}
+{#       Most of the options can be string or list for ease of usage,
+         normalize the values to list when appropriate with a namespace so we
+         can mute the objects, then retransform the list into string with flags. #}
+{%       set elt_ns = namespace(comment='',
+                                append_flag='-a ',
+                                append='',
+                                fields=[],
+                                syscalls=[],
+                                comparison=[],
+                                permissions='',
+                                _keys=[],
+                                paths=[],
+                                dirs=[]) %}
+{%       set uid_min = ansible_local['auditd']['uid_min'] | d(1000) | string %}
+{%       if ((element.state | d('present') == 'comment') or (item.state | d('present') == 'comment')) %}
+{%         set elt_ns.comment = '#' %}
+{%       endif %}
+{%       if not element.append | d(True) | bool %}
+{%         set elt_ns.append_flag = "-A " %}
+{%       endif %}
+{%       set elt_ns.append = to_flag(
+                flag=elt_ns.append_flag,
+                args=[element.action | d('always') + ',' + element.list | d('exit')],
+                split=False
+) %}
+{%       if element.fields | d(None) is string %}
+{%         set elt_ns.fields = [element.fields] %}
+{%       else %}
+{%         set elt_ns.fields = element.fields | d([]) %}
+{%       endif %}
+{#       Reject paths and dirs from the fields as they will be parsed from
+         elt_ns.paths and elt_ns.dirs. #}
+{%       set elt_ns.fields = elt_ns.fields | reject('match', '^(path|dir)=') %}
+{#       Special expansions #}
+{%       set elt_ns.fields = elt_ns.fields | map('regex_replace', '[*]uid_min[*]', uid_min) %}
+{%       set elt_ns.fields = to_flag(' -F ', elt_ns.fields) %}
+{%       if element.syscalls | d(None) is string %}
+{%         set elt_ns.syscalls = [element.syscalls] %}
+{%       else %}
+{%         set elt_ns.syscalls = element.syscalls | d([]) %}
+{%       endif %}
+{%       set elt_ns.syscalls = to_flag(' -S ', elt_ns.syscalls, split=False) %}
+{%       if element.comparison | d(None) is string %}
+{%         set elt_ns.comparison = [element.comparison] %}
+{%       else %}
+{%         set elt_ns.comparison = element.comparison | d([]) %}
+{%       endif %}
+{%       set elt_ns.comparison = to_flag(' -C ', elt_ns.comparison) %}
+{%       if element.permissions | d(None) is string %}
+{%         set elt_ns.permissions = [element.permissions] %}
+{%       else %}
+{%         set elt_ns.permissions = element.permissions | d([]) %}
+{%       endif %}
+{%       set elt_ns.permissions = to_flag(' -p ', elt_ns.permissions) %}
+{#
+          element.keys is in conflict with the builtin so we need to explicitly
+         'get' the value.
+#}
+{%       if element.get('keys') | d(None) is string %}
+{%         set elt_ns._keys = [element.get('keys')] %}
+{%       else %}
+{%         set elt_ns._keys = element.get('keys') | d([]) %}
+{%       endif %}
+{%       set elt_ns._keys = to_flag(' -k ', elt_ns._keys) %}
+{%       if element.paths | d(None) is string %}
+{%         set elt_ns.paths = [element.paths] %}
+{%       else %}
+{%         set elt_ns.paths = element.paths | d([])%}
+{%       endif %}
+{%       set elt_ns.paths = elt_ns.paths +
+                            (element.fields | d([])
+                            | select('match', '^path=')
+                            | map('regex_replace', '^path=', ''))
+                            | list %}
+{%       if element.dirs | d(None) is string %}
+{%         set elt_ns.dirs = [element.dirs] %}
+{%       else %}
+{%         set elt_ns.dirs = element.dirs | d([]) %}
+{%       endif %}
+{%       set elt_ns.dirs =  elt_ns.dirs +
+                            (element.fields | d([])
+                            | select('match', '^dir=')
+                            | map('regex_replace', '^dir=', ''))
+                            | list %}
+{% if elt_ns.paths | length == 0 and elt_ns.dirs | length == 0 %}
+{{   rule(elt_ns.comment, elt_ns.append, elt_ns.fields, elt_ns.syscalls,
+          elt_ns.comparison, elt_ns.permissions, elt_ns._keys) }}
+{% else %}
+{%   for path in elt_ns.paths %}
+{{     rule(elt_ns.comment, elt_ns.append, " -F path=" + path + elt_ns.fields,
+            elt_ns.syscalls, elt_ns.comparison, elt_ns.permissions, elt_ns._keys) }}
+{%   endfor %}
+{# Missing directories will crash auditd.
+   Until it is fixed, this workaround may help.
+#}
+{%   for dir in elt_ns.dirs %}
+{%     if dir in auditd__missing_dirs.stdout_lines or elt_ns.comment == '#' %}
+{{       "# The following directory did not exist at playbook runtime:" }}
+{%       set elt_ns.comment = '#' %}
+{%     endif %}
+{{     rule(elt_ns.comment, elt_ns.append, " -F dir=" + dir + elt_ns.fields,
+            elt_ns.syscalls, elt_ns.comparison, elt_ns.permissions, elt_ns._keys) }}
+{%   endfor %}
+{% endif %}
+{%       if elt_ns.comment | d() and not loop.last %}
+{{        '' }}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endfor %}

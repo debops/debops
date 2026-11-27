@@ -1,0 +1,32 @@
+{# Copyright (C) 2026-2027 seven-beep <github@soulintheshell.com>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# {{ ansible_managed }}
+#
+# This file controls the configuration of the audit daemon
+#
+{% for element in auditd__combined_configuration | debops.debops.parse_kv_config %}
+{%   if element.name | d() and element.state | d('present') not in [ 'absent', 'ignore' ] %}
+{%     set element_comment = ('#' if (element.state | d('present') in [ 'init', 'comment' ]) else '') %}
+{%     if element.value is true %}
+{%       set element_value = 'yes' %}
+{%     elif element.value is false %}
+{%       set element_value = 'no' %}
+{%     else %}
+{%       set element_value = element.value %}
+{%     endif %}
+{%     if element.comment | d() %}
+{{       '' }}
+{{       element.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
+{%     endif %}
+{%     if element.raw | d() %}
+{%       if element.state == 'comment' %}
+{{         element.raw | regex_replace('\n$', '') | comment(decoration='#', prefix='', postfix='') }}
+{%       else %}
+{{         element.raw | regex_replace('\n$', '') }}
+{%       endif %}
+{%     else %}
+{{       '{}{} = {}'.format(element_comment, element.name, element_value) }}
+{%     endif %}
+{%   endif %}
+{% endfor %}
