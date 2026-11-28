@@ -13,6 +13,7 @@ project directory and the runners stubbed out.
 from types import SimpleNamespace
 from unittest import mock
 
+import configparser
 import json
 import locale
 import logging
@@ -362,6 +363,93 @@ def test_checklist_list_refuses_the_hide_prefix(tmp_path, state_home,
 
     assert raised.value.code == 1
     assert "checklist.filters" in capsys.readouterr().err
+
+
+def test_checklist_close_reports_an_unreadable_copy(tmp_path, state_home,
+                                                    monkeypatch, capsys):
+    packaged = tmp_path / "packaged" / "checklists"
+    (packaged / "audit").mkdir(parents=True)
+    source = packaged / "audit" / "review.md"
+    source.write_text("# Review\n- [ ] Check\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    checklists.open_copy(source, "audit/review", "packaged", "web",
+                         state)
+    (state / "web" / "checklist.md").write_bytes(b'\xff\xfe broken')
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=str(project))))
+    args = make_args(project_dir=str(project), copy='web', force=False)
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_close(args)
+
+    assert raised.value.code == 1
+    assert 'cannot be read' in capsys.readouterr().err
+
+
+def test_checklist_open_reports_a_missing_ansible_configuration(
+        tmp_path, state_home, monkeypatch, capsys):
+    packaged = tmp_path / "packaged" / "checklists"
+    (packaged / "audit").mkdir(parents=True)
+    (packaged / "audit" / "review.md").write_text(
+        "# Review\n- [ ] Check\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    interpreter = make_interpreter()
+
+    class MissingConfig:
+        path = str(project / "ansible.cfg")
+
+        @staticmethod
+        def get_option(option):
+            raise configparser.NoSectionError('defaults')
+
+    project_stub = SimpleNamespace(path=str(project), view='system',
+                                   ansible_cfg=MissingConfig())
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project_stub))
+    args = make_args(project_dir=str(project),
+                     checklist=['subdir/[web]/check', 'audit/review'],
+                     reset=False)
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_open(args)
+
+    assert raised.value.code == 1
+    assert 'could not be expanded' in capsys.readouterr().err
+
+
+def test_checklist_commit_all_reports_the_missing_git_once(
+        tmp_path, state_home, monkeypatch, capsys):
+    packaged = tmp_path / "packaged" / "checklists"
+    (packaged / "audit").mkdir(parents=True)
+    source = packaged / "audit" / "review.md"
+    source.write_text("# Review\n- [x] Check\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    checklists.open_copy(source, "audit/review", "packaged", "web",
+                         state)
+    checklists.open_copy(source, "audit/review", "packaged", "host",
+                         state)
+    interpreter = make_interpreter()
+    project_stub = SimpleNamespace(path=str(project), commit=mock.Mock())
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=project_stub))
+    args = make_args(project_dir=str(project), all=True, copy=None,
+                     close=False, edit=False)
+    interpreter.do_checklist_commit(args)
+
+    captured = capsys.readouterr()
+    # The batch carries one notice; the per-copy repeats are suppressed
+    assert captured.err.count('not a git repository') == 1
 
 
 def test_checklist_open_copies_into_the_state(tmp_path, state_home,

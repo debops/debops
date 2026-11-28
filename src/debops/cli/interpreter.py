@@ -708,8 +708,13 @@ class Interpreter(object):
                 copy_id, name, path, origin = checklists.resolve_heal(
                     name, state_dir, layers, filters, reset=args.reset,
                     dry_run=args.dry_run)
-            parsed = checklists.parse_checklist(
-                path.read_text(encoding='utf-8'))
+            try:
+                text = path.read_text(encoding='utf-8')
+            except (OSError, UnicodeDecodeError) as errmsg:
+                raise checklists.ChecklistError(
+                    'The checklist {} cannot be read: '
+                    '{}'.format(name, errmsg)) from None
+            parsed = checklists.parse_checklist(text)
             checklists.require_task_items(parsed, name)
             # An inventory pattern in the copy id expands to one copy
             # per matching host; the whole batch validates before the
@@ -759,8 +764,14 @@ class Interpreter(object):
         if parsed_pattern is None:
             return [copy_id]
         pattern = parsed_pattern[1]
-        runner = AnsibleRunner(project, ansible_args=[
-            shlex.quote(pattern), '--list-hosts'])
+        try:
+            runner = AnsibleRunner(project, ansible_args=[
+                shlex.quote(pattern), '--list-hosts'])
+        except (NoDefaultViewException, ValueError,
+                FileNotFoundError) as errmsg:
+            raise checklists.ChecklistError(
+                'The inventory pattern [{}] could not be '
+                'expanded: {}'.format(pattern, errmsg)) from None
         returncode, output = runner.capture()
         if returncode != 0:
             raise checklists.ChecklistError(
@@ -923,7 +934,7 @@ class Interpreter(object):
         for copy in copies:
             try:
                 self._commit_copy(project, state_dir, vault_dir, copy,
-                                  args)
+                                  args, git_notice=False)
             except checklists.ChecklistError as errmsg:
                 print_error(errmsg)
                 failed.append(copy.copy_id)
@@ -1031,34 +1042,33 @@ class Interpreter(object):
                 continue
             checklists.close_copy(state_dir, copy.copy_id)
             print('Closed {}'.format(copy.copy_id))
-        if skipped_unreadable:
-            print_notice('Still open (unreadable): {}'.format(
-                ', '.join(copy.copy_id for copy in skipped_unreadable)))
-        if skipped_incomplete or skipped_empty:
-            if args.all:
-                if skipped_incomplete:
-                    print_notice('Still open (incomplete): {}'.format(
-                        ', '.join(copy.copy_id
-                                  for copy in skipped_incomplete)))
-                if skipped_empty:
-                    print_notice('Still open (no task items): {}'.format(
-                        ', '.join(copy.copy_id
-                                  for copy in skipped_empty)))
+        if args.all:
+            if skipped_unreadable:
+                print_notice('Still open (unreadable): {}'.format(
+                    ', '.join(copy.copy_id
+                              for copy in skipped_unreadable)))
+            if skipped_incomplete:
+                print_notice('Still open (incomplete): {}'.format(
+                    ', '.join(copy.copy_id
+                              for copy in skipped_incomplete)))
+            if skipped_empty:
+                print_notice('Still open (no task items): {}'.format(
+                    ', '.join(copy.copy_id
+                              for copy in skipped_empty)))
+        elif skipped_unreadable or skipped_incomplete or skipped_empty:
+            if skipped_unreadable:
+                print_error('The working copy {} cannot be read; '
+                            'use --force to close it anyway'.format(
+                                skipped_unreadable[0].copy_id))
+            elif skipped_incomplete:
+                print_error('The checklist {} is incomplete; use '
+                            '--force to close it anyway'.format(
+                                skipped_incomplete[0].copy_id))
             else:
-                if skipped_unreadable:
-                    print_error('The working copy {} cannot be read; '
-                                'use --force to close it anyway'.format(
-                                    skipped_unreadable[0].copy_id))
-                elif skipped_incomplete:
-                    print_error('The checklist {} is incomplete; use '
-                                '--force to close it anyway'.format(
-                                    skipped_incomplete[0].copy_id))
-                else:
-                    print_error('The checklist {} does not contain any '
-                                'task items; use --force to close it '
-                                'anyway'.format(
-                                    skipped_empty[0].copy_id))
-                sys.exit(1)
+                print_error('The checklist {} does not contain any '
+                            'task items; use --force to close it '
+                            'anyway'.format(skipped_empty[0].copy_id))
+            sys.exit(1)
 
     def do_tofu(self, args):
         if not args.tofu_args and not args.help:
