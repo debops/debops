@@ -7,10 +7,10 @@ Synopsis
 
 ``debops checklist list``   [-h|--help] [-a|--active] [-f|--format text|json] [-v|--verbose] [<project_dir>]
 
-``debops checklist open``   [-h|--help] [--project-dir <project_dir>] [-v|--verbose] [<copy-id>] <checklist> [-r|--reset] [--no-reset] [-d|--dry-run]
+``debops checklist open``   [-h|--help] [-v|--verbose] [--project-dir <project_dir>] [-r|--reset] [--no-reset] [-d|--dry-run] [<copy-id>] <checklist>
 
-``debops checklist edit``   [-h|--help] [--project-dir <project_dir>] [-v|--verbose] [<copy>]
+``debops checklist edit``   [-h|--help] [-v|--verbose] [--project-dir <project_dir>] [<copy>]
 
-``debops checklist commit`` [-h|--help] [--project-dir <project_dir>] [-v|--verbose] [<copy>] [-e|--edit] [-c|--close] [-A|--all]
+``debops checklist commit`` [-h|--help] [-v|--verbose] [--project-dir <project_dir>] [-A|--all] [-c|--close] [-e|--edit] [<copy>]
 
-``debops checklist close``  [-h|--help] [--project-dir <project_dir>] [-v|--verbose] [<copy>] [-f|--force] [-A|--all]
+``debops checklist close``  [-h|--help] [-v|--verbose] [--project-dir <project_dir>] [-f|--force] [-A|--all] [<copy>]

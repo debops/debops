@@ -90,7 +90,6 @@ infrastructure environments.
    user-guide/project-directories
    user-guide/configuration
    user-guide/scripts/index
-   user-guide/checklists
    user-guide/hooks
    user-guide/global-variables
    user-guide/custom-environment
@@ -99,6 +98,7 @@ infrastructure environments.
    user-guide/inventory-spec
    user-guide/dns-configuration
    user-guide/ssh-suite
+   user-guide/checklists
    ansible/role-index
    ansible/roles/index
 

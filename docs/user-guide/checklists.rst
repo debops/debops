@@ -30,7 +30,8 @@ to record:
 
 The *source* is a Markdown file in one of three discovery layers. The
 *working copy* lives in the system state directory
-(:file:`~/.local/state/`, per the XDG state specification) and holds
+(:file:`~/.local/state/`, per the XDG base directory specification__)
+and holds
 your ticks and annotations. Each project's copies live in their own
 directory under :file:`~/.local/state/debops/`, named ``checklists-``
 plus the namespace key of the project path. The state directory is
@@ -38,6 +39,8 @@ per user: two administrators working on one controller keep separate
 copies, and the committed records are where their work meets. The
 *record* is a dated copy of the checklist in the project's
 ``vault/`` directory, committed to the project git repository.
+
+.. __: https://specifications.freedesktop.org/basedir/latest/
 
 A checklist documents work done elsewhere. The release notes drive
 the upgrade. The checklist tracks where you are in it. Two genres
@@ -160,7 +163,7 @@ wherever you keep your notes:
 
 The packaged set ships three checklists, two of them under the
 ``example/`` namespace as demonstrations of the format. The
-:ref:`filters <checklist_filters>` configuration option hides a
+:ref:`filters <checklists__ref_filters>` configuration option hides a
 whole namespace without editing the tree.
 
 Working with copies
@@ -200,8 +203,8 @@ when another copy already occupies the stripped id, so two copies
 never merge into one node.
 
 A recurring review runs one cycle at a time. Open the copy once.
-Commit it at the end of each cycle with ``--close``, and re-open it
-at the next cycle:
+Commit it at the end of each cycle with ``--close``, and open it
+again at the next cycle:
 
 .. code-block:: console
 
@@ -209,11 +212,12 @@ at the next cycle:
    ... run the review, record findings and measured values ...
    alice@controller:~$ debops checklist commit review --close
 
-The next cycle starts with:
+The closed copy no longer occupies the id, so the next cycle starts
+with a plain open:
 
 .. code-block:: console
 
-   alice@controller:~$ debops checklist open review example/audit/periodic-security-review --reset
+   alice@controller:~$ debops checklist open review example/audit/periodic-security-review
 
 A lone copy id works too, with ``--reset``: the open copy records
 its checklist in a sidecar, so ``debops checklist open review
@@ -246,43 +250,11 @@ copies marked:
      subdir/web1/check
      subdir/web2/check
 
-The remaining commands take a copy id or a checklist path:
-
-:command:`debops checklist edit`
-  opens the working copy in your editor, from ``$VISUAL``,
-  ``$EDITOR`` or the ``sensible-editor`` fallback, with ``vi`` as
-  the last resort. After the editor returns, the command prints the
-  copy's progress.
-
-:command:`debops checklist commit`
-  writes the copy into the vault and the checklist stays active.
-  ``--close`` deactivates the copy after the commit. Unlike the
-  close command, ``--close`` does not demand ``--force`` for an
-  incomplete copy: the vault record exists, so the working copy's
-  loss is recoverable. ``--edit`` composes the commit message in
-  the editor. An unchanged re-commit reports "No changes since the
-  last commit". The command still attempts the git commit, so a
-  record that a rejecting pre-commit hook left out of history heals
-  on the next run. The commit runs the project's pre- and
-  post-commit hooks, also on an unchanged re-commit: the record may
-  not have changed, but the hooks run every time -- an operator
-  with a slow or side-effectful pre-commit hook (a secrets rekey, a
-  lint) meets that on the first no-change re-commit. A failed git
-  commit is an error. The record stays on disk. ``--all`` commits
-  every open copy, or every copy of the checklist named as the
-  operand. An invalid copy is skipped with its reason, a failed git
-  commit is reported, and the rest of the batch proceeds. The exit
-  code reports the partial failure.
-
-:command:`debops checklist close`
-  discards the copy with no vault write. It refuses when open items
-  remain or the checklist has no task items. ``--force`` overrides.
-  ``--all`` closes every open copy: completed ones normally, the
-  rest only with ``--force``. The skipped copies appear in the
-  report with their reason.
-
-An omitted ``<copy>`` operand resolves to the only open copy. With
-several copies open, the command needs an operand that names one.
+The remaining commands -- :command:`debops checklist edit`,
+:command:`debops checklist commit` and :command:`debops checklist
+close` -- take a copy id or a checklist path. Their options and edge
+cases are documented in the :ref:`command reference
+<cmd_debops-checklist>`.
 
 The vault
 ---------
@@ -332,7 +304,7 @@ cycle you need:
    4f1c2a3 checklist: review example/audit/periodic-security-review (30/30 done, 2 failed)
    alice@controller:~$ git show 4f1c2a3:vault/checklists/example/audit/periodic-security-review/_copies/review/2026-05-11.md
 
-.. _checklist_filters:
+.. _checklists__ref_filters:
 
 Configuration
 -------------

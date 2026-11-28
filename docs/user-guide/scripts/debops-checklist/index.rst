@@ -10,6 +10,9 @@ The :command:`debops checklist` command
 .. include:: man_description.rst
    :start-line: 7
 
+.. toctree::
+   :maxdepth: 2
+
 .. include:: debops-checklist.rst
    :start-line: 3
 
