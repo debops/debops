@@ -8,8 +8,8 @@
 The listing shows what the discovery layers provide and which copies
 you have open. Selection globs narrow the listing to the matching
 names and copy subtrees. A copy whose source changed since you opened
-it is marked ``[stale]``, and an implicitly open copy reports its
-progress.
+it is marked ``[stale]`` in the checklist listing. An implicitly open
+copy reports its progress.
 
 Options
 ~~~~~~~
@@ -70,8 +70,8 @@ same time. The implicit copy takes the checklist name as its id. A
 named copy uses an id you choose.
 
 An Ansible inventory pattern in square brackets opens one copy per
-matching host in a single command. A lone copy id re-opens the
-existing copy from the checklist its sidecar records.
+matching host in a single command. A lone copy id with ``--reset``
+re-opens the existing copy from the checklist its sidecar records.
 
 This is the cycle of a recurring review. Open the copy once. Commit
 it with ``--close`` after each cycle. A closed copy no longer
@@ -203,7 +203,7 @@ Options
   working copy's loss is recoverable.
 
 ``-e, --edit``
-  Compose the commit message in the editor.
+  Compose the commit message in the editor. It refuses ``--all``.
 
 ``<copy>``
   Copy id or checklist path. Without one, the command uses the only
@@ -224,9 +224,9 @@ Commit the open copy and deactivate it:
 
 Close discards a working copy without recording it. Open items mean
 unfinished work, so the command refuses unless you pass ``--force``.
-The same refusal covers a copy without task items. With ``--all``,
-completed copies close normally, and the rest close only with
-``--force``.
+The same refusal covers a copy without task items or one that cannot
+be read. With ``--all``, completed copies close normally, and the
+rest close only with ``--force``.
 
 Options
 ~~~~~~~

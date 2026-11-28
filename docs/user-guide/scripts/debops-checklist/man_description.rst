@@ -15,9 +15,13 @@ A task item is a list line with a one-character state marker in its
 brackets. The state markers are: ``[ ]`` open, ``[x]`` or ``[X]``
 done, ``[B]`` or ``[~]`` blocked, ``[F]`` or ``[!]`` failed, ``[N]``
 or ``[-]`` not applicable. Both spellings parse. Unknown bracket
-content reads as open.
+content reads as open. Longer bracket content is commentary, not a
+state.
 
 Checklists resolve from the project directory, the user directory and
-the packaged set, in that order of precedence. Multiple checklist
-copies can be opened at once, edited and committed in the DebOps
-project directory as records.
+the packaged set, in that order of precedence. Several copies can be
+open at once. Committing a copy writes a dated record into the
+DebOps project directory.
+
+The full documentation of the section lives in the DebOps manual,
+in the :ref:`checklists` page.

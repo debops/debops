@@ -108,7 +108,8 @@ marker:
      - resolved
 
 Either spelling parses. Unknown bracket content reads as open, which
-keeps the format forward-compatible. The parser accepts dash,
+keeps the format forward-compatible. Longer bracket content is
+commentary, not a state. The parser accepts dash,
 asterisk and plus bullets and ordered items, the GitHub task-list
 syntax, so pasted content parses as it renders. Fenced code blocks
 never carry items. The open and commit commands refuse a file that
@@ -154,8 +155,8 @@ source's content with the hash recorded at open time.
 The listing takes selection globs: ``debops checklist list 'deb*'``
 lists the matching names only, the open copies under ``--active``
 included. A copy matches through its checklist name or its copy id,
-in the stored, the relative or the qualified spelling, so ``**und**``
-reaches the copies nested under a checklist. The globs use the syntax
+in the stored, the relative or the qualified spelling, so ``*review*``
+reaches a copy nested under a checklist. The globs use the syntax
 of the ``checklist.filters`` patterns but act on the listing alone: a
 name left out of the listing can still be opened.
 
@@ -238,14 +239,16 @@ pattern expands to the matching hosts, one copy per host:
 
 .. code-block:: console
 
-   alice@controller:~$ debops checklist open 'subdir/[webservers]/check' host-verify
-   Opened host-verify as copy subdir/web1/check [packaged]
-   Opened host-verify as copy subdir/web2/check [packaged]
+   alice@controller:~$ debops checklist open 'subdir/[webservers]/check' example/audit/periodic-security-review
+   Opened example/audit/periodic-security-review as copy subdir/web1/check [packaged]
+   Opened example/audit/periodic-security-review as copy subdir/web2/check [packaged]
 
 Quote the id: the shell reads unquoted brackets as a glob. The id
 supports one pattern. The batch is all-or-nothing: an occupied id
 refuses the whole batch and names the copies, and with ``--reset``
-the occupied copies are discarded and re-opened. A pattern that
+the occupied copies are discarded and re-opened. An occupied copy
+that holds a different checklist refuses the batch even with
+``--reset``; close it first. A pattern that
 matches no hosts, or an :command:`ansible` run that fails, refuses
 the batch before anything opens. The ``--dry-run`` option prints
 what would be opened without opening anything, with already-open
@@ -253,8 +256,8 @@ copies marked:
 
 .. code-block:: console
 
-   alice@controller:~$ debops checklist open --dry-run 'subdir/[webservers]/check' host-verify
-   Would open 2 of host-verify [packaged]:
+   alice@controller:~$ debops checklist open --dry-run 'subdir/[webservers]/check' example/audit/periodic-security-review
+   Would open 2 of example/audit/periodic-security-review [packaged]:
      subdir/web1/check
      subdir/web2/check
 
