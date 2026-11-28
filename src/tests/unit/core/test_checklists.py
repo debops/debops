@@ -321,10 +321,10 @@ def test_filters_hide_a_whole_namespace(example_tree):
     assert names == ["notes", "system/reboot"]
 
 
-def test_filters_star_stops_at_the_slash(example_tree):
+def test_filters_star_crosses_the_slash(example_tree):
     names = [name for name, path, origin in checklists.list_checklists(
         example_tree, filters=["!example/*"])]
-    assert "example/audit/review" in names
+    assert names == ["notes", "system/reboot"]
 
 
 def test_filters_last_matching_rule_wins(example_tree):
@@ -362,15 +362,12 @@ def test_selection_globs_match_any_pattern():
     assert not checklists.name_selected("system/reboot", patterns)
 
 
-def test_selection_star_stops_at_the_slash():
-    # A single star does not cross the slash, so a namespace prefix
-    # needs the double-star form to reach the names below it
-    bare = checklists.compile_selection(["debian*"])
-    assert not checklists.name_selected(
-        "debian/dist-upgrade/bookworm-to-trixie", bare)
-    anchored = checklists.compile_selection(["debian/**"])
+def test_selection_star_crosses_the_slash():
+    # A single star crosses the slash, so a namespace prefix reaches
+    # the names below it
+    bare = checklists.compile_selection(["deb*"])
     assert checklists.name_selected(
-        "debian/dist-upgrade/bookworm-to-trixie", anchored)
+        "debian/dist-upgrade/bookworm-to-trixie", bare)
 
 
 def test_selection_anchored_to_the_whole_name():
@@ -383,6 +380,21 @@ def test_selection_anchored_to_the_whole_name():
 def test_selection_empty_selects_everything():
     assert checklists.name_selected("system/reboot", [])
     assert checklists.name_selected("notes", [])
+
+
+def test_copy_selection_matches_the_checklist_name():
+    patterns = checklists.compile_selection(["flow*"])
+    assert checklists.copy_selected("flow", "alpha", patterns)
+
+
+def test_copy_selection_matches_the_id_spellings():
+    prefixed = checklists.compile_selection(["flow/a**"])
+    assert checklists.copy_selected("flow", "flow/alpha", prefixed)
+    assert checklists.copy_selected("flow", "alpha", prefixed)
+    assert not checklists.copy_selected("flow", "under/kometa/list",
+                                        prefixed)
+    loose = checklists.compile_selection(["**und**"])
+    assert checklists.copy_selected("flow", "under/kometa/list", loose)
 
 
 def test_selection_refuses_the_hide_prefix():

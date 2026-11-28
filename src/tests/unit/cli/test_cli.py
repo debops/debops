@@ -290,6 +290,63 @@ def test_checklist_list_active_selects_copies_by_glob(
     assert "host" not in captured.out
 
 
+def test_checklist_list_selects_copies_by_id(tmp_path, state_home,
+                                             monkeypatch, capsys):
+    packaged = tmp_path / "packaged" / "checklists"
+    (packaged / "flow").mkdir(parents=True)
+    source = packaged / "flow" / "list.md"
+    source.write_text("# Flow\n- [ ] Step\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    checklists.open_copy(source, "flow/list", "packaged", "alpha",
+                         state)
+    checklists.open_copy(source, "flow/list", "packaged",
+                         "under/kometa/list", state)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), active=False,
+                     format='text', verbose=0, glob=['**und**'])
+    interpreter.do_checklist_list(args)
+
+    captured = capsys.readouterr()
+    assert "under" in captured.out
+    assert "kometa" in captured.out
+    assert "alpha" not in captured.out
+
+
+def test_checklist_list_active_selects_copies_by_id(
+        tmp_path, state_home, monkeypatch, capsys):
+    packaged = tmp_path / "packaged" / "checklists"
+    (packaged / "flow").mkdir(parents=True)
+    source = packaged / "flow" / "list.md"
+    source.write_text("# Flow\n- [ ] Step\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    checklists.open_copy(source, "flow/list", "packaged", "alpha",
+                         state)
+    checklists.open_copy(source, "flow/list", "packaged",
+                         "under/kometa/list", state)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), active=True,
+                     format='text', verbose=0, glob=['a**'])
+    interpreter.do_checklist_list(args)
+
+    captured = capsys.readouterr()
+    assert "alpha" in captured.out
+    assert "under" not in captured.out
+
+
 def test_checklist_list_refuses_the_hide_prefix(tmp_path, state_home,
                                                 monkeypatch, capsys):
     project = tmp_path / "project"

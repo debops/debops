@@ -550,8 +550,8 @@ class Interpreter(object):
             rows = []
             records = []
             for copy in open_copies:
-                if not checklists.name_selected(
-                        copy.checklist, selection):
+                if not checklists.copy_selected(
+                        copy.checklist, copy.copy_id, selection):
                     continue
                 try:
                     parsed = checklists.parse_checklist(
@@ -589,21 +589,27 @@ class Interpreter(object):
         except checklists.ChecklistError as errmsg:
             print_error(errmsg)
             sys.exit(1)
-        entries = [entry for entry in entries
-                   if checklists.name_selected(entry[0], selection)]
+        visible = []
+        for entry in entries:
+            name = entry[0]
+            copies = [copy for copy in open_copies
+                      if copy.checklist == name
+                      and checklists.copy_selected(copy.checklist,
+                                                   copy.copy_id,
+                                                   selection)]
+            if checklists.name_selected(name, selection) or copies:
+                visible.append((entry, copies))
 
         if args.format == 'json':
             records = []
-            for name, path, origin in entries:
+            for (name, path, origin), copies in visible:
                 try:
                     parsed = checklists.parse_checklist(
                         path.read_text(encoding='utf-8'))
                 except (OSError, UnicodeDecodeError):
                     continue
                 copies_json = []
-                for copy in open_copies:
-                    if copy.checklist != name:
-                        continue
+                for copy in copies:
                     try:
                         copy_parsed = checklists.parse_checklist(
                             self._read_copy_text(copy))
@@ -626,7 +632,7 @@ class Interpreter(object):
         if args.verbose >= 1:
             rows = []
             blocks = []
-            for name, path, origin in entries:
+            for (name, path, origin), copies in visible:
                 try:
                     parsed = checklists.parse_checklist(
                         path.read_text(encoding='utf-8'))
@@ -634,8 +640,6 @@ class Interpreter(object):
                     # An unreadable or undecodable document is skipped;
                     # a broken file must not take the listing down
                     continue
-                copies = [copy for copy in open_copies
-                          if copy.checklist == name]
                 progress = {}
                 for copy in copies:
                     progress[copy.copy_id] = '{}{}'.format(
@@ -664,9 +668,7 @@ class Interpreter(object):
                     print(tree_line)
             return
 
-        for name, path, origin in entries:
-            copies = [copy for copy in open_copies
-                      if copy.checklist == name]
+        for (name, path, origin), copies in visible:
             progress = {}
             for copy in copies:
                 progress[copy.copy_id] = '{}{}'.format(

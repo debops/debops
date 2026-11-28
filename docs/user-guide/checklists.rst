@@ -151,11 +151,13 @@ copy was opened is marked ``[stale]``: the listing compares the
 source's content with the hash recorded at open time.
 ``--reset`` re-copies the latest source and clears the marker.
 
-The listing takes selection globs: ``debops checklist list
-'system/**'`` lists the matching names only, the open copies under
-``--active`` included. The globs use the syntax of the
-``checklist.filters`` patterns but act on the listing alone: a name
-left out of the listing can still be opened.
+The listing takes selection globs: ``debops checklist list 'deb*'``
+lists the matching names only, the open copies under ``--active``
+included. A copy matches through its checklist name or its copy id,
+in the stored, the relative or the qualified spelling, so ``**und**``
+reaches the copies nested under a checklist. The globs use the syntax
+of the ``checklist.filters`` patterns but act on the listing alone: a
+name left out of the listing can still be opened.
 
 Personal checklists do not need to live in the user directory. Make
 a file symbolic link into the user layer and keep the target
@@ -340,8 +342,9 @@ project or user configuration.
   Purpose: Ordered glob rules over the checklist names, applied to
   the discovery. A bare pattern keeps matching names visible, a
   ``!``-prefixed pattern hides them, the last matching rule wins and
-  a name no rule matches stays visible. Matching is pathname-aware:
-  ``*`` and ``?`` stop at the slash, ``**`` crosses it. The state
+  a name no rule matches stays visible. Matching is anchored to the
+  whole name: a run of ``*`` crosses the slash, ``?`` matches any
+  single character. The state
   commands do not consult the filters: a copy of a now-hidden
   checklist still commits, still shows in ``--active`` and can be
   closed. A hidden checklist cannot be opened either, by name or

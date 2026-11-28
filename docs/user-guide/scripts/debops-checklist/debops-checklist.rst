@@ -7,9 +7,9 @@
 
 The listing shows what the discovery layers provide and which copies
 you have open. Selection globs narrow the listing to the matching
-names, including the open copies. A copy whose source changed since
-you opened it is marked ``[stale]``, and an implicitly open copy
-reports its progress.
+names and copy subtrees. A copy whose source changed since you opened
+it is marked ``[stale]``, and an implicitly open copy reports its
+progress.
 
 Options
 ~~~~~~~
@@ -35,12 +35,14 @@ Options
 
 ``<glob>...``
   Selection globs over the checklist names. The globs use the syntax
-  of the ``checklist.filters`` patterns. ``*`` and ``?`` stop at the
-  slash, ``**`` crosses it, and the match is anchored to the whole
-  name. A name matching any glob is listed. Without globs, everything
-  is listed. The globs narrow the listing, not the discovery: a name
-  left out of the listing can still be opened. A ``!``-prefixed glob
-  is refused. The ``!`` hide rules belong to the
+  of the ``checklist.filters`` patterns. A run of ``*`` crosses the
+  slash, ``?`` matches any single character, and the match is
+  anchored to the whole name. A name matching any glob is listed.
+  Without globs, everything is listed. A copy is listed through its
+  checklist name or its copy id, in the stored, the relative or the
+  qualified spelling. The globs narrow the listing, not the
+  discovery: a name left out of the listing can still be opened. A
+  ``!``-prefixed glob is refused. The ``!`` hide rules belong to the
   ``checklist.filters`` configuration option.
 
 Examples

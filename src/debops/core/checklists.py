@@ -741,8 +741,8 @@ def _filter_rules(filters: list) -> list[tuple[re.Pattern, bool]]:
     """The compiled show/hide rules of the ordered filter list.
 
     A bare pattern keeps matching names visible, a ``!``-prefixed
-    pattern hides them. The patterns are path globs over the
-    checklist name -- relative to the layer root, ``.md`` stripped.
+    pattern hides them. The patterns are globs over the checklist
+    name -- relative to the layer root, ``.md`` stripped.
     Patterns with many ambiguous wildcard runs backtrack
     catastrophically, so an over-complex pattern is refused instead
     of compiling into a hang.
@@ -777,26 +777,24 @@ def _compile_checked(pattern: str, source: str) -> re.Pattern:
 
 
 def _compile_glob(pattern: str) -> re.Pattern:
-    """Compile one path glob to a regular expression.
+    """Compile one glob to a regular expression.
 
-    The match target is a relative checklist name, so ``*`` and
-    ``?`` stop at the slash while ``**`` crosses it -- the visual
-    language of path globs stays intact and ``example/*`` differs
-    from ``example/**``.
+    The match target is a checklist name or a copy id. A run of
+    ``*`` stars crosses the slash and matches any stretch of the
+    name, ``?`` matches any single character, and the ``[...]``
+    classes keep their shell meaning -- the language of shell globs,
+    matched against the whole name.
     """
     parts = []
     index = 0
     while index < len(pattern):
         char = pattern[index]
         if char == '*':
-            if pattern[index:index + 2] == '**':
-                parts.append('.*')
-                index += 2
-            else:
-                parts.append('[^/]*')
+            parts.append('.*')
+            while index < len(pattern) and pattern[index] == '*':
                 index += 1
         elif char == '?':
-            parts.append('[^/]')
+            parts.append('.')
             index += 1
         elif char == '[':
             end = pattern.find(']', index + 1)
@@ -831,11 +829,11 @@ def compile_selection(globs: list) -> list[re.Pattern]:
     """The compiled selection globs of the ``checklist list`` command.
 
     A glob selects the checklist names that match it; a name matching
-    any glob is listed. The globs use the same path-glob language as
-    the ``checklist.filters`` rules: ``*`` and ``?`` stop at the
-    slash while ``**`` crosses it, and the match is anchored to the
-    whole name. The ``!`` prefix of the hide rules is not part of the
-    selection language and is refused, so a stray ``!`` cannot
+    any glob is listed. The globs use the same language as
+    the ``checklist.filters`` rules: a run of ``*`` crosses the
+    slash, ``?`` matches any character, and the match is anchored to
+    the whole name. The ``!`` prefix of the hide rules is not part of
+    the selection language and is refused, so a stray ``!`` cannot
     silently list nothing.
     """
     patterns = []
@@ -855,6 +853,28 @@ def name_selected(name: str, patterns: list[re.Pattern]) -> bool:
     """
     return not patterns or any(
         pattern.match(name) for pattern in patterns)
+
+
+def copy_selected(checklist: str, copy_id: str,
+                  patterns: list[re.Pattern]) -> bool:
+    """Whether a copy passes the selection globs.
+
+    A copy is listed when its checklist name matches a glob, or its
+    copy id does. The id matches in three spellings: as stored,
+    relative to the checklist name, and qualified with it -- the
+    copies of the checklist ``flow`` are reachable as ``alpha*`` as
+    well as ``flow/alpha*``, whichever way they were named.
+    """
+    if name_selected(checklist, patterns):
+        return True
+    candidates = [copy_id]
+    prefix = checklist + '/'
+    if copy_id.startswith(prefix):
+        candidates.append(copy_id[len(prefix):])
+    else:
+        candidates.append(prefix + copy_id)
+    return any(name_selected(candidate, patterns)
+               for candidate in candidates)
 
 
 def editor_argv(environ=None) -> list[str]:

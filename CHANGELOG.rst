@@ -71,10 +71,11 @@ General
   source changed since they were opened. See :ref:`checklists` for
   the details.
 - The :command:`debops checklist list` command takes selection globs:
-  positional patterns over the checklist names narrow the listing to
-  the matching entries, the open copies of ``--active`` included. The
-  globs use the pathname-aware syntax of the ``checklist.filters``
-  patterns.
+  positional patterns narrow the listing to the matching checklists
+  and copy subtrees, the open copies of ``--active`` included. A copy
+  matches through its checklist name or its copy id. The globs use
+  the same shell-glob syntax as the ``checklist.filters`` patterns,
+  where a run of ``*`` crosses the slash.
 
 - Journal records emitted by the :command:`debops` command now carry
   a ``[project:view]`` prefix which names the project directory and
