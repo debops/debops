@@ -59,6 +59,12 @@ split into sections.
   This command allows the user to inspect and manipulate the DebOps
   configuration options in various formats;
 
+:command:`debops checklist`
+  This section manages operational checklists: plain Markdown files
+  with a five-state marker syntax, opened as working copies and
+  committed as dated records into the project vault. See
+  :ref:`checklists` for the format and the workflow;
+
 You can find more information about these subcommands in the DebOps
 documentation, ``debops-*`` manual pages or by running them with the ``--help``
 option.

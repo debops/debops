@@ -414,3 +414,22 @@ override_filename = "override/99_config_set.json"
 #     retries = 5
 #
 # DebOps does not use this section and will not define options in it.
+
+[checklist]
+
+# The project-relative path of the directory holding the committed
+# checklist records. Each commit writes one dated record per copy:
+# implicit copies record as '<commit_path>/<checklist>/<date>.md',
+# named copies as '<commit_path>/<checklist>/_copies/<copy-id>/'
+# '<date>.md'. The records are committed to the project git
+# repository together with the rest of the project.
+commit_path = "vault/checklists"
+
+# Ordered glob rules over the checklist names, applied to the
+# discovery: a bare pattern keeps matching names visible, a
+# '!'-prefixed pattern hides them, the last matching rule wins and
+# a name no rule matches stays visible. The match is anchored to
+# the whole name: a run of '*' crosses the slash and '?' matches
+# any single character. The state commands are unaffected.
+# Example: filters = ["!example/**"]
+filters = []

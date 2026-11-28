@@ -440,6 +440,8 @@ man_pages.append(('user-guide/scripts/debops-env/man_index', 'debops-env',
                   [author], 1))
 man_pages.append(('user-guide/scripts/debops-config/man_index', 'debops-config',
                   'Inspect or manipulate DebOps project configuration', [author], 1))
+man_pages.append(('user-guide/scripts/debops-checklist/man_index', 'debops-checklist',
+                  'Manage operational checklists of a DebOps project', [author], 1))
 man_pages.append(('user-guide/scripts/debops-ssh/man_index', 'debops-ssh',
                   'Connect to hosts of the Ansible inventory over SSH', [author], 1))
 man_pages.append(('user-guide/scripts/debops-scp/man_index', 'debops-scp',

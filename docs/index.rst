@@ -98,6 +98,7 @@ infrastructure environments.
    user-guide/inventory-spec
    user-guide/dns-configuration
    user-guide/ssh-suite
+   user-guide/checklists
    ansible/role-index
    ansible/roles/index
 

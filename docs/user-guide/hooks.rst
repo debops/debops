@@ -56,7 +56,8 @@ that runs before the operation, and a ``post-`` variant that runs after.
    * - ``pre-init`` / ``post-init``
      - :command:`debops project init`
    * - ``pre-commit`` / ``post-commit``
-     - :command:`debops project commit`
+     - :command:`debops project commit` and
+       :command:`debops checklist commit`
    * - ``pre-refresh`` / ``post-refresh``
      - :command:`debops project refresh`
    * - ``pre-lock`` / ``post-lock``

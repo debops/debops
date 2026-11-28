@@ -2,7 +2,7 @@
 # Copyright (C) 2020-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from . import print_error
+from . import print_error, print_notice
 from ..core.exceptions import (NoDefaultViewException, InventorySpecError,
                                OptionNotFoundError, OptionRefused,
                                ViewNotFoundError)
@@ -10,7 +10,7 @@ from ..core.config import Configuration, shadowing_file
 from .subcommands import Subcommands
 from ..core.projectdir import ProjectDir
 from ..core.projectvenv import ProjectVenv
-from ..core.ansible.ansiblerunner import AnsibleRunner
+from ..core.ansible.ansiblerunner import AnsibleRunner, parse_list_hosts
 from ..core.ansible.ansibleplaybookrunner import AnsiblePlaybookRunner
 from ..core.envrunner import EnvRunner
 from ..core.tofu.inventory import render_view_inventory
@@ -24,14 +24,20 @@ from ..core.tofu.modules import resolve_modules
 from ..core.tofu.binary import reconcile_binaries
 from ..core.tofu.registry import view_drop_in_path, view_tofu_root
 from ..core.tofu.view import create_view, reconcile_view
-from ..core import ssh
-from ..core.utils import remove_file, unexpanduser
+from ..core import checklists, ssh
+from ..core.utils import (path_inside_project, remove_file,
+                          unexpanduser, write_file)
+from git import GitCommandError
 from xdg.BaseDirectory import xdg_config_home
+import json
 import logging
 import getpass
+import re
 import shlex
+from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import time
 import os
 
@@ -67,6 +73,93 @@ def _inspect_mode(args):
     if args.host:
         return 'host'
     return None
+
+
+def _tree_glyphs(encoding):
+    """The tree connectors for the terminal encoding.
+
+    Unicode box-drawing when the output is UTF-8; the ASCII fallback
+    keeps the tree readable over legacy ssh locales.
+    """
+    if 'utf' in encoding.lower():
+        return {'branch': '├── ', 'leaf': '└── ', 'column': '│',
+                'pass': '│   ', 'indent': '    '}
+    return {'branch': '|-- ', 'leaf': '`-- ', 'column': '|',
+            'pass': '|   ', 'indent': '    '}
+
+
+def _shorten_path(path, start=8, end=8):
+    """The head and tail of a long path with the middle elided.
+
+    Paths longer than the eight-character head, the ellipsis and the
+    eight-character tail collapse to exactly that form; shorter paths
+    pass through unchanged. For the compact roster, where the full
+    path remains discoverable through `list -v`.
+    """
+    if len(path) <= start + 3 + end:
+        return path
+    return path[:start] + '...' + path[-end:]
+
+
+def _columns(rows):
+    """Pad every cell of a table to its column's widest entry.
+
+    Returns the rows as lists of padded cells; the caller joins them
+    with the separator of its choosing and strips the trailing
+    padding from the last column.
+    """
+    widths = [max(len(row[column]) for row in rows)
+              for column in range(len(rows[0]))]
+    return [[cell.ljust(widths[column])
+             for column, cell in enumerate(row)] for row in rows]
+
+
+def _copy_tree_lines(copies, progress, glyphs, checklist=None):
+    """Render open copies as a component tree, one line per node.
+
+    Copy ids are paths: `web1/alpha` nests as `web1` over `alpha`, so
+    a fleet of copies groups by host. A node whose id is itself a
+    copy carries its progress above its children.
+
+    Copy ids that nest under the checklist name display relative to
+    it: for the checklist `flow`, the copy `flow/alpha` shows as
+    `alpha` directly under the root. The strip is skipped when
+    another copy already occupies the stripped id -- two copies on
+    one display node would silently lose a progress value.
+    """
+    ids = {copy.copy_id for copy in copies}
+    prefix = checklist + '/' if checklist else ''
+    display = []
+    for copy in copies:
+        copy_id = copy.copy_id
+        if prefix and copy_id.startswith(prefix):
+            stripped = copy_id[len(prefix):]
+            if stripped and stripped not in ids:
+                copy_id = stripped
+        display.append((copy_id, copy))
+    root = {}
+    for copy_id, copy in display:
+        node = root
+        for part in (part for part in copy_id.split('/') if part):
+            node = node.setdefault(part, {})
+        node[''] = copy
+    lines = []
+
+    def walk(node, prefix):
+        keys = sorted(key for key in node if key != '')
+        for index, key in enumerate(keys):
+            last = index == len(keys) - 1
+            connector = glyphs['leaf'] if last else glyphs['branch']
+            line = prefix + connector + key
+            sub = node[key]
+            if '' in sub:
+                line += ' ({})'.format(progress[sub[''].copy_id])
+            lines.append(line)
+            walk(sub, prefix + (glyphs['indent'] if last
+                                else glyphs['pass']))
+
+    walk(root, '')
+    return lines
 
 
 class Interpreter(object):
@@ -135,6 +228,18 @@ class Interpreter(object):
                 self.do_config_set(self.parsed_args.args)
             elif self.parsed_args.command == 'check':
                 self.do_config_check(self.parsed_args.args)
+
+        elif self.parsed_args.section == 'checklist':
+            if self.parsed_args.command == 'list':
+                self.do_checklist_list(self.parsed_args.args)
+            elif self.parsed_args.command == 'open':
+                self.do_checklist_open(self.parsed_args.args)
+            elif self.parsed_args.command == 'edit':
+                self.do_checklist_edit(self.parsed_args.args)
+            elif self.parsed_args.command == 'commit':
+                self.do_checklist_commit(self.parsed_args.args)
+            elif self.parsed_args.command == 'close':
+                self.do_checklist_close(self.parsed_args.args)
 
     def do_project_init(self, args):
         try:
@@ -394,6 +499,576 @@ class Interpreter(object):
             for line in runner.show_env(scope=args.scope):
                 print(line)
             sys.exit(0)
+
+    def _project(self, args):
+        """The project directory of a checklist command, or exit.
+
+        The checklist commands that work on copies require a DebOps
+        project directory: the vault records and the git commits land
+        in it, and the state directory is namespaced by its path.
+        """
+        try:
+            return ProjectDir(path=args.project_dir, config=self.config,
+                              cwd=self.cwd)
+        except (IsADirectoryError, NotADirectoryError,
+                ViewNotFoundError) as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+    def do_checklist_list(self, args):
+        try:
+            selection = checklists.compile_selection(args.glob)
+        except checklists.ChecklistError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        project = None
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 cwd=self.cwd)
+        except (IsADirectoryError, NotADirectoryError):
+            # The list works outside a project directory; the project
+            # layer of the discovery is simply omitted then
+            pass
+        except ViewNotFoundError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+        # The state key follows the resolved project root, so a
+        # subdirectory invocation sees the same copies.
+        state_dir = checklists.checklist_state_dir(
+            project.path if project is not None else args.project_dir)
+        open_copies = checklists.find_open_copies(state_dir)
+        glyphs = _tree_glyphs(sys.stdout.encoding or '')
+        layers = checklists.checklist_layers(
+            project.path if project is not None else None)
+        filters = self._checklist_filters()
+        stale_ids = {copy.copy_id for copy in checklists.find_stale_copies(
+            open_copies, layers, filters=filters)}
+
+        if args.active:
+            rows = []
+            records = []
+            for copy in open_copies:
+                if not checklists.copy_selected(
+                        copy.checklist, copy.copy_id, selection):
+                    continue
+                try:
+                    parsed = checklists.parse_checklist(
+                        self._read_copy_text(copy))
+                except checklists.ChecklistError:
+                    parsed = None
+                implicit = copy.implicit
+                if args.format == 'json':
+                    records.append({
+                        'copy_id': copy.copy_id, 'implicit': implicit,
+                        'checklist': copy.checklist,
+                        'path': str(copy.path), 'origin': copy.origin,
+                        'opened': copy.opened.astimezone().isoformat(),
+                        'counts': parsed.counts if parsed else None})
+                    continue
+                row = [copy.checklist if implicit else copy.copy_id,
+                       '' if implicit else _shorten_path(copy.checklist),
+                       '({})'.format(copy.opened.date().isoformat()),
+                       parsed.progress if parsed else 'unreadable']
+                if args.verbose >= 2:
+                    row.append('[{}]'.format(copy.origin))
+                rows.append(row)
+            if args.format == 'json':
+                print(json.dumps(records, indent=2))
+                return
+            if rows:
+                for row in _columns(rows):
+                    print('    '.join(row).rstrip())
+            return
+
+        layers = checklists.checklist_layers(
+            project.path if project is not None else None)
+        try:
+            entries = checklists.list_checklists(layers, filters=filters)
+        except checklists.ChecklistError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        visible = []
+        for entry in entries:
+            name = entry[0]
+            copies = [copy for copy in open_copies
+                      if copy.checklist == name
+                      and checklists.copy_selected(copy.checklist,
+                                                   copy.copy_id,
+                                                   selection)]
+            if checklists.name_selected(name, selection) or copies:
+                visible.append((entry, copies))
+
+        if args.format == 'json':
+            records = []
+            for (name, path, origin), copies in visible:
+                try:
+                    parsed = checklists.parse_checklist(
+                        path.read_text(encoding='utf-8'))
+                except (OSError, UnicodeDecodeError):
+                    continue
+                copies_json = []
+                for copy in copies:
+                    try:
+                        copy_parsed = checklists.parse_checklist(
+                            self._read_copy_text(copy))
+                        counts = copy_parsed.counts
+                    except checklists.ChecklistError:
+                        counts = None
+                    copies_json.append({
+                        'copy_id': copy.copy_id,
+                        'implicit': copy.implicit,
+                        'opened': copy.opened.astimezone().isoformat(),
+                        'counts': counts,
+                        'stale': copy.copy_id in stale_ids})
+                records.append({
+                    'checklist': name, 'path': str(path),
+                    'origin': origin, 'title': parsed.title,
+                    'copies': copies_json})
+            print(json.dumps(records, indent=2))
+            return
+
+        if args.verbose >= 1:
+            rows = []
+            blocks = []
+            for (name, path, origin), copies in visible:
+                try:
+                    parsed = checklists.parse_checklist(
+                        path.read_text(encoding='utf-8'))
+                except (OSError, UnicodeDecodeError):
+                    # An unreadable or undecodable document is skipped;
+                    # a broken file must not take the listing down
+                    continue
+                progress = {}
+                for copy in copies:
+                    progress[copy.copy_id] = '{}{}'.format(
+                        self._copy_progress(copy),
+                        ' [stale]' if copy.copy_id in stale_ids else '')
+                path_cell = name
+                implicit = [copy for copy in copies if copy.implicit]
+                if implicit:
+                    path_cell += ' ({})'.format(progress[name])
+                origin_cell = '[{}]'.format(origin) \
+                    if args.verbose >= 2 else ''
+                rows.append([path_cell, parsed.title or name,
+                             origin_cell])
+                named = [copy for copy in copies
+                         if copy.copy_id != name]
+                blocks.append(
+                    _copy_tree_lines(named, progress, glyphs, name))
+            if not rows:
+                return
+            for (path_cell, title, origin_cell), tree_lines in zip(
+                    _columns(rows), blocks):
+                tail = '{} {}'.format(title, origin_cell).rstrip()
+                print('{} {} {}'.format(path_cell, glyphs['column'],
+                                        tail))
+                for tree_line in tree_lines:
+                    print(tree_line)
+            return
+
+        for (name, path, origin), copies in visible:
+            progress = {}
+            for copy in copies:
+                progress[copy.copy_id] = '{}{}'.format(
+                    self._copy_progress(copy),
+                    ' [stale]' if copy.copy_id in stale_ids else '')
+            path_cell = name
+            implicit = [copy for copy in copies if copy.implicit]
+            if implicit:
+                path_cell += ' ({})'.format(progress[name])
+            print(path_cell)
+            named = [copy for copy in copies if copy.copy_id != name]
+            for tree_line in _copy_tree_lines(named, progress, glyphs,
+                                              name):
+                print(tree_line)
+
+    def do_checklist_open(self, args):
+        project = self._project(args)
+        if len(args.checklist) == 2:
+            copy_id, name = args.checklist
+        else:
+            name = args.checklist[0]
+            copy_id = checklists.strip_md(name)
+
+        layers = checklists.checklist_layers(project.path)
+        state_dir = checklists.checklist_state_dir(project.path)
+        filters = self._checklist_filters()
+        try:
+            try:
+                path, origin = checklists.find_checklist(
+                    name, layers, filters=filters)
+            except checklists.ChecklistNotFoundError:
+                if len(args.checklist) != 1:
+                    raise
+                # A lone argument that is not a checklist name can
+                # still be an open copy id; with --reset the copy
+                # re-opens from the checklist its sidecar records
+                copy_id, name, path, origin = checklists.resolve_heal(
+                    name, state_dir, layers, filters, reset=args.reset,
+                    dry_run=args.dry_run)
+            try:
+                text = path.read_text(encoding='utf-8')
+            except (OSError, UnicodeDecodeError) as errmsg:
+                raise checklists.ChecklistError(
+                    'The checklist {} cannot be read: '
+                    '{}'.format(name, errmsg)) from None
+            parsed = checklists.parse_checklist(text)
+            checklists.require_task_items(parsed, name)
+            # An inventory pattern in the copy id expands to one copy
+            # per matching host; the whole batch validates before the
+            # first copy opens
+            expanded = '[' in copy_id and ']' in copy_id
+            copy_ids = self._expand_copy_id(project, copy_id)
+            checklists.check_occupancy(state_dir, copy_ids, name,
+                                       reset=args.reset, expanded=expanded)
+            if args.dry_run:
+                self._print_dry_run(copy_ids, name, origin, state_dir)
+                return
+            failures = []
+            for expanded_id in copy_ids:
+                try:
+                    checklists.open_copy(path, name, origin, expanded_id,
+                                         state_dir, reset=args.reset)
+                except OSError as errmsg:
+                    # The batch promise covers occupancy; an I/O
+                    # failure mid-batch is reported with the ids that
+                    # landed
+                    failures.append((expanded_id, errmsg))
+                    continue
+                if expanded_id == checklists.strip_md(name):
+                    print('Opened {} [{}]'.format(
+                        checklists.strip_md(name), origin))
+                else:
+                    print('Opened {} as copy {} [{}]'.format(
+                        checklists.strip_md(name), expanded_id, origin))
+            for failed_id, errmsg in failures:
+                print_error('The copy {} could not be opened: '
+                            '{}'.format(failed_id, errmsg))
+            if failures:
+                sys.exit(1)
+        except checklists.ChecklistError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
+    def _expand_copy_id(self, project, copy_id):
+        """The copy ids of one operand.
+
+        The grammar lives in the library; this wrapper runs the
+        ansible query the expansion needs -- the pattern through the
+        project environment, the output parsed against its declared
+        host count.
+        """
+        parsed_pattern = checklists.parse_copy_pattern(copy_id)
+        if parsed_pattern is None:
+            return [copy_id]
+        pattern = parsed_pattern[1]
+        try:
+            runner = AnsibleRunner(project, ansible_args=[
+                shlex.quote(pattern), '--list-hosts'])
+        except (NoDefaultViewException, ValueError,
+                FileNotFoundError) as errmsg:
+            raise checklists.ChecklistError(
+                'The inventory pattern [{}] could not be '
+                'expanded: {}'.format(pattern, errmsg)) from None
+        returncode, output = runner.capture()
+        if returncode != 0:
+            raise checklists.ChecklistError(
+                'The inventory pattern [{}] could not be '
+                'expanded'.format(pattern))
+        try:
+            hosts = parse_list_hosts(output)
+        except ValueError as errmsg:
+            raise checklists.ChecklistError(str(errmsg)) from None
+        if not hosts:
+            raise checklists.ChecklistError(
+                'The inventory pattern [{}] matches no '
+                'hosts'.format(pattern))
+        return checklists.expand_copy_ids(copy_id, hosts)
+
+    def _print_dry_run(self, copy_ids, name, origin, state_dir):
+        """Print what ``open`` would do, without opening anything."""
+        open_ids = {copy.copy_id for copy in
+                    checklists.find_open_copies(state_dir)}
+        print('Would open {} of {} [{}]:'.format(
+            len(copy_ids), name, origin))
+        for copy_id in copy_ids:
+            marker = ' (already open)' if copy_id in open_ids else ''
+            print('  {}{}'.format(copy_id, marker))
+
+    def _copy_progress(self, copy):
+        """The progress line of one working copy.
+
+        An unreadable copy lists as unreadable: the copy stays
+        visible, because the listing is how the user finds the copy
+        that needs recovery.
+        """
+        try:
+            return checklists.parse_checklist(
+                self._read_copy_text(copy)).progress
+        except checklists.ChecklistError:
+            return 'unreadable'
+
+    def _read_copy_text(self, copy):
+        """The working copy text, with the unreadable case explained.
+
+        A copy corrupted by a locale mismatch or a broken editor save
+        must not crash the commands that are supposed to recover it.
+        """
+        try:
+            return copy.path.read_text(encoding='utf-8')
+        except (OSError, UnicodeDecodeError) as errmsg:
+            raise checklists.ChecklistError(
+                'The working copy {} cannot be read: {}; re-open it '
+                'with --reset'.format(copy.copy_id, errmsg)) from None
+
+    def do_checklist_edit(self, args):
+        project = self._project(args)
+        state_dir = checklists.checklist_state_dir(project.path)
+        try:
+            copy = checklists.resolve_single(args.copy, state_dir)
+        except checklists.ChecklistError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        try:
+            subprocess.run(self._editor_argv() + [str(copy.path)],
+                           check=False)
+        except OSError as errmsg:
+            print_error('The editor could not be run: {}'.format(errmsg))
+            sys.exit(1)
+        parsed = checklists.parse_checklist(self._read_copy_text(copy))
+        print('{}: {}'.format(copy.copy_id, parsed.progress))
+
+    def _editor_argv(self):
+        """The editor argv, with a notice when the environment lies.
+
+        A ``$VISUAL``/``$EDITOR`` value that does not split into a
+        command falls back to the Debian ``sensible-editor``
+        indirection, announced on the notice channel.
+        """
+        try:
+            return checklists.editor_argv()
+        except checklists.ChecklistError as errmsg:
+            print_notice('{}, using sensible-editor'.format(errmsg))
+            return ['sensible-editor']
+
+    def _checklist_filters(self):
+        """The ``checklist.filters`` rule list, validated.
+
+        The rules govern the discovery -- the listing, the open
+        resolution and the heal. The state commands are untouched:
+        the filter is a discovery policy, not a state destructor.
+        """
+        filters = self.config.get(['checklist', 'filters'])
+        if filters == {}:
+            return []
+        if not isinstance(filters, list) or not all(
+                isinstance(pattern, str) and pattern
+                for pattern in filters):
+            print_error('The checklist.filters value must be a list '
+                        'of glob patterns')
+            sys.exit(1)
+        return filters
+
+    def do_checklist_commit(self, args):
+        if args.all and args.edit:
+            print_error('The --edit option commits one copy at a time')
+            sys.exit(1)
+        project = self._project(args)
+        state_dir = checklists.checklist_state_dir(project.path)
+        vault_dir = self._checklist_vault_dir(project)
+        if args.all:
+            self._commit_all_copies(project, state_dir, vault_dir, args)
+            return
+        try:
+            copy = checklists.resolve_single(args.copy, state_dir)
+            self._commit_copy(project, state_dir, vault_dir, copy, args)
+        except checklists.ChecklistError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+        except GitCommandError as errmsg:
+            print_error('The git commit of the vault record failed: '
+                        '{}'.format(errmsg))
+            sys.exit(1)
+
+    def _checklist_vault_dir(self, project):
+        """The resolved vault directory, refused when unconfigured."""
+        vault_base = self.config.get(['checklist', 'commit_path'])
+        if not isinstance(vault_base, str) or not vault_base:
+            print_error('The checklist vault directory is not configured')
+            sys.exit(1)
+        vault_dir = Path(project.path) / vault_base
+        if not path_inside_project(vault_dir, project.path):
+            print_error('The vault directory resolves outside of the '
+                        'project: ' + vault_base)
+            sys.exit(1)
+        return vault_dir
+
+    def _commit_all_copies(self, project, state_dir, vault_dir, args):
+        """Commit every open copy, optionally one checklist's copies.
+
+        Per-copy independence: an invalid copy is skipped with its
+        reason, a failed git commit is reported, the rest of the
+        batch proceeds, and the exit code reports the partial
+        failure. With ``--close``, each copy deactivates after its
+        commit; the vault record exists, so the working copy's loss
+        is recoverable and no --force is demanded.
+        """
+        copies = checklists.find_open_copies(state_dir)
+        if args.copy:
+            scope = checklists.strip_md(args.copy)
+            copies = [copy for copy in copies
+                      if copy.checklist == scope]
+            if not copies:
+                print_error('The checklist {} has no open '
+                            'copies'.format(scope))
+                sys.exit(1)
+        elif not copies:
+            print_error('No open copies')
+            sys.exit(1)
+        if not os.path.exists(os.path.join(project.path, '.git')):
+            print_notice('The project directory is not a git repository, '
+                         'the vault records are not committed')
+        failed = []
+        for copy in copies:
+            try:
+                self._commit_copy(project, state_dir, vault_dir, copy,
+                                  args, git_notice=False)
+            except checklists.ChecklistError as errmsg:
+                print_error(errmsg)
+                failed.append(copy.copy_id)
+            except GitCommandError as errmsg:
+                print_error('The git commit of the vault record failed: '
+                            '{}'.format(errmsg))
+                failed.append(copy.copy_id)
+        if failed:
+            sys.exit(1)
+
+    def _commit_copy(self, project, state_dir, vault_dir, copy, args,
+                     git_notice=True):
+        """One copy's commit flow; raises the typed errors."""
+        parsed = checklists.parse_checklist(
+            self._read_copy_text(copy))
+        checklists.require_task_items(parsed, copy.checklist)
+        if not copy.checklist:
+            raise checklists.ChecklistError(
+                'The copy {} does not record its checklist; '
+                're-open it with --reset'.format(copy.copy_id))
+
+        vault_path = checklists.vault_record_path(
+            vault_dir, copy.checklist, copy.copy_id, copy.opened)
+        copy_text = self._read_copy_text(copy)
+        try:
+            unchanged = vault_path.exists() and \
+                vault_path.read_text(encoding='utf-8') == copy_text
+        except (OSError, UnicodeDecodeError):
+            # A hand-tampered record reads as changed; the re-commit
+            # restores the copy's content
+            unchanged = False
+        if unchanged:
+            print('No changes since the last commit')
+        else:
+            try:
+                write_file(str(vault_path), copy_text,
+                           overwrite=True, project=str(project.path),
+                           mode=0o600)
+            except ValueError as errmsg:
+                # The vault confinement refused the write; the copy's
+                # record path never resolves outside of the project
+                raise checklists.ChecklistError(str(errmsg)) from None
+
+        message = 'checklist: {}{} ({})'.format(
+            '{} '.format(copy.copy_id)
+            if not copy.implicit else '',
+            copy.checklist, parsed.progress)
+        if args.edit:
+            message = self._edit_text(message) or message
+
+        if git_notice and not os.path.exists(
+                os.path.join(project.path, '.git')):
+            print_notice('The project directory is not a git repository, '
+                         'the vault record is not committed')
+        project.commit(interactive=False, message=message,
+                       paths=[str(vault_path)])
+        if args.close:
+            checklists.close_copy(copy.state_dir, copy.copy_id)
+        if not unchanged:
+            print('Committed {} to {}'.format(
+                copy.checklist, os.path.relpath(vault_path, project.path)))
+
+    def _edit_text(self, text):
+        """Hand *text* to the editor and return the edited result."""
+        descriptor, path = tempfile.mkstemp(suffix='.msg')
+        with os.fdopen(descriptor, 'w', encoding='utf-8') as handle:
+            handle.write(text + '\n')
+        try:
+            subprocess.run(self._editor_argv() + [path], check=False)
+            with open(path, encoding='utf-8') as handle:
+                return handle.read().strip()
+        finally:
+            os.unlink(path)
+
+    def do_checklist_close(self, args):
+        project = self._project(args)
+        state_dir = checklists.checklist_state_dir(project.path)
+        if args.all:
+            copies = checklists.find_open_copies(state_dir)
+        else:
+            try:
+                copies = [checklists.resolve_single(args.copy, state_dir)]
+            except checklists.ChecklistError as errmsg:
+                print_error(errmsg)
+                sys.exit(1)
+        skipped_incomplete = []
+        skipped_empty = []
+        skipped_unreadable = []
+        for copy in copies:
+            try:
+                parsed = checklists.parse_checklist(
+                    self._read_copy_text(copy))
+            except checklists.ChecklistError:
+                parsed = None
+            if parsed is None:
+                if not args.force:
+                    skipped_unreadable.append(copy)
+                    continue
+            elif not parsed.items:
+                if not args.force:
+                    skipped_empty.append(copy)
+                    continue
+            elif parsed.has_open_items and not args.force:
+                skipped_incomplete.append(copy)
+                continue
+            checklists.close_copy(state_dir, copy.copy_id)
+            print('Closed {}'.format(copy.copy_id))
+        if args.all:
+            if skipped_unreadable:
+                print_notice('Still open (unreadable): {}'.format(
+                    ', '.join(copy.copy_id
+                              for copy in skipped_unreadable)))
+            if skipped_incomplete:
+                print_notice('Still open (incomplete): {}'.format(
+                    ', '.join(copy.copy_id
+                              for copy in skipped_incomplete)))
+            if skipped_empty:
+                print_notice('Still open (no task items): {}'.format(
+                    ', '.join(copy.copy_id
+                              for copy in skipped_empty)))
+        elif skipped_unreadable or skipped_incomplete or skipped_empty:
+            if skipped_unreadable:
+                print_error('The working copy {} cannot be read; '
+                            'use --force to close it anyway'.format(
+                                skipped_unreadable[0].copy_id))
+            elif skipped_incomplete:
+                print_error('The checklist {} is incomplete; use '
+                            '--force to close it anyway'.format(
+                                skipped_incomplete[0].copy_id))
+            else:
+                print_error('The checklist {} does not contain any '
+                            'task items; use --force to close it '
+                            'anyway'.format(skipped_empty[0].copy_id))
+            sys.exit(1)
 
     def do_tofu(self, args):
         if not args.tofu_args and not args.help:

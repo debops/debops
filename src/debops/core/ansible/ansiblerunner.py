@@ -5,9 +5,41 @@
 from .projectrunner import AnsibleProjectRunner
 from ..hooks import run_hooks
 import logging
+import re
 import subprocess
 
 logger = logging.getLogger(__name__)
+
+
+def parse_list_hosts(output: str) -> list[str]:
+    """The host names of 'ansible <pattern> --list-hosts' output.
+
+    The output declares the matched count in a ``hosts (N):``
+    header; a count that disagrees with the parsed names is an
+    error, so a silently shrunken match cannot open a partial
+    batch. An output without the header is refused: warning lines
+    must not become host names.
+    """
+    declared = None
+    hosts = []
+    for line in output.splitlines():
+        stripped = line.strip()
+        if stripped.endswith(':'):
+            declared_match = re.match(r'hosts \((\d+)\):$', stripped)
+            if declared_match:
+                declared = int(declared_match.group(1))
+            continue
+        if stripped:
+            hosts.append(stripped)
+    if declared is None:
+        raise ValueError(
+            'The ansible output declares no host count; warning '
+            'lines must not become host names')
+    if declared != len(hosts):
+        raise ValueError(
+            'The pattern declared {} hosts, parsed {}'.format(
+                declared, len(hosts)))
+    return hosts
 
 
 class AnsibleRunner(AnsibleProjectRunner):
@@ -75,3 +107,19 @@ class AnsibleRunner(AnsibleProjectRunner):
                   env=self._subprocess_env())
 
         return rc
+
+    def capture(self):
+        """Run the composed command and capture its standard output.
+
+        A query execution: no hooks run and the secrets stay locked.
+        The command runs in the project environment and the captured
+        output returns to the caller together with the exit code.
+        """
+        executor = subprocess.Popen(' '.join(self._ansible_command),
+                                    shell=True, cwd=self.project.path,
+                                    env=self._subprocess_env(
+                                        self._ansible_env),
+                                    stdout=subprocess.PIPE)
+        out, _ = executor.communicate()
+        return (executor.returncode,
+                out.decode('utf-8') if out is not None else '')

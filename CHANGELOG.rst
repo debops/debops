@@ -62,6 +62,11 @@ New DebOps roles
 General
 '''''''
 
+- The new :command:`debops checklist` subcommand manages operational checklists
+  written as Markdown files with task items. Users can create their own
+  checklists and work on them through copies. See :ref:`checklists` for the
+  details.
+
 - Journal records emitted by the :command:`debops` command now carry
   a ``[project:view]`` prefix which names the project directory and
   the infrastructure view of the operation, so entries from

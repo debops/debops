@@ -41,3 +41,36 @@ class OptionRefused(DebOpsError):
 class InventorySpecError(DebOpsError):
     """Raised when an inventory file specification is invalid"""
     pass
+
+
+class ChecklistError(DebOpsError):
+    """Base class of the errors the checklist machinery raises.
+
+    Invalid names resolve here; the specific lifecycle failures get
+    their own subclasses."""
+    pass
+
+
+class ChecklistNotFoundError(ChecklistError):
+    """Raised when a checklist name does not resolve in any layer"""
+    pass
+
+
+class ChecklistAlreadyOpenError(ChecklistError):
+    """Raised when a copy id is already occupied by an open copy"""
+    pass
+
+
+class ChecklistNotOpenError(ChecklistError):
+    """Raised when an edit/commit/close target is not an open copy"""
+    pass
+
+
+class ChecklistAmbiguousError(ChecklistError):
+    """Raised when a checklist path matches several open copies"""
+    pass
+
+
+class ChecklistFilteredError(ChecklistError):
+    """Raised when a checklist name is hidden by checklist.filters"""
+    pass
