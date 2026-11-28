@@ -1088,8 +1088,8 @@ Commands:
                             help='output format (default: text)')
         parser.add_argument('glob', type=str, nargs='*',
                             help='selection globs over the checklist '
-                                 'names; * and ? stop at the slash, '
-                                 '** crosses it')
+                                 'names; a run of * crosses the slash '
+                                 'and ? matches any character')
         self.args = parser.parse_args(self.args[3:])
 
     def do_checklist_open(self):
