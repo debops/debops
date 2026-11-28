@@ -5,7 +5,7 @@
 Synopsis
 ========
 
-``debops checklist list``   [-h|--help] [-a|--active] [-f|--format text|json] [-v|--verbose] [<project_dir>]
+``debops checklist list``   [-h|--help] [-v|--verbose] [--project-dir <project_dir>] [-a|--active] [-f|--format text|json] [<glob>...]
 
 ``debops checklist open``   [-h|--help] [-v|--verbose] [--project-dir <project_dir>] [-r|--reset] [--no-reset] [-d|--dry-run] [<copy-id>] <checklist>
 

@@ -6,14 +6,24 @@
 --------------------------------
 
 The listing shows what the discovery layers provide and which copies
-you have open. A copy whose source changed since you opened it is
-marked ``[stale]``, and an implicitly open copy reports its progress.
+you have open. Selection globs narrow the listing to the matching
+names, including the open copies. A copy whose source changed since
+you opened it is marked ``[stale]``, and an implicitly open copy
+reports its progress.
 
 Options
 ~~~~~~~
 
 ``-h, --help``
   Display the help and usage information
+
+``-v, --verbose``
+  Increase the output verbosity: the titles at ``-v``, the origin of
+  each checklist at ``-vv``.
+
+``--project-dir <project_dir>``
+  Path to the project directory to work on. If it's not specified, the
+  script will use the current directory.
 
 ``-a, --active``
   List the open copies instead of the discovered checklists.
@@ -23,13 +33,15 @@ Options
   prints one record per checklist, or per open copy with
   ``--active``, for scripts to consume.
 
-``-v, --verbose``
-  Increase the output verbosity: the titles at ``-v``, the origin of
-  each checklist at ``-vv``.
-
-``<project_dir>``
-  Path to the project directory to work on. If it's not specified, the
-  script will use the current directory.
+``<glob>...``
+  Selection globs over the checklist names. The globs use the syntax
+  of the ``checklist.filters`` patterns. ``*`` and ``?`` stop at the
+  slash, ``**`` crosses it, and the match is anchored to the whole
+  name. A name matching any glob is listed. Without globs, everything
+  is listed. The globs narrow the listing, not the discovery: a name
+  left out of the listing can still be opened. A ``!``-prefixed glob
+  is refused. The ``!`` hide rules belong to the
+  ``checklist.filters`` configuration option.
 
 Examples
 ~~~~~~~~
@@ -39,6 +51,12 @@ List the checklists and show which layer provided each:
 .. code-block:: shell
 
    debops checklist list -vv
+
+List only the checklists of one namespace:
+
+.. code-block:: shell
+
+   debops checklist list 'system/**'
 
 :command:`debops checklist open`
 --------------------------------

@@ -751,18 +751,29 @@ def _filter_rules(filters: list) -> list[tuple[re.Pattern, bool]]:
     for pattern in filters:
         hide = pattern.startswith('!')
         body = pattern[1:] if hide else pattern
-        if len(body) > 128 or len(re.findall(r'\*+', body)) > 6:
-            raise ChecklistError(
-                f"The checklist.filters pattern {pattern!r} is too "
-                "complex; at most 128 characters and 6 wildcard runs "
-                "are supported")
-        try:
-            compiled = _compile_glob(body)
-        except re.error:
-            raise ChecklistError(
-                f"Invalid checklist.filters pattern: {pattern!r}") from None
-        rules.append((compiled, not hide))
+        rules.append((
+            _compile_checked(body, 'checklist.filters'),
+            not hide))
     return rules
+
+
+def _compile_checked(pattern: str, source: str) -> re.Pattern:
+    """One compiled path glob, with the complexity guard.
+
+    Patterns with many ambiguous wildcard runs backtrack
+    catastrophically, so an over-complex pattern is refused instead
+    of compiling into a hang. The *source* names the feature the
+    pattern came from, for the error messages.
+    """
+    if len(pattern) > 128 or len(re.findall(r'\*+', pattern)) > 6:
+        raise ChecklistError(
+            f"The {source} pattern {pattern!r} is too complex; at "
+            "most 128 characters and 6 wildcard runs are supported")
+    try:
+        return _compile_glob(pattern)
+    except re.error:
+        raise ChecklistError(
+            f"Invalid {source} pattern: {pattern!r}") from None
 
 
 def _compile_glob(pattern: str) -> re.Pattern:
@@ -814,6 +825,36 @@ def _visible(name: str, rules: list[tuple[re.Pattern, bool]]) -> bool:
         if regex.match(name):
             visible = show
     return visible
+
+
+def compile_selection(globs: list) -> list[re.Pattern]:
+    """The compiled selection globs of the ``checklist list`` command.
+
+    A glob selects the checklist names that match it; a name matching
+    any glob is listed. The globs use the same path-glob language as
+    the ``checklist.filters`` rules: ``*`` and ``?`` stop at the
+    slash while ``**`` crosses it, and the match is anchored to the
+    whole name. The ``!`` prefix of the hide rules is not part of the
+    selection language and is refused, so a stray ``!`` cannot
+    silently list nothing.
+    """
+    patterns = []
+    for glob in globs:
+        if glob.startswith('!'):
+            raise ChecklistError(
+                f"Invalid selection glob {glob!r}: the '!' prefix "
+                "belongs to the checklist.filters rules")
+        patterns.append(_compile_checked(glob, 'selection'))
+    return patterns
+
+
+def name_selected(name: str, patterns: list[re.Pattern]) -> bool:
+    """Whether the checklist name matches any of the selection globs.
+
+    An empty selection lists everything.
+    """
+    return not patterns or any(
+        pattern.match(name) for pattern in patterns)
 
 
 def editor_argv(environ=None) -> list[str]:

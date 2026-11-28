@@ -16,6 +16,7 @@ from unittest import mock
 import json
 import locale
 import logging
+import os
 import shlex
 from datetime import datetime
 import pytest
@@ -28,10 +29,11 @@ from git import GitCommandError
 
 
 def make_args(**kwargs):
-    # The 'open' parser always provides --dry-run and the 'commit'
-    # parser always provides --all; the defaults ride along for every
+    # The 'open' parser always provides --dry-run, the 'commit'
+    # parser always provides --all, and the 'list' parser always
+    # provides the selection globs; the defaults ride along for every
     # simulated argument namespace
-    arguments = {'dry_run': False, 'all': False}
+    arguments = {'dry_run': False, 'all': False, 'glob': []}
     arguments.update(kwargs)
     return SimpleNamespace(**arguments)
 
@@ -186,6 +188,17 @@ def test_checklist_list_defaults_the_verbose_to_zero():
     assert parsed.args.verbose == 0
 
 
+def test_checklist_list_defaults_the_project_to_the_cwd():
+    parsed = cli_module.Subcommands(["debops", "checklist", "list"])
+    assert parsed.args.project_dir == os.getcwd()
+
+
+def test_checklist_list_takes_selection_globs():
+    parsed = cli_module.Subcommands(["debops", "checklist", "list",
+                                     "debian/**", "system/*"])
+    assert parsed.args.glob == ["debian/**", "system/*"]
+
+
 def test_checklist_open_takes_a_copy_id_and_a_checklist():
     parsed = cli_module.Subcommands(["debops", "checklist", "open",
                                      "web", "audit/review"])
@@ -218,6 +231,80 @@ def test_checklist_open_rejects_extra_positionals(capsys):
                                 "a", "b", "c"])
     assert raised.value.code == 2
     assert "copy id" in capsys.readouterr().err
+
+
+def test_checklist_list_selects_names_by_glob(tmp_path, state_home,
+                                              monkeypatch, capsys):
+    packaged = tmp_path / "packaged" / "checklists"
+    (packaged / "audit").mkdir(parents=True)
+    (packaged / "audit" / "review.md").write_text(
+        "# Review\n- [ ] Check\n")
+    (packaged / "system").mkdir()
+    (packaged / "system" / "reboot.md").write_text("# Reboot\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), active=False,
+                     format='text', verbose=0, glob=['audit/**'])
+    interpreter.do_checklist_list(args)
+
+    captured = capsys.readouterr()
+    assert "audit/review" in captured.out
+    assert "system/reboot" not in captured.out
+
+
+def test_checklist_list_active_selects_copies_by_glob(
+        tmp_path, state_home, monkeypatch, capsys):
+    packaged = tmp_path / "packaged" / "checklists"
+    (packaged / "audit").mkdir(parents=True)
+    review = packaged / "audit" / "review.md"
+    review.write_text("# Review\n- [ ] Check\n")
+    (packaged / "system").mkdir()
+    reboot = packaged / "system" / "reboot.md"
+    reboot.write_text("# Reboot\n- [ ] Power off\n")
+    monkeypatch.setattr(cli_module.checklists, "DEBOPS_PACKAGE_DATA",
+                        str(tmp_path / "packaged"))
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    state = checklists.checklist_state_dir(project)
+    checklists.open_copy(review, "audit/review", "packaged", "web",
+                         state)
+    checklists.open_copy(reboot, "system/reboot", "packaged", "host",
+                         state)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), active=True,
+                     format='text', verbose=0, glob=['audit/**'])
+    interpreter.do_checklist_list(args)
+
+    captured = capsys.readouterr()
+    assert "web" in captured.out
+    assert "system/reboot" not in captured.out
+    assert "host" not in captured.out
+
+
+def test_checklist_list_refuses_the_hide_prefix(tmp_path, state_home,
+                                                monkeypatch, capsys):
+    project = tmp_path / "project"
+    (project / ".debops").mkdir(parents=True)
+    interpreter = make_interpreter()
+    monkeypatch.setattr(cli_module, "ProjectDir",
+                        mock.Mock(return_value=SimpleNamespace(
+                            path=project)))
+    args = make_args(project_dir=str(project), active=False,
+                     format='text', verbose=0, glob=['!example/**'])
+    with pytest.raises(SystemExit) as raised:
+        interpreter.do_checklist_list(args)
+
+    assert raised.value.code == 1
+    assert "checklist.filters" in capsys.readouterr().err
 
 
 def test_checklist_open_copies_into_the_state(tmp_path, state_home,

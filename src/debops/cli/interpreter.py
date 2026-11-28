@@ -516,6 +516,12 @@ class Interpreter(object):
             sys.exit(1)
 
     def do_checklist_list(self, args):
+        try:
+            selection = checklists.compile_selection(args.glob)
+        except checklists.ChecklistError as errmsg:
+            print_error(errmsg)
+            sys.exit(1)
+
         project = None
         try:
             project = ProjectDir(path=args.project_dir, config=self.config,
@@ -544,6 +550,9 @@ class Interpreter(object):
             rows = []
             records = []
             for copy in open_copies:
+                if not checklists.name_selected(
+                        copy.checklist, selection):
+                    continue
                 try:
                     parsed = checklists.parse_checklist(
                         self._read_copy_text(copy))
@@ -580,6 +589,8 @@ class Interpreter(object):
         except checklists.ChecklistError as errmsg:
             print_error(errmsg)
             sys.exit(1)
+        entries = [entry for entry in entries
+                   if checklists.name_selected(entry[0], selection)]
 
         if args.format == 'json':
             records = []

@@ -79,6 +79,7 @@ class Subcommands(object):
 
         self.global_parser = _argument_parser(add_help=False)
         self.global_parser.add_argument('-v', '--verbose', action="count",
+                                        default=0,
                                         help='increase output verbosity '
                                              '(e.g., -vv is more than -v)')
         self.global_parser.add_argument('--project-dir', type=str,
@@ -1077,19 +1078,18 @@ Commands:
 
     def do_checklist_list(self):
         parser = _argument_parser(
-                usage='debops checklist list [<args>] [<project_dir>]')
+                parents=[self.global_parser],
+                usage='debops checklist list [<args>] [<glob>...]')
         parser.add_argument('-a', '--active', action='store_true',
                             help='list the open copies instead of the '
                                  'discovered checklists')
         parser.add_argument('-f', '--format', type=str,
                             choices=['text', 'json'], default='text',
                             help='output format (default: text)')
-        parser.add_argument('-v', '--verbose', action='count', default=0,
-                            help='increase output verbosity '
-                                 '(e.g., -vv is more than -v)')
-        parser.add_argument('project_dir', type=str, nargs='?',
-                            default=os.getcwd(),
-                            help='path to the project directory')
+        parser.add_argument('glob', type=str, nargs='*',
+                            help='selection globs over the checklist '
+                                 'names; * and ? stop at the slash, '
+                                 '** crosses it')
         self.args = parser.parse_args(self.args[3:])
 
     def do_checklist_open(self):

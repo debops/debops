@@ -353,6 +353,50 @@ def test_filters_empty_rules_hide_nothing(example_tree):
     assert len(names) == 3
 
 
+def test_selection_globs_match_any_pattern():
+    patterns = checklists.compile_selection(
+        ["debian/**", "example/audit/*"])
+    assert checklists.name_selected(
+        "debian/dist-upgrade/bookworm-to-trixie", patterns)
+    assert checklists.name_selected("example/audit/review", patterns)
+    assert not checklists.name_selected("system/reboot", patterns)
+
+
+def test_selection_star_stops_at_the_slash():
+    # A single star does not cross the slash, so a namespace prefix
+    # needs the double-star form to reach the names below it
+    bare = checklists.compile_selection(["debian*"])
+    assert not checklists.name_selected(
+        "debian/dist-upgrade/bookworm-to-trixie", bare)
+    anchored = checklists.compile_selection(["debian/**"])
+    assert checklists.name_selected(
+        "debian/dist-upgrade/bookworm-to-trixie", anchored)
+
+
+def test_selection_anchored_to_the_whole_name():
+    fragment = checklists.compile_selection(["reboot"])
+    assert not checklists.name_selected("system/reboot", fragment)
+    exact = checklists.compile_selection(["system/reboot"])
+    assert checklists.name_selected("system/reboot", exact)
+
+
+def test_selection_empty_selects_everything():
+    assert checklists.name_selected("system/reboot", [])
+    assert checklists.name_selected("notes", [])
+
+
+def test_selection_refuses_the_hide_prefix():
+    with pytest.raises(checklists.ChecklistError) as raised:
+        checklists.compile_selection(["!example/**"])
+    assert "'!' prefix" in str(raised.value)
+
+
+def test_selection_refuses_an_over_complex_glob():
+    with pytest.raises(checklists.ChecklistError) as raised:
+        checklists.compile_selection(["a*" * 8])
+    assert "too complex" in str(raised.value)
+
+
 def test_find_checklist_refuses_a_hidden_name(example_tree):
     with pytest.raises(checklists.ChecklistFilteredError) as raised:
         checklists.find_checklist(

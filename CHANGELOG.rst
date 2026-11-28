@@ -70,6 +70,11 @@ General
   commits every open copy in one run. The list marks copies whose
   source changed since they were opened. See :ref:`checklists` for
   the details.
+- The :command:`debops checklist list` command takes selection globs:
+  positional patterns over the checklist names narrow the listing to
+  the matching entries, the open copies of ``--active`` included. The
+  globs use the pathname-aware syntax of the ``checklist.filters``
+  patterns.
 
 - Journal records emitted by the :command:`debops` command now carry
   a ``[project:view]`` prefix which names the project directory and

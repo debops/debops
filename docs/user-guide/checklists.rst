@@ -151,6 +151,12 @@ copy was opened is marked ``[stale]``: the listing compares the
 source's content with the hash recorded at open time.
 ``--reset`` re-copies the latest source and clears the marker.
 
+The listing takes selection globs: ``debops checklist list
+'system/**'`` lists the matching names only, the open copies under
+``--active`` included. The globs use the syntax of the
+``checklist.filters`` patterns but act on the listing alone: a name
+left out of the listing can still be opened.
+
 Personal checklists do not need to live in the user directory. Make
 a file symbolic link into the user layer and keep the target
 wherever you keep your notes:
