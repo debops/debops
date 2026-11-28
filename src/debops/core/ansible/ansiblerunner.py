@@ -17,7 +17,8 @@ def parse_list_hosts(output: str) -> list[str]:
     The output declares the matched count in a ``hosts (N):``
     header; a count that disagrees with the parsed names is an
     error, so a silently shrunken match cannot open a partial
-    batch.
+    batch. An output without the header is refused: warning lines
+    must not become host names.
     """
     declared = None
     hosts = []
@@ -30,7 +31,11 @@ def parse_list_hosts(output: str) -> list[str]:
             continue
         if stripped:
             hosts.append(stripped)
-    if declared is not None and declared != len(hosts):
+    if declared is None:
+        raise ValueError(
+            'The ansible output declares no host count; warning '
+            'lines must not become host names')
+    if declared != len(hosts):
         raise ValueError(
             'The pattern declared {} hosts, parsed {}'.format(
                 declared, len(hosts)))

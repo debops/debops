@@ -359,3 +359,40 @@ def test_runner_ensures_the_declared_store(stub_project, tmp_path):
 
     assert store.parent.is_dir()
     assert (os.stat(store.parent).st_mode & 0o777) == 0o700
+
+
+def test_parse_list_hosts_reads_the_declared_hosts():
+    output = '  hosts (2):\n  web1\n  web2\n'
+    assert runner_module.parse_list_hosts(output) == ['web1', 'web2']
+
+
+def test_parse_list_hosts_refuses_a_count_mismatch():
+    with pytest.raises(ValueError):
+        runner_module.parse_list_hosts('hosts (3):\nweb1\n')
+
+
+def test_parse_list_hosts_refuses_a_missing_header():
+    # A polluted or headerless output must not turn warning lines
+    # into host names, which would open a misnamed batch
+    with pytest.raises(ValueError):
+        runner_module.parse_list_hosts('[WARNING]: No hosts matched\n')
+
+
+def test_capture_returns_the_output_and_the_exit_code(
+        stub_project, monkeypatch):
+    runner = AnsibleRunner(stub_project(), ansible_args=['--list-hosts'])
+
+    class FakePopen:
+        returncode = 0
+
+        def __init__(self, command, **kwargs):
+            assert 'list-hosts' in command
+
+        def communicate(self):
+            return (b'hosts (1):\nweb1\n', b'')
+
+    monkeypatch.setattr(runner_module.subprocess, 'Popen', FakePopen)
+    returncode, output = runner.capture()
+
+    assert returncode == 0
+    assert output == 'hosts (1):\nweb1\n'
